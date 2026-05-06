@@ -13,7 +13,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, User as UserIcon, Heart, LayoutDashboard, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Heart, LayoutDashboard, LogOut } from "lucide-react";
+
+function getAvatarUrl(user: User | null) {
+  return user?.user_metadata?.avatar_url || user?.user_metadata?.picture || "";
+}
+
+function getInitials(user: User | null) {
+  const name = user?.user_metadata?.full_name || user?.email || "Beddn";
+  return name
+    .split(/[ @._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase())
+    .join("");
+}
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -59,45 +74,44 @@ export function Header() {
             </Link>
           )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm hover:shadow-sm transition-shadow cursor-pointer">
-              <Menu className="h-4 w-4" />
-              <UserIcon className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {user ? (
-                <>
-                  <DropdownMenuItem>
-                    <Link href="/saved" className="flex items-center gap-2 w-full">
-                      <Heart className="h-4 w-4" /> Saved trips
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/dashboard" className="flex items-center gap-2 w-full">
-                      <LayoutDashboard className="h-4 w-4" /> Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <span className="flex items-center gap-2">
-                      <LogOut className="h-4 w-4" /> Sign out
-                    </span>
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuItem onClick={handleSignIn}>
-                    Sign in with Google
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/dashboard/listings/new" className="w-full">
-                      List your place
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2">
+                <Avatar className="size-9 cursor-pointer">
+                  <AvatarImage src={getAvatarUrl(user)} alt={user.email ?? "Profile"} />
+                  <AvatarFallback className="bg-[#f8eef2] font-semibold text-[#800020]">
+                    {getInitials(user)}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem>
+                  <Link href="/saved" className="flex items-center gap-2 w-full">
+                    <Heart className="h-4 w-4" /> Saved trips
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/dashboard" className="flex items-center gap-2 w-full">
+                    <LayoutDashboard className="h-4 w-4" /> Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <span className="flex items-center gap-2">
+                    <LogOut className="h-4 w-4" /> Sign out
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              onClick={handleSignIn}
+              className="rounded-full bg-black px-5 text-white hover:bg-neutral-800"
+              size="sm"
+            >
+              Sign in
+            </Button>
+          )}
         </div>
       </div>
     </header>
