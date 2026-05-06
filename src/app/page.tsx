@@ -1,65 +1,161 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { useSavedListings } from "@/lib/hooks";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ListingCard } from "@/components/listing-card";
+import { Search, MapPin, Sparkles, Clock, Moon, Compass } from "lucide-react";
+import type { Listing, ListingCategory } from "@/lib/types";
+
+const CATEGORIES = [
+  { key: "all" as const, label: "All", icon: Sparkles },
+  { key: "hourly" as const, label: "Hourly", icon: Clock },
+  { key: "overnight" as const, label: "Overnight", icon: Moon },
+  { key: "experience" as const, label: "Experiences", icon: Compass },
+];
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<"all" | ListingCategory>("all");
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const supabase = createClient();
+  const { savedIds, toggle } = useSavedListings();
+
+  useEffect(() => {
+    fetchListings();
+  }, [activeTab]);
+
+  async function fetchListings() {
+    setLoading(true);
+    let query = supabase
+      .from("listings")
+      .select("*, listing_images(*), host:hosts(*)")
+      .eq("is_active", true)
+      .eq("is_verified", true)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (activeTab !== "all") {
+      query = query.contains("categories", [activeTab]);
+    }
+
+    const { data } = await query;
+    setListings((data as Listing[]) ?? []);
+    setLoading(false);
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&category=${activeTab}`);
+  }
+
+  function handleNearby() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        router.push(
+          `/search?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}&category=${activeTab}`
+        );
+      },
+      () => alert("Could not get your location. Please allow location access.")
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="flex-1">
+      <section className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-2xl mx-auto">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by city, area, or place name..."
+                className="pl-10"
+              />
+            </div>
+            <Button type="submit" className="bg-[#800020] hover:bg-[#600018]">
+              Search
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleNearby}
+              className="gap-1.5 hidden sm:flex"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <MapPin className="h-4 w-4" /> Nearby
+            </Button>
+          </form>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="bg-white border-b sticky top-16 z-40">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex gap-6 overflow-x-auto py-3">
+            {CATEGORIES.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`flex flex-col items-center gap-1 min-w-fit pb-2 border-b-2 transition-colors ${
+                  activeTab === key
+                    ? "border-[#800020] text-[#800020]"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-xs font-medium whitespace-nowrap">{label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[4/3] rounded-xl bg-muted" />
+                <div className="mt-2 h-4 w-3/4 rounded bg-muted" />
+                <div className="mt-1 h-3 w-1/2 rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        ) : listings.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {listings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isSaved={savedIds.has(listing.id)}
+                onToggleSave={() => toggle(listing.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground text-lg mb-6">
+              No verified places here yet
+            </p>
+            <div className="flex justify-center gap-3">
+              <Button
+                onClick={() => router.push("/dashboard/listings/new")}
+                className="bg-[#800020] hover:bg-[#600018]"
+              >
+                List your place
+              </Button>
+              <Button variant="outline">Notify me when available</Button>
+            </div>
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
