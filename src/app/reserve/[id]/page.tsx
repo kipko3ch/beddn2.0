@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,6 @@ import type { Listing, ListingCategory } from "@/lib/types";
 
 export default function ReservePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
   const supabase = createClient();
 
   const [listing, setListing] = useState<Listing | null>(null);
@@ -27,12 +25,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [category, setCategory] = useState<ListingCategory>("overnight");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [startTime, setStartTime] = useState("");
   const [duration, setDuration] = useState("1");
   const [guests, setGuests] = useState("1");
+  const [units, setUnits] = useState("1");
   const [note, setNote] = useState("");
 
   useEffect(() => {
@@ -81,42 +81,37 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     if (!listing || submitting) return;
     setSubmitting(true);
 
-    const total = computeTotal();
-    const { data, error } = await supabase
-      .from("bookings")
-      .insert({
-        listing_id: listing.id,
-        guest_name: name,
-        guest_phone: phone,
-        check_in: checkIn,
-        check_out: category === "overnight" ? checkOut : null,
-        start_time: category !== "overnight" ? startTime || null : null,
-        duration_hours: category === "hourly" ? parseInt(duration) : null,
-        guests: parseInt(guests),
-        note: note || null,
+    const response = await fetch("/api/payments/initialize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        listingId: listing.id,
+        guestName: name,
+        guestPhone: phone,
+        guestEmail: email || null,
         category,
-        status: "pending",
-        total_amount: total,
-        token: "",
-      })
-      .select("token")
-      .single();
+        checkIn,
+        checkOut: category === "overnight" ? checkOut : null,
+        startTime: category !== "overnight" ? startTime || null : null,
+        durationHours: category === "hourly" ? parseInt(duration) : null,
+        guestsCount: parseInt(guests),
+        unitsReserved: parseInt(units),
+        note: note || null,
+      }),
+    });
 
-    if (error || !data) {
-      alert("Failed to create booking. Please try again.");
+    const result = (await response.json()) as {
+      authorizationUrl?: string;
+      error?: string;
+    };
+
+    if (!response.ok || !result.authorizationUrl) {
+      alert(result.error || "Failed to initialize payment. Please try again.");
       setSubmitting(false);
       return;
     }
 
-    // Create pending payment
-    const bookingId = (data as any).id ?? data;
-    await supabase.from("payments").insert({
-      booking_id: bookingId,
-      amount: listing.deposit_amount > 0 ? Number(listing.deposit_amount) : total,
-      status: "pending",
-    });
-
-    router.push(`/booking/${data.token}`);
+    window.location.href = result.authorizationUrl;
   }
 
   if (loading) {
@@ -167,6 +162,17 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="email">Email (optional)</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="For payment receipt"
           />
         </div>
 
@@ -259,6 +265,21 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           />
         </div>
 
+        {(listing.total_units ?? 1) > 1 && (
+          <div>
+            <Label htmlFor="units">Rooms/units</Label>
+            <Input
+              id="units"
+              type="number"
+              min="1"
+              max={listing.total_units ?? 1}
+              value={units}
+              onChange={(e) => setUnits(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
         <div>
           <Label htmlFor="note">Note (optional)</Label>
           <Textarea
@@ -276,7 +297,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           </div>
           {listing.deposit_amount > 0 && (
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Deposit required</span>
+              <span>Reserve fee due now</span>
               <span>${Number(listing.deposit_amount).toLocaleString()}</span>
             </div>
           )}
@@ -288,7 +309,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           className="w-full bg-[#800020] hover:bg-[#600018]"
           size="lg"
         >
-          {submitting ? "Creating booking..." : "Confirm reservation"}
+          {submitting ? "Opening Paystack..." : "Pay reserve fee"}
         </Button>
       </form>
     </main>

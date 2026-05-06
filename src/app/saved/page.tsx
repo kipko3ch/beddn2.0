@@ -26,8 +26,9 @@ export default function SavedTripsPage() {
         .eq("user_id", user.user.id)
         .order("created_at", { ascending: false });
 
-      const results = (data ?? [])
-        .map((d: any) => d.listing)
+      const rows = (data ?? []) as unknown as { listing: Listing | null }[];
+      const results = rows
+        .map((item: { listing: Listing | null }) => item.listing)
         .filter(Boolean) as Listing[];
       setListings(results);
       setLoading(false);

@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import { Map } from "@/components/map";
 import { Star, MapPin, Clock, Moon, Compass, Shield, Heart } from "lucide-react";
-import type { Listing, Review, BlockedDate, AvailabilityRule } from "@/lib/types";
+import type { Listing, Review } from "@/lib/types";
 
 export default function PropertyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -238,7 +238,7 @@ export default function PropertyPage({ params }: { params: Promise<{ slug: strin
                         ))}
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {(review as any).profile?.full_name ?? "Guest"}
+                        {(review as Review & { profile?: { full_name?: string | null } }).profile?.full_name ?? "Guest"}
                       </span>
                     </div>
                     {review.comment && (

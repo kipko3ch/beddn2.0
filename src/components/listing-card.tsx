@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Listing } from "@/lib/types";

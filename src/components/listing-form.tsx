@@ -51,8 +51,23 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   const [city, setCity] = useState(listing?.city ?? "");
   const [area, setArea] = useState(listing?.area ?? "");
   const [privateAddress, setPrivateAddress] = useState(listing?.private_address ?? "");
+  const [checkInInstructions, setCheckInInstructions] = useState(
+    listing?.check_in_instructions ?? ""
+  );
   const [latitude, setLatitude] = useState(listing?.latitude ?? -1.29);
   const [longitude, setLongitude] = useState(listing?.longitude ?? 36.82);
+  const [currency, setCurrency] = useState(listing?.currency ?? "KES");
+  const [totalUnits, setTotalUnits] = useState(
+    listing?.total_units?.toString() ?? "1"
+  );
+  const [bookingMode, setBookingMode] = useState(
+    listing?.booking_mode ?? "manual_accept"
+  );
+  const [minimumHours, setMinimumHours] = useState(
+    listing?.minimum_hours?.toString() ?? "1"
+  );
+  const [checkInTime, setCheckInTime] = useState(listing?.check_in_time ?? "");
+  const [checkOutTime, setCheckOutTime] = useState(listing?.check_out_time ?? "");
   const [categories, setCategories] = useState<ListingCategory[]>(
     (listing?.categories as ListingCategory[]) ?? []
   );
@@ -67,6 +82,12 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   );
   const [depositAmount, setDepositAmount] = useState(
     listing?.deposit_amount?.toString() ?? "0"
+  );
+  const [platformFeeType, setPlatformFeeType] = useState(
+    listing?.platform_fee_type ?? "fixed"
+  );
+  const [platformFeeValue, setPlatformFeeValue] = useState(
+    listing?.platform_fee_value?.toString() ?? "0"
   );
   const [amenities, setAmenities] = useState<string[]>(listing?.amenities ?? []);
   const [houseRules, setHouseRules] = useState(listing?.house_rules ?? "");
@@ -105,19 +126,33 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
     const payload = {
       host_id: listing?.host_id ?? hostId,
       slug: listing?.slug ?? generateSlug(name) + "-" + Date.now().toString(36),
+      title: name,
       name,
       description: description || null,
       country,
       city,
       area,
       private_address: privateAddress,
+      check_in_instructions: checkInInstructions || null,
       latitude,
       longitude,
       categories,
+      category: categories,
       hourly_price: hourlyPrice ? parseFloat(hourlyPrice) : null,
       overnight_price: overnightPrice ? parseFloat(overnightPrice) : null,
       experience_price: experiencePrice ? parseFloat(experiencePrice) : null,
       deposit_amount: parseFloat(depositAmount || "0"),
+      currency,
+      total_units: Math.max(1, parseInt(totalUnits || "1")),
+      available_units: Math.max(1, parseInt(totalUnits || "1")),
+      booking_mode: isAdmin ? bookingMode : listing?.booking_mode ?? "manual_accept",
+      verification_status: isAdmin && isVerified ? "verified" : listing?.verification_status ?? "pending",
+      listing_status: isActive ? "active" : "paused",
+      platform_fee_type: platformFeeType,
+      platform_fee_value: parseFloat(platformFeeValue || "0"),
+      minimum_hours: Math.max(1, parseInt(minimumHours || "1")),
+      check_in_time: checkInTime || null,
+      check_out_time: checkOutTime || null,
       amenities,
       house_rules: houseRules || null,
       is_active: isActive,
@@ -227,6 +262,16 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
             placeholder="Exact address (hidden until paid)"
           />
         </div>
+        <div className="sm:col-span-2">
+          <Label htmlFor="instructions">Private check-in instructions</Label>
+          <Textarea
+            id="instructions"
+            value={checkInInstructions}
+            onChange={(e) => setCheckInInstructions(e.target.value)}
+            rows={2}
+            placeholder="Shown only after a booking is confirmed"
+          />
+        </div>
       </div>
 
       <Separator />
@@ -292,6 +337,83 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Currency</Label>
+          <Select value={currency} onValueChange={(value) => value && setCurrency(value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="KES">KES</SelectItem>
+              <SelectItem value="TZS">TZS</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="units">Rooms/units/seats</Label>
+          <Input
+            id="units"
+            type="number"
+            min="1"
+            value={totalUnits}
+            onChange={(e) => setTotalUnits(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="minimumHours">Minimum hours</Label>
+          <Input
+            id="minimumHours"
+            type="number"
+            min="1"
+            value={minimumHours}
+            onChange={(e) => setMinimumHours(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>Booking mode</Label>
+          <Select
+            value={bookingMode}
+            onValueChange={(value) =>
+              value && setBookingMode(value as "manual_accept" | "auto_accept")
+            }
+            disabled={!isAdmin}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manual_accept">Manual accept</SelectItem>
+              <SelectItem value="auto_accept">Auto accept</SelectItem>
+            </SelectContent>
+          </Select>
+          {!isAdmin && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Admin approval is required for auto accept.
+            </p>
+          )}
+        </div>
+        <div>
+          <Label htmlFor="checkInTime">Check-in time</Label>
+          <Input
+            id="checkInTime"
+            type="time"
+            value={checkInTime}
+            onChange={(e) => setCheckInTime(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="checkOutTime">Check-out time</Label>
+          <Input
+            id="checkOutTime"
+            type="time"
+            value={checkOutTime}
+            onChange={(e) => setCheckOutTime(e.target.value)}
+          />
+        </div>
+      </div>
+
       {/* Pricing */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {categories.includes("hourly") && (
@@ -338,6 +460,33 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
             step="0.01"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>Platform fee type</Label>
+          <Select
+            value={platformFeeType}
+            onValueChange={(value) =>
+              value && setPlatformFeeType(value as "fixed" | "percentage")
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="fixed">Fixed</SelectItem>
+              <SelectItem value="percentage">Percentage</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="platformFeeValue">Platform fee value</Label>
+          <Input
+            id="platformFeeValue"
+            type="number"
+            step="0.01"
+            value={platformFeeValue}
+            onChange={(e) => setPlatformFeeValue(e.target.value)}
           />
         </div>
       </div>

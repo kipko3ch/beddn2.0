@@ -35,11 +35,11 @@ export default function DashboardPage() {
             supabase
               .from("payments")
               .select("id", { count: "exact", head: true })
-              .eq("status", "pending"),
+              .eq("status", "initialized"),
             supabase
               .from("bookings")
               .select("id", { count: "exact", head: true })
-              .eq("status", "paid"),
+              .in("status", ["paid_pending_host", "confirmed"]),
           ]);
 
         setStats({
@@ -71,7 +71,7 @@ export default function DashboardPage() {
                     .from("listings")
                     .select("id")
                     .eq("host_id", host.id)
-                ).data?.map((l: any) => l.id) ?? []
+                ).data?.map((listing: { id: string }) => listing.id) ?? []
               ),
           ]);
 
@@ -95,7 +95,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div>
+    <div style={{ fontFamily: 'var(--font-trip-sans)' }}>
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(({ label, value, icon: Icon }) => (

@@ -1,58 +1,91 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { useSavedListings } from "@/lib/hooks";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ListingCard } from "@/components/listing-card";
-import { Search, MapPin, Sparkles, Clock, Moon, Compass } from "lucide-react";
-import type { Listing, ListingCategory } from "@/lib/types";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import {
+  Sparkles,
+  Globe,
+  Search,
+  MapPin
+} from 'lucide-react';
+import styles from './landing.module.css';
+import { createClient } from '@/lib/supabase/client';
+import { useSavedListings } from '@/lib/hooks';
+import { ListingCard } from '@/components/listing-card';
+import type { User } from '@supabase/supabase-js';
+import type { Listing } from '@/lib/types';
 
-const CATEGORIES = [
-  { key: "all" as const, label: "All", icon: Sparkles },
-  { key: "hourly" as const, label: "Hourly", icon: Clock },
-  { key: "overnight" as const, label: "Overnight", icon: Moon },
-  { key: "experience" as const, label: "Experiences", icon: Compass },
-];
+const TAB_DATA = {
+  All: {
+    title: 'Find a place',
+    placeholder: 'Where are you going?',
+    category: 'all' as const,
+  },
+  Hourly: {
+    title: 'Find a place for a few hours',
+    placeholder: 'Where do you need a place right now?',
+    category: 'hourly' as const,
+  },
+  Overnight: {
+    title: 'Find a place for the night',
+    placeholder: 'Where are you staying tonight?',
+    category: 'overnight' as const,
+  },
+  Experiences: {
+    title: 'Find things to do',
+    placeholder: 'What do you want to do?',
+    category: 'experience' as const,
+  }
+};
 
-export default function Home() {
-  const [activeTab, setActiveTab] = useState<"all" | ListingCategory>("all");
+type TabType = keyof typeof TAB_DATA;
+
+export default function LandingPage() {
+  const [activeTab, setActiveTab] = useState<TabType>('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const { savedIds, toggle } = useSavedListings();
 
-  useEffect(() => {
-    fetchListings();
-  }, [activeTab]);
+  const currentData = TAB_DATA[activeTab];
 
-  async function fetchListings() {
+  const checkUser = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  }, [supabase]);
+
+  const fetchListings = useCallback(async () => {
     setLoading(true);
     let query = supabase
-      .from("listings")
-      .select("*, listing_images(*), host:hosts(*)")
-      .eq("is_active", true)
-      .eq("is_verified", true)
-      .order("created_at", { ascending: false })
+      .from('listings')
+      .select('*, listing_images(*), host:hosts(*)')
+      .eq('is_active', true)
+      .eq('is_verified', true)
+      .order('created_at', { ascending: false })
       .limit(20);
 
-    if (activeTab !== "all") {
-      query = query.contains("categories", [activeTab]);
+    if (currentData.category !== 'all') {
+      query = query.filter('categories', 'cs', `{${currentData.category}}`);
     }
 
     const { data } = await query;
     setListings((data as Listing[]) ?? []);
     setLoading(false);
-  }
+  }, [currentData.category, supabase]);
+
+  useEffect(() => {
+    fetchListings();
+    checkUser();
+  }, [checkUser, fetchListings]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&category=${activeTab}`);
+    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&category=${currentData.category}`);
   }
 
   function handleNearby() {
@@ -60,102 +93,183 @@ export default function Home() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         router.push(
-          `/search?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}&category=${activeTab}`
+          `/search?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}&category=${currentData.category}`
         );
       },
-      () => alert("Could not get your location. Please allow location access.")
+      () => alert('Could not get your location. Please allow location access.')
     );
   }
 
+  async function handleSignIn() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+    });
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    setUser(null);
+  }
+
+  const tabs: { name: TabType }[] = [
+    { name: 'All' },
+    { name: 'Hourly' },
+    { name: 'Overnight' },
+    { name: 'Experiences' },
+  ];
+
   return (
-    <main className="flex-1">
-      <section className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <form onSubmit={handleSearch} className="flex gap-2 max-w-2xl mx-auto">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by city, area, or place name..."
-                className="pl-10"
-              />
-            </div>
-            <Button type="submit" className="bg-[#800020] hover:bg-[#600018]">
-              Search
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleNearby}
-              className="gap-1.5 hidden sm:flex"
-            >
-              <MapPin className="h-4 w-4" /> Nearby
-            </Button>
-          </form>
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logoArea}>
+          <Image
+            src="/logo.png"
+            alt="Beddn Logo"
+            width={32}
+            height={32}
+            priority
+          />
+          Beddn
         </div>
-      </section>
 
-      <section className="bg-white border-b sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-6 overflow-x-auto py-3">
-            {CATEGORIES.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex flex-col items-center gap-1 min-w-fit pb-2 border-b-2 transition-colors ${
-                  activeTab === key
-                    ? "border-[#800020] text-[#800020]"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
+        <nav className={styles.navRight}>
+          <a href="#" className={styles.navItem}>
+            <Sparkles size={18} />
+            Plan with AI
+          </a>
+          <a href="#" className={styles.navItem}>Rewards</a>
+          <a href="#" className={styles.navItem}>Discover</a>
+          <a href="#" className={styles.navItem}>Review</a>
+          <a href="#" className={styles.navItem}>
+            <Globe size={18} />
+            USD
+          </a>
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Image
+                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                alt="Profile"
+                width={32}
+                height={32}
+                style={{ borderRadius: '50%', cursor: 'pointer' }}
+                onClick={() => router.push('/dashboard')}
+              />
+              <button 
+                className={styles.signInBtn} 
+                onClick={handleSignOut}
+                style={{ padding: '8px 16px', fontSize: 14 }}
               >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium whitespace-nowrap">{label}</span>
+                Sign out
               </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="max-w-7xl mx-auto px-4 py-8">
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-[4/3] rounded-xl bg-muted" />
-                <div className="mt-2 h-4 w-3/4 rounded bg-muted" />
-                <div className="mt-1 h-3 w-1/2 rounded bg-muted" />
-              </div>
-            ))}
-          </div>
-        ) : listings.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                isSaved={savedIds.has(listing.id)}
-                onToggleSave={() => toggle(listing.id)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-muted-foreground text-lg mb-6">
-              No verified places here yet
-            </p>
-            <div className="flex justify-center gap-3">
-              <Button
-                onClick={() => router.push("/dashboard/listings/new")}
-                className="bg-[#800020] hover:bg-[#600018]"
-              >
-                List your place
-              </Button>
-              <Button variant="outline">Notify me when available</Button>
             </div>
+          ) : (
+            <button className={styles.signInBtn} onClick={handleSignIn}>Sign in</button>
+          )}
+        </nav>
+      </header>
+
+      <main className={styles.main}>
+        <h1 className={styles.title}>{currentData.title}</h1>
+
+        <div className={styles.tabs}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.name}
+              className={`${styles.tab} ${activeTab === tab.name ? styles.active : ''}`}
+              onClick={() => setActiveTab(tab.name)}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleSearch} className={styles.searchContainer}>
+          <div className={styles.searchWrapper}>
+            <Search className={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder={currentData.placeholder}
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={handleNearby}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                color: '#666',
+              }}
+              title="Use my current location"
+            >
+              <MapPin size={20} />
+            </button>
+            <button type="submit" className={styles.searchBtn}>Search</button>
           </div>
-        )}
-      </section>
-    </main>
+        </form>
+
+        {/* Listings grid */}
+        <section style={{ width: '100%', maxWidth: 1200, margin: '48px auto 0', padding: '0 24px' }}>
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} style={{ animation: 'pulse 2s infinite' }}>
+                  <div style={{ aspectRatio: '4/3', borderRadius: 12, background: '#f0f0f0' }} />
+                  <div style={{ marginTop: 8, height: 16, width: '75%', borderRadius: 8, background: '#f0f0f0' }} />
+                  <div style={{ marginTop: 4, height: 12, width: '50%', borderRadius: 8, background: '#f0f0f0' }} />
+                </div>
+              ))}
+            </div>
+          ) : listings.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
+              {listings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  isSaved={savedIds.has(listing.id)}
+                  onToggleSave={() => toggle(listing.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
+              <p style={{ color: '#666', fontSize: 18, marginBottom: 24 }}>
+                No verified places here yet
+              </p>
+              <p style={{ color: '#666', fontSize: 14, marginBottom: 24 }}>
+                Be the first verified host in this area and get early visibility as demand grows.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                <button
+                  onClick={() => router.push('/dashboard/listings/new')}
+                  className={styles.searchBtn}
+                >
+                  List your place
+                </button>
+                <button
+                  style={{
+                    background: 'transparent',
+                    border: '2px solid #ddd',
+                    borderRadius: 32,
+                    padding: '14px 28px',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Notify me when available
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
   );
 }

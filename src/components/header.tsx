@@ -43,16 +43,16 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-16">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 h-14 sm:h-16">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Beddn" width={32} height={32} />
-          <span className="text-xl font-bold tracking-tight">Beddn</span>
+          <Image src="/logo.png" alt="Beddn" width={28} height={28} />
+          <span className="text-lg sm:text-xl font-bold tracking-tight">Beddn</span>
         </Link>
 
         <div className="flex items-center gap-2">
           {user && (
-            <Link href="/dashboard/listings/new">
+            <Link href="/dashboard/listings/new" className="hidden sm:block">
               <Button variant="ghost" size="sm">
                 List your place
               </Button>

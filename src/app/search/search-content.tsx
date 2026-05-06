@@ -128,7 +128,7 @@ export function SearchContent() {
                 No verified places here yet
               </p>
               <p className="text-muted-foreground text-sm mb-6">
-                {q ? `No results for "${q}"` : "No listings in this area"}
+                Be the first verified host in this area and get early visibility as demand grows.
               </p>
               <div className="flex justify-center gap-3">
                 <Button

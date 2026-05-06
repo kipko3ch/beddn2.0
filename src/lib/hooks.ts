@@ -1,21 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
-  }, []);
+  }, [supabase.auth]);
 
   return user;
 }
 
 export function useSavedListings() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const user = useUser();
 
   useEffect(() => {
@@ -25,9 +25,9 @@ export function useSavedListings() {
       .select("listing_id")
       .eq("user_id", user.id)
       .then(({ data }) => {
-        setSavedIds(new Set((data ?? []).map((d: any) => d.listing_id)));
+        setSavedIds(new Set((data ?? []).map((item: { listing_id: string }) => item.listing_id)));
       });
-  }, [user]);
+  }, [supabase, user]);
 
   async function toggle(listingId: string) {
     if (!user) return;

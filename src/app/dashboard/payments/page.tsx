@@ -3,42 +3,41 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { Payment } from "@/lib/types";
+
+type PaymentWithBooking = Payment & {
+  booking?: {
+    token?: string;
+    booking_token?: string;
+    guest_name?: string;
+    status?: string;
+    listing_id?: string;
+  };
+};
 
 export default function PaymentsPage() {
   const supabase = createClient();
-  const [payments, setPayments] = useState<(Payment & { booking?: any })[]>([]);
+  const [payments, setPayments] = useState<PaymentWithBooking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const { data } = await supabase
         .from("payments")
-        .select("*, booking:bookings(token, guest_name, status, listing_id)")
+        .select("*, booking:bookings(token, booking_token, guest_name, status, listing_id)")
         .order("created_at", { ascending: false });
-      setPayments(data ?? []);
+      setPayments((data as PaymentWithBooking[]) ?? []);
       setLoading(false);
     }
     load();
   }, []);
 
-  async function markPaid(paymentId: string, bookingId: string) {
-    await supabase.from("payments").update({ status: "paid" }).eq("id", paymentId);
-    await supabase.from("bookings").update({ status: "paid" }).eq("id", bookingId);
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.id === paymentId
-          ? { ...p, status: "paid" as const, booking: { ...p.booking, status: "paid" } }
-          : p
-      )
-    );
-  }
-
   const statusColor: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    paid: "bg-green-100 text-green-800",
+    initialized: "bg-yellow-100 text-yellow-800",
+    success: "bg-green-100 text-green-800",
     failed: "bg-red-100 text-red-800",
+    abandoned: "bg-muted text-muted-foreground",
+    refunded: "bg-blue-100 text-blue-800",
   };
 
   return (
@@ -61,25 +60,16 @@ export default function PaymentsPage() {
                   {payment.booking?.guest_name ?? "Unknown"}
                 </p>
                 <code className="text-xs text-muted-foreground">
-                  {payment.booking?.token}
+                  {payment.booking?.booking_token || payment.booking?.token}
                 </code>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-medium">
-                  ${Number(payment.amount).toLocaleString()}
+                  {payment.currency || "$"} {Number(payment.amount).toLocaleString()}
                 </span>
                 <Badge className={statusColor[payment.status] ?? ""}>
                   {payment.status}
                 </Badge>
-                {payment.status === "pending" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => markPaid(payment.id, payment.booking_id)}
-                  >
-                    Mark paid
-                  </Button>
-                )}
               </div>
             </div>
           ))}

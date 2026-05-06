@@ -4,31 +4,65 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { Booking } from "@/lib/types";
+
+type BookingWithListing = Booking & {
+  listing?: {
+    name?: string;
+    title?: string;
+    slug?: string;
+  };
+};
 
 export default function BookingsPage() {
   const supabase = createClient();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingWithListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [workingId, setWorkingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       const { data } = await supabase
         .from("bookings")
-        .select("*, listing:listings(name, slug)")
+        .select("*, listing:listings(name, title, slug)")
         .order("created_at", { ascending: false });
-      setBookings((data as Booking[]) ?? []);
+      setBookings((data as BookingWithListing[]) ?? []);
       setLoading(false);
     }
     load();
   }, []);
 
   const statusColor: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    paid: "bg-green-100 text-green-800",
+    pending_payment: "bg-yellow-100 text-yellow-800",
+    paid_pending_host: "bg-amber-100 text-amber-800",
+    confirmed: "bg-green-100 text-green-800",
     completed: "bg-blue-100 text-blue-800",
     cancelled: "bg-red-100 text-red-800",
+    rejected: "bg-red-100 text-red-800",
+    disputed: "bg-purple-100 text-purple-800",
   };
+
+  async function bookingAction(id: string, action: "accept" | "reject" | "complete") {
+    setWorkingId(id);
+    const response = await fetch(`/api/bookings/${id}/${action}`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      alert("Could not update booking.");
+      setWorkingId(null);
+      return;
+    }
+
+    const result = (await response.json()) as { status: Booking["status"] };
+    setBookings((prev) =>
+      prev.map((booking) =>
+        booking.id === id ? { ...booking, status: result.status } : booking
+      )
+    );
+    setWorkingId(null);
+  }
 
   return (
     <div>
@@ -44,29 +78,59 @@ export default function BookingsPage() {
       ) : (
         <div className="border rounded-lg divide-y">
           {bookings.map((booking) => (
-            <Link
+            <div
               key={booking.id}
-              href={`/booking/${booking.token}`}
-              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-between gap-4 p-4 hover:bg-muted/50 transition-colors"
             >
-              <div>
+              <Link href={`/booking/${booking.booking_token || booking.token}`} className="min-w-0">
                 <p className="font-medium">{booking.guest_name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {(booking.listing as any)?.name} · {booking.check_in}
+                  {booking.listing?.title || booking.listing?.name} ·{" "}
+                  {booking.check_in || booking.start_datetime?.slice(0, 10)}
                 </p>
                 <code className="text-xs text-muted-foreground">
-                  {booking.token}
+                  {booking.booking_token || booking.token}
                 </code>
-              </div>
-              <div className="flex items-center gap-2">
+              </Link>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
                 <span className="text-sm font-medium">
-                  ${Number(booking.total_amount).toLocaleString()}
+                  {booking.currency || "$"}{" "}
+                  {Number(booking.deposit_amount || booking.total_amount).toLocaleString()}
                 </span>
                 <Badge className={statusColor[booking.status] ?? ""}>
-                  {booking.status}
+                  {booking.status.replaceAll("_", " ")}
                 </Badge>
+                {booking.status === "paid_pending_host" && (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={() => bookingAction(booking.id, "accept")}
+                      disabled={workingId === booking.id}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => bookingAction(booking.id, "reject")}
+                      disabled={workingId === booking.id}
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {booking.status === "confirmed" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => bookingAction(booking.id, "complete")}
+                    disabled={workingId === booking.id}
+                  >
+                    Mark completed
+                  </Button>
+                )}
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}
