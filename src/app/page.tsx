@@ -214,62 +214,51 @@ export default function LandingPage() {
           </div>
         </form>
 
-        {/* Listings grid */}
-        <section style={{ width: '100%', maxWidth: 1200, margin: '48px auto 0', padding: '0 24px' }}>
-          {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} style={{ animation: 'pulse 2s infinite' }}>
-                  <div style={{ aspectRatio: '4/3', borderRadius: 12, background: '#f0f0f0' }} />
-                  <div style={{ marginTop: 8, height: 16, width: '75%', borderRadius: 8, background: '#f0f0f0' }} />
-                  <div style={{ marginTop: 4, height: 12, width: '50%', borderRadius: 8, background: '#f0f0f0' }} />
-                </div>
-              ))}
-            </div>
-          ) : listings.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
-              {listings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                  isSaved={savedIds.has(listing.id)}
-                  onToggleSave={() => toggle(listing.id)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '80px 0' }}>
-              <p style={{ color: '#666', fontSize: 18, marginBottom: 24 }}>
-                No verified places here yet
-              </p>
-              <p style={{ color: '#666', fontSize: 14, marginBottom: 24 }}>
-                Be the first verified host in this area and get early visibility as demand grows.
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-                <button
-                  onClick={() => router.push('/dashboard/listings/new')}
-                  className={styles.searchBtn}
-                >
-                  List your place
-                </button>
-                <button
-                  style={{
-                    background: 'transparent',
-                    border: '2px solid #ddd',
-                    borderRadius: 32,
-                    padding: '14px 28px',
-                    fontSize: 16,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Notify me when available
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
       </main>
+
+      {/* Listings grid */}
+      <section className={styles.listingsSection}>
+        {loading ? (
+          <div className={styles.listingsGrid}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className={styles.listingSkeleton}>
+                <div className={styles.skeletonImage} />
+                <div className={styles.skeletonTitle} />
+                <div className={styles.skeletonMeta} />
+              </div>
+            ))}
+          </div>
+        ) : listings.length > 0 ? (
+          <div className={styles.listingsGrid}>
+            {listings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isSaved={savedIds.has(listing.id)}
+                onToggleSave={() => toggle(listing.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyTitle}>No verified places here yet</p>
+            <p className={styles.emptySubtitle}>
+              Be the first verified host in this area and get early visibility as demand grows.
+            </p>
+            <div className={styles.emptyActions}>
+              <button
+                onClick={() => router.push('/dashboard/listings/new')}
+                className={styles.searchBtn}
+              >
+                List your place
+              </button>
+              <button className={styles.secondaryBtn}>
+                Notify me when available
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
