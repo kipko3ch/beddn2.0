@@ -135,7 +135,7 @@ export default function BookingPage({
     <main className="max-w-lg mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-4">
         {isConfirmed ? (
-          <CheckCircle className="h-6 w-6 text-green-600" />
+          <CheckCircle className="h-6 w-6 text-[#800020]" />
         ) : (
           <Clock className="h-6 w-6 text-yellow-600" />
         )}
@@ -233,7 +233,7 @@ export default function BookingPage({
         {isConfirmed ? (
           <div className="space-y-3">
             <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 mt-0.5 text-green-600" />
+              <MapPin className="h-4 w-4 mt-0.5 text-[#800020]" />
               <div>
                 <span className="text-sm text-muted-foreground">Address</span>
                 <p className="text-sm font-medium">
@@ -242,7 +242,7 @@ export default function BookingPage({
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <Phone className="h-4 w-4 mt-0.5 text-green-600" />
+              <Phone className="h-4 w-4 mt-0.5 text-[#800020]" />
               <div>
                 <span className="text-sm text-muted-foreground">
                   Host phone
@@ -252,7 +252,7 @@ export default function BookingPage({
             </div>
             {booking.listing.check_in_instructions && (
               <div className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 mt-0.5 text-green-600" />
+                <CheckCircle className="h-4 w-4 mt-0.5 text-[#800020]" />
                 <div>
                   <span className="text-sm text-muted-foreground">
                     Check-in instructions
@@ -281,7 +281,7 @@ export default function BookingPage({
         <form onSubmit={submitFeedback} className="border rounded-xl p-5 mt-4 space-y-3">
           <h2 className="font-semibold">How was your stay?</h2>
           {feedbackSent ? (
-            <p className="text-sm text-green-700">Thanks. Your feedback helps Beddn launch better.</p>
+            <p className="text-sm text-[#800020]">Thanks. Your feedback helps Beddn launch better.</p>
           ) : (
             <>
               <label className="block text-sm">

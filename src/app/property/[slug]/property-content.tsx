@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import { Map } from "@/components/map";
 import type { Listing, Review } from "@/lib/types";
+import type { DateRange } from "react-day-picker";
 
 const AMENITY_ICON: Record<string, React.ElementType> = {
   wifi: Wifi,
@@ -49,8 +50,8 @@ function primaryImage(listing: Listing) {
 function AmenityItem({ label }: { label: string }) {
   const Icon = AMENITY_ICON[label.toLowerCase()] || Check;
   return (
-    <div className="flex items-center gap-3 text-sm text-[#002b18]">
-      <Icon className="h-4 w-4 text-[#003d22]" />
+    <div className="flex items-center gap-3 text-sm text-[#241f21]">
+      <Icon className="h-4 w-4 text-[#800020]" />
       <span>{label}</span>
     </div>
   );
@@ -68,6 +69,11 @@ export function PropertyContent({
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState(0);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(2026, 4, 17),
+    to: new Date(2026, 4, 18),
+  });
+  const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 4, 1));
 
   const images = listing.listing_images?.length ? listing.listing_images : [
     { id: "fallback", listing_id: listing.id, url: primaryImage(listing), position: 0 },
@@ -87,21 +93,30 @@ export function PropertyContent({
     ? listing.amenities
     : listing.amenities.slice(0, 8);
 
+  const formatDate = (date?: Date) =>
+    date
+      ? date.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "long",
+          day: "numeric",
+        })
+      : "Select date";
+
   return (
-    <main className="bg-white text-[#001f12]">
+    <main className="bg-white text-[#181113]">
       <div className="sticky top-14 z-40 border-b bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-4 overflow-x-auto">
             <Link
               href="/"
-              className="flex shrink-0 items-center gap-1 text-sm font-semibold text-[#003d22]"
+              className="flex shrink-0 items-center gap-1 text-sm font-semibold text-[#800020]"
             >
               <ArrowLeft className="h-4 w-4" />
               See all stays
             </Link>
             <nav className="hidden items-center gap-6 text-sm font-semibold md:flex">
               <a href="#deals" className="hover:underline">Deals</a>
-              <a href="#about" className="border-b-2 border-[#003d22] py-3">About</a>
+              <a href="#about" className="border-b-2 border-[#800020] py-3">About</a>
               <a href="#location" className="hover:underline">Location</a>
               <a href="#reviews" className="hover:underline">Reviews</a>
             </nav>
@@ -264,25 +279,93 @@ export function PropertyContent({
 
           <Separator />
 
-          <section id="deals" className="overflow-hidden rounded-2xl border">
-            <div className="flex items-center gap-3 border-b p-4">
-              <CalendarDays className="h-5 w-5 text-[#003d22]" />
-              <h2 className="text-lg font-bold">Select dates to find the best prices for your trip</h2>
+          <section id="deals" className="max-w-4xl">
+            <div className="mb-3 grid gap-3 sm:grid-cols-2">
+              <div className="flex items-center gap-3 rounded-full border border-neutral-300 bg-white px-4 py-3 sm:px-5">
+                <CalendarDays className="h-5 w-5 text-[#800020]" />
+                <div>
+                  <p className="text-sm">Check In</p>
+                  <p className="font-bold">{formatDate(dateRange?.from)}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-full border-2 border-[#800020] bg-white px-4 py-3 sm:px-5">
+                <CalendarDays className="h-5 w-5 text-[#800020]" />
+                <div>
+                  <p className="text-sm">Check Out</p>
+                  <p className="font-bold">{formatDate(dateRange?.to)}</p>
+                </div>
+              </div>
             </div>
-            <div className="overflow-x-auto p-4">
-              <Calendar
-                mode="single"
-                disabled={blockedDates}
-                className="mx-auto rounded-md"
-              />
-            </div>
-            <div className="flex justify-end border-t p-4">
-              <Button
-                onClick={() => router.push(`/reserve/${listing.id}`)}
-                className="rounded-full bg-[#003d22] px-6 hover:bg-[#002b18]"
-              >
-                Search
-              </Button>
+
+            <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+              <div className="flex items-center gap-3 border-b p-5">
+                <CalendarDays className="h-5 w-5 text-[#800020]" />
+                <h2 className="text-lg font-bold">
+                  Select dates to find the best prices for your trip
+                </h2>
+              </div>
+              <div className="p-3 sm:p-5">
+                <div className="mx-auto grid max-w-[760px] gap-6 lg:grid-cols-2 lg:items-start">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    numberOfMonths={1}
+                    disabled={blockedDates}
+                    className="mx-auto w-full [--cell-radius:0.5rem] [--cell-size:2.25rem] sm:[--cell-size:2.45rem]"
+                    classNames={{
+                      root: "w-full max-w-[330px] sm:max-w-[340px]",
+                      months: "flex flex-col gap-4",
+                      month: "w-full",
+                      caption_label: "text-base sm:text-lg font-bold text-[#2b000a]",
+                      weekday: "text-neutral-800 font-medium",
+                      button_previous: "text-[#800020] hover:bg-[#f8eef2]",
+                      button_next: "text-[#800020] hover:bg-[#f8eef2]",
+                      day_button:
+                        "data-[range-start=true]:bg-[#800020] data-[range-start=true]:text-white data-[range-end=true]:bg-[#800020] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#800020] data-[selected-single=true]:text-white data-[range-middle=true]:bg-[#f7e8ee] data-[range-middle=true]:text-[#2b000a]",
+                      range_start: "bg-transparent after:bg-[#f7e8ee]",
+                      range_middle: "bg-[#f7e8ee]",
+                      range_end: "bg-transparent after:bg-[#f7e8ee]",
+                    }}
+                  />
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    month={new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1)}
+                    onMonthChange={(month) =>
+                      setCalendarMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+                    }
+                    numberOfMonths={1}
+                    disabled={blockedDates}
+                    className="mx-auto hidden w-full [--cell-radius:0.5rem] [--cell-size:2.45rem] lg:block"
+                    classNames={{
+                      root: "w-full max-w-[340px]",
+                      months: "flex flex-col gap-4",
+                      month: "w-full",
+                      caption_label: "text-lg font-bold text-[#2b000a]",
+                      weekday: "text-neutral-800 font-medium",
+                      button_previous: "hidden",
+                      button_next: "hidden",
+                      day_button:
+                        "data-[range-start=true]:bg-[#800020] data-[range-start=true]:text-white data-[range-end=true]:bg-[#800020] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#800020] data-[selected-single=true]:text-white data-[range-middle=true]:bg-[#f7e8ee] data-[range-middle=true]:text-[#2b000a]",
+                      range_start: "bg-transparent after:bg-[#f7e8ee]",
+                      range_middle: "bg-[#f7e8ee]",
+                      range_end: "bg-transparent after:bg-[#f7e8ee]",
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end border-t p-4">
+                <Button
+                  onClick={() => router.push(`/reserve/${listing.id}`)}
+                  className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                >
+                  Search
+                </Button>
+              </div>
             </div>
           </section>
 

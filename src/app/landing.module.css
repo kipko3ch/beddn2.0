@@ -13,8 +13,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  width: 100%;
-  margin: 0;
+  width: min(100%, 1280px);
+  margin: 0 auto;
   background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(12px);
@@ -189,9 +189,9 @@
 
 .listingsSection {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1280px;
   margin: 56px auto 0;
-  padding: 0 24px 72px;
+  padding: 0 32px 72px;
 }
 
 .listingsGrid {
@@ -263,7 +263,7 @@
 
 @media (max-width: 768px) {
   .header {
-    padding: 12px 16px;
+    padding: 12px 20px;
   }
   .navRight {
     display: flex;
@@ -293,7 +293,7 @@
   }
   .main {
     margin-top: 36px;
-    padding: 0 16px;
+    padding: 0 20px;
   }
   .searchWrapper {
     border-radius: 24px;
@@ -317,7 +317,7 @@
   }
   .listingsSection {
     margin-top: 36px;
-    padding: 0 16px 56px;
+    padding: 0 20px 56px;
   }
   .listingsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
