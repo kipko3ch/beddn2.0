@@ -518,15 +518,6 @@ export function PropertyContent({
                 </div>
               </div>
             </div>
-            <div className="mt-4 rounded-2xl border p-4 text-sm text-muted-foreground">
-              <p className="font-bold text-[#181113]">For hosts: keep availability fresh</p>
-              <ul className="mt-2 list-disc space-y-1 pl-5">
-                <li>Open at least the next 30 days so guests can find you.</li>
-                <li>Block exact hourly slots when rooms are unavailable.</li>
-                <li>For overnight stays, keep check-in and check-out times updated.</li>
-                <li>For experiences, update seats and session times weekly.</li>
-              </ul>
-            </div>
           </section>
 
           <section id="reviews">

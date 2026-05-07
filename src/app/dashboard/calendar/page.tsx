@@ -86,6 +86,36 @@ export default function CalendarPage() {
         </p>
       </div>
 
+      <section className="mb-6 rounded-2xl border bg-[#fff8fa] p-4 shadow-sm">
+        <h2 className="text-base font-bold text-[#181113]">Keep your availability easy to book</h2>
+        <div className="mt-3 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
+          <div className="rounded-xl bg-white p-3">
+            <p className="font-semibold text-[#181113]">Daily rhythm</p>
+            <p className="mt-1">
+              Review your calendar every morning and after each accepted or rejected booking.
+            </p>
+          </div>
+          <div className="rounded-xl bg-white p-3">
+            <p className="font-semibold text-[#181113]">Stay listings</p>
+            <p className="mt-1">
+              Keep at least the next 30 days open, and block exact hourly or overnight slots when rooms are unavailable.
+            </p>
+          </div>
+          <div className="rounded-xl bg-white p-3">
+            <p className="font-semibold text-[#181113]">Check-in details</p>
+            <p className="mt-1">
+              Keep check-in and check-out times current so guests see accurate availability before reserving.
+            </p>
+          </div>
+          <div className="rounded-xl bg-white p-3">
+            <p className="font-semibold text-[#181113]">Experiences</p>
+            <p className="mt-1">
+              Update seats and session times weekly, especially for trips, classes, and group activities.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <form onSubmit={blockSlot} className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           {isExperience ? (
