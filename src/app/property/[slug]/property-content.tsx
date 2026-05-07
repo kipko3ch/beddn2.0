@@ -617,7 +617,7 @@ export function PropertyContent({
         </aside>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white p-3 shadow-lg lg:hidden">
+      <div className="fixed inset-x-0 bottom-16 z-40 border-t bg-white p-3 shadow-lg lg:hidden">
         <Button
           onClick={() => {
             document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
