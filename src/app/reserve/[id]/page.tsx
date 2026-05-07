@@ -38,26 +38,21 @@ type ReserveListing = Listing & { reviews?: Pick<Review, "rating">[] };
 
 function CheckoutHeader({ backHref }: { backHref?: string }) {
   return (
-    <header className="border-b bg-white">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="border-b bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-          <Image src={LOGO_SRC} alt="Beddn" width={22} height={32} unoptimized className="h-8 w-auto object-contain" />
+          <Image src={LOGO_SRC} alt="Beddn" width={20} height={28} unoptimized className="h-7 w-auto object-contain" />
           <span className="text-lg">Beddn</span>
         </Link>
-        <div className="flex items-center gap-3">
-          <span className="hidden rounded-full bg-[#fbf7f8] px-3 py-1 text-xs font-bold text-[#800020] sm:inline-flex">
-            Secure reserve
-          </span>
-          {backHref && (
-            <Link
-              href={backHref}
-              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold hover:border-[#800020] hover:text-[#800020]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Link>
-          )}
-        </div>
+        {backHref && (
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-2 text-sm font-bold text-[#800020] hover:underline"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to listing
+          </Link>
+        )}
       </div>
     </header>
   );
@@ -299,12 +294,26 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       <main className="bg-[#fffdfd] px-4 pb-28 pt-6 text-[#181113] sm:px-6 lg:px-8 lg:pb-10">
         <div className="mx-auto mb-6 max-w-6xl">
           <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">Reserve your spot</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-            {listing.title || listing.name}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Confirm your details, review the reserve fee, and the host will receive your request by SMS.
-          </p>
+          <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                {listing.title || listing.name}
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Confirm your details, review the reserve fee, and the host will receive your request by SMS.
+              </p>
+            </div>
+            <div className="flex rounded-full border bg-white p-1 text-xs font-bold text-muted-foreground">
+              {["Details", "Stay", "Pay"].map((step, index) => (
+                <span
+                  key={step}
+                  className={`rounded-full px-3 py-1.5 ${index === 0 ? "bg-[#800020] text-white" : ""}`}
+                >
+                  {step}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
         <form
           id="reserve-form"
@@ -322,11 +331,11 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             )}
             <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
               <div className="mb-5 flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white shadow-sm">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white shadow-sm">
                   1
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Contact details</h1>
+                  <h1 className="text-xl font-bold tracking-tight">Contact details</h1>
                   <p className="mt-1 text-sm text-muted-foreground">
                     We use this to send SMS updates and your booking confirmation.
                   </p>
@@ -396,11 +405,11 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
             <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
               <div className="mb-5 flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
                   2
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight">Booking details</h2>
+                  <h2 className="text-xl font-bold tracking-tight">Booking details</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Confirm the date you chose, add guests or seats, and send any note to the host.
                   </p>
@@ -572,11 +581,11 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
             <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
                   3
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight">Before you pay</h2>
+                  <h2 className="text-xl font-bold tracking-tight">Before you pay</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Your reserve fee starts the booking request. Host contact and exact address stay private until confirmation.
                   </p>

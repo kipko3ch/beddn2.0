@@ -163,32 +163,16 @@ export function PropertyContent({
   return (
     <main className="bg-white text-[#181113]">
       <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mb-5 flex flex-col gap-4 rounded-2xl border bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-4">
           <Link
             href="/"
-            className="inline-flex w-fit items-center gap-2 rounded-full px-2 py-1 text-sm font-bold text-[#800020] hover:bg-[#fbf7f8]"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[#800020] hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
-            See all stays
+            Back to stays
           </Link>
-          <nav className="flex gap-2 overflow-x-auto text-sm font-semibold">
-            {[
-              ["#about", "About"],
-              ["#deals", "Availability"],
-              ["#location", "Location"],
-              ["#reviews", "Reviews"],
-            ].map(([href, label]) => (
-              <a
-                key={href}
-                href={href}
-                className="shrink-0 rounded-full border px-4 py-2 text-[#241f21] transition-colors hover:border-[#800020] hover:text-[#800020]"
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
         </div>
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {listing.title || listing.name}
