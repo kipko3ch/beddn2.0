@@ -7,7 +7,10 @@ import {
   Sparkles,
   Globe,
   Search,
-  MapPin
+  MapPin,
+  Bus,
+  Waves,
+  Dumbbell
 } from 'lucide-react';
 import styles from './landing.module.css';
 import { createClient } from '@/lib/supabase/client';
@@ -33,8 +36,8 @@ const TAB_DATA = {
     category: 'overnight' as const,
   },
   Experiences: {
-    title: 'Find things to do',
-    placeholder: 'What do you want to do?',
+    title: 'Find a trip or class',
+    placeholder: 'Road trip, swimming class, yoga, hike...',
     category: 'experience' as const,
   }
 };
@@ -45,6 +48,7 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<TabType>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
+  const [experienceDemandCount, setExperienceDemandCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
@@ -81,6 +85,17 @@ export default function LandingPage() {
     fetchListings();
     checkUser();
   }, [checkUser, fetchListings]);
+
+  useEffect(() => {
+    async function loadExperienceDemand() {
+      const { count } = await supabase
+        .from('search_demand')
+        .select('id', { count: 'exact', head: true })
+        .eq('category', 'experience');
+      setExperienceDemandCount(count ?? 0);
+    }
+    loadExperienceDemand();
+  }, [supabase]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -238,6 +253,32 @@ export default function LandingPage() {
                 onToggleSave={() => toggle(listing.id)}
               />
             ))}
+          </div>
+        ) : activeTab === 'Experiences' ? (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyTitle}>Trips and classes are forming</p>
+            <p className={styles.emptySubtitle}>
+              Road trips, yoga sessions, swimming classes, hikes, and food tours will show here as verified organizers join.
+            </p>
+            <div className={styles.demandPill}>
+              {Math.max(experienceDemandCount, 1)} people have asked for experiences
+            </div>
+            <div className={styles.experienceIdeas}>
+              {[
+                { label: 'Road trips', icon: Bus, query: 'road trip' },
+                { label: 'Swimming classes', icon: Waves, query: 'swimming classes' },
+                { label: 'Yoga and hikes', icon: Dumbbell, query: 'yoga hikes' },
+              ].map(({ label, icon: Icon, query }) => (
+                <button
+                  key={label}
+                  className={styles.ideaBtn}
+                  onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&category=experience`)}
+                >
+                  <Icon size={18} />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className={styles.emptyState}>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
-import { MapPin, Search, X } from "lucide-react";
+import { Bus, Dumbbell, MapPin, Search, Waves, X } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
 export function SearchContent() {
@@ -26,7 +26,9 @@ export function SearchContent() {
   const [searchQuery, setSearchQuery] = useState(q);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
+  const [demandCount, setDemandCount] = useState(0);
   const { savedIds, toggle } = useSavedListings();
+  const isExperienceSearch = category === "experience";
 
   const fetchResults = useCallback(async () => {
     setLoading(true);
@@ -48,7 +50,6 @@ export function SearchContent() {
     const { data } = await query.order("created_at", { ascending: false }).limit(50);
     const results = (data as Listing[]) ?? [];
     setListings(results);
-    setLoading(false);
 
     await supabase.from("search_demand").insert({
       query: q || null,
@@ -57,6 +58,19 @@ export function SearchContent() {
       category: category !== "all" ? category : null,
       results_count: results.length,
     });
+
+    let demandQuery = supabase
+      .from("search_demand")
+      .select("id", { count: "exact", head: true });
+    if (category !== "all") {
+      demandQuery = demandQuery.eq("category", category);
+    }
+    if (q) {
+      demandQuery = demandQuery.ilike("query", `%${q}%`);
+    }
+    const { count } = await demandQuery;
+    setDemandCount(count ?? 0);
+    setLoading(false);
   }, [q, lat, lng, category]);
 
   useEffect(() => {
@@ -140,17 +154,34 @@ export function SearchContent() {
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,42%)] lg:px-8">
         <div className={showMap ? "hidden lg:block" : ""}>
           <div className="mb-5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
-              {q ? `Search results for ${q}` : "Explore verified stays"}
-            </p>
+                <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
+                  {isExperienceSearch
+                    ? q
+                      ? `Experience ideas for ${q}`
+                      : "Explore trips and classes"
+                    : q
+                    ? `Search results for ${q}`
+                    : "Explore verified stays"}
+                </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
               {loading
-                ? "Finding places"
+                ? isExperienceSearch
+                  ? "Finding experiences"
+                  : "Finding places"
                 : listings.length > 0
-                ? `${listings.length} verified place${listings.length === 1 ? "" : "s"}`
+                ? isExperienceSearch
+                  ? `${listings.length} verified experience${listings.length === 1 ? "" : "s"}`
+                  : `${listings.length} verified place${listings.length === 1 ? "" : "s"}`
+                : isExperienceSearch
+                ? "No hosted trips here yet"
                 : "No verified places here yet"}
             </h1>
           </div>
+          <p className="mb-5 rounded-2xl bg-[#fbf7f8] px-4 py-3 text-sm text-muted-foreground">
+            {isExperienceSearch
+              ? "Tip: search simple words like road trip, swimming, yoga, hiking, food tour, or kids class."
+              : "Tip: choose a result, check the photos and availability, then reserve with your phone number."}
+          </p>
 
           {loading ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -180,6 +211,56 @@ export function SearchContent() {
                   />
                 </div>
               ))}
+            </div>
+          ) : isExperienceSearch ? (
+            <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-10 sm:px-8">
+              <div className="mx-auto max-w-2xl text-center">
+                <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
+                  Experiences are coming
+                </p>
+                <h2 className="mt-2 text-2xl font-bold">
+                  Road trips, yoga days, swimming classes, hikes, food tours.
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+                  We are collecting demand first so local organizers know where groups are already forming.
+                </p>
+                <div className="mx-auto mt-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-bold shadow-sm">
+                  {Math.max(demandCount, 1)} people have asked for this
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                {[
+                  { icon: Bus, title: "Road trips", text: "Naivasha, Nanyuki, coast weekends, group vans." },
+                  { icon: Waves, title: "Swimming classes", text: "Beginner lessons, kids sessions, private pools." },
+                  { icon: Dumbbell, title: "Wellness & sport", text: "Yoga, hikes, cycling, dance, and fitness groups." },
+                ].map(({ icon: Icon, title, text }) => (
+                  <div key={title} className="rounded-2xl bg-white p-4 text-left shadow-sm">
+                    <Icon className="mb-3 h-5 w-5 text-[#800020]" />
+                    <p className="font-bold">{title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                <Button
+                  onClick={() => {
+                    setSearchQuery("road trip");
+                    router.push("/search?q=road%20trip&category=experience");
+                  }}
+                  className="rounded-full bg-[#800020] hover:bg-[#600018]"
+                >
+                  Find road trips
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => router.push("/search?q=swimming%20classes&category=experience")}
+                >
+                  Try swimming classes
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-12 text-center sm:px-8">
