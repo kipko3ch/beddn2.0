@@ -35,6 +35,7 @@ export default function DashboardPage() {
   const supabase = useMemo(() => createClient(), []);
   const [isAdmin, setIsAdmin] = useState(false);
   const [host, setHost] = useState<HostStatus>(null);
+  const [userEmail, setUserEmail] = useState("");
   const [stats, setStats] = useState<Stat[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,6 +46,7 @@ export default function DashboardPage() {
         setLoading(false);
         return;
       }
+      setUserEmail(user.user.email ?? "");
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -204,9 +206,13 @@ export default function DashboardPage() {
         </div>
       ) : stats.length === 0 ? (
         <div className="rounded-2xl border bg-[#fbf7f8] p-6">
-          <h2 className="text-lg font-bold">Become a verified Beddn host</h2>
+          <h2 className="text-lg font-bold">Host account needed</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Hosts must be approved by an admin before they can create listings or receive booking requests.
+            This signed-in account{userEmail ? ` (${userEmail})` : ""} is not linked to a host profile yet.
+            If you created a test listing before approvals were added, an admin needs to link and verify that host row for this login.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            New hosts can still apply here. Admin approval is required before creating listings or receiving booking requests.
           </p>
           <Link
             href={ROUTES.newListing}
