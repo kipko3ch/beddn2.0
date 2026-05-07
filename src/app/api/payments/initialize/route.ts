@@ -79,6 +79,21 @@ export async function POST(request: Request) {
       userId = null;
     }
 
+    if (userId) {
+      const { data: hostData } = await admin
+        .from("hosts")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (hostData?.id === listing.host_id) {
+        return NextResponse.json(
+          { error: "Hosts cannot reserve their own listing" },
+          { status: 403 }
+        );
+      }
+    }
+
     const legacyCheckIn = start.toISOString().slice(0, 10);
     const legacyCheckOut =
       input.category === "overnight" ? end.toISOString().slice(0, 10) : null;

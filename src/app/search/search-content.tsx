@@ -27,6 +27,8 @@ export function SearchContent() {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [demandCount, setDemandCount] = useState(0);
+  const [geocodedCenter, setGeocodedCenter] = useState<[number, number] | undefined>();
+  const [mapLabel, setMapLabel] = useState("");
   const { savedIds, toggle } = useSavedListings();
   const isExperienceSearch = category === "experience";
 
@@ -77,6 +79,31 @@ export function SearchContent() {
     fetchResults();
   }, [fetchResults]);
 
+  useEffect(() => {
+    let active = true;
+    const localCenter = lookupQueryCenter(q);
+
+    setMapLabel(q);
+    setGeocodedCenter(undefined);
+
+    if (!q || (lat && lng) || localCenter) return;
+
+    fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { center?: [number, number]; label?: string } | null) => {
+        if (!active || !data?.center) return;
+        setGeocodedCenter(data.center);
+        setMapLabel(data.label || q);
+      })
+      .catch(() => {
+        if (active) setMapLabel(q);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [q, lat, lng]);
+
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams();
@@ -111,7 +138,7 @@ export function SearchContent() {
   }
 
   const mapCenter: [number, number] | undefined =
-    lat && lng ? [parseFloat(lng), parseFloat(lat)] : lookupQueryCenter(q);
+    lat && lng ? [parseFloat(lng), parseFloat(lat)] : lookupQueryCenter(q) || geocodedCenter;
 
   const categoryOptions = [
     { value: "all", label: "All" },
@@ -296,7 +323,7 @@ export function SearchContent() {
         </div>
 
         <div
-          className={`overflow-hidden rounded-2xl border bg-muted lg:sticky lg:top-24 lg:block lg:h-[calc(100vh-7rem)] ${
+          className={`relative overflow-hidden rounded-2xl border bg-muted lg:sticky lg:top-24 lg:block lg:h-[calc(100vh-7rem)] ${
             showMap ? "fixed inset-0 top-14 z-30 rounded-none border-0" : "hidden"
           }`}
         >
@@ -311,13 +338,21 @@ export function SearchContent() {
           {loading ? (
             <div className="h-full w-full animate-pulse bg-muted" />
           ) : (
-            <Map
-              listings={listings}
-              center={mapCenter}
-              highlightedId={highlightedId}
-              onPinClick={handlePinClick}
-              approximate
-            />
+            <>
+              {mapCenter && listings.length === 0 && (
+                <div className="absolute left-4 top-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-sm">
+                  <p className="font-bold text-[#181113]">Showing searched area</p>
+                  <p className="truncate text-muted-foreground">{mapLabel || q}</p>
+                </div>
+              )}
+              <Map
+                listings={listings}
+                center={mapCenter}
+                highlightedId={highlightedId}
+                onPinClick={handlePinClick}
+                approximate
+              />
+            </>
           )}
         </div>
 

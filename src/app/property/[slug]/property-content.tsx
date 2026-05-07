@@ -9,13 +9,13 @@ import {
   CalendarDays,
   Car,
   Check,
+  BadgeCheck,
   ChevronDown,
   Clock,
   Compass,
   Heart,
   MapPin,
   Moon,
-  Shield,
   ShowerHead,
   Star,
   Utensils,
@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import { Map } from "@/components/map";
+import { useSavedListings } from "@/lib/hooks";
 import type { Listing, Review } from "@/lib/types";
 import type { ListingCategory } from "@/lib/types";
 import type { DateRange } from "react-day-picker";
@@ -83,6 +84,8 @@ export function PropertyContent({
   const [durationHours, setDurationHours] = useState("2");
   const [guests, setGuests] = useState("1");
   const [availabilityChecked, setAvailabilityChecked] = useState(false);
+  const { savedIds, toggle } = useSavedListings();
+  const isSaved = savedIds.has(listing.id);
 
   const images = listing.listing_images?.length ? listing.listing_images : [
     { id: "fallback", listing_id: listing.id, url: primaryImage(listing), position: 0 },
@@ -176,8 +179,14 @@ export function PropertyContent({
             </nav>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Heart className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={() => toggle(listing.id)}
+              aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
+            >
+              <Heart className={`h-5 w-5 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
             </Button>
             <Button
               onClick={() => {
@@ -221,12 +230,12 @@ export function PropertyContent({
             })}
             {listing.host?.is_verified && (
               <Badge variant="outline" className="gap-1 rounded-full px-3 py-1">
-                <Shield className="h-3.5 w-3.5" /> Verified host
+                <BadgeCheck className="h-3.5 w-3.5 text-[#800020]" /> Verified host
               </Badge>
             )}
             {listing.is_verified && (
               <Badge className="gap-1 rounded-full bg-[#f8eef2] px-3 py-1 text-[#800020] hover:bg-[#f8eef2]">
-                <Shield className="h-3.5 w-3.5" /> Beddn verified listing
+                <BadgeCheck className="h-3.5 w-3.5" /> Beddn verified listing
               </Badge>
             )}
           </div>

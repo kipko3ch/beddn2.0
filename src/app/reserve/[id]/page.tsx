@@ -43,6 +43,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [listing, setListing] = useState<ReserveListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isOwnListing, setIsOwnListing] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -73,6 +74,15 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         .single();
       if (data) {
         setListing(data as ReserveListing);
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          const { data: host } = await supabase
+            .from("hosts")
+            .select("id")
+            .eq("user_id", userData.user.id)
+            .maybeSingle();
+          setIsOwnListing(host?.id === data.host_id);
+        }
         const queryCategory = searchParams.get("category") as ListingCategory | null;
         if (queryCategory && data.categories?.includes(queryCategory)) {
           setCategory(queryCategory);
@@ -131,6 +141,10 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!listing || submitting) return;
+    if (isOwnListing) {
+      alert("Hosts cannot reserve their own listing.");
+      return;
+    }
     setSubmitting(true);
 
     const negotiationNote = wantsNegotiation
@@ -233,6 +247,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_360px]"
         >
           <div className="space-y-5">
+            {isOwnListing && (
+              <div className="rounded-2xl border border-[#800020] bg-[#fbf7f8] p-5 text-sm text-muted-foreground">
+                <p className="font-bold text-[#181113]">You are the host for this listing</p>
+                <p className="mt-1">
+                  Hosts cannot reserve their own homes or experiences. Use the dashboard to manage availability and test bookings from a guest account.
+                </p>
+              </div>
+            )}
             <section className="rounded-2xl border border-[#800020] bg-white p-5 shadow-sm sm:p-6">
               <div className="mb-5 flex items-start gap-3">
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white">
@@ -588,7 +610,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 </div>
                 <Button
                   type="submit"
-                  disabled={submitting || !firstName || !lastName || !phone || !checkIn}
+                  disabled={submitting || isOwnListing || !firstName || !lastName || !phone || !checkIn}
                   className="mt-2 h-11 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
                 >
                   <CreditCard className="h-4 w-4" />
@@ -617,7 +639,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           <Button
             type="submit"
             form="reserve-form"
-            disabled={submitting || !firstName || !lastName || !phone || !checkIn}
+            disabled={submitting || isOwnListing || !firstName || !lastName || !phone || !checkIn}
             className="h-11 rounded-full bg-[#800020] px-5 font-bold hover:bg-[#600018]"
           >
             {submitting ? "Opening..." : "Reserve"}
