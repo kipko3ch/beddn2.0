@@ -47,6 +47,12 @@ export function Map({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    map.easeTo({ center, zoom, duration: 450 });
+  }, [center, zoom]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
 
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current.clear();
@@ -68,7 +74,7 @@ export function Map({
 
       const el = document.createElement("div");
       el.className = "map-price-pin";
-      el.textContent = `$${Number(price).toLocaleString()}`;
+      el.textContent = `${listing.currency || "KES"} ${Number(price).toLocaleString()}`;
       el.style.cssText = `
         background: white; border: 2px solid ${listing.id === highlightedId ? "#800020" : "#333"};
         border-radius: 20px; padding: 2px 8px; font-size: 12px; font-weight: 600;
@@ -92,7 +98,7 @@ export function Map({
       listings.forEach((l) => bounds.extend([l.longitude, l.latitude]));
       map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
     }
-  }, [listings, highlightedId, approximate]);
+  }, [listings, highlightedId, approximate, onPinClick]);
 
   return <div ref={containerRef} className={className} />;
 }

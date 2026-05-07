@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import { Map } from "@/components/map";
 import type { Listing, Review } from "@/lib/types";
+import type { ListingCategory } from "@/lib/types";
 import type { DateRange } from "react-day-picker";
 
 const AMENITY_ICON: Record<string, React.ElementType> = {
@@ -69,11 +70,19 @@ export function PropertyContent({
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState(0);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const categories = (listing.categories || listing.category || []) as ListingCategory[];
+  const [selectedCategory, setSelectedCategory] = useState<ListingCategory>(
+    categories[0] || "overnight"
+  );
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(2026, 4, 17),
     to: new Date(2026, 4, 18),
   });
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 4, 1));
+  const [startTime, setStartTime] = useState("10:00");
+  const [durationHours, setDurationHours] = useState("2");
+  const [guests, setGuests] = useState("1");
+  const [availabilityChecked, setAvailabilityChecked] = useState(false);
 
   const images = listing.listing_images?.length ? listing.listing_images : [
     { id: "fallback", listing_id: listing.id, url: primaryImage(listing), position: 0 },
@@ -93,6 +102,22 @@ export function PropertyContent({
     ? listing.amenities
     : listing.amenities.slice(0, 8);
 
+  const selectedDate = dateRange?.from;
+  const blockedSet = useMemo(
+    () => new Set(blockedDateStrings.map((item) => item.slice(0, 10))),
+    [blockedDateStrings]
+  );
+  const selectedDateKey = selectedDate?.toISOString().slice(0, 10);
+  const isSelectedBlocked = selectedDateKey ? blockedSet.has(selectedDateKey) : false;
+  const availableUnits = Math.max(0, Number(listing.available_units || listing.total_units || 1));
+  const hasAvailability = Boolean(selectedDate && !isSelectedBlocked && availableUnits > 0);
+  const unitLabel =
+    selectedCategory === "experience"
+      ? `${availableUnits} seat${availableUnits === 1 ? "" : "s"} available`
+      : selectedCategory === "hourly"
+      ? `${availableUnits} hourly slot${availableUnits === 1 ? "" : "s"} available`
+      : `${availableUnits} room/unit${availableUnits === 1 ? "" : "s"} available`;
+
   const formatDate = (date?: Date) =>
     date
       ? date.toLocaleDateString("en-US", {
@@ -101,6 +126,35 @@ export function PropertyContent({
           day: "numeric",
         })
       : "Select date";
+
+  function inputDate(date?: Date) {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function reserveUrl() {
+    const params = new URLSearchParams({
+      category: selectedCategory,
+      checkIn: inputDate(dateRange?.from),
+      guests,
+    });
+    if (selectedCategory === "overnight") {
+      params.set("checkOut", inputDate(dateRange?.to));
+    } else {
+      params.set("startTime", startTime);
+    }
+    if (selectedCategory === "hourly") {
+      params.set("duration", durationHours);
+    }
+    return `/reserve/${listing.id}?${params.toString()}`;
+  }
+
+  function checkAvailability() {
+    setAvailabilityChecked(true);
+  }
 
   return (
     <main className="bg-white text-[#181113]">
@@ -126,7 +180,10 @@ export function PropertyContent({
               <Heart className="h-5 w-5" />
             </Button>
             <Button
-              onClick={() => router.push(`/reserve/${listing.id}`)}
+              onClick={() => {
+                document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                checkAvailability();
+              }}
               className="rounded-full bg-[#800020] px-5 hover:bg-[#600018]"
             >
               Check availability
@@ -154,7 +211,7 @@ export function PropertyContent({
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {(listing.categories || listing.category || []).map((cat) => {
+            {categories.map((cat) => {
               const Icon = cat === "hourly" ? Clock : cat === "overnight" ? Moon : Compass;
               return (
                 <Badge key={cat} variant="secondary" className="gap-1 rounded-full px-3 py-1">
@@ -165,6 +222,11 @@ export function PropertyContent({
             {listing.host?.is_verified && (
               <Badge variant="outline" className="gap-1 rounded-full px-3 py-1">
                 <Shield className="h-3.5 w-3.5" /> Verified host
+              </Badge>
+            )}
+            {listing.is_verified && (
+              <Badge className="gap-1 rounded-full bg-[#f8eef2] px-3 py-1 text-[#800020] hover:bg-[#f8eef2]">
+                <Shield className="h-3.5 w-3.5" /> Beddn verified listing
               </Badge>
             )}
           </div>
@@ -247,7 +309,7 @@ export function PropertyContent({
               <AmenityItem label="Private booking code" />
               <AmenityItem label="Host confirmation by SMS" />
               <AmenityItem label="Exact address after confirmation" />
-              <AmenityItem label="Reserve fee through Paystack" />
+              <AmenityItem label="Secure reserve fee" />
               {listing.minimum_hours && <AmenityItem label={`${listing.minimum_hours}+ hour minimum`} />}
               {listing.total_units && <AmenityItem label={`${listing.total_units} rooms / units`} />}
             </div>
@@ -280,19 +342,84 @@ export function PropertyContent({
           <Separator />
 
           <section id="deals" className="max-w-4xl">
+            <div className="mb-4 rounded-2xl border bg-[#fbf7f8] p-4">
+              <h2 className="text-lg font-bold">Check availability</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Pick a booking type and date first. If there is availability, continue to reserve.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setAvailabilityChecked(false);
+                    }}
+                    className={`rounded-full border px-4 py-2 text-sm font-bold capitalize ${
+                      selectedCategory === cat
+                        ? "border-[#800020] bg-[#800020] text-white"
+                        : "border-neutral-200 bg-white"
+                    }`}
+                  >
+                    {cat === "experience" ? "Experience / class" : cat}
+                  </button>
+                ))}
+              </div>
+              {(selectedCategory === "hourly" || selectedCategory === "experience") && (
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <label className="text-sm font-medium">
+                    Start time
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(event) => setStartTime(event.target.value)}
+                      className="mt-1 h-10 w-full rounded-lg border px-3"
+                    />
+                  </label>
+                  {selectedCategory === "hourly" && (
+                    <label className="text-sm font-medium">
+                      Hours
+                      <input
+                        type="number"
+                        min="1"
+                        value={durationHours}
+                        onChange={(event) => setDurationHours(event.target.value)}
+                        className="mt-1 h-10 w-full rounded-lg border px-3"
+                      />
+                    </label>
+                  )}
+                  <label className="text-sm font-medium">
+                    {selectedCategory === "experience" ? "Seats" : "Guests"}
+                    <input
+                      type="number"
+                      min="1"
+                      value={guests}
+                      onChange={(event) => setGuests(event.target.value)}
+                      className="mt-1 h-10 w-full rounded-lg border px-3"
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
             <div className="mb-3 grid gap-3 sm:grid-cols-2">
               <div className="flex items-center gap-3 rounded-full border border-neutral-300 bg-white px-4 py-3 sm:px-5">
                 <CalendarDays className="h-5 w-5 text-[#800020]" />
                 <div>
-                  <p className="text-sm">Check In</p>
+                  <p className="text-sm">
+                    {selectedCategory === "experience" ? "Session date" : "Check In"}
+                  </p>
                   <p className="font-bold">{formatDate(dateRange?.from)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-full border-2 border-[#800020] bg-white px-4 py-3 sm:px-5">
                 <CalendarDays className="h-5 w-5 text-[#800020]" />
                 <div>
-                  <p className="text-sm">Check Out</p>
-                  <p className="font-bold">{formatDate(dateRange?.to)}</p>
+                  <p className="text-sm">
+                    {selectedCategory === "overnight" ? "Check Out" : "Time"}
+                  </p>
+                  <p className="font-bold">
+                    {selectedCategory === "overnight" ? formatDate(dateRange?.to) : startTime}
+                  </p>
                 </div>
               </div>
             </div>
@@ -359,13 +486,46 @@ export function PropertyContent({
                 </div>
               </div>
               <div className="flex justify-end border-t p-4">
-                <Button
-                  onClick={() => router.push(`/reserve/${listing.id}`)}
-                  className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
-                >
-                  Search
-                </Button>
+                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    {availabilityChecked ? (
+                      <p className={`text-sm font-bold ${hasAvailability ? "text-[#800020]" : "text-red-700"}`}>
+                        {hasAvailability
+                          ? `Available: ${unitLabel}`
+                          : "Not available for this date. Try another day or time."}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Check availability before reserving.
+                      </p>
+                    )}
+                  </div>
+                  {availabilityChecked && hasAvailability ? (
+                    <Button
+                      onClick={() => router.push(reserveUrl())}
+                      className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                    >
+                      Continue to reserve
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={checkAvailability}
+                      className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                    >
+                      Show availability
+                    </Button>
+                  )}
+                </div>
               </div>
+            </div>
+            <div className="mt-4 rounded-2xl border p-4 text-sm text-muted-foreground">
+              <p className="font-bold text-[#181113]">For hosts: keep availability fresh</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                <li>Open at least the next 30 days so guests can find you.</li>
+                <li>Block exact hourly slots when rooms are unavailable.</li>
+                <li>For overnight stays, keep check-in and check-out times updated.</li>
+                <li>For experiences, update seats and session times weekly.</li>
+              </ul>
             </div>
           </section>
 
@@ -461,11 +621,14 @@ export function PropertyContent({
               )}
             </div>
             <Button
-              onClick={() => router.push(`/reserve/${listing.id}`)}
+              onClick={() => {
+                document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                checkAvailability();
+              }}
               className="mt-5 w-full rounded-full bg-[#800020] hover:bg-[#600018]"
               size="lg"
             >
-              Reserve
+              Check availability
             </Button>
             <p className="mt-3 text-center text-xs text-muted-foreground">
               You pay the reserve fee first. Host details unlock after confirmation.
@@ -476,7 +639,10 @@ export function PropertyContent({
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white p-3 shadow-lg lg:hidden">
         <Button
-          onClick={() => router.push(`/reserve/${listing.id}`)}
+          onClick={() => {
+            document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            checkAvailability();
+          }}
           className="w-full rounded-full bg-[#800020] hover:bg-[#600018]"
           size="lg"
         >

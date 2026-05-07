@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ type ReserveListing = Listing & { reviews?: Pick<Review, "rating">[] };
 
 export default function ReservePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [listing, setListing] = useState<ReserveListing | null>(null);
@@ -46,12 +48,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [category, setCategory] = useState<ListingCategory>("overnight");
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [duration, setDuration] = useState("1");
-  const [guests, setGuests] = useState("1");
+  const [category, setCategory] = useState<ListingCategory>(
+    (searchParams.get("category") as ListingCategory) || "overnight"
+  );
+  const [checkIn, setCheckIn] = useState(searchParams.get("checkIn") || "");
+  const [checkOut, setCheckOut] = useState(searchParams.get("checkOut") || "");
+  const [startTime, setStartTime] = useState(searchParams.get("startTime") || "");
+  const [duration, setDuration] = useState(searchParams.get("duration") || "1");
+  const [guests, setGuests] = useState(searchParams.get("guests") || "1");
   const [units, setUnits] = useState("1");
   const [note, setNote] = useState("");
   const [wantsNegotiation, setWantsNegotiation] = useState(false);
@@ -69,14 +73,17 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         .single();
       if (data) {
         setListing(data as ReserveListing);
-        if (data.categories?.length === 1) {
+        const queryCategory = searchParams.get("category") as ListingCategory | null;
+        if (queryCategory && data.categories?.includes(queryCategory)) {
+          setCategory(queryCategory);
+        } else if (data.categories?.length === 1) {
           setCategory(data.categories[0] as ListingCategory);
         }
       }
       setLoading(false);
     }
     load();
-  }, [id]);
+  }, [id, searchParams]);
 
   function computeTotal(): number {
     if (!listing) return 0;

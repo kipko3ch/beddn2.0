@@ -289,6 +289,10 @@
   color: #800020;
 }
 
+.mobileBottomNav {
+  display: none;
+}
+
 .secondaryBtn {
   background: transparent;
   border: 2px solid #ddd;
@@ -363,6 +367,36 @@
   }
   .emptyState {
     padding: 56px 0;
+  }
+  .container {
+    padding-bottom: 72px;
+  }
+  .mobileBottomNav {
+    position: fixed;
+    z-index: 70;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    border-top: 1px solid #eee;
+    background: rgba(255, 255, 255, 0.96);
+    padding: 8px 12px;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.08);
+    backdrop-filter: blur(12px);
+  }
+  .mobileBottomNav button {
+    border: 0;
+    background: transparent;
+    border-radius: 12px;
+    padding: 8px 6px;
+    color: #181113;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .mobileBottomNav button:hover {
+    background: #f6f6f6;
   }
   .secondaryBtn {
     width: 100%;

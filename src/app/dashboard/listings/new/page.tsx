@@ -143,6 +143,10 @@ export default function NewListingPage() {
           This keeps guests safer and makes sure only approved hosts can receive booking
           requests.
         </div>
+        <div className="mt-4 rounded-xl border p-4 text-sm text-muted-foreground">
+          Host approval lets you use host tools. A future Beddn Verified listing badge may
+          require extra checks like photos, exact location review, and safety verification.
+        </div>
       </div>
     );
   }

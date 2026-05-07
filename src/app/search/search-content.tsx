@@ -98,8 +98,20 @@ export function SearchContent() {
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  function lookupQueryCenter(value: string): [number, number] | undefined {
+    const normalized = value.toLowerCase();
+    if (normalized.includes("nairobi")) return [36.8219, -1.2921];
+    if (normalized.includes("mombasa")) return [39.6682, -4.0435];
+    if (normalized.includes("kisumu")) return [34.7617, -0.0917];
+    if (normalized.includes("nakuru")) return [36.0800, -0.3031];
+    if (normalized.includes("arusha")) return [36.68299, -3.38693];
+    if (normalized.includes("dar")) return [39.2083, -6.7924];
+    if (normalized.includes("zanzibar")) return [39.1979, -6.1659];
+    return undefined;
+  }
+
   const mapCenter: [number, number] | undefined =
-    lat && lng ? [parseFloat(lng), parseFloat(lat)] : undefined;
+    lat && lng ? [parseFloat(lng), parseFloat(lat)] : lookupQueryCenter(q);
 
   const categoryOptions = [
     { value: "all", label: "All" },
@@ -296,13 +308,17 @@ export function SearchContent() {
               <X className="h-5 w-5" />
             </button>
           )}
-          <Map
-            listings={listings}
-            center={mapCenter}
-            highlightedId={highlightedId}
-            onPinClick={handlePinClick}
-            approximate
-          />
+          {loading ? (
+            <div className="h-full w-full animate-pulse bg-muted" />
+          ) : (
+            <Map
+              listings={listings}
+              center={mapCenter}
+              highlightedId={highlightedId}
+              onPinClick={handlePinClick}
+              approximate
+            />
+          )}
         </div>
 
         {!showMap && (

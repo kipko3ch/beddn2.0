@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
+import { AuthDialog } from "@/components/auth-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,13 +50,6 @@ export function Header() {
     await supabase.auth.signOut();
     setUser(null);
     window.location.href = "/";
-  }
-
-  async function handleSignIn() {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
-    });
   }
 
   return (
@@ -105,16 +99,31 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button
-              onClick={handleSignIn}
-              className="rounded-full bg-black px-5 text-white hover:bg-neutral-800"
-              size="sm"
-            >
-              Sign in
-            </Button>
+            <AuthDialog>
+              <Button
+                className="rounded-full bg-black px-5 text-white hover:bg-neutral-800"
+                size="sm"
+              >
+                Sign in
+              </Button>
+            </AuthDialog>
           )}
         </div>
       </div>
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-white/95 px-3 py-2 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-4 text-center text-xs font-semibold">
+          <Link href={ROUTES.home} className="rounded-xl px-2 py-1 hover:bg-muted">Home</Link>
+          <Link href={ROUTES.search} className="rounded-xl px-2 py-1 hover:bg-muted">Search</Link>
+          <Link href={ROUTES.saved} className="rounded-xl px-2 py-1 hover:bg-muted">Saved</Link>
+          {user ? (
+            <Link href={ROUTES.dashboard} className="rounded-xl px-2 py-1 hover:bg-muted">Account</Link>
+          ) : (
+            <AuthDialog>
+              <button className="rounded-xl px-2 py-1 hover:bg-muted">Sign in</button>
+            </AuthDialog>
+          )}
+        </div>
+      </nav>
     </header>
   );
 }

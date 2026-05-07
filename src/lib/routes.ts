@@ -11,6 +11,8 @@ export const ROUTES = {
   dashboardPayments: "/dashboard/payments",
   dashboardDemand: "/dashboard/demand",
   newListing: "/dashboard/listings/new",
+  terms: "/terms",
+  privacy: "/privacy",
   adminBookings: "/dashboard/admin/bookings",
   adminPayments: "/dashboard/admin/payments",
   adminHosts: "/dashboard/admin/hosts",

@@ -16,6 +16,7 @@ import styles from './landing.module.css';
 import { createClient } from '@/lib/supabase/client';
 import { useSavedListings } from '@/lib/hooks';
 import { ListingCard } from '@/components/listing-card';
+import { AuthDialog } from '@/components/auth-dialog';
 import type { User } from '@supabase/supabase-js';
 import type { Listing } from '@/lib/types';
 
@@ -115,13 +116,6 @@ export default function LandingPage() {
     );
   }
 
-  async function handleSignIn() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
-    });
-  }
-
   async function handleSignOut() {
     await supabase.auth.signOut();
     setUser(null);
@@ -179,7 +173,9 @@ export default function LandingPage() {
               </button>
             </div>
           ) : (
-            <button className={styles.signInBtn} onClick={handleSignIn}>Sign in</button>
+            <AuthDialog>
+              <button className={styles.signInBtn}>Sign in</button>
+            </AuthDialog>
           )}
         </nav>
       </header>
@@ -300,6 +296,18 @@ export default function LandingPage() {
           </div>
         )}
       </section>
+      <nav className={styles.mobileBottomNav}>
+        <button onClick={() => setActiveTab('All')}>Home</button>
+        <button onClick={() => router.push('/search')}>Search</button>
+        <button onClick={() => router.push('/saved')}>Saved</button>
+        {user ? (
+          <button onClick={() => router.push('/dashboard')}>Account</button>
+        ) : (
+          <AuthDialog>
+            <button>Sign in</button>
+          </AuthDialog>
+        )}
+      </nav>
     </div>
   );
 }
