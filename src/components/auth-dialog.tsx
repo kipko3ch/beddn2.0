@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Mail, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -70,7 +71,13 @@ export function AuthDialog({
         </button>
         <div className="px-8 pb-8 pt-12 sm:px-11 sm:pb-10">
           <div className="mb-8">
-            <img src="/logo.png" alt="Beddn" className="mb-6 size-16 rounded-2xl object-contain" />
+            <Image
+              src="/logo.png"
+              alt="Beddn"
+              width={64}
+              height={64}
+              className="mb-6 size-16 rounded-2xl object-contain"
+            />
             <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
               Sign in to unlock the best of Beddn.
             </DialogTitle>
@@ -87,9 +94,14 @@ export function AuthDialog({
               disabled={working}
               className="h-14 w-full rounded-full border-[#2b000a] text-base font-bold"
             >
-              <span className="mr-4 inline-flex size-7 items-center justify-center rounded-full bg-white text-xl font-bold text-[#4285F4]">
-                G
-              </span>
+              <Image
+                src="/google.svg"
+                alt=""
+                width={24}
+                height={24}
+                className="mr-4 size-6"
+                aria-hidden="true"
+              />
               Continue with Google
             </Button>
 
