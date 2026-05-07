@@ -7,6 +7,9 @@ import {
   Sparkles,
   Search,
   MapPin,
+  Home,
+  Heart,
+  UserCircle,
   Bus,
   Waves,
   Dumbbell
@@ -17,6 +20,7 @@ import { useSavedListings } from '@/lib/hooks';
 import { ListingCard } from '@/components/listing-card';
 import { AuthDialog } from '@/components/auth-dialog';
 import { ROUTES } from '@/lib/routes';
+import { LOGO_SRC } from '@/lib/assets';
 import type { User } from '@supabase/supabase-js';
 import type { Listing } from '@/lib/types';
 
@@ -133,11 +137,13 @@ export default function LandingPage() {
       <header className={styles.header}>
         <div className={styles.logoArea}>
           <Image
-            src="/logo.png"
+            src={LOGO_SRC}
             alt="Beddn Logo"
-            width={32}
-            height={32}
+            width={28}
+            height={42}
             priority
+            unoptimized
+            className={styles.logoMark}
           />
           Beddn
         </div>
@@ -151,7 +157,7 @@ export default function LandingPage() {
           >
             <Sparkles size={18} />
             Plan with AI
-            <span className={styles.comingSoonBadge}>Soon</span>
+            <span className={styles.comingSoonDot} aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -160,7 +166,7 @@ export default function LandingPage() {
             title="Coming soon"
           >
             Rewards
-            <span className={styles.comingSoonBadge}>Soon</span>
+            <span className={styles.comingSoonDot} aria-hidden="true" />
           </button>
           <a href={ROUTES.search} className={styles.navItem}>Discover</a>
           <a href={ROUTES.review} className={styles.navItem}>Review</a>
@@ -308,7 +314,7 @@ export default function LandingPage() {
       </section>
       <footer className={styles.footer}>
         <div className={styles.footerBrand}>
-          <Image src="/logo.png" alt="Beddn" width={28} height={28} />
+          <Image src={LOGO_SRC} alt="Beddn" width={22} height={32} unoptimized className={styles.footerLogoMark} />
           <span>Beddn</span>
         </div>
         <p>Built for flexible stays, local hosts, and real demand across Africa.</p>
@@ -319,14 +325,29 @@ export default function LandingPage() {
         </div>
       </footer>
       <nav className={styles.mobileBottomNav}>
-        <button onClick={() => setActiveTab('All')}>Home</button>
-        <button onClick={() => router.push('/search')}>Search</button>
-        <button onClick={() => router.push('/saved')}>Saved</button>
+        <button onClick={() => setActiveTab('All')}>
+          <Home size={20} />
+          <span>Home</span>
+        </button>
+        <button onClick={() => router.push('/search')}>
+          <Search size={20} />
+          <span>Search</span>
+        </button>
+        <button onClick={() => router.push('/saved')}>
+          <Heart size={20} />
+          <span>Saved</span>
+        </button>
         {user ? (
-          <button onClick={() => router.push('/dashboard')}>Account</button>
+          <button onClick={() => router.push('/dashboard')}>
+            <UserCircle size={20} />
+            <span>Account</span>
+          </button>
         ) : (
           <AuthDialog>
-            <button>Sign in</button>
+            <button>
+              <UserCircle size={20} />
+              <span>Sign in</span>
+            </button>
           </AuthDialog>
         )}
       </nav>

@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
+import { LOGO_SRC } from "@/lib/assets";
 import type { Listing, Review } from "@/lib/types";
 import type { ListingCategory } from "@/lib/types";
 import type { DateRange } from "react-day-picker";
@@ -46,7 +47,7 @@ function priceCurrency(listing: Listing) {
 }
 
 function primaryImage(listing: Listing) {
-  return listing.listing_images?.[0]?.url || "/logo.png";
+  return listing.listing_images?.[0]?.url || LOGO_SRC;
 }
 
 function AmenityItem({ label }: { label: string }) {
@@ -244,12 +245,12 @@ export function PropertyContent({
         <div className="grid gap-3 lg:grid-cols-[2fr_1fr]">
           <div className="overflow-hidden rounded-2xl bg-muted">
             <img
-              src={images[selectedImage]?.url || "/logo.png"}
+              src={images[selectedImage]?.url || LOGO_SRC}
               alt={listing.name}
               className="aspect-[16/10] h-full w-full object-cover sm:aspect-[16/8]"
               loading="eager"
               onError={(event) => {
-                event.currentTarget.src = "/logo.png";
+                event.currentTarget.src = LOGO_SRC;
               }}
             />
           </div>
@@ -268,7 +269,7 @@ export function PropertyContent({
                   className="aspect-[4/3] w-full object-cover"
                   loading="lazy"
                   onError={(event) => {
-                    event.currentTarget.src = "/logo.png";
+                    event.currentTarget.src = LOGO_SRC;
                   }}
                 />
               </button>
@@ -456,7 +457,7 @@ export function PropertyContent({
                       months: "flex flex-col gap-4",
                       month: "w-full",
                       caption_label: "text-base sm:text-lg font-bold text-[#2b000a]",
-                      weekday: "text-neutral-800 font-medium",
+                      weekday: "flex h-(--cell-size) items-center justify-center text-center text-neutral-800 font-medium",
                       button_previous: "text-[#800020] hover:bg-[#f8eef2]",
                       button_next: "text-[#800020] hover:bg-[#f8eef2]",
                       day_button:
@@ -482,7 +483,7 @@ export function PropertyContent({
                       months: "flex flex-col gap-4",
                       month: "w-full",
                       caption_label: "text-lg font-bold text-[#2b000a]",
-                      weekday: "text-neutral-800 font-medium",
+                      weekday: "flex h-(--cell-size) items-center justify-center text-center text-neutral-800 font-medium",
                       button_previous: "hidden",
                       button_next: "hidden",
                       day_button:

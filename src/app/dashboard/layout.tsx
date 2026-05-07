@@ -8,6 +8,7 @@ import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
 import styles from '../landing.module.css';
 import { ROUTES } from '@/lib/routes';
+import { LOGO_SRC } from '@/lib/assets';
 import {
   LayoutDashboard,
   Home,
@@ -89,11 +90,13 @@ export default function DashboardLayout({
         <header className={styles.header}>
           <div className={styles.logoArea}>
             <Image
-              src="/logo.png"
+              src={LOGO_SRC}
               alt="Beddn Logo"
-              width={32}
-              height={32}
+              width={28}
+              height={42}
               priority
+              unoptimized
+              className={styles.logoMark}
             />
             Beddn
           </div>
@@ -107,7 +110,7 @@ export default function DashboardLayout({
             >
               <Sparkles size={18} />
               Plan with AI
-              <span className={styles.comingSoonBadge}>Soon</span>
+              <span className={styles.comingSoonDot} aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -116,7 +119,7 @@ export default function DashboardLayout({
               title="Coming soon"
             >
               Rewards
-              <span className={styles.comingSoonBadge}>Soon</span>
+              <span className={styles.comingSoonDot} aria-hidden="true" />
             </button>
             <Link href={ROUTES.search} className={styles.navItem}>Discover</Link>
             <Link href={ROUTES.review} className={styles.navItem}>Review</Link>
@@ -147,7 +150,7 @@ export default function DashboardLayout({
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
         <div className="flex h-14 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <Image src="/logo.png" alt="Beddn Logo" width={28} height={28} priority />
+            <Image src={LOGO_SRC} alt="Beddn Logo" width={22} height={32} priority unoptimized className="h-8 w-auto object-contain" />
             Beddn
           </Link>
           <nav className="hidden md:flex items-center gap-2 text-sm">

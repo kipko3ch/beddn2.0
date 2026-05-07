@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ROUTES } from "@/lib/routes";
+import { LOGO_SRC } from "@/lib/assets";
 
 const SCORE_FIELDS = [
   ["cleanliness", "Cleanliness"],
@@ -81,7 +82,7 @@ export default function ReviewPage() {
       <Header />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center gap-3">
-          <Image src="/logo.png" alt="Beddn" width={40} height={40} />
+          <Image src={LOGO_SRC} alt="Beddn" width={28} height={40} unoptimized className="h-10 w-auto object-contain" />
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-[#2b000a]">Review a stay</h1>
             <p className="mt-1 text-sm text-muted-foreground">

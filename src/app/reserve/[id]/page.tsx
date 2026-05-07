@@ -31,6 +31,7 @@ import {
   TicketCheck,
   Users,
 } from "lucide-react";
+import { LOGO_SRC } from "@/lib/assets";
 import type { Listing, ListingCategory, Review } from "@/lib/types";
 
 type ReserveListing = Listing & { reviews?: Pick<Review, "rating">[] };
@@ -121,7 +122,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   }
 
   function listingImage() {
-    return listing?.listing_images?.[0]?.url || "/logo.png";
+    return listing?.listing_images?.[0]?.url || LOGO_SRC;
   }
 
   function bookingDateLabel() {
@@ -549,7 +550,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     alt={listing.name}
                     className="size-24 rounded-lg object-cover"
                     onError={(event) => {
-                      event.currentTarget.src = "/logo.png";
+                      event.currentTarget.src = LOGO_SRC;
                     }}
                   />
                 </div>

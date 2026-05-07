@@ -15,8 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, LayoutDashboard, LogOut } from "lucide-react";
+import { Heart, Home, LayoutDashboard, LogOut, Search, UserCircle } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
+import { LOGO_SRC } from "@/lib/assets";
 
 function getAvatarUrl(user: User | null) {
   return user?.user_metadata?.avatar_url || user?.user_metadata?.picture || "";
@@ -56,7 +57,7 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 h-14 sm:h-16">
         <Link href={ROUTES.home} className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Beddn" width={28} height={28} />
+          <Image src={LOGO_SRC} alt="Beddn" width={22} height={32} unoptimized className="h-8 w-auto object-contain" />
           <span className="text-lg sm:text-xl font-bold tracking-tight">Beddn</span>
         </Link>
 
@@ -112,14 +113,29 @@ export function Header() {
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-white/95 px-3 py-2 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
         <div className="mx-auto grid max-w-md grid-cols-4 text-center text-xs font-semibold">
-          <Link href={ROUTES.home} className="rounded-xl px-2 py-1 hover:bg-muted">Home</Link>
-          <Link href={ROUTES.search} className="rounded-xl px-2 py-1 hover:bg-muted">Search</Link>
-          <Link href={ROUTES.saved} className="rounded-xl px-2 py-1 hover:bg-muted">Saved</Link>
+          <Link href={ROUTES.home} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+            <Home className="h-5 w-5" />
+            Home
+          </Link>
+          <Link href={ROUTES.search} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+            <Search className="h-5 w-5" />
+            Search
+          </Link>
+          <Link href={ROUTES.saved} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+            <Heart className="h-5 w-5" />
+            Saved
+          </Link>
           {user ? (
-            <Link href={ROUTES.dashboard} className="rounded-xl px-2 py-1 hover:bg-muted">Account</Link>
+            <Link href={ROUTES.dashboard} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+              <UserCircle className="h-5 w-5" />
+              Account
+            </Link>
           ) : (
             <AuthDialog>
-              <button className="rounded-xl px-2 py-1 hover:bg-muted">Sign in</button>
+              <button className="flex w-full flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+                <UserCircle className="h-5 w-5" />
+                Sign in
+              </button>
             </AuthDialog>
           )}
         </div>

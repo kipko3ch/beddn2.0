@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ROUTES } from "@/lib/routes";
+import { LOGO_SRC } from "@/lib/assets";
 
 export function AuthDialog({
   children,
@@ -72,11 +73,12 @@ export function AuthDialog({
         <div className="px-8 pb-8 pt-12 sm:px-11 sm:pb-10">
           <div className="mb-8">
             <Image
-              src="/logo.png"
+              src={LOGO_SRC}
               alt="Beddn"
-              width={64}
+              width={44}
               height={64}
-              className="mb-6 size-16 rounded-2xl object-contain"
+              className="mb-6 h-16 w-auto object-contain"
+              unoptimized
             />
             <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
               Sign in to unlock the best of Beddn.

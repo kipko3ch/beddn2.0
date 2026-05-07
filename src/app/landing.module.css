@@ -24,11 +24,17 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 22px;
   font-weight: 800;
   color: #000;
   letter-spacing: -0.5px;
+}
+
+.logoMark {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
 }
 
 .navRight {
@@ -68,19 +74,15 @@
 
 .comingSoonNavItem {
   cursor: default;
-  opacity: 0.88;
+  color: #3b3134;
 }
 
-.comingSoonBadge {
-  border-left: 1px solid #ead8de;
-  color: #800020;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 1;
-  margin-left: 2px;
-  padding-left: 7px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.comingSoonDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #800020;
+  opacity: 0.72;
 }
 
 .signInBtn {
@@ -341,6 +343,12 @@
   font-weight: 800;
 }
 
+.footerLogoMark {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
 .footer p {
   margin: 8px 0 12px;
 }
@@ -446,6 +454,11 @@
     backdrop-filter: blur(12px);
   }
   .mobileBottomNav button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     border: 0;
     background: transparent;
     border-radius: 12px;
@@ -456,6 +469,10 @@
   }
   .mobileBottomNav button:hover {
     background: #f6f6f6;
+  }
+  .mobileBottomNav svg {
+    width: 20px;
+    height: 20px;
   }
   .secondaryBtn {
     width: 100%;
