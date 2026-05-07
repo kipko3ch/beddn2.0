@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 export default function NewListingPage() {
   const supabase = createClient();
   const [hostId, setHostId] = useState<string | null>(null);
+  const [hostApproved, setHostApproved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [needsHost, setNeedsHost] = useState(false);
@@ -35,12 +36,13 @@ export default function NewListingPage() {
 
       const { data: host } = await supabase
         .from("hosts")
-        .select("id")
+        .select("id, is_verified")
         .eq("user_id", userData.user.id)
         .single();
 
       if (host) {
         setHostId(host.id);
+        setHostApproved(Boolean(host.is_verified));
       } else {
         setNeedsHost(true);
       }
@@ -67,6 +69,7 @@ export default function NewListingPage() {
 
     if (data) {
       setHostId(data.id);
+      setHostApproved(false);
       setNeedsHost(false);
     } else {
       alert("Failed to create host profile: " + (error?.message ?? ""));
@@ -94,7 +97,7 @@ export default function NewListingPage() {
       <div>
         <h1 className="text-2xl font-bold mb-4">New listing</h1>
         <p className="text-muted-foreground mb-4">
-          First, set up your host profile.
+          First, apply for host approval. Admins review hosts before listings can be created.
         </p>
         <form onSubmit={createHost} className="space-y-4 max-w-md">
           <div>
@@ -121,9 +124,25 @@ export default function NewListingPage() {
             disabled={creatingHost}
             className="bg-[#800020] hover:bg-[#600018]"
           >
-            {creatingHost ? "Creating..." : "Continue"}
+            {creatingHost ? "Submitting..." : "Submit host application"}
           </Button>
         </form>
+      </div>
+    );
+  }
+
+  if (hostId && !hostApproved && !isAdmin) {
+    return (
+      <div className="max-w-xl rounded-2xl border bg-white p-6 shadow-sm">
+        <h1 className="text-2xl font-bold mb-3">Host approval pending</h1>
+        <p className="text-muted-foreground">
+          Your host profile has been submitted. An admin must verify your host account before
+          you can create or publish listings on Beddn.
+        </p>
+        <div className="mt-5 rounded-xl bg-[#fbf7f8] p-4 text-sm text-muted-foreground">
+          This keeps guests safer and makes sure only approved hosts can receive booking
+          requests.
+        </div>
       </div>
     );
   }

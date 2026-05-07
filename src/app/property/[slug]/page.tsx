@@ -13,7 +13,7 @@ export default async function PropertyPage({
 
   const { data: listingData } = await supabase
     .from("listings")
-    .select("*, listing_images(*), host:hosts(name, phone, is_verified)")
+    .select("*, listing_images(*), host:hosts(name, is_verified)")
     .eq("slug", slug)
     .eq("is_active", true)
     .eq("is_verified", true)

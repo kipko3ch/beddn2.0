@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { Map } from "@/components/map";
-import { Search, MapPin, X } from "lucide-react";
+import { MapPin, Search, X } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
 export function SearchContent() {
@@ -31,7 +31,7 @@ export function SearchContent() {
 
     let query = supabase
       .from("listings")
-      .select("*, listing_images(*), host:hosts(*)")
+      .select("*, listing_images(*), host:hosts(id, name, is_verified), reviews(rating)")
       .eq("is_active", true)
       .eq("is_verified", true);
 
@@ -69,6 +69,13 @@ export function SearchContent() {
     router.push(`/search?${params.toString()}`);
   }
 
+  function changeCategory(nextCategory: string) {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (nextCategory !== "all") params.set("category", nextCategory);
+    router.push(`/search?${params.toString()}`);
+  }
+
   function handlePinClick(listing: Listing) {
     setHighlightedId(listing.id);
     const el = document.getElementById(`listing-${listing.id}`);
@@ -78,44 +85,89 @@ export function SearchContent() {
   const mapCenter: [number, number] | undefined =
     lat && lng ? [parseFloat(lng), parseFloat(lat)] : undefined;
 
-  return (
-    <div className="flex-1 flex flex-col">
-      <div className="border-b bg-white px-4 py-3">
-        <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              className="pl-10"
-            />
-          </div>
-          <Button type="submit" className="bg-[#800020] hover:bg-[#600018]">
-            Search
-          </Button>
-        </form>
-      </div>
+  const categoryOptions = [
+    { value: "all", label: "All" },
+    { value: "hourly", label: "Hourly" },
+    { value: "overnight", label: "Overnight" },
+    { value: "experience", label: "Experiences" },
+  ];
 
-      <div className="flex-1 flex relative">
-        <div className={`w-full lg:w-1/2 overflow-y-auto p-4 ${showMap ? "hidden lg:block" : ""}`}>
+  return (
+    <main className="bg-white text-[#181113]">
+      <section className="border-b bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <form
+            onSubmit={handleSearch}
+            className="flex flex-col gap-3 rounded-[28px] border bg-white p-2 shadow-sm sm:flex-row sm:items-center"
+          >
+            <div className="relative min-w-0 flex-1">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Where are you going?"
+                className="h-12 border-0 bg-transparent pl-12 text-base focus-visible:ring-0"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="h-12 rounded-full bg-[#800020] px-8 font-bold hover:bg-[#600018]"
+            >
+              Search
+            </Button>
+          </form>
+
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            {categoryOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => changeCategory(option.value)}
+                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                  category === option.value
+                    ? "border-[#800020] bg-[#800020] text-white"
+                    : "border-neutral-200 bg-white hover:border-[#800020] hover:text-[#800020]"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,42%)] lg:px-8">
+        <div className={showMap ? "hidden lg:block" : ""}>
+          <div className="mb-5">
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
+              {q ? `Search results for ${q}` : "Explore verified stays"}
+            </p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+              {loading
+                ? "Finding places"
+                : listings.length > 0
+                ? `${listings.length} verified place${listings.length === 1 ? "" : "s"}`
+                : "No verified places here yet"}
+            </h1>
+          </div>
+
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-[4/3] rounded-xl bg-muted" />
-                  <div className="mt-2 h-4 w-3/4 rounded bg-muted" />
+                  <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
+                  <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
                 </div>
               ))}
             </div>
           ) : listings.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {listings.map((listing) => (
                 <div
                   key={listing.id}
                   id={`listing-${listing.id}`}
                   className={`rounded-xl transition-shadow ${
-                    highlightedId === listing.id ? "ring-2 ring-[#800020]" : ""
+                    highlightedId === listing.id ? "ring-2 ring-[#800020] ring-offset-2" : ""
                   }`}
                 >
                   <ListingCard listing={listing} onHover={setHighlightedId} />
@@ -123,35 +175,35 @@ export function SearchContent() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20">
-              <p className="text-muted-foreground text-lg mb-2">
-                No verified places here yet
-              </p>
-              <p className="text-muted-foreground text-sm mb-6">
+            <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-12 text-center sm:px-8">
+              <p className="text-2xl font-bold">No verified places here yet.</p>
+              <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
                 Be the first verified host in this area and get early visibility as demand grows.
               </p>
-              <div className="flex justify-center gap-3">
+              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                 <Button
                   onClick={() => router.push("/dashboard/listings/new")}
-                  className="bg-[#800020] hover:bg-[#600018]"
+                  className="rounded-full bg-[#800020] hover:bg-[#600018]"
                 >
                   List your place
                 </Button>
-                <Button variant="outline">Notify me when available</Button>
+                <Button variant="outline" className="rounded-full">
+                  Notify me when available
+                </Button>
               </div>
             </div>
           )}
         </div>
 
         <div
-          className={`lg:w-1/2 lg:block lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] ${
-            showMap ? "fixed inset-0 top-16 z-30" : "hidden"
+          className={`overflow-hidden rounded-2xl border bg-muted lg:sticky lg:top-24 lg:block lg:h-[calc(100vh-7rem)] ${
+            showMap ? "fixed inset-0 top-14 z-30 rounded-none border-0" : "hidden"
           }`}
         >
           {showMap && (
             <button
               onClick={() => setShowMap(false)}
-              className="lg:hidden absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-md"
+              className="absolute right-4 top-4 z-10 rounded-full bg-white p-2 shadow-md lg:hidden"
             >
               <X className="h-5 w-5" />
             </button>
@@ -168,12 +220,12 @@ export function SearchContent() {
         {!showMap && (
           <button
             onClick={() => setShowMap(true)}
-            className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-[#800020] text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 text-sm font-medium"
+            className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#800020] px-6 py-3 text-sm font-medium text-white shadow-lg lg:hidden"
           >
             <MapPin className="h-4 w-4" /> View map
           </button>
         )}
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

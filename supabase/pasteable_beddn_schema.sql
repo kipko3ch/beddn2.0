@@ -441,8 +441,22 @@ create policy "Hosts viewable by everyone" on public.hosts
   for select using (true);
 
 drop policy if exists "Users can manage own host profile" on public.hosts;
-create policy "Users can manage own host profile" on public.hosts
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users can create host applications" on public.hosts;
+create policy "Users can create host applications" on public.hosts
+  for insert with check (auth.uid() = user_id and is_verified = false);
+
+drop policy if exists "Users can update pending own host profile" on public.hosts;
+create policy "Users can update pending own host profile" on public.hosts
+  for update using (auth.uid() = user_id)
+  with check (auth.uid() = user_id and is_verified = false);
+
+drop policy if exists "Admins can manage hosts" on public.hosts;
+create policy "Admins can manage hosts" on public.hosts
+  for all using (
+    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  ) with check (
+    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  );
 
 drop policy if exists "Active verified listings are public" on public.listings;
 create policy "Active verified listings are public" on public.listings
@@ -460,9 +474,13 @@ create policy "Hosts can view own listings" on public.listings
 drop policy if exists "Hosts can manage own listings" on public.listings;
 create policy "Hosts can manage own listings" on public.listings
   for all using (
-    host_id in (select id from public.hosts where user_id = auth.uid())
+    host_id in (
+      select id from public.hosts where user_id = auth.uid() and is_verified = true
+    )
   ) with check (
-    host_id in (select id from public.hosts where user_id = auth.uid())
+    host_id in (
+      select id from public.hosts where user_id = auth.uid() and is_verified = true
+    )
   );
 
 drop policy if exists "Admins can manage all listings" on public.listings;

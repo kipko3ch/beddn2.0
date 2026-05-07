@@ -62,7 +62,7 @@ export default function LandingPage() {
     setLoading(true);
     let query = supabase
       .from('listings')
-      .select('*, listing_images(*), host:hosts(*)')
+      .select('*, listing_images(*), host:hosts(id, name, is_verified), reviews(rating)')
       .eq('is_active', true)
       .eq('is_verified', true)
       .order('created_at', { ascending: false })
