@@ -68,16 +68,19 @@
 
 .comingSoonNavItem {
   cursor: default;
+  opacity: 0.88;
 }
 
 .comingSoonBadge {
-  border-radius: 999px;
-  background: #f8eef2;
+  border-left: 1px solid #ead8de;
   color: #800020;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
-  padding: 5px 8px;
+  margin-left: 2px;
+  padding-left: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .signInBtn {
@@ -318,6 +321,45 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.footer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 32px 96px;
+  border-top: 1px solid #f0e7ea;
+  color: #7a6e72;
+  font-size: 13px;
+}
+
+.footerBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #2b000a;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.footer p {
+  margin: 8px 0 12px;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.footerLinks a {
+  color: #2b000a;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
+  color: #800020;
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {

@@ -16,6 +16,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useSavedListings } from '@/lib/hooks';
 import { ListingCard } from '@/components/listing-card';
 import { AuthDialog } from '@/components/auth-dialog';
+import { ROUTES } from '@/lib/routes';
 import type { User } from '@supabase/supabase-js';
 import type { Listing } from '@/lib/types';
 
@@ -146,14 +147,23 @@ export default function LandingPage() {
             type="button"
             className={`${styles.navItem} ${styles.comingSoonNavItem}`}
             aria-label="Plan with AI coming soon"
+            title="Coming soon"
           >
             <Sparkles size={18} />
             Plan with AI
-            <span className={styles.comingSoonBadge}>Coming soon</span>
+            <span className={styles.comingSoonBadge}>Soon</span>
           </button>
-          <a href="#" className={styles.navItem}>Rewards</a>
-          <a href="#" className={styles.navItem}>Discover</a>
-          <a href="#" className={styles.navItem}>Review</a>
+          <button
+            type="button"
+            className={`${styles.navItem} ${styles.comingSoonNavItem}`}
+            aria-label="Rewards coming soon"
+            title="Coming soon"
+          >
+            Rewards
+            <span className={styles.comingSoonBadge}>Soon</span>
+          </button>
+          <a href={ROUTES.search} className={styles.navItem}>Discover</a>
+          <a href={ROUTES.review} className={styles.navItem}>Review</a>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Image
@@ -296,6 +306,18 @@ export default function LandingPage() {
           </div>
         )}
       </section>
+      <footer className={styles.footer}>
+        <div className={styles.footerBrand}>
+          <Image src="/logo.png" alt="Beddn" width={28} height={28} />
+          <span>Beddn</span>
+        </div>
+        <p>Built for flexible stays, local hosts, and real demand across Africa.</p>
+        <div className={styles.footerLinks}>
+          <a href={ROUTES.terms}>Terms</a>
+          <a href={ROUTES.privacy}>Privacy</a>
+          <a href={ROUTES.review}>Review a stay</a>
+        </div>
+      </footer>
       <nav className={styles.mobileBottomNav}>
         <button onClick={() => setActiveTab('All')}>Home</button>
         <button onClick={() => router.push('/search')}>Search</button>

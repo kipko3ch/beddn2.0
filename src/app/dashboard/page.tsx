@@ -122,19 +122,21 @@ export default function DashboardPage() {
 
       const { data: listingRows } = await supabase
         .from("listings")
-        .select("id")
+        .select("id, is_active, listing_status")
         .eq("host_id", hostData.id);
       const listingIds = (listingRows ?? []).map((listing: { id: string }) => listing.id);
+      const activeListings = (listingRows ?? []).filter(
+        (listing: { is_active?: boolean; listing_status?: string | null }) =>
+          listing.is_active || listing.listing_status === "active"
+      ).length;
 
       const [
-        listings,
         requests,
         confirmed,
         completed,
         heldBalance,
         withdrawableBalance,
       ] = await Promise.all([
-        supabase.from("listings").select("id", { count: "exact", head: true }).eq("host_id", hostData.id),
         listingIds.length
           ? supabase.from("bookings").select("id", { count: "exact", head: true }).in("listing_id", listingIds).eq("status", "paid_pending_host")
           : Promise.resolve({ count: 0 }),
@@ -152,7 +154,8 @@ export default function DashboardPage() {
       const withdrawable = (withdrawableBalance.data ?? []).reduce((sum: number, row: { amount: number }) => sum + Number(row.amount || 0), 0);
 
       setStats([
-        { label: "Listings", value: listings.count ?? 0, icon: Home, href: ROUTES.dashboardListings },
+        { label: "Total listings", value: listingIds.length, icon: Home, href: ROUTES.dashboardListings },
+        { label: "Active listings", value: activeListings, icon: CheckCircle2, href: ROUTES.dashboardListings, tone: "brand" },
         { label: "New paid requests", value: requests.count ?? 0, icon: CalendarCheck, href: ROUTES.dashboardBookings, tone: "warning" },
         { label: "Confirmed bookings", value: confirmed.count ?? 0, icon: CheckCircle2, href: ROUTES.dashboardBookings, tone: "brand" },
         { label: "Completed stays", value: completed.count ?? 0, icon: ShieldCheck, href: ROUTES.dashboardBookings },

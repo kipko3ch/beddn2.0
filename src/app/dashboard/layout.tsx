@@ -103,14 +103,23 @@ export default function DashboardLayout({
               type="button"
               className={`${styles.navItem} ${styles.comingSoonNavItem}`}
               aria-label="Plan with AI coming soon"
+              title="Coming soon"
             >
               <Sparkles size={18} />
               Plan with AI
-              <span className={styles.comingSoonBadge}>Coming soon</span>
+              <span className={styles.comingSoonBadge}>Soon</span>
             </button>
-            <Link href="/" className={styles.navItem}>Rewards</Link>
-            <Link href="/" className={styles.navItem}>Discover</Link>
-            <Link href="/" className={styles.navItem}>Review</Link>
+            <button
+              type="button"
+              className={`${styles.navItem} ${styles.comingSoonNavItem}`}
+              aria-label="Rewards coming soon"
+              title="Coming soon"
+            >
+              Rewards
+              <span className={styles.comingSoonBadge}>Soon</span>
+            </button>
+            <Link href={ROUTES.search} className={styles.navItem}>Discover</Link>
+            <Link href={ROUTES.review} className={styles.navItem}>Review</Link>
           </nav>
         </header>
 
