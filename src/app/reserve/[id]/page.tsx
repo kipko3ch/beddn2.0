@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  ArrowLeft,
   CalendarDays,
   CheckCircle2,
-  Clock,
   CreditCard,
+  HandCoins,
   Mail,
   MapPin,
   Phone,
@@ -52,6 +54,9 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [guests, setGuests] = useState("1");
   const [units, setUnits] = useState("1");
   const [note, setNote] = useState("");
+  const [wantsNegotiation, setWantsNegotiation] = useState(false);
+  const [offerAmount, setOfferAmount] = useState("");
+  const [negotiationMessage, setNegotiationMessage] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -121,6 +126,17 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     if (!listing || submitting) return;
     setSubmitting(true);
 
+    const negotiationNote = wantsNegotiation
+      ? [
+          "Guest would like to negotiate.",
+          offerAmount ? `Offer: ${listing.currency || "KES"} ${offerAmount}` : null,
+          negotiationMessage ? `Reason/message: ${negotiationMessage}` : null,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "";
+    const hostNote = [note, negotiationNote].filter(Boolean).join("\n\n") || null;
+
     const response = await fetch("/api/payments/initialize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -136,7 +152,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         durationHours: category === "hourly" ? parseInt(duration) : null,
         guestsCount: parseInt(guests),
         unitsReserved: parseInt(units),
-        note: note || null,
+        note: hostNote,
       }),
     });
 
@@ -146,7 +162,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     };
 
     if (!response.ok || !result.authorizationUrl) {
-      alert(result.error || "Failed to initialize payment. Please try again.");
+      alert(result.error || "Could not start checkout. Please try again.");
       setSubmitting(false);
       return;
     }
@@ -193,8 +209,18 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   return (
     <>
       <Header />
-      <main className="bg-white px-4 py-6 text-[#181113] sm:px-6 lg:px-8">
+      <main className="bg-white px-4 pb-28 pt-5 text-[#181113] sm:px-6 lg:px-8 lg:pb-8">
+        <div className="mx-auto mb-4 flex max-w-6xl items-center justify-between gap-3">
+          <Link
+            href={`/property/${listing.slug}`}
+            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors hover:border-[#800020] hover:text-[#800020]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to property
+          </Link>
+        </div>
         <form
+          id="reserve-form"
           onSubmit={handleSubmit}
           className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_360px]"
         >
@@ -404,6 +430,50 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     className="mt-1 border-neutral-400 focus-visible:border-[#800020]"
                   />
                 </div>
+                <div className="sm:col-span-2 rounded-2xl border bg-[#fbf7f8] p-4">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-1 size-4 accent-[#800020]"
+                      checked={wantsNegotiation}
+                      onChange={(event) => setWantsNegotiation(event.target.checked)}
+                    />
+                    <span>
+                      <span className="flex items-center gap-2 font-bold">
+                        <HandCoins className="h-4 w-4 text-[#800020]" />
+                        Ask host for a better price
+                      </span>
+                      <span className="mt-1 block text-sm text-muted-foreground">
+                        Useful for longer stays, repeat visits, weekdays, or group bookings.
+                      </span>
+                    </span>
+                  </label>
+                  {wantsNegotiation && (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
+                      <div>
+                        <Label htmlFor="offerAmount">Your offer</Label>
+                        <Input
+                          id="offerAmount"
+                          inputMode="numeric"
+                          value={offerAmount}
+                          onChange={(event) => setOfferAmount(event.target.value)}
+                          placeholder={`${listing.currency || "KES"} amount`}
+                          className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="negotiationMessage">Message</Label>
+                        <Input
+                          id="negotiationMessage"
+                          value={negotiationMessage}
+                          onChange={(event) => setNegotiationMessage(event.target.value)}
+                          placeholder="Example: staying 5 nights, can we agree a better rate?"
+                          className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
 
@@ -415,7 +485,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 <div>
                   <h2 className="text-2xl font-bold tracking-tight">Payment details</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Pay the reserve fee through Paystack. We verify the payment on the backend.
+                    Pay the reserve fee securely. The host receives your request after payment.
                   </p>
                 </div>
               </div>
@@ -516,17 +586,38 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   className="mt-2 h-11 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
                 >
                   <CreditCard className="h-4 w-4" />
-                  {submitting ? "Opening Paystack..." : "Pay reserve fee"}
+                  {submitting ? "Opening secure checkout..." : "Pay reserve fee"}
                 </Button>
-                <p className="flex items-center justify-center gap-1 text-center text-xs text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  Paystack is verified on our backend before the host is alerted.
+                <p className="text-center text-xs text-muted-foreground">
+                  Your host details unlock only after the booking is confirmed.
                 </p>
               </div>
             </div>
           </aside>
         </form>
       </main>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center gap-3">
+          <Link
+            href={`/property/${listing.slug}`}
+            className="flex h-11 shrink-0 items-center justify-center rounded-full border px-4 text-sm font-semibold"
+          >
+            Back
+          </Link>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">Pay now</p>
+            <p className="truncate font-bold">{money(Number(listing.deposit_amount || total))}</p>
+          </div>
+          <Button
+            type="submit"
+            form="reserve-form"
+            disabled={submitting || !firstName || !lastName || !phone || !checkIn}
+            className="h-11 rounded-full bg-[#800020] px-5 font-bold hover:bg-[#600018]"
+          >
+            {submitting ? "Opening..." : "Reserve"}
+          </Button>
+        </div>
+      </div>
     </>
   );
 }
