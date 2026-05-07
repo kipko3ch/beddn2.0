@@ -14,7 +14,6 @@ import {
   CalendarCheck,
   CreditCard,
   TrendingUp,
-  Globe,
   Sparkles,
   CalendarDays,
   Wallet,
@@ -100,17 +99,18 @@ export default function DashboardLayout({
           </div>
 
           <nav className={styles.navRight}>
-            <Link href="/" className={styles.navItem}>
+            <button
+              type="button"
+              className={`${styles.navItem} ${styles.comingSoonNavItem}`}
+              aria-label="Plan with AI coming soon"
+            >
               <Sparkles size={18} />
               Plan with AI
-            </Link>
+              <span className={styles.comingSoonBadge}>Coming soon</span>
+            </button>
             <Link href="/" className={styles.navItem}>Rewards</Link>
             <Link href="/" className={styles.navItem}>Discover</Link>
             <Link href="/" className={styles.navItem}>Review</Link>
-            <a href="#" className={styles.navItem}>
-              <Globe size={18} />
-              USD
-            </a>
           </nav>
         </header>
 

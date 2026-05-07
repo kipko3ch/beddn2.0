@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Sparkles,
-  Globe,
   Search,
   MapPin,
   Bus,
@@ -143,17 +142,18 @@ export default function LandingPage() {
         </div>
 
         <nav className={styles.navRight}>
-          <a href="#" className={styles.navItem}>
+          <button
+            type="button"
+            className={`${styles.navItem} ${styles.comingSoonNavItem}`}
+            aria-label="Plan with AI coming soon"
+          >
             <Sparkles size={18} />
             Plan with AI
-          </a>
+            <span className={styles.comingSoonBadge}>Coming soon</span>
+          </button>
           <a href="#" className={styles.navItem}>Rewards</a>
           <a href="#" className={styles.navItem}>Discover</a>
           <a href="#" className={styles.navItem}>Review</a>
-          <a href="#" className={styles.navItem}>
-            <Globe size={18} />
-            USD
-          </a>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Image
