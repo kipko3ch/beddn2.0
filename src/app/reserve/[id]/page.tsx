@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,84 @@ import { LOGO_SRC } from "@/lib/assets";
 import type { Listing, ListingCategory, Review } from "@/lib/types";
 
 type ReserveListing = Listing & { reviews?: Pick<Review, "rating">[] };
+
+function CheckoutHeader({ backHref }: { backHref?: string }) {
+  return (
+    <header className="border-b bg-white">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
+          <Image src={LOGO_SRC} alt="Beddn" width={22} height={32} unoptimized className="h-8 w-auto object-contain" />
+          <span className="text-lg">Beddn</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <span className="hidden rounded-full bg-[#fbf7f8] px-3 py-1 text-xs font-bold text-[#800020] sm:inline-flex">
+            Secure reserve
+          </span>
+          {backHref && (
+            <Link
+              href={backHref}
+              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold hover:border-[#800020] hover:text-[#800020]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function ReserveLoading() {
+  return (
+    <>
+      <CheckoutHeader />
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-6 space-y-3">
+          <div className="h-4 w-28 animate-pulse rounded-full bg-[#f1e6ea]" />
+          <div className="h-8 w-64 animate-pulse rounded-full bg-muted" />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="space-y-4">
+            {[0, 1].map((item) => (
+              <div key={item} className="rounded-3xl border bg-white p-5 shadow-sm">
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="size-9 animate-pulse rounded-full bg-[#f1e6ea]" />
+                  <div className="space-y-2">
+                    <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-64 max-w-full animate-pulse rounded bg-muted" />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: item === 0 ? 4 : 6 }).map((_, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                      <div className="h-11 animate-pulse rounded-xl bg-muted" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-3xl border bg-white p-5 shadow-sm">
+            <div className="mb-5 flex gap-4">
+              <div className="size-20 animate-pulse rounded-2xl bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="h-4 animate-pulse rounded bg-muted" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
 
 export default function ReservePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -193,27 +271,13 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   }
 
   if (loading) {
-    return (
-      <>
-        <Header />
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="space-y-5">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="h-40 animate-pulse rounded-2xl bg-muted" />
-              ))}
-            </div>
-            <div className="h-96 animate-pulse rounded-2xl bg-muted" />
-          </div>
-        </div>
-      </>
-    );
+    return <ReserveLoading />;
   }
 
   if (!listing) {
     return (
       <>
-        <Header />
+        <CheckoutHeader />
         <div className="mx-auto max-w-lg px-4 py-20 text-center">
           <p className="text-muted-foreground">Listing not found</p>
         </div>
@@ -231,21 +295,21 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
   return (
     <>
-      <Header />
-      <main className="bg-white px-4 pb-28 pt-5 text-[#181113] sm:px-6 lg:px-8 lg:pb-8">
-        <div className="mx-auto mb-4 flex max-w-6xl items-center justify-between gap-3">
-          <Link
-            href={`/property/${listing.slug}`}
-            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors hover:border-[#800020] hover:text-[#800020]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to property
-          </Link>
+      <CheckoutHeader backHref={`/property/${listing.slug}`} />
+      <main className="bg-[#fffdfd] px-4 pb-28 pt-6 text-[#181113] sm:px-6 lg:px-8 lg:pb-10">
+        <div className="mx-auto mb-6 max-w-6xl">
+          <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">Reserve your spot</p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+            {listing.title || listing.name}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Confirm your details, review the reserve fee, and the host will receive your request by SMS.
+          </p>
         </div>
         <form
           id="reserve-form"
           onSubmit={handleSubmit}
-          className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_360px]"
+          className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_340px]"
         >
           <div className="space-y-5">
             {isOwnListing && (
@@ -256,9 +320,9 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 </p>
               </div>
             )}
-            <section className="rounded-2xl border border-[#800020] bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
               <div className="mb-5 flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white shadow-sm">
                   1
                 </div>
                 <div>
@@ -330,9 +394,9 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               </div>
             </section>
 
-            <section className="rounded-2xl border bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
               <div className="mb-5 flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-bold">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
                   2
                 </div>
                 <div>
@@ -506,17 +570,28 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               </div>
             </section>
 
-            <section className="rounded-2xl border bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-bold">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
                   3
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight">Payment details</h2>
+                  <h2 className="text-2xl font-bold tracking-tight">Before you pay</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Pay the reserve fee securely. The host receives your request after payment.
+                    Your reserve fee starts the booking request. Host contact and exact address stay private until confirmation.
                   </p>
                 </div>
+              </div>
+              <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
+                {[
+                  "SMS updates are sent to your phone.",
+                  "Hosts confirm or reject paid requests.",
+                  "Rejected requests are reviewed for resolution.",
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl bg-[#fbf7f8] p-4 text-muted-foreground">
+                    {item}
+                  </div>
+                ))}
               </div>
             </section>
           </div>

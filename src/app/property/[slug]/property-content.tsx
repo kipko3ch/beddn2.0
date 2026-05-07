@@ -162,47 +162,32 @@ export function PropertyContent({
 
   return (
     <main className="bg-white text-[#181113]">
-      <div className="sticky top-14 z-40 border-b bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-4 overflow-x-auto">
-            <Link
-              href="/"
-              className="flex shrink-0 items-center gap-1 text-sm font-semibold text-[#800020]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              See all stays
-            </Link>
-            <nav className="hidden items-center gap-6 text-sm font-semibold md:flex">
-              <a href="#deals" className="hover:underline">Deals</a>
-              <a href="#about" className="border-b-2 border-[#800020] py-3">About</a>
-              <a href="#location" className="hover:underline">Location</a>
-              <a href="#reviews" className="hover:underline">Reviews</a>
-            </nav>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={() => toggle(listing.id)}
-              aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
-            >
-              <Heart className={`h-5 w-5 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
-            </Button>
-            <Button
-              onClick={() => {
-                document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                checkAvailability();
-              }}
-              className="rounded-full bg-[#800020] px-5 hover:bg-[#600018]"
-            >
-              Check availability
-            </Button>
-          </div>
-        </div>
-      </div>
-
       <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mb-5 flex flex-col gap-4 rounded-2xl border bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            href="/"
+            className="inline-flex w-fit items-center gap-2 rounded-full px-2 py-1 text-sm font-bold text-[#800020] hover:bg-[#fbf7f8]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            See all stays
+          </Link>
+          <nav className="flex gap-2 overflow-x-auto text-sm font-semibold">
+            {[
+              ["#about", "About"],
+              ["#deals", "Availability"],
+              ["#location", "Location"],
+              ["#reviews", "Reviews"],
+            ].map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                className="shrink-0 rounded-full border px-4 py-2 text-[#241f21] transition-colors hover:border-[#800020] hover:text-[#800020]"
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+        </div>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -221,6 +206,16 @@ export function PropertyContent({
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 rounded-full"
+              onClick={() => toggle(listing.id)}
+              aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
+            >
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
+              {isSaved ? "Saved" : "Save"}
+            </Button>
             {categories.map((cat) => {
               const Icon = cat === "hourly" ? Clock : cat === "overnight" ? Moon : Compass;
               return (
