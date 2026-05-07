@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Header } from "@/components/header";
 import { ListingCard } from "@/components/listing-card";
+import { useSavedListings } from "@/lib/hooks";
 import type { Listing } from "@/lib/types";
 
 export default function SavedTripsPage() {
@@ -11,6 +13,7 @@ export default function SavedTripsPage() {
   const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const { savedIds, toggle } = useSavedListings();
 
   useEffect(() => {
     async function load() {
@@ -22,7 +25,7 @@ export default function SavedTripsPage() {
 
       const { data } = await supabase
         .from("saved_trips")
-        .select("listing:listings(*, listing_images(*))")
+        .select("listing:listings(*, listing_images(*), reviews(rating))")
         .eq("user_id", user.user.id)
         .order("created_at", { ascending: false });
 
@@ -36,7 +39,16 @@ export default function SavedTripsPage() {
     load();
   }, []);
 
+  async function removeSaved(listingId: string) {
+    const result = await toggle(listingId);
+    if (result.ok) {
+      setListings((prev) => prev.filter((listing) => listing.id !== listingId));
+    }
+  }
+
   return (
+    <>
+    <Header />
     <main className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Saved trips</h1>
       {loading ? (
@@ -51,12 +63,18 @@ export default function SavedTripsPage() {
       ) : listings.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              isSaved={savedIds.has(listing.id)}
+              onToggleSave={() => removeSaved(listing.id)}
+            />
           ))}
         </div>
       ) : (
         <p className="text-muted-foreground">No saved trips yet. Browse listings and save the ones you like.</p>
       )}
     </main>
+    </>
   );
 }

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, LayoutDashboard, LogOut } from "lucide-react";
+import { ROUTES } from "@/lib/routes";
 
 function getAvatarUrl(user: User | null) {
   return user?.user_metadata?.avatar_url || user?.user_metadata?.picture || "";
@@ -60,14 +61,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 h-14 sm:h-16">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={ROUTES.home} className="flex items-center gap-2">
           <Image src="/logo.png" alt="Beddn" width={28} height={28} />
           <span className="text-lg sm:text-xl font-bold tracking-tight">Beddn</span>
         </Link>
 
         <div className="flex items-center gap-2">
           {user && (
-            <Link href="/dashboard/listings/new" className="hidden sm:block">
+            <Link href={ROUTES.newListing} className="hidden sm:block">
               <Button variant="ghost" size="sm">
                 List your place
               </Button>
@@ -86,12 +87,12 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem>
-                  <Link href="/saved" className="flex items-center gap-2 w-full">
+                  <Link href={ROUTES.saved} className="flex items-center gap-2 w-full">
                     <Heart className="h-4 w-4" /> Saved trips
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Link href="/dashboard" className="flex items-center gap-2 w-full">
+                  <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
                     <LayoutDashboard className="h-4 w-4" /> Dashboard
                   </Link>
                 </DropdownMenuItem>

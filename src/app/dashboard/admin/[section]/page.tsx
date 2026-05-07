@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 type Row = Record<string, unknown> & { id: string };
 
@@ -23,6 +24,17 @@ function label(value: unknown) {
   if (typeof value === "object") return JSON.stringify(value);
   return String(value);
 }
+
+const SECTION_COLUMNS: Record<string, string[]> = {
+  bookings: ["guest_name", "status", "category", "currency", "deposit_amount", "created_at"],
+  payments: ["provider", "status", "currency", "amount", "provider_reference", "created_at"],
+  hosts: ["name", "phone", "is_verified", "created_at"],
+  listings: ["name", "city", "area", "is_verified", "listing_status", "booking_mode"],
+  withdrawals: ["amount", "currency", "status", "payout_method", "created_at"],
+  disputes: ["guest_name", "status", "booking_token", "created_at"],
+  feedback: ["rating", "issue_reported", "issue_type", "comment", "created_at"],
+  demand: ["query", "category", "results_count", "created_at"],
+};
 
 export default function AdminSectionPage() {
   const params = useParams<{ section: string }>();
@@ -66,12 +78,34 @@ export default function AdminSectionPage() {
   }
 
   const visibleKeys = rows[0]
-    ? Object.keys(rows[0]).filter((key) => !["raw_response", "payout_details"].includes(key)).slice(0, 8)
+    ? SECTION_COLUMNS[section] ??
+      Object.keys(rows[0]).filter((key) => !["raw_response", "payout_details"].includes(key)).slice(0, 8)
     : [];
+
+  const urgentCount = rows.filter((row) =>
+    ["pending", "requested", "disputed", "rejected", "paid_pending_host"].includes(String(row.status ?? row.verification_status ?? ""))
+    || row.is_verified === false
+    || row.issue_reported === true
+  ).length;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{title}</h1>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Review the latest 100 records and take manual MVP actions.
+          </p>
+        </div>
+        {!loading && (
+          <div className="flex gap-2">
+            <Badge variant="secondary" className="rounded-full">{rows.length} total</Badge>
+            <Badge className="rounded-full bg-[#f8eef2] text-[#800020] hover:bg-[#f8eef2]">
+              {urgentCount} need review
+            </Badge>
+          </div>
+        )}
+      </div>
       {loading ? (
         <div className="h-20 bg-muted animate-pulse rounded" />
       ) : rows.length === 0 ? (
@@ -108,6 +142,12 @@ export default function AdminSectionPage() {
                         <>
                           <Button size="sm" variant="outline" onClick={() => action("verify_listing", row.id)}>
                             Verify
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => action("reject_listing", row.id)}>
+                            Reject
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => action("pause_listing", row.id)}>
+                            Pause
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => action("enable_auto_accept", row.id)}>
                             Auto accept

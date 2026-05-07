@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -30,6 +31,7 @@ import {
   TicketCheck,
   Users,
 } from "lucide-react";
+import type { DateRange } from "react-day-picker";
 import type { Listing, ListingCategory, Review } from "@/lib/types";
 
 type ReserveListing = Listing & { reviews?: Pick<Review, "rating">[] };
@@ -57,6 +59,19 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [wantsNegotiation, setWantsNegotiation] = useState(false);
   const [offerAmount, setOfferAmount] = useState("");
   const [negotiationMessage, setNegotiationMessage] = useState("");
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+
+  function dateFromInput(value: string) {
+    return value ? new Date(`${value}T12:00:00`) : undefined;
+  }
+
+  function dateToInput(date?: Date) {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
   useEffect(() => {
     async function load() {
@@ -205,6 +220,11 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const avgRating = reviews.length
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
+  const selectedRange: DateRange | undefined = {
+    from: dateFromInput(checkIn),
+    to: dateFromInput(checkOut),
+  };
+  const isExperience = category === "experience";
 
   return (
     <>
@@ -236,6 +256,69 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     We use this to send SMS updates and your booking confirmation.
                   </p>
                 </div>
+              </div>
+
+              <div className="mb-5 rounded-2xl border bg-[#fbf7f8] p-4">
+                <div className="mb-3">
+                  <h3 className="font-bold">
+                    {category === "overnight"
+                      ? "Choose your nights"
+                      : isExperience
+                      ? "Choose your experience session"
+                      : "Choose your date"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {isExperience
+                      ? "Pick a session date, then add time and seats below."
+                      : category === "hourly"
+                      ? "Pick the day, then choose the start time and duration."
+                      : "Select check-in and check-out dates."}
+                  </p>
+                </div>
+                {category === "overnight" ? (
+                  <Calendar
+                    mode="range"
+                    selected={selectedRange}
+                    onSelect={(range) => {
+                      setCheckIn(dateToInput(range?.from));
+                      setCheckOut(dateToInput(range?.to));
+                    }}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    numberOfMonths={1}
+                    className="mx-auto w-full [--cell-radius:0.5rem] [--cell-size:2.25rem] sm:[--cell-size:2.45rem]"
+                    classNames={{
+                      root: "w-full max-w-[340px]",
+                      caption_label: "font-bold text-[#2b000a]",
+                      button_previous: "text-[#800020] hover:bg-[#f8eef2]",
+                      button_next: "text-[#800020] hover:bg-[#f8eef2]",
+                      day_button:
+                        "data-[range-start=true]:bg-[#800020] data-[range-start=true]:text-white data-[range-end=true]:bg-[#800020] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#800020] data-[selected-single=true]:text-white data-[range-middle=true]:bg-[#f7e8ee] data-[range-middle=true]:text-[#2b000a]",
+                      range_start: "bg-transparent after:bg-[#f7e8ee]",
+                      range_middle: "bg-[#f7e8ee]",
+                      range_end: "bg-transparent after:bg-[#f7e8ee]",
+                    }}
+                  />
+                ) : (
+                  <Calendar
+                    mode="single"
+                    selected={dateFromInput(checkIn)}
+                    onSelect={(date) => setCheckIn(dateToInput(date))}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    numberOfMonths={1}
+                    className="mx-auto w-full [--cell-radius:0.5rem] [--cell-size:2.25rem] sm:[--cell-size:2.45rem]"
+                    classNames={{
+                      root: "w-full max-w-[340px]",
+                      caption_label: "font-bold text-[#2b000a]",
+                      button_previous: "text-[#800020] hover:bg-[#f8eef2]",
+                      button_next: "text-[#800020] hover:bg-[#f8eef2]",
+                      day_button:
+                        "data-[selected-single=true]:bg-[#800020] data-[selected-single=true]:text-white",
+                      today: "bg-[#f7e8ee] text-[#2b000a]",
+                    }}
+                  />
+                )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -336,9 +419,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="checkIn">
-                    {category === "experience" ? "Session date" : "Check-in date"}
-                  </Label>
+                  <Label htmlFor="checkIn">{isExperience ? "Session date" : "Check-in date"}</Label>
                   <Input
                     id="checkIn"
                     type="date"
@@ -390,7 +471,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   </div>
                 )}
                 <div>
-                  <Label htmlFor="guests">Guests</Label>
+                  <Label htmlFor="guests">{isExperience ? "Seats" : "Guests"}</Label>
                   <div className="relative mt-1">
                     <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
@@ -541,7 +622,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     <div>
                       <p className="font-medium">{bookingDateLabel()}</p>
                       <p className="text-muted-foreground">
-                        {guests} guest{guests === "1" ? "" : "s"}
+                      {guests} {isExperience ? "seat" : "guest"}{guests === "1" ? "" : "s"}
                       </p>
                     </div>
                   </div>

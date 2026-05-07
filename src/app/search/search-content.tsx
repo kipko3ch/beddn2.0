@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { Map } from "@/components/map";
+import { useSavedListings } from "@/lib/hooks";
 import { MapPin, Search, X } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
@@ -25,6 +26,7 @@ export function SearchContent() {
   const [searchQuery, setSearchQuery] = useState(q);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
+  const { savedIds, toggle } = useSavedListings();
 
   const fetchResults = useCallback(async () => {
     setLoading(true);
@@ -170,7 +172,12 @@ export function SearchContent() {
                     highlightedId === listing.id ? "ring-2 ring-[#800020] ring-offset-2" : ""
                   }`}
                 >
-                  <ListingCard listing={listing} onHover={setHighlightedId} />
+                  <ListingCard
+                    listing={listing}
+                    onHover={setHighlightedId}
+                    isSaved={savedIds.has(listing.id)}
+                    onToggleSave={() => toggle(listing.id)}
+                  />
                 </div>
               ))}
             </div>

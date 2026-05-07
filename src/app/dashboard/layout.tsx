@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
 import styles from '../landing.module.css';
+import { ROUTES } from '@/lib/routes';
 import {
   LayoutDashboard,
   Home,
@@ -22,25 +23,25 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/listings", label: "Listings", icon: Home },
-  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck },
-  { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
-  { href: "/dashboard/withdrawals", label: "Withdrawals", icon: Wallet },
-  { href: "/dashboard/feedback", label: "Feedback", icon: MessageSquare },
-  { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
-  { href: "/dashboard/demand", label: "Demand", icon: TrendingUp },
+  { href: ROUTES.dashboard, label: "Overview", icon: LayoutDashboard },
+  { href: ROUTES.dashboardListings, label: "Listings", icon: Home },
+  { href: ROUTES.dashboardBookings, label: "Bookings", icon: CalendarCheck },
+  { href: ROUTES.dashboardCalendar, label: "Calendar", icon: CalendarDays },
+  { href: ROUTES.dashboardWithdrawals, label: "Withdrawals", icon: Wallet },
+  { href: ROUTES.dashboardFeedback, label: "Feedback", icon: MessageSquare },
+  { href: ROUTES.dashboardPayments, label: "Payments", icon: CreditCard },
+  { href: ROUTES.dashboardDemand, label: "Demand", icon: TrendingUp },
 ];
 
 const ADMIN_ITEMS = [
-  { href: "/dashboard/admin/bookings", label: "Admin bookings" },
-  { href: "/dashboard/admin/payments", label: "Admin payments" },
-  { href: "/dashboard/admin/hosts", label: "Admin hosts" },
-  { href: "/dashboard/admin/listings", label: "Admin listings" },
-  { href: "/dashboard/admin/withdrawals", label: "Admin withdrawals" },
-  { href: "/dashboard/admin/disputes", label: "Admin disputes" },
-  { href: "/dashboard/admin/feedback", label: "Admin feedback" },
-  { href: "/dashboard/admin/demand", label: "Admin demand" },
+  { href: ROUTES.adminBookings, label: "Admin bookings" },
+  { href: ROUTES.adminPayments, label: "Admin payments" },
+  { href: ROUTES.adminHosts, label: "Admin hosts" },
+  { href: ROUTES.adminListings, label: "Admin listings" },
+  { href: ROUTES.adminWithdrawals, label: "Admin withdrawals" },
+  { href: ROUTES.adminDisputes, label: "Admin disputes" },
+  { href: ROUTES.adminFeedback, label: "Admin feedback" },
+  { href: ROUTES.adminDemand, label: "Admin demand" },
 ];
 
 export default function DashboardLayout({

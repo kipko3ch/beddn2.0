@@ -1,0 +1,46 @@
+export const ROUTES = {
+  home: "/",
+  search: "/search",
+  saved: "/saved",
+  dashboard: "/dashboard",
+  dashboardBookings: "/dashboard/bookings",
+  dashboardListings: "/dashboard/listings",
+  dashboardCalendar: "/dashboard/calendar",
+  dashboardWithdrawals: "/dashboard/withdrawals",
+  dashboardFeedback: "/dashboard/feedback",
+  dashboardPayments: "/dashboard/payments",
+  dashboardDemand: "/dashboard/demand",
+  newListing: "/dashboard/listings/new",
+  adminBookings: "/dashboard/admin/bookings",
+  adminPayments: "/dashboard/admin/payments",
+  adminHosts: "/dashboard/admin/hosts",
+  adminListings: "/dashboard/admin/listings",
+  adminWithdrawals: "/dashboard/admin/withdrawals",
+  adminDisputes: "/dashboard/admin/disputes",
+  adminFeedback: "/dashboard/admin/feedback",
+  adminDemand: "/dashboard/admin/demand",
+  property: (slug: string) => `/property/${slug}`,
+  reserve: (id: string) => `/reserve/${id}`,
+  booking: (token: string) => `/booking/${token}`,
+} as const;
+
+export const USER_ROUTES = [
+  ROUTES.saved,
+  ROUTES.dashboard,
+  ROUTES.dashboardBookings,
+  ROUTES.dashboardListings,
+  ROUTES.dashboardCalendar,
+  ROUTES.dashboardWithdrawals,
+  ROUTES.dashboardFeedback,
+] as const;
+
+export const ADMIN_ROUTES = [
+  ROUTES.adminBookings,
+  ROUTES.adminPayments,
+  ROUTES.adminHosts,
+  ROUTES.adminListings,
+  ROUTES.adminWithdrawals,
+  ROUTES.adminDisputes,
+  ROUTES.adminFeedback,
+  ROUTES.adminDemand,
+] as const;

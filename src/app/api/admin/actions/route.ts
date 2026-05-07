@@ -6,6 +6,8 @@ interface AdminActionBody {
   action:
     | "verify_host"
     | "verify_listing"
+    | "reject_listing"
+    | "pause_listing"
     | "enable_auto_accept"
     | "disable_auto_accept"
     | "approve_withdrawal"
@@ -44,6 +46,20 @@ export async function POST(request: Request) {
     const { error } = await admin
       .from("listings")
       .update({ is_verified: true, verification_status: "verified", listing_status: "active", is_active: true })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "reject_listing" || body.action === "pause_listing") {
+    const { error } = await admin
+      .from("listings")
+      .update({
+        is_verified: false,
+        verification_status: body.action === "reject_listing" ? "rejected" : "pending",
+        listing_status: "paused",
+        is_active: false,
+        booking_mode: "manual_accept",
+      })
       .eq("id", body.id);
     errorMessage = error?.message || null;
   }
