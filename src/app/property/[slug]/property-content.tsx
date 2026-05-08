@@ -474,34 +474,42 @@ export function PropertyContent({
                   />
                 </div>
               </div>
-              <div className="flex justify-end border-t p-4">
-                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
+              <div className="flex justify-end border-t bg-[#fcfafb] p-4 sm:p-5">
+                <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2">
                     {availabilityChecked ? (
-                      <p className={`text-sm font-bold ${hasAvailability ? "text-[#800020]" : "text-red-700"}`}>
-                        {hasAvailability
-                          ? `Available: ${unitLabel}`
-                          : "Not available for this date. Try another day or time."}
-                      </p>
+                      hasAvailability ? (
+                        <div className="flex items-center gap-2 text-sm font-bold text-[#800020]">
+                          <BadgeCheck className="h-5 w-5" />
+                          <span>Great! {unitLabel}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm font-bold text-red-700">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Unavailable for this date. Try another.</span>
+                        </div>
+                      )
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Check availability before reserving.
+                        Select your dates to check availability.
                       </p>
                     )}
                   </div>
                   {availabilityChecked && hasAvailability ? (
                     <Button
                       onClick={() => router.push(reserveUrl())}
-                      className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                      className="h-11 rounded-full bg-[#800020] px-8 text-base font-bold shadow-sm hover:bg-[#600018] transition-all hover:shadow-md"
                     >
                       Continue to reserve
                     </Button>
                   ) : (
                     <Button
                       onClick={checkAvailability}
-                      className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                      className="h-11 rounded-full bg-[#800020] px-8 text-base font-bold shadow-sm hover:bg-[#600018] transition-all hover:shadow-md"
                     >
-                      Show availability
+                      Check availability
                     </Button>
                   )}
                 </div>

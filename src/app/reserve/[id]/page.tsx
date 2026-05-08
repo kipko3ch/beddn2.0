@@ -532,49 +532,62 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     className="mt-1 border-neutral-400 focus-visible:border-[#800020]"
                   />
                 </div>
-                <div className="sm:col-span-2 rounded-2xl border bg-[#fbf7f8] p-4">
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      className="mt-1 size-4 accent-[#800020]"
-                      checked={wantsNegotiation}
-                      onChange={(event) => setWantsNegotiation(event.target.checked)}
-                    />
-                    <span>
-                      <span className="flex items-center gap-2 font-bold">
-                        <HandCoins className="h-4 w-4 text-[#800020]" />
-                        Ask host for a better price
-                      </span>
-                      <span className="mt-1 block text-sm text-muted-foreground">
-                        Useful for longer stays, repeat visits, weekdays, or group bookings.
-                      </span>
-                    </span>
-                  </label>
-                  {wantsNegotiation && (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
-                      <div>
-                        <Label htmlFor="offerAmount">Your offer</Label>
-                        <Input
-                          id="offerAmount"
-                          inputMode="numeric"
-                          value={offerAmount}
-                          onChange={(event) => setOfferAmount(event.target.value)}
-                          placeholder={`${listing.currency || "KES"} amount`}
-                          className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="negotiationMessage">Message</Label>
-                        <Input
-                          id="negotiationMessage"
-                          value={negotiationMessage}
-                          onChange={(event) => setNegotiationMessage(event.target.value)}
-                          placeholder="Example: staying 5 nights, can we agree a better rate?"
-                          className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                        />
-                      </div>
+                <div className={`sm:col-span-2 rounded-2xl border transition-colors ${wantsNegotiation ? "bg-[#fbf7f8] border-[#800020]/30 shadow-sm" : "bg-white hover:bg-neutral-50"}`}>
+                  <label className="flex items-start gap-3 cursor-pointer p-4">
+                    <div className="relative flex items-center justify-center mt-1">
+                      <input
+                        type="checkbox"
+                        className="peer sr-only"
+                        checked={wantsNegotiation}
+                        onChange={(event) => setWantsNegotiation(event.target.checked)}
+                      />
+                      <div className="h-5 w-5 rounded border border-neutral-400 bg-white peer-checked:border-[#800020] peer-checked:bg-[#800020] transition-all"></div>
+                      <svg className="absolute w-3.5 h-3.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
-                  )}
+                    <div>
+                      <span className="flex items-center gap-2 font-bold text-[#181113]">
+                        <HandCoins className="h-4 w-4 text-[#800020]" />
+                        Request a custom price from the host
+                      </span>
+                      <span className="mt-1.5 block text-sm text-muted-foreground leading-relaxed">
+                        Hosts are often open to adjusting their rates for extended stays, returning guests, or weekday visits. Your request will be sent securely to the host for review.
+                      </span>
+                    </div>
+                  </label>
+                  <div className={`grid gap-4 overflow-hidden transition-all duration-300 ease-in-out ${wantsNegotiation ? "grid-rows-[1fr] opacity-100 pb-4 px-4" : "grid-rows-[0fr] opacity-0 p-0"}`}>
+                    <div className="min-h-0">
+                      <Separator className="mb-4" />
+                      <div className="grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)]">
+                        <div>
+                          <Label htmlFor="offerAmount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Proposed Total ({listing.currency || "KES"})</Label>
+                          <Input
+                            id="offerAmount"
+                            inputMode="numeric"
+                            value={offerAmount}
+                            onChange={(event) => setOfferAmount(event.target.value)}
+                            placeholder="e.g. 15000"
+                            className="mt-1.5 h-11 bg-white border-neutral-300 focus-visible:ring-1 focus-visible:ring-[#800020] focus-visible:border-[#800020] shadow-sm transition-shadow"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="negotiationMessage" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Why this price?</Label>
+                          <Input
+                            id="negotiationMessage"
+                            value={negotiationMessage}
+                            onChange={(event) => setNegotiationMessage(event.target.value)}
+                            placeholder="e.g. I'm staying for 5 nights and wondering if you have a weekly rate."
+                            className="mt-1.5 h-11 bg-white border-neutral-300 focus-visible:ring-1 focus-visible:ring-[#800020] focus-visible:border-[#800020] shadow-sm transition-shadow"
+                          />
+                        </div>
+                      </div>
+                      <p className="mt-3 text-xs text-muted-foreground flex items-center gap-1.5 bg-neutral-100/50 p-2 rounded-lg">
+                        <ShieldCheck className="h-3.5 w-3.5 text-[#800020] shrink-0" />
+                        You only pay the standard reserve fee today. The host will confirm the final agreed amount directly with you.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>

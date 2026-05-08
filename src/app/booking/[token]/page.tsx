@@ -109,20 +109,36 @@ export default function BookingPage({
 
   if (loading) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-8 animate-pulse">
-        <div className="h-6 w-1/2 bg-muted rounded mb-4" />
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-5 bg-muted rounded" />
-          ))}
+      <main className="mx-auto max-w-xl px-4 py-8 sm:px-6">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="size-8 animate-pulse rounded-full bg-[#f1e6ea]" />
+          <div className="h-7 w-48 animate-pulse rounded-lg bg-muted" />
         </div>
-      </div>
+        <div className="mb-6 flex items-center gap-2">
+          <div className="h-9 w-32 animate-pulse rounded-lg bg-muted" />
+        </div>
+        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+          <div className="space-y-4">
+            <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+            <div className="my-5 h-px w-full bg-border" />
+            <div className="grid grid-cols-2 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+                  <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
     );
   }
 
   if (!booking) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-20 text-center">
+      <div className="mx-auto max-w-lg px-4 py-20 text-center">
         <p className="text-muted-foreground">Booking not found</p>
       </div>
     );
@@ -130,45 +146,72 @@ export default function BookingPage({
 
   const isConfirmed = booking.status === "confirmed" || booking.status === "completed";
   const isPendingHost = booking.status === "paid_pending_host";
+  const isRejected = booking.status === "rejected" || booking.status === "cancelled";
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-8">
-      <div className="flex items-center gap-2 mb-4">
+    <main className="mx-auto max-w-xl px-4 py-8 sm:px-6 lg:py-12">
+      <div className="mb-6 flex items-center gap-3">
         {isConfirmed ? (
-          <CheckCircle className="h-6 w-6 text-[#800020]" />
+          <CheckCircle className="size-8 shrink-0 text-[#800020]" />
+        ) : isRejected ? (
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-red-100">
+            <svg className="size-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
         ) : (
-          <Clock className="h-6 w-6 text-yellow-600" />
+          <Clock className="size-8 shrink-0 text-amber-500" />
         )}
-        <h1 className="text-xl font-bold">
+        <h1 className="text-2xl font-bold tracking-tight">
           {isConfirmed
             ? "Booking confirmed"
             : isPendingHost
             ? "Awaiting host confirmation"
+            : isRejected
+            ? "Booking unavailable"
             : "Booking pending payment"}
         </h1>
       </div>
 
+      {isPendingHost && (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <h3 className="font-bold text-amber-900">What happens next?</h3>
+          <p className="mt-1 text-sm text-amber-800">
+            The host has been notified via SMS to confirm your reservation. We&apos;ll text you as soon as they respond. If the host declines or times out, your reserve fee is fully refundable or can be used for another place.
+          </p>
+        </div>
+      )}
+
+      {isRejected && (
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <h3 className="font-bold text-red-900">Reservation declined</h3>
+          <p className="mt-1 text-sm text-red-800">
+            Unfortunately, the host is unable to accommodate this request. Your reserve fee will be refunded back to your payment method automatically within 3-5 business days. We apologize for the inconvenience.
+          </p>
+        </div>
+      )}
+
       {/* Token */}
-      <div className="flex items-center gap-2 mb-6">
-        <code className="bg-muted px-3 py-1.5 rounded text-lg font-mono font-bold">
+      <div className="mb-6 flex items-center gap-2">
+        <code className="rounded-lg bg-muted px-4 py-2 font-mono text-lg font-bold tracking-widest text-[#181113]">
           {booking.token}
         </code>
-        <Button variant="ghost" size="sm" onClick={copyToken}>
-          <Copy className="h-4 w-4" />
-          {copied ? " Copied" : ""}
+        <Button variant="ghost" size="sm" onClick={copyToken} className="h-10 px-3 hover:bg-muted">
+          <Copy className="mr-2 h-4 w-4" />
+          {copied ? "Copied" : "Copy"}
         </Button>
       </div>
 
-      <div className="border rounded-xl p-5 space-y-4">
+      <div className="rounded-3xl border bg-white p-5 shadow-sm sm:p-7">
         <div>
-          <h2 className="font-semibold">{booking.listing.name}</h2>
-          <p className="text-sm text-muted-foreground">
-            {booking.listing.area}, {booking.listing.city},{" "}
-            {booking.listing.country}
+          <h2 className="text-lg font-bold leading-snug">{booking.listing.name}</h2>
+          <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
+            <MapPin className="h-4 w-4" />
+            {booking.listing.area}, {booking.listing.city}, {booking.listing.country}
           </p>
         </div>
 
-        <Separator />
+        <Separator className="my-5" />
 
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
