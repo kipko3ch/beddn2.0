@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Search,
@@ -175,9 +176,9 @@ export default function LandingPage() {
           </SheetContent>
         </Sheet>
 
-        <div className={styles.logoArea}>
+        <Link href={ROUTES.home} className={styles.logoArea} aria-label="Beddn home">
           Beddn
-        </div>
+        </Link>
 
         <nav className={styles.navRight}>
           <a href={ROUTES.search} className={styles.navItem}>Discover</a>

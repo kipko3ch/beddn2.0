@@ -40,6 +40,8 @@
   color: #2b000a;
   letter-spacing: 0;
   line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .desktopAccount {
