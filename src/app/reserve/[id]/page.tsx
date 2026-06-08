@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -41,8 +40,7 @@ function CheckoutHeader({ backHref }: { backHref?: string }) {
     <header className="border-b bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-          <Image src={LOGO_SRC} alt="Beddn" width={20} height={28} unoptimized className="h-7 w-auto object-contain" />
-          <span className="text-lg">Beddn</span>
+          <span className="font-brand text-2xl leading-none text-[#2b000a]">Beddn</span>
         </Link>
         {backHref && (
           <Link

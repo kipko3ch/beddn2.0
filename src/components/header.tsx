@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -14,10 +14,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Home, LayoutDashboard, LogOut, Search, UserCircle } from "lucide-react";
+import { Heart, Home, LayoutDashboard, LogOut, Menu, Search, UserCircle } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
-import { LOGO_SRC } from "@/lib/assets";
+import { useScrollUpVisibility } from "@/lib/use-scroll-up-visibility";
 
 function getAvatarUrl(user: User | null) {
   return user?.user_metadata?.avatar_url || user?.user_metadata?.picture || "";
@@ -35,7 +44,9 @@ function getInitials(user: User | null) {
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
+  const pathname = usePathname();
   const supabase = createClient();
+  const bottomNavVisible = useScrollUpVisibility();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -56,10 +67,9 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 h-14 sm:h-16">
-          <Link href={ROUTES.home} className="flex items-center gap-2">
-            <Image src={LOGO_SRC} alt="Beddn" width={22} height={32} unoptimized className="h-8 w-auto object-contain" />
-            <span className="text-lg sm:text-xl font-bold tracking-tight">Beddn</span>
+        <div className="max-w-7xl mx-auto hidden items-center justify-between gap-3 px-4 h-14 sm:h-16 md:flex">
+          <Link href={ROUTES.home} className="flex items-center">
+            <span className="font-brand text-2xl leading-none text-[#2b000a]">Beddn</span>
           </Link>
 
           <div className="flex items-center gap-2">
@@ -112,50 +122,170 @@ export function Header() {
             )}
           </div>
         </div>
+        <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-center px-4 md:hidden">
+          <div className="absolute left-4">
+            <Sheet>
+              <SheetTrigger
+                render={
+                  <button
+                    type="button"
+                    className="inline-flex size-9 items-center justify-center rounded-full border bg-white text-[#181113] shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[#800020]"
+                  />
+                }
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open navigation</span>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[min(82vw,320px)] gap-0 bg-white p-0">
+                <SheetHeader className="border-b p-5">
+                  <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
+                    Beddn
+                  </SheetTitle>
+                  <SheetDescription>Navigate Beddn</SheetDescription>
+                </SheetHeader>
+                <nav className="grid gap-2 p-4">
+                  <SheetClose
+                    render={
+                      <Link href={ROUTES.search} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                    }
+                  >
+                    <Search className="h-4 w-4" /> Discover
+                  </SheetClose>
+                  <SheetClose
+                    render={
+                      <Link href={ROUTES.review} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                    }
+                  >
+                    <Heart className="h-4 w-4" /> Review a stay
+                  </SheetClose>
+                  <SheetClose
+                    render={
+                      <Link href={ROUTES.saved} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                    }
+                  >
+                    <Heart className="h-4 w-4" /> Saved trips
+                  </SheetClose>
+                  {user && (
+                    <SheetClose
+                      render={
+                        <Link href={ROUTES.newListing} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                      }
+                    >
+                      <Home className="h-4 w-4" /> List your place
+                    </SheetClose>
+                  )}
+                  <SheetClose
+                    render={
+                      <Link href={ROUTES.terms} className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                    }
+                  >
+                    Terms
+                  </SheetClose>
+                  <SheetClose
+                    render={
+                      <Link href={ROUTES.privacy} className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                    }
+                  >
+                    Privacy
+                  </SheetClose>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
+          <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
+            Beddn
+          </Link>
+          <div className="absolute right-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2">
+                  <Avatar className="size-9 cursor-pointer">
+                    <AvatarImage src={getAvatarUrl(user)} alt={user.email ?? "Profile"} />
+                    <AvatarFallback className="bg-[#f8eef2] text-xs font-medium text-[#800020]">
+                      {getInitials(user)}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem>
+                    <Link href={ROUTES.saved} className="flex items-center gap-2 w-full">
+                      <Heart className="h-4 w-4" /> Saved trips
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
+                      <LayoutDashboard className="h-4 w-4" /> Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <span className="flex items-center gap-2">
+                      <LogOut className="h-4 w-4" /> Sign out
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <AuthDialog>
+                <button className="inline-flex size-9 items-center justify-center rounded-full border bg-white text-[#181113] shadow-sm">
+                  <UserCircle className="h-5 w-5" />
+                  <span className="sr-only">Sign in</span>
+                </button>
+              </AuthDialog>
+            )}
+          </div>
+        </div>
       </header>
       <nav
-        className="md:hidden"
-        style={{
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          top: "auto",
-          zIndex: 80,
-          borderTop: "1px solid #eee",
-          background: "rgba(255,255,255,0.96)",
-          padding: "8px 12px",
-          boxShadow: "0 -8px 24px rgba(0,0,0,0.08)",
-          backdropFilter: "blur(12px)",
-        }}
+        className={`fixed left-1/2 bottom-[max(14px,env(safe-area-inset-bottom))] z-40 grid w-[min(calc(100vw_-_32px),430px)] -translate-x-1/2 grid-cols-4 gap-1.5 rounded-3xl border border-black/10 bg-white/95 p-1.5 text-center text-[11px] shadow-[0_14px_40px_rgba(24,17,19,0.16)] backdrop-blur transition duration-200 md:hidden ${
+          bottomNavVisible ? "translate-y-0 opacity-100" : "translate-y-[calc(100%+24px)] opacity-0 pointer-events-none"
+        }`}
       >
-        <div className="mx-auto grid max-w-md grid-cols-4 text-center text-xs font-semibold">
-          <Link href={ROUTES.home} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+          <Link
+            href={ROUTES.home}
+            className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
+              pathname === ROUTES.home ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+            }`}
+          >
             <Home className="h-5 w-5" />
             Home
           </Link>
-          <Link href={ROUTES.search} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+          <Link
+            href={ROUTES.search}
+            className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
+              pathname?.startsWith(ROUTES.search) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+            }`}
+          >
             <Search className="h-5 w-5" />
             Search
           </Link>
-          <Link href={ROUTES.saved} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+          <Link
+            href={ROUTES.saved}
+            className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
+              pathname === ROUTES.saved ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+            }`}
+          >
             <Heart className="h-5 w-5" />
             Saved
           </Link>
           {user ? (
-            <Link href={ROUTES.dashboard} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+            <Link
+              href={ROUTES.dashboard}
+              className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
+                pathname?.startsWith(ROUTES.dashboard) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+              }`}
+            >
               <UserCircle className="h-5 w-5" />
               Account
             </Link>
           ) : (
             <AuthDialog>
-              <button className="flex w-full flex-col items-center gap-1 rounded-xl px-2 py-1 hover:bg-muted">
+              <button className="flex w-full flex-col items-center gap-0.5 rounded-2xl px-2 py-2 text-[#6f6568] hover:bg-muted">
                 <UserCircle className="h-5 w-5" />
                 Sign in
               </button>
             </AuthDialog>
           )}
-        </div>
       </nav>
     </>
   );

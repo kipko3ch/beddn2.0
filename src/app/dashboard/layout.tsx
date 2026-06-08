@@ -5,17 +5,14 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import Image from 'next/image';
 import styles from '../landing.module.css';
 import { ROUTES } from '@/lib/routes';
-import { LOGO_SRC } from '@/lib/assets';
 import {
   LayoutDashboard,
   Home,
   CalendarCheck,
   CreditCard,
   TrendingUp,
-  Sparkles,
   CalendarDays,
   Wallet,
   MessageSquare,
@@ -89,38 +86,10 @@ export default function DashboardLayout({
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={styles.logoArea}>
-            <Image
-              src={LOGO_SRC}
-              alt="Beddn Logo"
-              width={28}
-              height={42}
-              priority
-              unoptimized
-              className={styles.logoMark}
-            />
             Beddn
           </div>
 
           <nav className={styles.navRight}>
-            <button
-              type="button"
-              className={`${styles.navItem} ${styles.comingSoonNavItem}`}
-              aria-label="Plan with AI coming soon"
-              title="Coming soon"
-            >
-              <Sparkles size={18} />
-              Plan with AI
-              <span className={styles.comingSoonDot} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={`${styles.navItem} ${styles.comingSoonNavItem}`}
-              aria-label="Rewards coming soon"
-              title="Coming soon"
-            >
-              Rewards
-              <span className={styles.comingSoonDot} aria-hidden="true" />
-            </button>
             <Link href={ROUTES.search} className={styles.navItem}>Discover</Link>
             <Link href={ROUTES.review} className={styles.navItem}>Review</Link>
           </nav>
@@ -149,8 +118,7 @@ export default function DashboardLayout({
     <div className="flex-1 flex flex-col">
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
         <div className="flex h-14 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <Image src={LOGO_SRC} alt="Beddn Logo" width={22} height={32} priority unoptimized className="h-8 w-auto object-contain" />
+          <Link href="/" className="flex items-center font-brand text-2xl leading-none text-[#2b000a]">
             Beddn
           </Link>
           <nav className="hidden md:flex items-center gap-2 text-sm">

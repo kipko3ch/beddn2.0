@@ -4,12 +4,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
-  Sparkles,
   Search,
   MapPin,
   Home,
   Heart,
   UserCircle,
+  Menu,
   Bus,
   Waves,
   Dumbbell
@@ -19,8 +19,16 @@ import { createClient } from '@/lib/supabase/client';
 import { useSavedListings } from '@/lib/hooks';
 import { ListingCard } from '@/components/listing-card';
 import { AuthDialog } from '@/components/auth-dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { ROUTES } from '@/lib/routes';
-import { LOGO_SRC } from '@/lib/assets';
+import { useScrollUpVisibility } from '@/lib/use-scroll-up-visibility';
 import type { User } from '@supabase/supabase-js';
 import type { Listing } from '@/lib/types';
 
@@ -53,12 +61,20 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<TabType>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
-  const [experienceDemandCount, setExperienceDemandCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { savedIds, toggle } = useSavedListings();
+  const bottomNavVisible = useScrollUpVisibility();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const currentData = TAB_DATA[activeTab];
 
@@ -90,17 +106,6 @@ export default function LandingPage() {
     fetchListings();
     checkUser();
   }, [checkUser, fetchListings]);
-
-  useEffect(() => {
-    async function loadExperienceDemand() {
-      const { count } = await supabase
-        .from('search_demand')
-        .select('id', { count: 'exact', head: true })
-        .eq('category', 'experience');
-      setExperienceDemandCount(count ?? 0);
-    }
-    loadExperienceDemand();
-  }, [supabase]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -134,44 +139,51 @@ export default function LandingPage() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
+      <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
+        <Sheet>
+          <SheetTrigger
+            render={
+              <button type="button" className={styles.mobileMenuButton} aria-label="Open navigation" />
+            }
+          >
+            <Menu size={20} />
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[min(82vw,320px)] gap-0 bg-white p-0">
+            <SheetHeader className="border-b p-5">
+              <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
+                Beddn
+              </SheetTitle>
+              <SheetDescription>Navigate Beddn</SheetDescription>
+            </SheetHeader>
+            <nav className="grid gap-2 p-4">
+              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.search}>
+                Discover
+              </a>
+              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.review}>
+                Review a stay
+              </a>
+              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.saved}>
+                Saved trips
+              </a>
+              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.terms}>
+                Terms
+              </a>
+              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.privacy}>
+                Privacy
+              </a>
+            </nav>
+          </SheetContent>
+        </Sheet>
+
         <div className={styles.logoArea}>
-          <Image
-            src={LOGO_SRC}
-            alt="Beddn Logo"
-            width={28}
-            height={42}
-            priority
-            unoptimized
-            className={styles.logoMark}
-          />
           Beddn
         </div>
 
         <nav className={styles.navRight}>
-          <button
-            type="button"
-            className={`${styles.navItem} ${styles.comingSoonNavItem}`}
-            aria-label="Plan with AI coming soon"
-            title="Coming soon"
-          >
-            <Sparkles size={18} />
-            Plan with AI
-            <span className={styles.comingSoonDot} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={`${styles.navItem} ${styles.comingSoonNavItem}`}
-            aria-label="Rewards coming soon"
-            title="Coming soon"
-          >
-            Rewards
-            <span className={styles.comingSoonDot} aria-hidden="true" />
-          </button>
           <a href={ROUTES.search} className={styles.navItem}>Discover</a>
           <a href={ROUTES.review} className={styles.navItem}>Review</a>
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className={styles.desktopAccount}>
               <Image
                 src={user.user_metadata?.avatar_url || '/default-avatar.png'}
                 alt="Profile"
@@ -194,6 +206,31 @@ export default function LandingPage() {
             </AuthDialog>
           )}
         </nav>
+
+        <div className={styles.mobileProfileSlot}>
+          {user ? (
+            <button
+              type="button"
+              className={styles.mobileProfileButton}
+              aria-label="Open account"
+              onClick={() => router.push('/dashboard')}
+            >
+              <Image
+                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                alt=""
+                width={32}
+                height={32}
+                style={{ borderRadius: '50%' }}
+              />
+            </button>
+          ) : (
+            <AuthDialog>
+              <button type="button" className={styles.mobileProfileButton} aria-label="Sign in">
+                <UserCircle size={21} />
+              </button>
+            </AuthDialog>
+          )}
+        </div>
       </header>
 
       <main className={styles.main}>
@@ -248,7 +285,7 @@ export default function LandingPage() {
         {loading ? (
           <div className={styles.listingsGrid}>
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className={styles.listingSkeleton}>
+              <div key={i} className={`${styles.listingRailItem} ${styles.listingSkeleton}`}>
                 <div className={styles.skeletonImage} />
                 <div className={styles.skeletonTitle} />
                 <div className={styles.skeletonMeta} />
@@ -258,12 +295,13 @@ export default function LandingPage() {
         ) : listings.length > 0 ? (
           <div className={styles.listingsGrid}>
             {listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                isSaved={savedIds.has(listing.id)}
-                onToggleSave={() => toggle(listing.id)}
-              />
+              <div key={listing.id} className={styles.listingRailItem}>
+                <ListingCard
+                  listing={listing}
+                  isSaved={savedIds.has(listing.id)}
+                  onToggleSave={() => toggle(listing.id)}
+                />
+              </div>
             ))}
           </div>
         ) : activeTab === 'Experiences' ? (
@@ -272,9 +310,6 @@ export default function LandingPage() {
             <p className={styles.emptySubtitle}>
               Road trips, yoga sessions, swimming classes, hikes, and food tours will show here as verified organizers join.
             </p>
-            <div className={styles.demandPill}>
-              {Math.max(experienceDemandCount, 1)} people have asked for experiences
-            </div>
             <div className={styles.experienceIdeas}>
               {[
                 { label: 'Road trips', icon: Bus, query: 'road trip' },
@@ -314,7 +349,6 @@ export default function LandingPage() {
       </section>
       <footer className={styles.footer}>
         <div className={styles.footerBrand}>
-          <Image src={LOGO_SRC} alt="Beddn" width={22} height={32} unoptimized className={styles.footerLogoMark} />
           <span>Beddn</span>
         </div>
         <p>Built for flexible stays, local hosts, and real demand across Africa.</p>
@@ -324,8 +358,12 @@ export default function LandingPage() {
           <a href={ROUTES.review}>Review a stay</a>
         </div>
       </footer>
-      <nav className={styles.mobileBottomNav}>
-        <button onClick={() => setActiveTab('All')}>
+      <nav
+        className={`${styles.mobileBottomNav} ${
+          bottomNavVisible ? styles.mobileBottomNavVisible : styles.mobileBottomNavHidden
+        }`}
+      >
+        <button className={activeTab === 'All' ? styles.mobileBottomNavActive : ''} onClick={() => setActiveTab('All')}>
           <Home size={20} />
           <span>Home</span>
         </button>

@@ -223,9 +223,9 @@ export function SearchContent() {
           </p>
 
           {loading ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="animate-pulse">
+                <div key={i} className="w-[58vw] max-w-[230px] shrink-0 animate-pulse snap-start sm:w-auto sm:max-w-none">
                   <div className="aspect-[4/3] rounded-xl bg-muted" />
                   <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
                   <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
@@ -233,12 +233,12 @@ export function SearchContent() {
               ))}
             </div>
           ) : listings.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 xl:grid-cols-3">
               {listings.map((listing) => (
                 <div
                   key={listing.id}
                   id={`listing-${listing.id}`}
-                  className={`rounded-xl transition-shadow ${
+                  className={`w-[58vw] max-w-[230px] shrink-0 snap-start rounded-xl transition-shadow sm:w-auto sm:max-w-none ${
                     highlightedId === listing.id ? "ring-2 ring-[#800020] ring-offset-2" : ""
                   }`}
                 >
