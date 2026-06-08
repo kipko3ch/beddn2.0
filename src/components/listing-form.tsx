@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { uploadListingImage } from "@/lib/upload-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -96,6 +97,25 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   const [imageUrls, setImageUrls] = useState(
     listing?.listing_images?.map((img) => img.url).join("\n") ?? ""
   );
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  async function handleImageFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploadError("");
+    setUploading(true);
+    try {
+      // Upload sequentially so a slow connection doesn't fire many at once.
+      for (const file of Array.from(files)) {
+        const url = await uploadListingImage(file);
+        setImageUrls((prev) => (prev.trim() ? `${prev.trim()}\n${url}` : url));
+      }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function toggleCategory(cat: ListingCategory) {
     setCategories((prev) =>
@@ -534,14 +554,40 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       <Separator />
 
       {/* Images */}
-      <div>
-        <Label htmlFor="images">Image URLs (one per line)</Label>
+      <div className="space-y-2">
+        <Label htmlFor="image-files">Photos</Label>
+        <input
+          id="image-files"
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={uploading}
+          onChange={(e) => {
+            handleImageFiles(e.target.files);
+            e.target.value = ""; // allow re-selecting the same file
+          }}
+          className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-[#800020] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-[#600018] disabled:opacity-60"
+        />
+        <p className="text-xs text-muted-foreground">
+          Photos are compressed to about 250&nbsp;KB in your browser before
+          upload. Add as many as you like.
+        </p>
+        {uploading && (
+          <p className="text-xs font-medium text-[#800020]">Uploading…</p>
+        )}
+        {uploadError && (
+          <p className="text-xs font-medium text-red-600">{uploadError}</p>
+        )}
+
+        <Label htmlFor="images" className="pt-2">
+          Image URLs (one per line)
+        </Label>
         <Textarea
           id="images"
           value={imageUrls}
           onChange={(e) => setImageUrls(e.target.value)}
           rows={4}
-          placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+          placeholder="Uploaded photos appear here. You can also paste image URLs."
         />
       </div>
 
