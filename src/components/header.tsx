@@ -261,8 +261,8 @@ export function Header() {
       >
           <Link
             href={ROUTES.home}
-            className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
-              pathname === ROUTES.home ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+            className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${
+              pathname === ROUTES.home ? "text-[#800020]" : "text-[#6f6568]"
             }`}
           >
             <Icon icon="line-md:home" className="h-6 w-6" />
@@ -270,8 +270,8 @@ export function Header() {
           </Link>
           <Link
             href={ROUTES.search}
-            className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
-              pathname?.startsWith(ROUTES.search) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+            className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${
+              pathname?.startsWith(ROUTES.search) ? "text-[#800020]" : "text-[#6f6568]"
             }`}
           >
             <Icon icon="line-md:search" className="h-6 w-6" />
@@ -279,8 +279,8 @@ export function Header() {
           </Link>
           <Link
             href={ROUTES.saved}
-            className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
-              pathname === ROUTES.saved ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+            className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${
+              pathname === ROUTES.saved ? "text-[#800020]" : "text-[#6f6568]"
             }`}
           >
             <Icon icon="line-md:heart" className="h-6 w-6" />
@@ -289,8 +289,8 @@ export function Header() {
           {user && canHost ? (
             <Link
               href={ROUTES.dashboard}
-              className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
-                pathname?.startsWith(ROUTES.dashboard) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+              className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${
+                pathname?.startsWith(ROUTES.dashboard) ? "text-[#800020]" : "text-[#6f6568]"
               }`}
             >
               <Icon icon="line-md:account" className="h-6 w-6" />
@@ -299,8 +299,8 @@ export function Header() {
           ) : user ? (
             <Link
               href={ROUTES.newListing}
-              className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
-                pathname?.startsWith(ROUTES.newListing) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+              className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${
+                pathname?.startsWith(ROUTES.newListing) ? "text-[#800020]" : "text-[#6f6568]"
               }`}
             >
               <Icon icon="line-md:briefcase" className="h-6 w-6" />
@@ -308,7 +308,7 @@ export function Header() {
             </Link>
           ) : (
             <AuthDialog defaultHostIntent>
-              <button className="flex w-full flex-col items-center gap-0.5 rounded-2xl px-2 py-2 text-[#6f6568] hover:bg-muted">
+              <button className="flex w-full flex-col items-center gap-0.5 rounded-2xl px-2 py-2 text-[#6f6568]">
                 <Icon icon="line-md:briefcase" className="h-6 w-6" />
                 Host
               </button>

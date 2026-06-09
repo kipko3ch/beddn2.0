@@ -277,11 +277,11 @@ export function SearchContent() {
               <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                 <Button
                   onClick={() => router.push("/dashboard/listings/new")}
-                  className="rounded-full bg-[#800020] hover:bg-[#600018]"
+                  className="h-11 w-full rounded-full bg-[#800020] px-6 font-semibold hover:bg-[#600018] sm:w-auto"
                 >
                   List your place
                 </Button>
-                <Button variant="outline" className="rounded-full">
+                <Button variant="outline" className="h-11 w-full rounded-full px-6 font-semibold sm:w-auto">
                   Notify me when available
                 </Button>
               </div>
