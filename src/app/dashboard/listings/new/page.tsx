@@ -229,15 +229,5 @@ export default function NewListingPage() {
     );
   }
 
-  return (
-    <div>
-      <div className="mb-6 max-w-2xl">
-        <h1 className="font-brand text-4xl leading-none text-[#2b000a]">New listing</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Create an hourly stay, overnight stay, or experience. It can go active now; the Beddn verified badge waits for admin review.
-        </p>
-      </div>
-      <ListingForm hostId={hostId!} isAdmin={isAdmin} />
-    </div>
-  );
+  return <ListingForm hostId={hostId!} isAdmin={isAdmin} />;
 }

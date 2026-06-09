@@ -50,6 +50,7 @@ export interface Listing {
   country: string;
   city: string;
   area: string;
+  property_type?: string | null;
   private_address: string;
   check_in_instructions?: string | null;
   latitude: number;

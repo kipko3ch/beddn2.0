@@ -65,6 +65,7 @@ create table listings (
   country text not null,
   city text not null,
   area text not null,
+  property_type text,
   private_address text not null,
   latitude double precision not null,
   longitude double precision not null,

@@ -10,6 +10,7 @@ import { ListingCard } from "@/components/listing-card";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
 import { MapPin, Search, X } from "lucide-react";
+import { PROPERTY_TYPES } from "@/lib/property-types";
 import type { Listing } from "@/lib/types";
 
 export function SearchContent() {
@@ -21,6 +22,7 @@ export function SearchContent() {
   const lat = searchParams.get("lat");
   const lng = searchParams.get("lng");
   const category = searchParams.get("category") ?? "all";
+  const propertyType = searchParams.get("type") ?? "all";
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +46,10 @@ export function SearchContent() {
       query = query.contains("categories", [category]);
     }
 
+    if (propertyType !== "all") {
+      query = query.eq("property_type", propertyType);
+    }
+
     if (q) {
       query = query.or(`name.ilike.%${q}%,city.ilike.%${q}%,area.ilike.%${q}%,country.ilike.%${q}%`);
     }
@@ -61,7 +67,7 @@ export function SearchContent() {
     });
 
     setLoading(false);
-  }, [q, lat, lng, category]);
+  }, [q, lat, lng, category, propertyType]);
 
   useEffect(() => {
     fetchResults();
@@ -92,19 +98,27 @@ export function SearchContent() {
     };
   }, [q, lat, lng]);
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
+  function pushSearch(next: { category?: string; type?: string }) {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("q", searchQuery.trim());
-    if (category !== "all") params.set("category", category);
+    const cat = next.category ?? category;
+    const type = next.type ?? propertyType;
+    if (cat !== "all") params.set("category", cat);
+    if (type !== "all") params.set("type", type);
     router.push(`/search?${params.toString()}`);
   }
 
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    pushSearch({});
+  }
+
   function changeCategory(nextCategory: string) {
-    const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set("q", searchQuery.trim());
-    if (nextCategory !== "all") params.set("category", nextCategory);
-    router.push(`/search?${params.toString()}`);
+    pushSearch({ category: nextCategory });
+  }
+
+  function changePropertyType(nextType: string) {
+    pushSearch({ type: nextType });
   }
 
   function handlePinClick(listing: Listing) {
@@ -160,20 +174,34 @@ export function SearchContent() {
             </Button>
           </form>
 
-          <div className="mt-4 flex w-full gap-1 rounded-full bg-[#f5eef1] p-1 sm:inline-flex sm:w-auto">
-            {categoryOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => changeCategory(option.value)}
-                className={`flex-1 rounded-full px-2 py-2 text-sm font-semibold transition-colors sm:flex-none sm:px-4 ${
-                  category === option.value
-                    ? "bg-[#800020] text-white"
-                    : "text-[#6f6568] hover:text-[#2b000a]"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="flex w-full gap-1 rounded-full bg-[#f5eef1] p-1 sm:inline-flex sm:w-auto">
+              {categoryOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => changeCategory(option.value)}
+                  className={`flex-1 rounded-full px-2 py-2 text-sm font-semibold transition-colors sm:flex-none sm:px-4 ${
+                    category === option.value
+                      ? "bg-[#800020] text-white"
+                      : "text-[#6f6568] hover:text-[#2b000a]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <select
+              value={propertyType}
+              onChange={(e) => changePropertyType(e.target.value)}
+              className="h-10 rounded-full border border-[#e3d3d9] bg-white px-4 text-sm font-semibold text-[#2b000a] shadow-sm focus:border-[#800020] focus:outline-none focus:ring-2 focus:ring-[#800020]/20"
+            >
+              <option value="all">All property types</option>
+              {PROPERTY_TYPES.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </section>

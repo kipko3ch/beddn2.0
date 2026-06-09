@@ -33,7 +33,12 @@ import { LOGO_SRC } from "@/lib/assets";
 import type { Listing, Review } from "@/lib/types";
 import type { ListingCategory } from "@/lib/types";
 import type { DateRange } from "react-day-picker";
+import { AMENITY_LABEL, AMENITY_ICON as AMENITY_ICON_MAP } from "@/lib/amenities";
+import { AmenityIcon } from "@/components/amenity-icon";
+import { PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 
+// Legacy fallback for older listings that stored human labels ("WiFi") rather
+// than catalog slugs ("wifi").
 const AMENITY_ICON: Record<string, React.ElementType> = {
   wifi: Wifi,
   parking: Car,
@@ -52,11 +57,23 @@ function primaryImage(listing: Listing) {
 }
 
 function AmenityItem({ label }: { label: string }) {
+  // `label` is the stored amenity string: a catalog slug for new listings, or a
+  // human label for legacy ones.
+  const mdiIcon = AMENITY_ICON_MAP[label];
+  const display = AMENITY_LABEL[label] ?? label;
+  if (mdiIcon) {
+    return (
+      <div className="flex items-center gap-3 text-sm text-[#241f21]">
+        <AmenityIcon icon={mdiIcon} width={18} height={18} className="text-[#800020]" />
+        <span>{display}</span>
+      </div>
+    );
+  }
   const Icon = AMENITY_ICON[label.toLowerCase()] || Check;
   return (
     <div className="flex items-center gap-3 text-sm text-[#241f21]">
       <Icon className="h-4 w-4 text-[#800020]" />
-      <span>{label}</span>
+      <span>{display}</span>
     </div>
   );
 }
@@ -181,6 +198,12 @@ export function PropertyContent({
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
               <span>{listing.area}, {listing.city}, {listing.country}</span>
+              {listing.property_type && PROPERTY_TYPE_LABEL[listing.property_type] && (
+                <>
+                  <span>·</span>
+                  <span>{PROPERTY_TYPE_LABEL[listing.property_type]}</span>
+                </>
+              )}
               {reviews.length > 0 && (
                 <>
                   <span>·</span>

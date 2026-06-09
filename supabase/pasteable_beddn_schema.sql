@@ -61,6 +61,7 @@ create table if not exists public.listings (
   country text not null,
   city text not null,
   area text not null,
+  property_type text,
   private_address text not null,
   check_in_instructions text,
   latitude double precision not null,
