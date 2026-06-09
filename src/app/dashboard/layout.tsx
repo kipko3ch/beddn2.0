@@ -48,6 +48,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isHost, setIsHost] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -57,14 +58,28 @@ export default function DashboardLayout({
       setUser(data.user);
       setLoading(false);
       if (!data.user) return;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', data.user.id)
-        .single();
+      const [{ data: profile }, { data: host }] = await Promise.all([
+        supabase.from('profiles').select('is_admin').eq('id', data.user.id).maybeSingle(),
+        supabase.from('hosts').select('id').eq('user_id', data.user.id).maybeSingle(),
+      ]);
       setIsAdmin(profile?.is_admin ?? false);
+      setIsHost(Boolean(host));
     });
   }, []);
+
+  const adminOnly = new Set<string>([ROUTES.dashboardPayments, ROUTES.dashboardDemand]);
+  const hostOnly = new Set<string>([
+    ROUTES.dashboardListings,
+    ROUTES.dashboardBookings,
+    ROUTES.dashboardCalendar,
+    ROUTES.dashboardWithdrawals,
+    ROUTES.dashboardFeedback,
+  ]);
+  function navVisible(href: string) {
+    if (adminOnly.has(href)) return isAdmin;
+    if (hostOnly.has(href)) return isHost || isAdmin;
+    return true; // Overview is always visible
+  }
 
   async function handleSignIn() {
     await supabase.auth.signInWithOAuth({
@@ -133,9 +148,7 @@ export default function DashboardLayout({
         <div className="md:hidden overflow-x-auto border-t">
           <nav className="flex gap-2 px-3 py-2 min-w-max">
             {NAV_ITEMS.map(({ href, label }) => {
-              if ((href === "/dashboard/payments" || href === "/dashboard/demand") && !isAdmin) {
-                return null;
-              }
+              if (!navVisible(href)) return null;
               const active = pathname === href;
               return (
                 <Link
@@ -156,9 +169,7 @@ export default function DashboardLayout({
       <aside className="w-56 border-r bg-muted/30 hidden md:block">
         <nav className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4 space-y-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            if ((href === "/dashboard/payments" || href === "/dashboard/demand") && !isAdmin) {
-              return null;
-            }
+            if (!navVisible(href)) return null;
             const active = pathname === href;
             return (
               <Link

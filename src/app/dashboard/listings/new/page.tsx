@@ -94,39 +94,57 @@ export default function NewListingPage() {
 
   if (needsHost) {
     return (
-      <div>
-        <h1 className="text-2xl font-bold mb-4">New listing</h1>
-        <p className="text-muted-foreground mb-4">
-          First, apply for host approval. Admins review hosts before listings can be created.
-        </p>
-        <form onSubmit={createHost} className="space-y-4 max-w-md">
-          <div>
-            <Label htmlFor="hostName">Host name *</Label>
-            <Input
-              id="hostName"
-              value={hostName}
-              onChange={(e) => setHostName(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="hostPhone">Host phone *</Label>
-            <Input
-              id="hostPhone"
-              type="tel"
-              value={hostPhone}
-              onChange={(e) => setHostPhone(e.target.value)}
-              required
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={creatingHost}
-            className="bg-[#800020] hover:bg-[#600018]"
-          >
-            {creatingHost ? "Submitting..." : "Submit host application"}
-          </Button>
-        </form>
+      <div className="mx-auto max-w-xl">
+        <div className="rounded-2xl border bg-white p-6 shadow-sm sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#800020]">
+            Become a host
+          </p>
+          <h1 className="mt-1 text-2xl font-bold">Apply to host on Beddn</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Tell us who you are. An admin reviews every host before listings go live — this
+            keeps guests safe and your place trusted.
+          </p>
+
+          <form onSubmit={createHost} className="mt-6 space-y-4">
+            <div>
+              <Label htmlFor="hostName">Your name *</Label>
+              <Input
+                id="hostName"
+                value={hostName}
+                onChange={(e) => setHostName(e.target.value)}
+                placeholder="As guests should see it"
+                className="mt-1 h-11"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="hostPhone">Phone number *</Label>
+              <Input
+                id="hostPhone"
+                type="tel"
+                value={hostPhone}
+                onChange={(e) => setHostPhone(e.target.value)}
+                placeholder="+254…"
+                className="mt-1 h-11"
+                required
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Used for booking alerts. Shared with guests only after a confirmed booking.
+              </p>
+            </div>
+            <Button
+              type="submit"
+              disabled={creatingHost}
+              className="h-11 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+            >
+              {creatingHost ? "Submitting…" : "Submit application"}
+            </Button>
+          </form>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            You can create listings once an admin approves your host account.
+          </p>
+        </div>
       </div>
     );
   }

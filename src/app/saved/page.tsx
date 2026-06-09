@@ -1,26 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/header";
 import { ListingCard } from "@/components/listing-card";
 import { EmptyState } from "@/components/empty-state";
+import { AuthDialog } from "@/components/auth-dialog";
+import { Button } from "@/components/ui/button";
 import { useSavedListings } from "@/lib/hooks";
 import type { Listing } from "@/lib/types";
 
 export default function SavedTripsPage() {
   const supabase = createClient();
-  const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loggedOut, setLoggedOut] = useState(false);
   const { savedIds, toggle } = useSavedListings();
 
   useEffect(() => {
     async function load() {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) {
-        router.push("/");
+        setLoggedOut(true);
+        setLoading(false);
         return;
       }
 
@@ -52,7 +54,19 @@ export default function SavedTripsPage() {
     <Header />
     <main className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Saved trips</h1>
-      {loading ? (
+      {loggedOut ? (
+        <EmptyState
+          image="/images/empty-saved.png"
+          title="Sign in to see your saved trips"
+          subtitle="Log in to save places you like and find them again here."
+        >
+          <AuthDialog>
+            <Button className="rounded-full bg-[#800020] px-6 hover:bg-[#600018]">
+              Sign in
+            </Button>
+          </AuthDialog>
+        </EmptyState>
+      ) : loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="animate-pulse">
