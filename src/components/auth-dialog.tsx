@@ -80,10 +80,12 @@ export function AuthDialog({
           <div className="mb-8">
             <p className="mb-6 font-brand text-3xl leading-none text-[#2b000a]">Beddn</p>
             <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
-              Log in once. You are signed up.
+              {defaultHostIntent ? "Start hosting on Beddn." : "Log in once. You are signed up."}
             </DialogTitle>
             <DialogDescription className="mt-3 max-w-sm">
-              Save trips, reserve faster, list a place, or manage bookings with one secure account.
+              {defaultHostIntent
+                ? "Create your account, then set up your host profile and publish your first listing."
+                : "Save trips, reserve faster, and manage your bookings with one secure account."}
             </DialogDescription>
           </div>
 
@@ -141,18 +143,14 @@ export function AuthDialog({
               </form>
             )}
 
-            <Link
-              href={ROUTES.newListing}
-              className="block rounded-2xl border bg-[#fbf7f8] p-4 text-sm hover:border-[#800020]"
-              onClick={() => setOpen(false)}
-            >
-              <span className="font-bold text-[#2b000a]">
-                {defaultHostIntent ? "Continue host application" : "Want to host?"}
-              </span>
-              <span className="mt-1 block text-muted-foreground">
-                Create your host profile and start listing. Verification only controls the badge.
-              </span>
-            </Link>
+            {defaultHostIntent && (
+              <div className="rounded-2xl border bg-[#fbf7f8] p-4 text-sm">
+                <span className="font-bold text-[#2b000a]">After you sign in</span>
+                <span className="mt-1 block text-muted-foreground">
+                  We&apos;ll take you straight to host setup. Verification only controls the badge — your listing can go live right away.
+                </span>
+              </div>
+            )}
           </div>
 
           <p className="mt-10 text-center text-sm text-muted-foreground">

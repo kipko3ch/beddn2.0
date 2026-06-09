@@ -34,14 +34,15 @@ const NAV_ITEMS = [
 ];
 
 const ADMIN_ITEMS = [
-  { href: ROUTES.adminBookings, label: "Admin bookings" },
-  { href: ROUTES.adminPayments, label: "Admin payments" },
-  { href: ROUTES.adminHosts, label: "Admin hosts" },
-  { href: ROUTES.adminListings, label: "Admin listings" },
-  { href: ROUTES.adminWithdrawals, label: "Admin withdrawals" },
-  { href: ROUTES.adminDisputes, label: "Admin disputes" },
-  { href: ROUTES.adminFeedback, label: "Admin feedback" },
-  { href: ROUTES.adminDemand, label: "Admin demand" },
+  { href: ROUTES.dashboard, label: "Overview", icon: LayoutDashboard },
+  { href: ROUTES.adminListings, label: "Listings", icon: Home },
+  { href: ROUTES.adminHosts, label: "Hosts", icon: UserCircle },
+  { href: ROUTES.adminBookings, label: "Bookings", icon: CalendarCheck },
+  { href: ROUTES.adminPayments, label: "Payments", icon: CreditCard },
+  { href: ROUTES.adminWithdrawals, label: "Withdrawals", icon: Wallet },
+  { href: ROUTES.adminDisputes, label: "Disputes", icon: ShieldCheck },
+  { href: ROUTES.adminFeedback, label: "Feedback", icon: MessageSquare },
+  { href: ROUTES.adminDemand, label: "Demand", icon: TrendingUp },
 ];
 
 export default function DashboardLayout({
@@ -83,6 +84,14 @@ export default function DashboardLayout({
     if (hostOnly.has(href)) return isHost || isAdmin;
     return true; // Overview is always visible
   }
+
+  // Admins live in an admin-only area by default. The host tools only appear
+  // when they explicitly switch (which lands them on a host route).
+  const onAdminRoute = pathname?.startsWith("/dashboard/admin") ?? false;
+  const adminView = isAdmin && (onAdminRoute || pathname === ROUTES.dashboard);
+  const sidebarItems = adminView
+    ? ADMIN_ITEMS
+    : NAV_ITEMS.filter((item) => navVisible(item.href));
 
   if (!loading && !user) {
     return (
@@ -133,25 +142,33 @@ export default function DashboardLayout({
             <Link href={ROUTES.search} className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:bg-muted">
               <Search className="h-4 w-4" /> Traveler
             </Link>
-            {(isHost || isAdmin || loading) && (
+            {((isHost && !adminView) || (loading && !isAdmin)) && (
               <Link href={ROUTES.dashboard} className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:bg-muted">
                 <LayoutDashboard className="h-4 w-4" /> Host
               </Link>
             )}
             {isAdmin && (
-              <Link href={ROUTES.adminListings} className="inline-flex items-center gap-2 rounded-full bg-[#f8eef2] px-3 py-2 font-semibold text-[#800020] hover:bg-[#f1e1e7]">
+              <Link
+                href={ROUTES.dashboard}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 font-semibold ${
+                  adminView
+                    ? "bg-[#800020] text-white hover:bg-[#600018]"
+                    : "bg-[#f8eef2] text-[#800020] hover:bg-[#f1e1e7]"
+                }`}
+              >
                 <ShieldCheck className="h-4 w-4" /> Admin
               </Link>
             )}
-            <Link href={ROUTES.newListing} className="rounded-full bg-[#800020] px-4 py-2 font-semibold text-white hover:bg-[#600018]">
-              List your place
-            </Link>
+            {!adminView && (
+              <Link href={ROUTES.newListing} className="rounded-full bg-[#800020] px-4 py-2 font-semibold text-white hover:bg-[#600018]">
+                List your place
+              </Link>
+            )}
           </nav>
         </div>
         <div className="md:hidden overflow-x-auto border-t">
           <nav className="flex gap-2 px-3 py-2 min-w-max">
-            {NAV_ITEMS.map(({ href, label }) => {
-              if (!navVisible(href)) return null;
+            {sidebarItems.map(({ href, label }) => {
               const active = pathname === href;
               return (
                 <Link
@@ -165,14 +182,28 @@ export default function DashboardLayout({
                 </Link>
               );
             })}
+            {adminView && isHost && (
+              <Link href={ROUTES.dashboardListings} className="px-3 py-1.5 rounded-full text-sm whitespace-nowrap border border-[#800020] text-[#800020]">
+                Host tools
+              </Link>
+            )}
+            {!adminView && isAdmin && (
+              <Link href={ROUTES.dashboard} className="px-3 py-1.5 rounded-full text-sm whitespace-nowrap border border-[#800020] text-[#800020]">
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
       </header>
       <div className="flex-1 flex min-h-0">
       <aside className="w-60 border-r bg-white hidden md:block">
         <nav className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4 space-y-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            if (!navVisible(href)) return null;
+          {adminView && (
+            <div className="mb-2 flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[#800020]">
+              <ShieldCheck className="h-4 w-4" /> Admin dashboard
+            </div>
+          )}
+          {sidebarItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link
@@ -189,27 +220,24 @@ export default function DashboardLayout({
               </Link>
             );
           })}
-          {isAdmin && (
+          {adminView && isHost && (
             <div className="pt-4 mt-4 border-t">
-              <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase text-[#800020]">
-                <ShieldCheck className="h-4 w-4" /> Admin dashboard
-              </div>
-              {ADMIN_ITEMS.map(({ href, label }) => {
-                const active = pathname === href;
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm ${
-                      active
-                        ? "bg-[#800020] text-white shadow-sm"
-                        : "text-muted-foreground hover:bg-[#fbf7f8] hover:text-[#2b000a]"
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
+              <Link
+                href={ROUTES.dashboardListings}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-[#fbf7f8] hover:text-[#2b000a]"
+              >
+                <Home className="h-4 w-4" /> Switch to host tools
+              </Link>
+            </div>
+          )}
+          {!adminView && isAdmin && (
+            <div className="pt-4 mt-4 border-t">
+              <Link
+                href={ROUTES.dashboard}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold text-[#800020] hover:bg-[#fbf7f8]"
+              >
+                <ShieldCheck className="h-4 w-4" /> Switch to admin
+              </Link>
             </div>
           )}
         </nav>
