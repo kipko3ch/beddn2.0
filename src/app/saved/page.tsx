@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/header";
 import { ListingCard } from "@/components/listing-card";
+import { EmptyState } from "@/components/empty-state";
 import { useSavedListings } from "@/lib/hooks";
 import type { Listing } from "@/lib/types";
 
@@ -72,7 +73,11 @@ export default function SavedTripsPage() {
           ))}
         </div>
       ) : (
-        <p className="text-muted-foreground">No saved trips yet. Browse listings and save the ones you like.</p>
+        <EmptyState
+          image="/images/empty-saved.png"
+          title="No saved trips yet"
+          subtitle="Browse listings and save the ones you like."
+        />
       )}
     </main>
     </>

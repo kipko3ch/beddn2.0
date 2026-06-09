@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import type { Payment } from "@/lib/types";
 
 type PaymentWithBooking = Payment & {
@@ -50,7 +51,12 @@ export default function PaymentsPage() {
           ))}
         </div>
       ) : payments.length === 0 ? (
-        <p className="text-muted-foreground">No payments yet.</p>
+        <EmptyState
+          image="/images/empty-payments.png"
+          title="No payments yet"
+          subtitle="Payment activity will show up here once guests pay."
+          size="sm"
+        />
       ) : (
         <div className="border rounded-lg divide-y">
           {payments.map((payment) => (

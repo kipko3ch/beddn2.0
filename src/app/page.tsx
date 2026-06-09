@@ -64,6 +64,13 @@ const TAB_DATA = {
 
 type TabType = keyof typeof TAB_DATA;
 
+const TAB_ICONS: Record<TabType, string> = {
+  All: '/images/cat-all.png',
+  Hourly: '/images/cat-hourly.png',
+  Overnight: '/images/cat-overnight.png',
+  Experiences: '/images/cat-experiences.png',
+};
+
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<TabType>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -297,6 +304,14 @@ export default function LandingPage() {
               className={`${styles.tab} ${activeTab === tab.name ? styles.active : ''}`}
               onClick={() => setActiveTab(tab.name)}
             >
+              <Image
+                src={TAB_ICONS[tab.name]}
+                alt=""
+                width={22}
+                height={22}
+                style={{ width: 22, height: 22, marginRight: 8, verticalAlign: 'middle', display: 'inline-block' }}
+                aria-hidden
+              />
               {tab.name}
             </button>
           ))}
@@ -360,6 +375,14 @@ export default function LandingPage() {
           </div>
         ) : activeTab === 'Experiences' ? (
           <div className={styles.emptyState}>
+            <Image
+              src="/images/empty-experiences.png"
+              alt=""
+              width={200}
+              height={160}
+              style={{ display: 'block', width: 200, height: 'auto', margin: '0 auto 16px' }}
+              aria-hidden
+            />
             <p className={styles.emptyTitle}>Trips and classes are forming</p>
             <p className={styles.emptySubtitle}>
               Road trips, yoga sessions, swimming classes, hikes, and food tours will show here as verified organizers join.
@@ -383,6 +406,14 @@ export default function LandingPage() {
           </div>
         ) : (
           <div className={styles.emptyState}>
+            <Image
+              src="/images/empty-no-places.png"
+              alt=""
+              width={220}
+              height={170}
+              style={{ display: 'block', width: 220, height: 'auto', margin: '0 auto 16px' }}
+              aria-hidden
+            />
             <p className={styles.emptyTitle}>No verified places here yet</p>
             <p className={styles.emptySubtitle}>
               Be the first verified host in this area and get early visibility as demand grows.

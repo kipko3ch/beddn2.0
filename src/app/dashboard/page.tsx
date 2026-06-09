@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -209,6 +210,14 @@ export default function DashboardPage() {
         </div>
       ) : stats.length === 0 ? (
         <div className="rounded-2xl border bg-[#fbf7f8] p-6">
+          <Image
+            src="/images/empty-host-needed.png"
+            alt=""
+            width={160}
+            height={130}
+            className="mb-4 h-auto w-[150px]"
+            aria-hidden
+          />
           <h2 className="text-lg font-bold">Host account needed</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             This signed-in account{userEmail ? ` (${userEmail})` : ""} is not linked to a host profile yet.

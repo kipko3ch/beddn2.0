@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { Plus, Pencil } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
@@ -68,7 +69,12 @@ export default function ListingsPage() {
           ))}
         </div>
       ) : listings.length === 0 ? (
-        <p className="text-muted-foreground">No listings yet.</p>
+        <EmptyState
+          image="/images/empty-listings.png"
+          title="No listings yet"
+          subtitle="Create your first listing to start receiving booking requests."
+          size="sm"
+        />
       ) : (
         <div className="border rounded-lg divide-y">
           {listings.map((listing) => (

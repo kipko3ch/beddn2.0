@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { EmptyState } from "@/components/empty-state";
 import { Calendar } from "@/components/ui/calendar";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
@@ -546,7 +547,12 @@ export function PropertyContent({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No reviews yet</p>
+              <EmptyState
+                image="/images/empty-reviews.png"
+                title="No reviews yet"
+                subtitle="Be the first to review this place after your stay."
+                size="sm"
+              />
             )}
           </section>
 

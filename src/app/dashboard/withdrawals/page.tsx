@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/empty-state";
 import type { HostBalance, Withdrawal } from "@/lib/types";
 
 export default function WithdrawalsPage() {
@@ -109,7 +110,12 @@ export default function WithdrawalsPage() {
 
       <div className="border rounded-lg divide-y">
         {withdrawals.length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">No withdrawal requests yet.</p>
+          <EmptyState
+            image="/images/empty-withdrawals.png"
+            title="No withdrawal requests yet"
+            subtitle="Request a payout once you have a withdrawable balance."
+            size="sm"
+          />
         ) : (
           withdrawals.map((withdrawal) => (
             <div key={withdrawal.id} className="p-4 flex items-center justify-between text-sm">

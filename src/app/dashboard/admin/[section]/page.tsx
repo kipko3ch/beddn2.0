@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 
 type Row = Record<string, unknown> & { id: string };
 
@@ -109,7 +110,12 @@ export default function AdminSectionPage() {
       {loading ? (
         <div className="h-20 bg-muted animate-pulse rounded" />
       ) : rows.length === 0 ? (
-        <p className="text-muted-foreground">No records yet.</p>
+        <EmptyState
+          image="/images/empty-admin.png"
+          title="No records yet"
+          subtitle="Records for this section will appear here."
+          size="sm"
+        />
       ) : (
         <div className="border rounded-lg overflow-x-auto">
           <table className="w-full text-sm">

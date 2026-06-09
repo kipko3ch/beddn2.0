@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { EmptyState } from "@/components/empty-state";
 import type { Feedback } from "@/lib/types";
 
 type FeedbackRow = Feedback & {
@@ -32,7 +33,12 @@ export default function FeedbackPage() {
       <h1 className="text-2xl font-bold mb-6">Feedback</h1>
       <div className="border rounded-lg divide-y">
         {feedback.length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">No feedback yet.</p>
+          <EmptyState
+            image="/images/empty-feedback.png"
+            title="No feedback yet"
+            subtitle="Guest feedback after stays will appear here."
+            size="sm"
+          />
         ) : (
           feedback.map((item) => (
             <div key={item.id} className="p-4">

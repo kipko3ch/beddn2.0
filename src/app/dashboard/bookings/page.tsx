@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import type { Booking } from "@/lib/types";
 
 type BookingWithListing = Booking & {
@@ -74,7 +75,12 @@ export default function BookingsPage() {
           ))}
         </div>
       ) : bookings.length === 0 ? (
-        <p className="text-muted-foreground">No bookings yet.</p>
+        <EmptyState
+          image="/images/empty-bookings.png"
+          title="No bookings yet"
+          subtitle="Paid booking requests from guests will appear here."
+          size="sm"
+        />
       ) : (
         <div className="border rounded-lg divide-y">
           {bookings.map((booking) => (

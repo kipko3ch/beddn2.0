@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -254,6 +255,14 @@ export function SearchContent() {
           ) : isExperienceSearch ? (
             <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-10 sm:px-8">
               <div className="mx-auto max-w-2xl text-center">
+                <Image
+                  src="/images/empty-experiences.png"
+                  alt=""
+                  width={200}
+                  height={160}
+                  className="mx-auto mb-4 h-auto w-[180px]"
+                  aria-hidden
+                />
                 <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
                   Experiences are coming
                 </p>
@@ -303,6 +312,14 @@ export function SearchContent() {
             </div>
           ) : (
             <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-12 text-center sm:px-8">
+              <Image
+                src="/images/empty-no-places.png"
+                alt=""
+                width={220}
+                height={170}
+                className="mx-auto mb-4 h-auto w-[200px]"
+                aria-hidden
+              />
               <p className="text-2xl font-bold">No verified places here yet.</p>
               <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
                 Be the first verified host in this area and get early visibility as demand grows.

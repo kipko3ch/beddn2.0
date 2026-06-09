@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { CalendarDays, Clock, TicketCheck } from "lucide-react";
 import type { Booking, Listing } from "@/lib/types";
 
@@ -165,7 +166,12 @@ export default function CalendarPage() {
           <h2 className="mb-3 font-semibold">Bookings</h2>
           <div className="divide-y rounded-lg border">
             {bookings.length === 0 ? (
-              <p className="p-4 text-sm text-muted-foreground">No upcoming bookings.</p>
+              <EmptyState
+                image="/images/empty-calendar.png"
+                title="No upcoming bookings"
+                subtitle="Confirmed bookings will appear on your calendar."
+                size="sm"
+              />
             ) : (
               bookings.map((booking) => (
                 <div key={booking.id} className="p-4 text-sm">
