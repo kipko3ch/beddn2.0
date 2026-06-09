@@ -142,31 +142,31 @@ export function SearchContent() {
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <form
             onSubmit={handleSearch}
-            className="flex flex-col gap-3 rounded-full bg-white p-2 shadow-[0_4px_12px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.1)] transition-shadow focus-within:shadow-[0_4px_16px_rgba(0,0,0,0.12),0_0_0_2px_#000] sm:flex-row sm:items-center"
+            className="flex items-center gap-2 rounded-full bg-white p-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.1)] transition-shadow focus-within:shadow-[0_4px_16px_rgba(0,0,0,0.12),0_0_0_2px_#000]"
           >
             <div className="relative min-w-0 flex-1">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground sm:left-4" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Where are you going?"
-                className="h-12 border-0 bg-transparent pl-12 text-base focus-visible:ring-0"
+                className="h-11 border-0 bg-transparent pl-10 text-base focus-visible:ring-0 sm:pl-12"
               />
             </div>
             <Button
               type="submit"
-              className="h-12 rounded-full bg-[#800020] px-8 font-bold hover:bg-[#600018]"
+              className="h-11 shrink-0 rounded-full bg-[#800020] px-5 font-bold hover:bg-[#600018] sm:px-8"
             >
               Search
             </Button>
           </form>
 
-          <div className="mt-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-full bg-[#f5eef1] p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-4 flex w-full gap-1 rounded-full bg-[#f5eef1] p-1 sm:inline-flex sm:w-auto">
             {categoryOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => changeCategory(option.value)}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`flex-1 rounded-full px-2 py-2 text-sm font-semibold transition-colors sm:flex-none sm:px-4 ${
                   category === option.value
                     ? "bg-[#800020] text-white"
                     : "text-[#6f6568] hover:text-[#2b000a]"
