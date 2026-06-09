@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Heart, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -66,10 +67,13 @@ export function ListingCard({
     >
       <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
         {image ? (
-          <img
+          <Image
             src={image}
             alt={listing.name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes="(max-width: 640px) 60vw, (max-width: 1280px) 33vw, 300px"
+            quality={70}
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">

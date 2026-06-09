@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -246,15 +247,14 @@ export function PropertyContent({
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[2fr_1fr]">
-          <div className="overflow-hidden rounded-2xl bg-muted">
-            <img
+          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-muted sm:aspect-[16/8]">
+            <Image
               src={images[selectedImage]?.url || LOGO_SRC}
               alt={listing.name}
-              className="aspect-[16/10] h-full w-full object-cover sm:aspect-[16/8]"
-              loading="eager"
-              onError={(event) => {
-                event.currentTarget.src = LOGO_SRC;
-              }}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 66vw"
+              className="object-cover"
             />
           </div>
           <div className="grid grid-cols-3 gap-3 overflow-x-auto lg:grid-cols-1 lg:overflow-visible">
@@ -262,18 +262,16 @@ export function PropertyContent({
               <button
                 key={image.id}
                 onClick={() => setSelectedImage(index)}
-                className={`relative min-w-28 overflow-hidden rounded-xl border-2 bg-muted ${
+                className={`relative aspect-[4/3] min-w-28 overflow-hidden rounded-xl border-2 bg-muted ${
                   index === selectedImage ? "border-[#800020]" : "border-transparent"
                 }`}
               >
-                <img
+                <Image
                   src={image.url}
                   alt=""
-                  className="aspect-[4/3] w-full object-cover"
-                  loading="lazy"
-                  onError={(event) => {
-                    event.currentTarget.src = LOGO_SRC;
-                  }}
+                  fill
+                  sizes="160px"
+                  className="object-cover"
                 />
               </button>
             ))}

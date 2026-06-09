@@ -10,9 +10,12 @@ export function useUser() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
+    // getSession() reads the cached session locally (no network round-trip),
+    // so the header/role/saved state render instantly. onAuthStateChange below
+    // keeps it correct after sign-in/out.
+    supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      setUser(data.user);
+      setUser(data.session?.user ?? null);
       setLoading(false);
     });
     const {

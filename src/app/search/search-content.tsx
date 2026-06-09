@@ -57,16 +57,16 @@ export function SearchContent() {
     const { data } = await query.order("created_at", { ascending: false }).limit(50);
     const results = (data as Listing[]) ?? [];
     setListings(results);
+    setLoading(false);
 
-    await supabase.from("search_demand").insert({
+    // Log demand in the background — never block showing results on this write.
+    void supabase.from("search_demand").insert({
       query: q || null,
       latitude: lat ? parseFloat(lat) : null,
       longitude: lng ? parseFloat(lng) : null,
       category: category !== "all" ? category : null,
       results_count: results.length,
     });
-
-    setLoading(false);
   }, [q, lat, lng, category, propertyType]);
 
   useEffect(() => {
