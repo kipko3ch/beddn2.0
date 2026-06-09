@@ -11,6 +11,7 @@ create table profiles (
   full_name text,
   phone text,
   is_admin boolean default false,
+  suspended boolean default false,
   created_at timestamptz default now()
 );
 

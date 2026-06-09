@@ -38,6 +38,7 @@ create table if not exists public.profiles (
   full_name text,
   phone text,
   is_admin boolean not null default false,
+  suspended boolean not null default false,
   created_at timestamptz not null default now()
 );
 
