@@ -310,6 +310,7 @@ export default function LandingPage() {
                 alt=""
                 width={22}
                 height={22}
+                unoptimized
                 style={{ width: 22, height: 22, marginRight: 8, verticalAlign: 'middle', display: 'inline-block' }}
                 aria-hidden
               />
