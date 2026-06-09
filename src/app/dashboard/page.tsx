@@ -95,8 +95,8 @@ export default function DashboardPage() {
         ]);
 
         setStats([
-          { label: "Host approvals", value: pendingHosts.count ?? 0, icon: ShieldCheck, href: ROUTES.adminHosts, tone: "warning" },
-          { label: "Listing approvals", value: pendingListings.count ?? 0, icon: Home, href: ROUTES.adminListings, tone: "warning" },
+          { label: "Host badges pending", value: pendingHosts.count ?? 0, icon: ShieldCheck, href: ROUTES.adminHosts, tone: "warning" },
+          { label: "Listing badges pending", value: pendingListings.count ?? 0, icon: Home, href: ROUTES.adminListings, tone: "warning" },
           { label: "Active paid bookings", value: paidBookings.count ?? 0, icon: CalendarCheck, href: ROUTES.adminBookings, tone: "brand" },
           { label: "Disputes / rejected", value: disputes.count ?? 0, icon: AlertTriangle, href: ROUTES.adminDisputes, tone: "warning" },
           { label: "Withdrawal requests", value: withdrawals.count ?? 0, icon: Wallet, href: ROUTES.adminWithdrawals, tone: "brand" },
@@ -173,7 +173,7 @@ export default function DashboardPage() {
     : host?.is_verified
     ? "Verified host"
     : host
-    ? "Host approval pending"
+    ? "Verification badge pending"
     : "Guest account";
 
   return (
@@ -186,10 +186,10 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {isAdmin
-              ? "Monitor approvals, payments, disputes, withdrawals, feedback, and demand."
+              ? "Monitor verification badges, payments, disputes, withdrawals, feedback, and demand."
               : host
-              ? "Manage booking requests, availability, payouts, and guest feedback."
-              : "Apply to become a verified host before creating listings."}
+              ? "Manage listings, booking requests, availability, payouts, and guest feedback."
+              : "Create a host profile to list hourly stays, overnight stays, or experiences."}
           </p>
         </div>
         {!isAdmin && (
@@ -202,13 +202,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-28 animate-pulse rounded-xl bg-muted" />
-          ))}
-        </div>
-      ) : stats.length === 0 ? (
+      {loading ? null : stats.length === 0 ? (
         <div className="rounded-2xl border bg-[#fbf7f8] p-6">
           <Image
             src="/images/empty-host-needed.png"
@@ -221,43 +215,60 @@ export default function DashboardPage() {
           <h2 className="text-lg font-bold">Host account needed</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             This signed-in account{userEmail ? ` (${userEmail})` : ""} is not linked to a host profile yet.
-            If you created a test listing before approvals were added, an admin needs to link and verify that host row for this login.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            New hosts can still apply here. Admin approval is required before creating listings or receiving booking requests.
+            Create one and start listing right away.
           </p>
           <Link
             href={ROUTES.newListing}
             className="mt-5 inline-flex h-10 items-center rounded-full bg-[#800020] px-5 text-sm font-bold text-white"
           >
-            Start host application
+            Create host profile
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {stats.map(({ label, value, icon: Icon, href, tone }) => (
-            <Link key={label} href={href}>
-              <Card className="h-full transition-shadow hover:shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {label}
-                  </CardTitle>
-                  <Icon
-                    className={`h-4 w-4 ${
-                      tone === "brand"
-                        ? "text-[#800020]"
-                        : tone === "warning"
-                        ? "text-amber-700"
-                        : "text-muted-foreground"
-                    }`}
-                  />
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">{value}</p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+        <div className="space-y-4">
+          {host && !host.is_verified && !isAdmin && (
+            <div className="flex flex-col gap-4 rounded-2xl border bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+              <Image
+                src="/images/spot-verified.png"
+                alt=""
+                width={110}
+                height={90}
+                className="h-auto w-[96px]"
+                aria-hidden
+              />
+              <div>
+                <h2 className="text-lg font-bold text-[#2b000a]">Verification badge pending</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Your listings can be active now. Admin review only adds the Beddn verified badge when checks pass.
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {stats.map(({ label, value, icon: Icon, href, tone }) => (
+              <Link key={label} href={href}>
+                <Card className="h-full transition-shadow hover:shadow-sm">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {label}
+                    </CardTitle>
+                    <Icon
+                      className={`h-4 w-4 ${
+                        tone === "brand"
+                          ? "text-[#800020]"
+                          : tone === "warning"
+                          ? "text-amber-700"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-2xl font-bold">{value}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

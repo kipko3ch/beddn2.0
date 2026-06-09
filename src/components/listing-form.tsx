@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ElementType } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { uploadListingImage } from "@/lib/upload-image";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { MapPinPicker } from "@/components/map-pin-picker";
+import { Clock, Compass, Moon } from "lucide-react";
 import type { Listing, ListingCategory } from "@/lib/types";
 
 const AMENITY_OPTIONS = [
@@ -33,6 +35,32 @@ const AMENITY_OPTIONS = [
   "Garden",
   "Balcony",
   "Workspace",
+];
+
+const CATEGORY_OPTIONS: {
+  value: ListingCategory;
+  label: string;
+  description: string;
+  icon: ElementType;
+}[] = [
+  {
+    value: "hourly",
+    label: "Hourly stay",
+    description: "Rooms, workspaces, or private places booked by the hour.",
+    icon: Clock,
+  },
+  {
+    value: "overnight",
+    label: "Overnight stay",
+    description: "Homes, rooms, or suites guests can book for the night.",
+    icon: Moon,
+  },
+  {
+    value: "experience",
+    label: "Experience",
+    description: "Trips, classes, sessions, tours, and other bookable activities.",
+    icon: Compass,
+  },
 ];
 
 interface ListingFormProps {
@@ -339,22 +367,39 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
 
       <Separator />
 
-      {/* Categories */}
       <div>
-        <Label>Categories *</Label>
-        <div className="flex gap-4 mt-2">
-          {(["hourly", "overnight", "experience"] as ListingCategory[]).map(
-            (cat) => (
-              <label key={cat} className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={categories.includes(cat)}
-                  onCheckedChange={() => toggleCategory(cat)}
-                />
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </label>
-            )
-          )}
+        <Label>Listing type *</Label>
+        <div className="mt-2 grid gap-3 sm:grid-cols-3">
+          {CATEGORY_OPTIONS.map(({ value, label, description, icon: Icon }) => {
+            const selected = categories.includes(value);
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => toggleCategory(value)}
+                className={`min-h-36 rounded-2xl border p-4 text-left transition ${
+                  selected
+                    ? "border-[#800020] bg-[#fbf7f8] shadow-sm"
+                    : "border-border bg-white hover:border-[#d7a9b7]"
+                }`}
+                aria-pressed={selected}
+              >
+                <span
+                  className={`mb-3 inline-flex size-9 items-center justify-center rounded-full ${
+                    selected ? "bg-[#800020] text-white" : "bg-muted text-[#2b000a]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="block text-sm font-bold text-[#181113]">{label}</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">{description}</span>
+              </button>
+            );
+          })}
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Pick one or combine types if the same place can be booked in multiple ways.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -408,11 +453,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
               <SelectItem value="auto_accept">Auto accept</SelectItem>
             </SelectContent>
           </Select>
-          {!isAdmin && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Admin approval is required for auto accept.
-            </p>
-          )}
+          {!isAdmin && <p className="text-xs text-muted-foreground mt-1">Hosts can manage booking requests manually.</p>}
         </div>
         <div>
           <Label htmlFor="checkInTime">Check-in time</Label>

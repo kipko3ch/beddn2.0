@@ -30,7 +30,7 @@ const SECTION_COLUMNS: Record<string, string[]> = {
   bookings: ["guest_name", "status", "category", "currency", "deposit_amount", "created_at"],
   payments: ["provider", "status", "currency", "amount", "provider_reference", "created_at"],
   hosts: ["name", "phone", "is_verified", "created_at"],
-  listings: ["name", "city", "area", "is_verified", "listing_status", "booking_mode"],
+  listings: ["name", "city", "area", "is_active", "is_verified", "verification_status", "booking_mode"],
   withdrawals: ["amount", "currency", "status", "payout_method", "created_at"],
   disputes: ["guest_name", "status", "booking_token", "created_at"],
   feedback: ["rating", "issue_reported", "issue_type", "comment", "created_at"],
@@ -95,7 +95,7 @@ export default function AdminSectionPage() {
         <div>
           <h1 className="text-2xl font-bold">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review the latest 100 records and take manual MVP actions.
+            Review the latest 100 records and manage verification, payouts, and manual actions.
           </p>
         </div>
         {!loading && (
@@ -107,9 +107,7 @@ export default function AdminSectionPage() {
           </div>
         )}
       </div>
-      {loading ? (
-        <div className="h-20 bg-muted animate-pulse rounded" />
-      ) : rows.length === 0 ? (
+      {loading ? null : rows.length === 0 ? (
         <EmptyState
           image="/images/empty-admin.png"
           title="No records yet"
@@ -147,7 +145,7 @@ export default function AdminSectionPage() {
                       {section === "listings" && (
                         <>
                           <Button size="sm" variant="outline" onClick={() => action("verify_listing", row.id)}>
-                            Verify
+                            Verify badge
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => action("reject_listing", row.id)}>
                             Reject

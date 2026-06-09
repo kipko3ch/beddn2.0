@@ -68,13 +68,7 @@ export default function BookingsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Bookings</h1>
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-14 bg-muted rounded animate-pulse" />
-          ))}
-        </div>
-      ) : bookings.length === 0 ? (
+      {loading ? null : bookings.length === 0 ? (
         <EmptyState
           image="/images/empty-bookings.png"
           title="No bookings yet"

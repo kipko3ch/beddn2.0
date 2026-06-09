@@ -11,6 +11,15 @@ const kualine = localFont({
   fallback: ["Arial", "Helvetica", "sans-serif"],
 });
 
+const tripSans = localFont({
+  src: "../../public/fonts/trip-sans-variable.ttf",
+  variable: "--font-trip-sans",
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
+  fallback: ["Arial", "Helvetica", "sans-serif"],
+});
+
 export const metadata: Metadata = {
   title: "Beddn — Find Unique Stays",
   description: "Book hourly stays, overnight getaways, and unique experiences.",
@@ -24,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${kualine.variable} h-full antialiased`}
+      className={`${kualine.variable} ${tripSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

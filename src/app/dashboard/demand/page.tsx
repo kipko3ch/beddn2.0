@@ -63,16 +63,7 @@ export default function DemandPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold mb-6">Search Demand</h1>
-        <div className="animate-pulse space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-10 bg-muted rounded" />
-          ))}
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

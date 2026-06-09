@@ -12,8 +12,8 @@ select id, email, is_admin
 from public.profiles
 where lower(email) = lower('admin@example.com');
 
--- 2) If you created a test host/listing before host approvals,
--- link that host to the signed-in user's profile and approve it.
+-- 2) If you created a test host/listing before host setup,
+-- link that host to the signed-in user's profile and optionally verify its badge.
 -- Replace the email and host/listing title filters.
 with target_profile as (
   select id
@@ -37,7 +37,7 @@ set
 where h.id = (select id from target_host)
   and exists (select 1 from target_profile);
 
--- 3) Approve that host's existing listings for testing.
+-- 3) Mark that host's existing listings active and verified for testing badges.
 update public.listings l
 set
   is_verified = true,

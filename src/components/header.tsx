@@ -24,7 +24,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Home, LayoutDashboard, LogOut, Menu, Search, UserCircle } from "lucide-react";
+import { Heart, Home, LayoutDashboard, LogIn, LogOut, Menu, Search, ShieldCheck, UserCircle } from "lucide-react";
 import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
 import { useScrollUpVisibility } from "@/lib/use-scroll-up-visibility";
@@ -70,6 +70,13 @@ export function Header() {
             <Link href={ROUTES.review} className="px-3 text-sm font-medium text-[#2b000a] hover:text-[#800020]">
               Review
             </Link>
+            {!user && (
+              <AuthDialog>
+                <Button variant="ghost" size="sm" className="rounded-full">
+                  Login
+                </Button>
+              </AuthDialog>
+            )}
             {user && !canHost && (
               <Link href={ROUTES.newListing} className="hidden sm:block">
                 <Button variant="ghost" size="sm">
@@ -95,15 +102,29 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                   {canHost ? (
-                    <DropdownMenuItem>
-                      <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                        <LayoutDashboard className="h-4 w-4" /> Dashboard
-                      </Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem>
+                        <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
+                          <LayoutDashboard className="h-4 w-4" /> Host dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href={ROUTES.search} className="flex items-center gap-2 w-full">
+                          <Search className="h-4 w-4" /> Switch to traveler
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
                   ) : (
                     <DropdownMenuItem>
                       <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
                         <Home className="h-4 w-4" /> Become a host
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem>
+                      <Link href={ROUTES.adminListings} className="flex items-center gap-2 w-full">
+                        <ShieldCheck className="h-4 w-4" /> Admin dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -160,6 +181,13 @@ export function Header() {
                   >
                     <Heart className="h-4 w-4" /> Review a stay
                   </SheetClose>
+                  {!user && (
+                    <AuthDialog>
+                      <button className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm hover:bg-muted">
+                        <LogIn className="h-4 w-4" /> Login
+                      </button>
+                    </AuthDialog>
+                  )}
                   <SheetClose
                     render={
                       <Link href={ROUTES.saved} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
@@ -182,6 +210,24 @@ export function Header() {
                       }
                     >
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
+                    </SheetClose>
+                  )}
+                  {user && canHost && (
+                    <SheetClose
+                      render={
+                        <Link href={ROUTES.search} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                      }
+                    >
+                      <Search className="h-4 w-4" /> Traveler view
+                    </SheetClose>
+                  )}
+                  {isAdmin && (
+                    <SheetClose
+                      render={
+                        <Link href={ROUTES.adminListings} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                      }
+                    >
+                      <ShieldCheck className="h-4 w-4" /> Admin dashboard
                     </SheetClose>
                   )}
                   <SheetClose
@@ -223,15 +269,29 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                   {canHost ? (
-                    <DropdownMenuItem>
-                      <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                        <LayoutDashboard className="h-4 w-4" /> Dashboard
-                      </Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem>
+                        <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
+                          <LayoutDashboard className="h-4 w-4" /> Host dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href={ROUTES.search} className="flex items-center gap-2 w-full">
+                          <Search className="h-4 w-4" /> Switch to traveler
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
                   ) : (
                     <DropdownMenuItem>
                       <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
                         <Home className="h-4 w-4" /> Become a host
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem>
+                      <Link href={ROUTES.adminListings} className="flex items-center gap-2 w-full">
+                        <ShieldCheck className="h-4 w-4" /> Admin dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}

@@ -50,12 +50,23 @@ export async function POST(request: Request) {
     errorMessage = error?.message || null;
   }
 
-  if (body.action === "reject_listing" || body.action === "pause_listing") {
+  if (body.action === "reject_listing") {
     const { error } = await admin
       .from("listings")
       .update({
         is_verified: false,
-        verification_status: body.action === "reject_listing" ? "rejected" : "pending",
+        verification_status: "rejected",
+      })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "pause_listing") {
+    const { error } = await admin
+      .from("listings")
+      .update({
+        is_verified: false,
+        verification_status: "pending",
         listing_status: "paused",
         is_active: false,
         booking_mode: "manual_accept",

@@ -142,7 +142,6 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         .select("*, listing_images(*), reviews(rating)")
         .eq("id", id)
         .eq("is_active", true)
-        .eq("is_verified", true)
         .single();
       if (data) {
         setListing(data as ReserveListing);

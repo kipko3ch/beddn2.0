@@ -5,8 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import styles from '../landing.module.css';
 import { ROUTES } from '@/lib/routes';
+import { AuthDialog } from '@/components/auth-dialog';
+import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
   Home,
@@ -17,6 +18,8 @@ import {
   Wallet,
   MessageSquare,
   ShieldCheck,
+  Search,
+  UserCircle,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -81,66 +84,66 @@ export default function DashboardLayout({
     return true; // Overview is always visible
   }
 
-  async function handleSignIn() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
-    });
-  }
-
-  if (loading) {
+  if (!loading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <div className={styles.logoArea}>
+      <div className="min-h-screen bg-white font-sans text-[#181113]">
+        <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
+            <Link href={ROUTES.home} className="font-brand text-3xl leading-none text-[#2b000a]">
             Beddn
+            </Link>
+            <nav className="flex items-center gap-1 text-sm">
+              <Link href={ROUTES.search} className="rounded-full px-3 py-2 hover:bg-muted">Discover</Link>
+              <Link href={ROUTES.review} className="rounded-full px-3 py-2 hover:bg-muted">Review</Link>
+            </nav>
           </div>
-
-          <nav className={styles.navRight}>
-            <Link href={ROUTES.search} className={styles.navItem}>Discover</Link>
-            <Link href={ROUTES.review} className={styles.navItem}>Review</Link>
-          </nav>
         </header>
 
-        <main className={styles.main} style={{ marginTop: '120px' }}>
-          <h1 className={styles.title} style={{ fontSize: '48px' }}>
+        <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-24 text-center">
+          <UserCircle className="mb-5 h-14 w-14 text-[#800020]" />
+          <h1 className="font-brand text-5xl leading-none text-[#2b000a]">
             Sign in to continue
           </h1>
-          <p style={{ color: '#666', marginBottom: '32px', fontSize: '18px' }}>
-            Access your dashboard to manage listings, bookings, and more
+          <p className="mt-4 max-w-lg text-base text-muted-foreground">
+            Login or sign up once to save trips, create a host profile, list a property, and manage bookings.
           </p>
-          <button
-            onClick={handleSignIn}
-            className={styles.signInBtn}
-            style={{ padding: '16px 32px', fontSize: '16px' }}
-          >
-            Sign in with Google
-          </button>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <AuthDialog defaultHostIntent={pathname === ROUTES.newListing}>
+              <Button className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]">
+                Login or sign up
+              </Button>
+            </AuthDialog>
+            <Link href={ROUTES.search} className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-muted">
+              Explore first
+            </Link>
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col bg-[#fffdfd] font-sans">
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
-        <div className="flex h-14 items-center justify-between px-4">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4">
           <Link href="/" className="flex items-center font-brand text-2xl leading-none text-[#2b000a]">
             Beddn
           </Link>
           <nav className="hidden md:flex items-center gap-2 text-sm">
-            <Link href="/" className="px-3 py-2 rounded-md hover:bg-muted">
-              Discover
+            <Link href={ROUTES.search} className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:bg-muted">
+              <Search className="h-4 w-4" /> Traveler
             </Link>
-            <Link href="/dashboard/listings/new" className="px-3 py-2 rounded-md hover:bg-muted">
+            {(isHost || isAdmin || loading) && (
+              <Link href={ROUTES.dashboard} className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:bg-muted">
+                <LayoutDashboard className="h-4 w-4" /> Host
+              </Link>
+            )}
+            {isAdmin && (
+              <Link href={ROUTES.adminListings} className="inline-flex items-center gap-2 rounded-full bg-[#f8eef2] px-3 py-2 font-semibold text-[#800020] hover:bg-[#f1e1e7]">
+                <ShieldCheck className="h-4 w-4" /> Admin
+              </Link>
+            )}
+            <Link href={ROUTES.newListing} className="rounded-full bg-[#800020] px-4 py-2 font-semibold text-white hover:bg-[#600018]">
               List your place
             </Link>
           </nav>
@@ -166,7 +169,7 @@ export default function DashboardLayout({
         </div>
       </header>
       <div className="flex-1 flex min-h-0">
-      <aside className="w-56 border-r bg-muted/30 hidden md:block">
+      <aside className="w-60 border-r bg-white hidden md:block">
         <nav className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4 space-y-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             if (!navVisible(href)) return null;
@@ -177,8 +180,8 @@ export default function DashboardLayout({
                 href={href}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm ${
                   active
-                    ? "bg-[#800020] text-white"
-                    : "text-muted-foreground hover:bg-muted"
+                    ? "bg-[#800020] text-white shadow-sm"
+                    : "text-muted-foreground hover:bg-[#fbf7f8] hover:text-[#2b000a]"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -188,8 +191,8 @@ export default function DashboardLayout({
           })}
           {isAdmin && (
             <div className="pt-4 mt-4 border-t">
-              <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
-                <ShieldCheck className="h-4 w-4" /> Admin
+              <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase text-[#800020]">
+                <ShieldCheck className="h-4 w-4" /> Admin dashboard
               </div>
               {ADMIN_ITEMS.map(({ href, label }) => {
                 const active = pathname === href;
@@ -199,8 +202,8 @@ export default function DashboardLayout({
                     href={href}
                     className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm ${
                       active
-                        ? "bg-[#800020] text-white"
-                        : "text-muted-foreground hover:bg-muted"
+                        ? "bg-[#800020] text-white shadow-sm"
+                        : "text-muted-foreground hover:bg-[#fbf7f8] hover:text-[#2b000a]"
                     }`}
                   >
                     {label}
@@ -211,7 +214,7 @@ export default function DashboardLayout({
           )}
         </nav>
       </aside>
-      <main className="flex-1 p-4 sm:p-6 min-w-0">{children}</main>
+      <main className="flex-1 min-w-0 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

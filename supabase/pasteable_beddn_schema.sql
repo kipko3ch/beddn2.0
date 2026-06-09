@@ -459,10 +459,11 @@ create policy "Admins can manage hosts" on public.hosts
   );
 
 drop policy if exists "Active verified listings are public" on public.listings;
-create policy "Active verified listings are public" on public.listings
+drop policy if exists "Active listings are public" on public.listings;
+create policy "Active listings are public" on public.listings
   for select using (
-    (is_active = true and is_verified = true)
-    or (listing_status = 'active' and verification_status = 'verified')
+    is_active = true
+    or listing_status = 'active'
   );
 
 drop policy if exists "Hosts can view own listings" on public.listings;
@@ -475,11 +476,11 @@ drop policy if exists "Hosts can manage own listings" on public.listings;
 create policy "Hosts can manage own listings" on public.listings
   for all using (
     host_id in (
-      select id from public.hosts where user_id = auth.uid() and is_verified = true
+      select id from public.hosts where user_id = auth.uid()
     )
   ) with check (
     host_id in (
-      select id from public.hosts where user_id = auth.uid() and is_verified = true
+      select id from public.hosts where user_id = auth.uid()
     )
   );
 

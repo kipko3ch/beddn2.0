@@ -82,8 +82,8 @@ create table listings (
 
 alter table listings enable row level security;
 
-create policy "Active verified listings are public" on listings
-  for select using (is_active = true and is_verified = true);
+create policy "Active listings are public" on listings
+  for select using (is_active = true);
 
 create policy "Hosts can view own listings" on listings
   for select using (

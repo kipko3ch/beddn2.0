@@ -8,13 +8,7 @@ export default function SearchPage() {
   return (
     <>
       <Header />
-      <Suspense
-        fallback={
-          <div className="flex flex-1 items-center justify-center">
-            <div className="animate-pulse text-muted-foreground">Loading...</div>
-          </div>
-        }
-      >
+      <Suspense fallback={null}>
         <SearchContent />
       </Suspense>
     </>

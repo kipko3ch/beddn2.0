@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/header";
-import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
+import { ListingCard } from "@/components/listing-card";
 import { EmptyState } from "@/components/empty-state";
 import { AuthDialog } from "@/components/auth-dialog";
 import { Button } from "@/components/ui/button";
@@ -71,13 +71,7 @@ export default function SavedTripsPage() {
               </Button>
             </AuthDialog>
           </EmptyState>
-        ) : loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <ListingCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : listings.length > 0 ? (
+        ) : loading ? null : listings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {listings.map((listing) => (
               <ListingCard

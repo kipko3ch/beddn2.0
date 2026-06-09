@@ -41,6 +41,10 @@ export default function ListingsPage() {
           .single();
         if (host) {
           query = query.eq("host_id", host.id);
+        } else {
+          setListings([]);
+          setLoading(false);
+          return;
         }
       }
 
@@ -62,13 +66,7 @@ export default function ListingsPage() {
         </Link>
       </div>
 
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 bg-muted rounded animate-pulse" />
-          ))}
-        </div>
-      ) : listings.length === 0 ? (
+      {loading ? null : listings.length === 0 ? (
         <EmptyState
           image="/images/empty-listings.png"
           title="No listings yet"
@@ -98,7 +96,7 @@ export default function ListingsPage() {
                     variant={listing.is_verified ? "default" : "outline"}
                     className="text-xs"
                   >
-                    {listing.is_verified ? "Verified" : "Pending"}
+                    {listing.is_verified ? "Verified" : "Badge pending"}
                   </Badge>
                 </div>
               </div>

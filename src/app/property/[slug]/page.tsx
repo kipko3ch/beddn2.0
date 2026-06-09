@@ -16,7 +16,6 @@ export default async function PropertyPage({
     .select("*, listing_images(*), host:hosts(name, is_verified)")
     .eq("slug", slug)
     .eq("is_active", true)
-    .eq("is_verified", true)
     .single();
 
   if (!listingData) {

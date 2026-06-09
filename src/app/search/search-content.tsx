@@ -38,8 +38,7 @@ export function SearchContent() {
     let query = supabase
       .from("listings")
       .select("*, listing_images(*), host:hosts(id, name, is_verified), reviews(rating)")
-      .eq("is_active", true)
-      .eq("is_verified", true);
+      .eq("is_active", true);
 
     if (category !== "all") {
       query = query.contains("categories", [category]);
@@ -211,17 +210,7 @@ export function SearchContent() {
               : "Tip: pick a place, then reserve with your phone number."}
           </p>
 
-          {loading ? (
-            <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="w-[58vw] max-w-[230px] shrink-0 animate-pulse snap-start sm:w-auto sm:max-w-none">
-                  <div className="aspect-[4/3] rounded-xl bg-muted" />
-                  <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
-                  <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
-                </div>
-              ))}
-            </div>
-          ) : listings.length > 0 ? (
+          {loading ? null : listings.length > 0 ? (
             <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 xl:grid-cols-3">
               {listings.map((listing) => (
                 <div
@@ -302,9 +291,7 @@ export function SearchContent() {
               <X className="h-5 w-5" />
             </button>
           )}
-          {loading ? (
-            <div className="h-full w-full animate-pulse bg-muted" />
-          ) : (
+          {loading ? null : (
             <>
               {mapCenter && listings.length === 0 && (
                 <div className="absolute left-4 top-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-sm">

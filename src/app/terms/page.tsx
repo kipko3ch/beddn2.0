@@ -23,11 +23,11 @@ const sections = [
   },
   {
     title: "6. Host responsibilities",
-    body: "Hosts must be approved before creating listings. Hosts must provide truthful listings, safe locations, working contact information, clear check-in instructions, current availability, and prompt responses to paid booking requests.",
+    body: "Hosts can create listings after setting up a host profile. Hosts must provide truthful listings, safe locations, working contact information, clear check-in instructions, current availability, and prompt responses to paid booking requests.",
   },
   {
     title: "7. Verification",
-    body: "Host approval means Beddn has allowed a host to use host tools. In the future, Beddn may add a separate Beddn Verified listing badge for listings that pass additional checks such as photos, address review, identity, safety, or physical inspection.",
+    body: "Verification controls badges, not basic listing creation. Beddn may add a Verified host or Verified listing badge after checks such as photos, address review, identity, safety, or physical inspection.",
   },
   {
     title: "8. Cancellations, rejections, refunds, and disputes",

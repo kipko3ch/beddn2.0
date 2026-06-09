@@ -41,7 +41,7 @@ export default function EditListingPage({
   }, [id]);
 
   if (loading) {
-    return <div className="animate-pulse h-8 w-48 bg-muted rounded" />;
+    return null;
   }
 
   if (!listing) {

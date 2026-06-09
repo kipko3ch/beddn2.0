@@ -23,15 +23,15 @@ const sections = [
   },
   {
     title: "6. How we use information",
-    body: "We use information to create bookings, verify payments, notify hosts and guests, prevent double booking, unlock confirmed booking details, help admins resolve disputes, approve hosts, improve search coverage, and plan launch demand.",
+    body: "We use information to create bookings, verify payments, notify hosts and guests, prevent double booking, unlock confirmed booking details, help admins resolve disputes, review verification badges, improve search coverage, and plan launch demand.",
   },
   {
     title: "7. Sharing information",
     body: "We share only what is needed for the booking flow. Hosts see paid booking requests and guest contact details needed to respond. Guests see host contact and exact location only after confirmation. Admins may access records for support, trust, safety, fraud, refunds, and payouts.",
   },
   {
-    title: "8. Account and host approval",
-    body: "Having an account does not automatically make someone a host. Host applications and listing verification may be reviewed by admins. Future public host onboarding may include additional identity, location, photo, or safety checks.",
+    title: "8. Account, host setup, and verification",
+    body: "Having an account does not automatically make someone a host; a host profile is still required. Listing and host verification badges may be reviewed by admins, and future checks may include identity, location, photo, or safety review.",
   },
   {
     title: "9. Data retention",

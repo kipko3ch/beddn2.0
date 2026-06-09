@@ -31,11 +31,18 @@ export function AuthDialog({
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
 
+  function callbackUrl() {
+    const next = defaultHostIntent
+      ? ROUTES.newListing
+      : `${window.location.pathname}${window.location.search}`;
+    return `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next || ROUTES.home)}`;
+  }
+
   async function continueWithGoogle() {
     setWorking(true);
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+      options: { redirectTo: callbackUrl() },
     });
   }
 
@@ -47,7 +54,7 @@ export function AuthDialog({
       email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+        emailRedirectTo: callbackUrl(),
       },
     });
     setWorking(false);
@@ -73,10 +80,10 @@ export function AuthDialog({
           <div className="mb-8">
             <p className="mb-6 font-brand text-3xl leading-none text-[#2b000a]">Beddn</p>
             <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
-              Sign in to unlock the best of Beddn.
+              Log in once. You are signed up.
             </DialogTitle>
             <DialogDescription className="mt-3 max-w-sm">
-              Save trips, reserve faster, track bookings, or apply to become a verified host.
+              Save trips, reserve faster, list a place, or manage bookings with one secure account.
             </DialogDescription>
           </div>
 
@@ -107,11 +114,11 @@ export function AuthDialog({
                 className="h-14 w-full rounded-full border-[#2b000a] text-base font-bold"
               >
                 <Mail className="mr-4 h-5 w-5" />
-                Continue with email
+                Login or sign up with OTP
               </Button>
             ) : sent ? (
               <div className="rounded-2xl bg-[#fbf7f8] p-4 text-sm">
-                Check your email for a secure sign-in link. If you are new, your account will be created.
+                Check your email for your one-time sign-in link. If you are new, your account is created automatically.
               </div>
             ) : (
               <form onSubmit={continueWithEmail} className="space-y-3">
@@ -129,7 +136,7 @@ export function AuthDialog({
                   disabled={working}
                   className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
                 >
-                  {working ? "Sending..." : "Send sign-in link"}
+                  {working ? "Sending..." : "Send OTP link"}
                 </Button>
               </form>
             )}
@@ -143,7 +150,7 @@ export function AuthDialog({
                 {defaultHostIntent ? "Continue host application" : "Want to host?"}
               </span>
               <span className="mt-1 block text-muted-foreground">
-                Apply first. Admin approval is required before creating listings.
+                Create your host profile and start listing. Verification only controls the badge.
               </span>
             </Link>
           </div>

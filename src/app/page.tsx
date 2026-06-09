@@ -11,6 +11,8 @@ import {
   Heart,
   UserCircle,
   Menu,
+  LogIn,
+  ShieldCheck,
   Bus,
   Waves,
   Dumbbell
@@ -101,7 +103,6 @@ export default function LandingPage() {
       .from('listings')
       .select('*, listing_images(*), host:hosts(id, name, is_verified), reviews(rating)')
       .eq('is_active', true)
-      .eq('is_verified', true)
       .order('created_at', { ascending: false })
       .limit(20);
 
@@ -173,9 +174,26 @@ export default function LandingPage() {
               <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.review}>
                 Review a stay
               </a>
+              {!user && (
+                <AuthDialog>
+                  <button className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm hover:bg-muted">
+                    <LogIn className="h-4 w-4" /> Login
+                  </button>
+                </AuthDialog>
+              )}
               <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.saved}>
                 Saved trips
               </a>
+              {user && canHost && (
+                <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.dashboard}>
+                  Host dashboard
+                </a>
+              )}
+              {isAdmin && (
+                <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.adminListings}>
+                  Admin dashboard
+                </a>
+              )}
               <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.terms}>
                 Terms
               </a>
@@ -193,6 +211,11 @@ export default function LandingPage() {
         <nav className={styles.navRight}>
           <a href={ROUTES.search} className={styles.navItem}>Discover</a>
           <a href={ROUTES.review} className={styles.navItem}>Review</a>
+          {!user && (
+            <AuthDialog>
+              <button className={styles.navItem}>Login</button>
+            </AuthDialog>
+          )}
           {user ? (
             <div className={styles.desktopAccount}>
               {!canHost && (
@@ -219,15 +242,29 @@ export default function LandingPage() {
                     </a>
                   </DropdownMenuItem>
                   {canHost ? (
-                    <DropdownMenuItem>
-                      <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
-                        <Home className="h-4 w-4" /> Dashboard
-                      </a>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem>
+                        <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
+                          <Home className="h-4 w-4" /> Host dashboard
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <a href={ROUTES.search} className="flex w-full items-center gap-2">
+                          <Search className="h-4 w-4" /> Switch to traveler
+                        </a>
+                      </DropdownMenuItem>
+                    </>
                   ) : (
                     <DropdownMenuItem>
                       <a href={ROUTES.newListing} className="flex w-full items-center gap-2">
                         <Home className="h-4 w-4" /> Become a host
+                      </a>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem>
+                      <a href={ROUTES.adminListings} className="flex w-full items-center gap-2">
+                        <ShieldCheck className="h-4 w-4" /> Admin dashboard
                       </a>
                     </DropdownMenuItem>
                   )}
@@ -268,15 +305,29 @@ export default function LandingPage() {
                   </a>
                 </DropdownMenuItem>
                 {canHost ? (
-                  <DropdownMenuItem>
-                    <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
-                      <Home className="h-4 w-4" /> Dashboard
-                    </a>
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem>
+                      <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
+                        <Home className="h-4 w-4" /> Host dashboard
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <a href={ROUTES.search} className="flex w-full items-center gap-2">
+                        <Search className="h-4 w-4" /> Switch to traveler
+                      </a>
+                    </DropdownMenuItem>
+                  </>
                 ) : (
                   <DropdownMenuItem>
                     <a href={ROUTES.newListing} className="flex w-full items-center gap-2">
                       <Home className="h-4 w-4" /> Become a host
+                    </a>
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && (
+                  <DropdownMenuItem>
+                    <a href={ROUTES.adminListings} className="flex w-full items-center gap-2">
+                      <ShieldCheck className="h-4 w-4" /> Admin dashboard
                     </a>
                   </DropdownMenuItem>
                 )}
@@ -354,17 +405,7 @@ export default function LandingPage() {
 
       {/* Listings grid */}
       <section className={styles.listingsSection}>
-        {loading ? (
-          <div className={styles.listingsGrid}>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className={`${styles.listingRailItem} ${styles.listingSkeleton}`}>
-                <div className={styles.skeletonImage} />
-                <div className={styles.skeletonTitle} />
-                <div className={styles.skeletonMeta} />
-              </div>
-            ))}
-          </div>
-        ) : listings.length > 0 ? (
+        {loading ? null : listings.length > 0 ? (
           <div className={styles.listingsGrid}>
             {listings.map((listing) => (
               <div key={listing.id} className={styles.listingRailItem}>

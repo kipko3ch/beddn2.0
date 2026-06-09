@@ -44,13 +44,7 @@ export default function PaymentsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Payments</h1>
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-14 bg-muted rounded animate-pulse" />
-          ))}
-        </div>
-      ) : payments.length === 0 ? (
+      {loading ? null : payments.length === 0 ? (
         <EmptyState
           image="/images/empty-payments.png"
           title="No payments yet"
