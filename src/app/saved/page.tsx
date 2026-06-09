@@ -61,7 +61,7 @@ export default function SavedTripsPage() {
         <h1 className="font-brand text-3xl mb-6 text-[#2b000a]">Saved trips</h1>
         {loggedOut ? (
           <EmptyState
-            image="/images/empty-saved.png"
+            image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029376/empty-saved_clsjni.png"
             title="Sign in to see your saved trips"
             subtitle="Log in to save places you like and find them again here."
           >
@@ -84,7 +84,7 @@ export default function SavedTripsPage() {
           </div>
         ) : (
           <EmptyState
-            image="/images/empty-saved.png"
+            image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029376/empty-saved_clsjni.png"
             title="No saved trips yet"
             subtitle="Browse listings and save the ones you like."
           />

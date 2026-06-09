@@ -167,7 +167,7 @@ export default function CalendarPage() {
           <div className="divide-y rounded-lg border">
             {bookings.length === 0 ? (
               <EmptyState
-                image="/images/empty-calendar.png"
+                image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029365/empty-calendar_b4iry4.png"
                 title="No upcoming bookings"
                 subtitle="Confirmed bookings will appear on your calendar."
                 size="sm"

@@ -232,7 +232,7 @@ export function SearchContent() {
           ) : isExperienceSearch ? (
             <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-10 text-center sm:px-8">
               <Image
-                src="/images/empty-experiences.png"
+                src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-experiences_uxhnur.png"
                 alt=""
                 width={200}
                 height={160}
@@ -252,7 +252,7 @@ export function SearchContent() {
           ) : (
             <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-12 text-center sm:px-8">
               <Image
-                src="/images/empty-no-places.png"
+                src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029373/empty-no-places_tcbzxs.png"
                 alt=""
                 width={220}
                 height={170}

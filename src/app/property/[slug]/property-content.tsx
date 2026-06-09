@@ -548,7 +548,7 @@ export function PropertyContent({
               </div>
             ) : (
               <EmptyState
-                image="/images/empty-reviews.png"
+                image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029375/empty-reviews_t8xgis.png"
                 title="No reviews yet"
                 subtitle="Be the first to review this place after your stay."
                 size="sm"

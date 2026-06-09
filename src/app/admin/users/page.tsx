@@ -107,7 +107,7 @@ export default function AdminUsersPage() {
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
-          image="/images/empty-admin.png"
+          image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-admin_ypowli.png"
           title="No users found"
           subtitle="Try a different search."
           size="sm"

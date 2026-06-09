@@ -111,7 +111,7 @@ export default function WithdrawalsPage() {
       <div className="border rounded-lg divide-y">
         {withdrawals.length === 0 ? (
           <EmptyState
-            image="/images/empty-withdrawals.png"
+            image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029378/empty-withdrawals_vq8okc.png"
             title="No withdrawal requests yet"
             subtitle="Request a payout once you have a withdrawable balance."
             size="sm"

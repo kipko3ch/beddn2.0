@@ -68,7 +68,7 @@ export default function ListingsPage() {
 
       {loading ? null : listings.length === 0 ? (
         <EmptyState
-          image="/images/empty-listings.png"
+          image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-listings_xklz7s.png"
           title="No listings yet"
           subtitle="Create your first listing to start receiving booking requests."
           size="sm"

@@ -205,7 +205,7 @@ export default function DashboardPage() {
       {loading ? null : stats.length === 0 ? (
         <div className="rounded-2xl border bg-[#fbf7f8] p-6">
           <Image
-            src="/images/empty-host-needed.png"
+            src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029370/empty-host-needed_vum5fe.png"
             alt=""
             width={160}
             height={130}
@@ -229,7 +229,7 @@ export default function DashboardPage() {
           {host && !host.is_verified && !isAdmin && (
             <div className="flex flex-col gap-4 rounded-2xl border bg-white p-5 shadow-sm sm:flex-row sm:items-center">
               <Image
-                src="/images/spot-verified.png"
+                src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029380/spot-verified_anp2nf.png"
                 alt=""
                 width={110}
                 height={90}

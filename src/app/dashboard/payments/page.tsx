@@ -46,7 +46,7 @@ export default function PaymentsPage() {
       <h1 className="text-2xl font-bold mb-6">Payments</h1>
       {loading ? null : payments.length === 0 ? (
         <EmptyState
-          image="/images/empty-payments.png"
+          image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029374/empty-payments_g2drbi.png"
           title="No payments yet"
           subtitle="Payment activity will show up here once guests pay."
           size="sm"

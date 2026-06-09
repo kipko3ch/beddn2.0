@@ -117,7 +117,7 @@ export default function AdminSectionPage() {
       </div>
       {loading ? null : rows.length === 0 ? (
         <EmptyState
-          image="/images/empty-admin.png"
+          image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-admin_ypowli.png"
           title="No records yet"
           subtitle="Records for this section will appear here."
           size="sm"

@@ -69,10 +69,10 @@ type TabType = keyof typeof TAB_DATA;
 
 // Bump ?v when you replace an icon file to bust browser/CDN cache.
 const TAB_ICONS: Record<TabType, string> = {
-  All: '/images/cat-all.png?v=2',
-  Hourly: '/images/cat-hourly.png?v=2',
-  Overnight: '/images/cat-overnight.png?v=2',
-  Experiences: '/images/cat-experiences.png?v=2',
+  All: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029385/cat-all_ladc5u.png?v=2',
+  Hourly: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/cat-hourly_fpocci.png?v=2',
+  Overnight: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029362/cat-overnight_nmbyzv.png?v=2',
+  Experiences: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029371/cat-experiences_ojbz72.png?v=2',
 };
 
 export default function LandingPage() {
@@ -420,7 +420,7 @@ export default function LandingPage() {
         ) : activeTab === 'Experiences' ? (
           <div className={styles.emptyState}>
             <Image
-              src="/images/empty-experiences.png"
+              src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-experiences_uxhnur.png"
               alt=""
               width={200}
               height={160}
@@ -451,7 +451,7 @@ export default function LandingPage() {
         ) : (
           <div className={styles.emptyState}>
             <Image
-              src="/images/empty-no-places.png"
+              src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029373/empty-no-places_tcbzxs.png"
               alt=""
               width={220}
               height={170}
