@@ -64,6 +64,12 @@ export function Header() {
           </Link>
 
           <div className="flex items-center gap-2">
+            <Link href={ROUTES.search} className="px-3 text-sm font-medium text-[#2b000a] hover:text-[#800020]">
+              Discover
+            </Link>
+            <Link href={ROUTES.review} className="px-3 text-sm font-medium text-[#2b000a] hover:text-[#800020]">
+              Review
+            </Link>
             {user && !canHost && (
               <Link href={ROUTES.newListing} className="hidden sm:block">
                 <Button variant="ghost" size="sm">
@@ -128,7 +134,7 @@ export function Header() {
                 render={
                   <button
                     type="button"
-                    className="inline-flex size-9 items-center justify-center rounded-full border bg-white text-[#181113] shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[#800020]"
+                    className="inline-flex size-9 items-center justify-center rounded-full text-[#181113] outline-none focus-visible:ring-2 focus-visible:ring-[#800020]"
                   />
                 }
               >
@@ -242,7 +248,7 @@ export function Header() {
               </DropdownMenu>
             ) : (
               <AuthDialog defaultHostIntent>
-                <button className="inline-flex size-9 items-center justify-center rounded-full border bg-white text-[#181113] shadow-sm">
+                <button className="inline-flex size-9 items-center justify-center rounded-full text-[#181113]">
                   <UserCircle className="h-5 w-5" />
                   <span className="sr-only">Become a host</span>
                 </button>

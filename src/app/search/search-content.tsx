@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
-import { Bus, Dumbbell, MapPin, Search, Waves, X } from "lucide-react";
+import { MapPin, Search, X } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
 export function SearchContent() {
@@ -27,7 +27,6 @@ export function SearchContent() {
   const [searchQuery, setSearchQuery] = useState(q);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
-  const [demandCount, setDemandCount] = useState(0);
   const [geocodedCenter, setGeocodedCenter] = useState<[number, number] | undefined>();
   const [mapLabel, setMapLabel] = useState("");
   const { savedIds, toggle } = useSavedListings();
@@ -62,17 +61,6 @@ export function SearchContent() {
       results_count: results.length,
     });
 
-    let demandQuery = supabase
-      .from("search_demand")
-      .select("id", { count: "exact", head: true });
-    if (category !== "all") {
-      demandQuery = demandQuery.eq("category", category);
-    }
-    if (q) {
-      demandQuery = demandQuery.ilike("query", `%${q}%`);
-    }
-    const { count } = await demandQuery;
-    setDemandCount(count ?? 0);
     setLoading(false);
   }, [q, lat, lng, category]);
 
@@ -217,10 +205,10 @@ export function SearchContent() {
                 : "No verified places here yet"}
             </h1>
           </div>
-          <p className="mb-5 rounded-2xl bg-[#fbf7f8] px-4 py-3 text-sm text-muted-foreground">
+          <p className="mb-5 text-sm text-muted-foreground">
             {isExperienceSearch
-              ? "Tip: search simple words like road trip, swimming, yoga, hiking, food tour, or kids class."
-              : "Tip: choose a result, check the photos and availability, then reserve with your phone number."}
+              ? "Tip: try simple words like road trip, swimming, or yoga."
+              : "Tip: pick a place, then reserve with your phone number."}
           </p>
 
           {loading ? (
@@ -253,62 +241,24 @@ export function SearchContent() {
               ))}
             </div>
           ) : isExperienceSearch ? (
-            <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-10 sm:px-8">
-              <div className="mx-auto max-w-2xl text-center">
-                <Image
-                  src="/images/empty-experiences.png"
-                  alt=""
-                  width={200}
-                  height={160}
-                  className="mx-auto mb-4 h-auto w-[180px]"
-                  aria-hidden
-                />
-                <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
-                  Experiences are coming
-                </p>
-                <h2 className="mt-2 text-2xl font-bold">
-                  Road trips, yoga days, swimming classes, hikes, food tours.
-                </h2>
-                <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-                  We are collecting demand first so local organizers know where groups are already forming.
-                </p>
-                <div className="mx-auto mt-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-bold shadow-sm">
-                  {Math.max(demandCount, 1)} people have asked for this
-                </div>
-              </div>
-
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                {[
-                  { icon: Bus, title: "Road trips", text: "Naivasha, Nanyuki, coast weekends, group vans." },
-                  { icon: Waves, title: "Swimming classes", text: "Beginner lessons, kids sessions, private pools." },
-                  { icon: Dumbbell, title: "Wellness & sport", text: "Yoga, hikes, cycling, dance, and fitness groups." },
-                ].map(({ icon: Icon, title, text }) => (
-                  <div key={title} className="rounded-2xl bg-white p-4 text-left shadow-sm">
-                    <Icon className="mb-3 h-5 w-5 text-[#800020]" />
-                    <p className="font-bold">{title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{text}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                <Button
-                  onClick={() => {
-                    setSearchQuery("road trip");
-                    router.push("/search?q=road%20trip&category=experience");
-                  }}
-                  className="rounded-full bg-[#800020] hover:bg-[#600018]"
-                >
-                  Find road trips
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                  onClick={() => router.push("/search?q=swimming%20classes&category=experience")}
-                >
-                  Try swimming classes
-                </Button>
-              </div>
+            <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-10 text-center sm:px-8">
+              <Image
+                src="/images/empty-experiences.png"
+                alt=""
+                width={200}
+                height={160}
+                className="mx-auto mb-4 h-auto w-[160px] sm:w-[180px]"
+                aria-hidden
+              />
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#800020]">
+                Experiences are coming
+              </p>
+              <h2 className="mt-2 text-xl font-bold sm:text-2xl">
+                Trips, classes, and tours are forming.
+              </h2>
+              <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
+                We&apos;re gathering demand first so local organizers know where groups are forming.
+              </p>
             </div>
           ) : (
             <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-12 text-center sm:px-8">
