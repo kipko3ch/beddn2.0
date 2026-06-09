@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import styles from './landing.module.css';
 import { createClient } from '@/lib/supabase/client';
-import { useSavedListings } from '@/lib/hooks';
+import { useSavedListings, useUserRole } from '@/lib/hooks';
 import { ListingCard } from '@/components/listing-card';
 import { AuthDialog } from '@/components/auth-dialog';
 import {
@@ -28,9 +28,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ROUTES } from '@/lib/routes';
 import { useScrollUpVisibility } from '@/lib/use-scroll-up-visibility';
-import type { User } from '@supabase/supabase-js';
 import type { Listing } from '@/lib/types';
 
 const TAB_DATA = {
@@ -63,10 +69,11 @@ export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const { user, isHost, isAdmin } = useUserRole();
+  const canHost = isHost || isAdmin;
   const { savedIds, toggle } = useSavedListings();
   const bottomNavVisible = useScrollUpVisibility();
 
@@ -78,11 +85,6 @@ export default function LandingPage() {
   }, []);
 
   const currentData = TAB_DATA[activeTab];
-
-  const checkUser = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
-  }, [supabase]);
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
@@ -105,8 +107,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     fetchListings();
-    checkUser();
-  }, [checkUser, fetchListings]);
+  }, [fetchListings]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -128,7 +129,7 @@ export default function LandingPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    setUser(null);
+    router.refresh();
   }
 
   const tabs: { name: TabType }[] = [
@@ -185,48 +186,100 @@ export default function LandingPage() {
           <a href={ROUTES.review} className={styles.navItem}>Review</a>
           {user ? (
             <div className={styles.desktopAccount}>
-              <Image
-                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
-                alt="Profile"
-                width={32}
-                height={32}
-                style={{ borderRadius: '50%', cursor: 'pointer' }}
-                onClick={() => router.push('/dashboard')}
-              />
-              <button 
-                className={styles.signInBtn} 
-                onClick={handleSignOut}
-                style={{ padding: '8px 16px', fontSize: 14 }}
-              >
-                Sign out
-              </button>
+              {!canHost && (
+                <a href={ROUTES.newListing} className={styles.navItem}>Become a host</a>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button type="button" aria-label="Open account" style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }} />
+                  }
+                >
+                  <Image
+                    src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                    alt="Profile"
+                    width={32}
+                    height={32}
+                    style={{ borderRadius: '50%' }}
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem>
+                    <a href={ROUTES.saved} className="flex w-full items-center gap-2">
+                      <Heart className="h-4 w-4" /> Saved trips
+                    </a>
+                  </DropdownMenuItem>
+                  {canHost ? (
+                    <DropdownMenuItem>
+                      <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
+                        <Home className="h-4 w-4" /> Dashboard
+                      </a>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem>
+                      <a href={ROUTES.newListing} className="flex w-full items-center gap-2">
+                        <Home className="h-4 w-4" /> Become a host
+                      </a>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <span className="flex items-center gap-2">Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
-            <AuthDialog>
-              <button className={styles.signInBtn}>Sign in</button>
+            <AuthDialog defaultHostIntent>
+              <button className={styles.signInBtn}>Become a host</button>
             </AuthDialog>
           )}
         </nav>
 
         <div className={styles.mobileProfileSlot}>
           {user ? (
-            <button
-              type="button"
-              className={styles.mobileProfileButton}
-              aria-label="Open account"
-              onClick={() => router.push('/dashboard')}
-            >
-              <Image
-                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
-                alt=""
-                width={32}
-                height={32}
-                style={{ borderRadius: '50%' }}
-              />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button type="button" className={styles.mobileProfileButton} aria-label="Open account" />
+                }
+              >
+                <Image
+                  src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                  alt=""
+                  width={32}
+                  height={32}
+                  style={{ borderRadius: '50%' }}
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem>
+                  <a href={ROUTES.saved} className="flex w-full items-center gap-2">
+                    <Heart className="h-4 w-4" /> Saved trips
+                  </a>
+                </DropdownMenuItem>
+                {canHost ? (
+                  <DropdownMenuItem>
+                    <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
+                      <Home className="h-4 w-4" /> Dashboard
+                    </a>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem>
+                    <a href={ROUTES.newListing} className="flex w-full items-center gap-2">
+                      <Home className="h-4 w-4" /> Become a host
+                    </a>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <span className="flex items-center gap-2">Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
-            <AuthDialog>
-              <button type="button" className={styles.mobileProfileButton} aria-label="Sign in">
+            <AuthDialog defaultHostIntent>
+              <button type="button" className={styles.mobileProfileButton} aria-label="Become a host">
                 <UserCircle size={21} />
               </button>
             </AuthDialog>
@@ -376,16 +429,21 @@ export default function LandingPage() {
           <Heart size={20} />
           <span>Saved</span>
         </button>
-        {user ? (
-          <button onClick={() => router.push('/dashboard')}>
+        {user && canHost ? (
+          <button onClick={() => router.push(ROUTES.dashboard)}>
             <UserCircle size={20} />
-            <span>Account</span>
+            <span>Dashboard</span>
+          </button>
+        ) : user ? (
+          <button onClick={() => router.push(ROUTES.newListing)}>
+            <Home size={20} />
+            <span>Host</span>
           </button>
         ) : (
-          <AuthDialog>
+          <AuthDialog defaultHostIntent>
             <button>
-              <UserCircle size={20} />
-              <span>Sign in</span>
+              <Home size={20} />
+              <span>Host</span>
             </button>
           </AuthDialog>
         )}

@@ -30,6 +30,47 @@ export function useUser() {
   return { user, loading };
 }
 
+/**
+ * Resolves the signed-in user's role: whether they have a host profile and
+ * whether they're an admin. Used to decide header CTAs ("Become a host" vs
+ * "Dashboard") and menu contents.
+ */
+export function useUserRole() {
+  const supabase = useMemo(() => createClient(), []);
+  const { user, loading: loadingUser } = useUser();
+  const [isHost, setIsHost] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loadingRole, setLoadingRole] = useState(true);
+
+  useEffect(() => {
+    if (loadingUser) return;
+    if (!user) {
+      setIsHost(false);
+      setIsAdmin(false);
+      setLoadingRole(false);
+      return;
+    }
+
+    let mounted = true;
+    setLoadingRole(true);
+    Promise.all([
+      supabase.from("hosts").select("id").eq("user_id", user.id).maybeSingle(),
+      supabase.from("profiles").select("is_admin").eq("id", user.id).maybeSingle(),
+    ]).then(([hostRes, profileRes]) => {
+      if (!mounted) return;
+      setIsHost(Boolean(hostRes.data));
+      setIsAdmin(Boolean(profileRes.data?.is_admin));
+      setLoadingRole(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [loadingUser, supabase, user]);
+
+  return { user, isHost, isAdmin, loading: loadingUser || loadingRole };
+}
+
 export function useSavedListings() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [loadingSaved, setLoadingSaved] = useState(true);

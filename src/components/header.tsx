@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useUserRole } from "@/lib/hooks";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { AuthDialog } from "@/components/auth-dialog";
@@ -43,24 +43,14 @@ function getInitials(user: User | null) {
 }
 
 export function Header() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isHost, isAdmin } = useUserRole();
   const pathname = usePathname();
   const supabase = createClient();
   const bottomNavVisible = useScrollUpVisibility();
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const canHost = isHost || isAdmin;
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    setUser(null);
     window.location.href = "/";
   }
 
@@ -73,10 +63,10 @@ export function Header() {
           </Link>
 
           <div className="flex items-center gap-2">
-            {user && (
+            {user && !canHost && (
               <Link href={ROUTES.newListing} className="hidden sm:block">
                 <Button variant="ghost" size="sm">
-                  List your place
+                  Become a host
                 </Button>
               </Link>
             )}
@@ -97,11 +87,19 @@ export function Header() {
                       <Heart className="h-4 w-4" /> Saved trips
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                      <LayoutDashboard className="h-4 w-4" /> Dashboard
-                    </Link>
-                  </DropdownMenuItem>
+                  {canHost ? (
+                    <DropdownMenuItem>
+                      <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
+                        <LayoutDashboard className="h-4 w-4" /> Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem>
+                      <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
+                        <Home className="h-4 w-4" /> Become a host
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <span className="flex items-center gap-2">
@@ -111,12 +109,12 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <AuthDialog>
+              <AuthDialog defaultHostIntent>
                 <Button
                   className="rounded-full bg-black px-5 text-white hover:bg-neutral-800"
                   size="sm"
                 >
-                  Sign in
+                  Become a host
                 </Button>
               </AuthDialog>
             )}
@@ -165,13 +163,21 @@ export function Header() {
                   >
                     <Heart className="h-4 w-4" /> Saved trips
                   </SheetClose>
-                  {user && (
+                  {!canHost ? (
                     <SheetClose
                       render={
                         <Link href={ROUTES.newListing} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                       }
                     >
-                      <Home className="h-4 w-4" /> List your place
+                      <Home className="h-4 w-4" /> Become a host
+                    </SheetClose>
+                  ) : (
+                    <SheetClose
+                      render={
+                        <Link href={ROUTES.dashboard} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                      }
+                    >
+                      <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </SheetClose>
                   )}
                   <SheetClose
@@ -212,11 +218,19 @@ export function Header() {
                       <Heart className="h-4 w-4" /> Saved trips
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                      <LayoutDashboard className="h-4 w-4" /> Dashboard
-                    </Link>
-                  </DropdownMenuItem>
+                  {canHost ? (
+                    <DropdownMenuItem>
+                      <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
+                        <LayoutDashboard className="h-4 w-4" /> Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem>
+                      <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
+                        <Home className="h-4 w-4" /> Become a host
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <span className="flex items-center gap-2">
@@ -226,10 +240,10 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <AuthDialog>
+              <AuthDialog defaultHostIntent>
                 <button className="inline-flex size-9 items-center justify-center rounded-full border bg-white text-[#181113] shadow-sm">
                   <UserCircle className="h-5 w-5" />
-                  <span className="sr-only">Sign in</span>
+                  <span className="sr-only">Become a host</span>
                 </button>
               </AuthDialog>
             )}
@@ -268,21 +282,31 @@ export function Header() {
             <Heart className="h-5 w-5" />
             Saved
           </Link>
-          {user ? (
+          {user && canHost ? (
             <Link
               href={ROUTES.dashboard}
               className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
                 pathname?.startsWith(ROUTES.dashboard) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
               }`}
             >
-              <UserCircle className="h-5 w-5" />
-              Account
+              <LayoutDashboard className="h-5 w-5" />
+              Dashboard
+            </Link>
+          ) : user ? (
+            <Link
+              href={ROUTES.newListing}
+              className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 ${
+                pathname?.startsWith(ROUTES.newListing) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
+              }`}
+            >
+              <Home className="h-5 w-5" />
+              Host
             </Link>
           ) : (
-            <AuthDialog>
+            <AuthDialog defaultHostIntent>
               <button className="flex w-full flex-col items-center gap-0.5 rounded-2xl px-2 py-2 text-[#6f6568] hover:bg-muted">
-                <UserCircle className="h-5 w-5" />
-                Sign in
+                <Home className="h-5 w-5" />
+                Host
               </button>
             </AuthDialog>
           )}
