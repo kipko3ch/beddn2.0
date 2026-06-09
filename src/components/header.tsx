@@ -24,7 +24,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Home, KeyRound, LayoutDashboard, LogOut, Menu, Search, UserCircle } from "lucide-react";
+import { Heart, Home, LayoutDashboard, LogOut, Menu, Search, UserCircle } from "lucide-react";
+import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
 import { useScrollUpVisibility } from "@/lib/use-scroll-up-visibility";
 
@@ -261,7 +262,7 @@ export function Header() {
               pathname === ROUTES.home ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
             }`}
           >
-            <Home className="h-5 w-5" />
+            <Icon icon="line-md:home" className="h-6 w-6" />
             Home
           </Link>
           <Link
@@ -270,7 +271,7 @@ export function Header() {
               pathname?.startsWith(ROUTES.search) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
             }`}
           >
-            <Search className="h-5 w-5" />
+            <Icon icon="line-md:search" className="h-6 w-6" />
             Search
           </Link>
           <Link
@@ -279,7 +280,7 @@ export function Header() {
               pathname === ROUTES.saved ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
             }`}
           >
-            <Heart className="h-5 w-5" />
+            <Icon icon="line-md:heart" className="h-6 w-6" />
             Saved
           </Link>
           {user && canHost ? (
@@ -289,7 +290,7 @@ export function Header() {
                 pathname?.startsWith(ROUTES.dashboard) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
               }`}
             >
-              <LayoutDashboard className="h-5 w-5" />
+              <Icon icon="line-md:account" className="h-6 w-6" />
               Dashboard
             </Link>
           ) : user ? (
@@ -299,13 +300,13 @@ export function Header() {
                 pathname?.startsWith(ROUTES.newListing) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
               }`}
             >
-              <KeyRound className="h-5 w-5" />
+              <Icon icon="line-md:briefcase" className="h-6 w-6" />
               Host
             </Link>
           ) : (
             <AuthDialog defaultHostIntent>
               <button className="flex w-full flex-col items-center gap-0.5 rounded-2xl px-2 py-2 text-[#6f6568] hover:bg-muted">
-                <KeyRound className="h-5 w-5" />
+                <Icon icon="line-md:briefcase" className="h-6 w-6" />
                 Host
               </button>
             </AuthDialog>

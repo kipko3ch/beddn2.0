@@ -11,11 +11,11 @@ import {
   Heart,
   UserCircle,
   Menu,
-  KeyRound,
   Bus,
   Waves,
   Dumbbell
 } from 'lucide-react';
+import { Icon } from '@/components/icon';
 import styles from './landing.module.css';
 import { createClient } from '@/lib/supabase/client';
 import { useSavedListings, useUserRole } from '@/lib/hooks';
@@ -450,31 +450,31 @@ export default function LandingPage() {
         }`}
       >
         <button className={activeTab === 'All' ? styles.mobileBottomNavActive : ''} onClick={() => setActiveTab('All')}>
-          <Home size={20} />
+          <Icon icon="line-md:home" />
           <span>Home</span>
         </button>
         <button onClick={() => router.push('/search')}>
-          <Search size={20} />
+          <Icon icon="line-md:search" />
           <span>Search</span>
         </button>
         <button onClick={() => router.push('/saved')}>
-          <Heart size={20} />
+          <Icon icon="line-md:heart" />
           <span>Saved</span>
         </button>
         {user && canHost ? (
           <button onClick={() => router.push(ROUTES.dashboard)}>
-            <UserCircle size={20} />
+            <Icon icon="line-md:account" />
             <span>Dashboard</span>
           </button>
         ) : user ? (
           <button onClick={() => router.push(ROUTES.newListing)}>
-            <KeyRound size={20} />
+            <Icon icon="line-md:briefcase" />
             <span>Host</span>
           </button>
         ) : (
           <AuthDialog defaultHostIntent>
             <button>
-              <KeyRound size={20} />
+              <Icon icon="line-md:briefcase" />
               <span>Host</span>
             </button>
           </AuthDialog>
