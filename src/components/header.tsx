@@ -123,7 +123,7 @@ export function Header() {
                   )}
                   {isAdmin && (
                     <DropdownMenuItem>
-                      <Link href={ROUTES.adminListings} className="flex items-center gap-2 w-full">
+                      <Link href={ROUTES.adminHome} className="flex items-center gap-2 w-full">
                         <ShieldCheck className="h-4 w-4" /> Admin dashboard
                       </Link>
                     </DropdownMenuItem>
@@ -224,7 +224,7 @@ export function Header() {
                   {isAdmin && (
                     <SheetClose
                       render={
-                        <Link href={ROUTES.adminListings} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
+                        <Link href={ROUTES.adminHome} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                       }
                     >
                       <ShieldCheck className="h-4 w-4" /> Admin dashboard
@@ -290,7 +290,7 @@ export function Header() {
                   )}
                   {isAdmin && (
                     <DropdownMenuItem>
-                      <Link href={ROUTES.adminListings} className="flex items-center gap-2 w-full">
+                      <Link href={ROUTES.adminHome} className="flex items-center gap-2 w-full">
                         <ShieldCheck className="h-4 w-4" /> Admin dashboard
                       </Link>
                     </DropdownMenuItem>
