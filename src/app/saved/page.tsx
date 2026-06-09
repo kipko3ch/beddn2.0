@@ -53,7 +53,7 @@ export default function SavedTripsPage() {
     <>
     <Header />
     <main className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Saved trips</h1>
+      <h1 className="font-brand text-3xl mb-6 text-[#2b000a]">Saved trips</h1>
       {loggedOut ? (
         <EmptyState
           image="/images/empty-saved.png"

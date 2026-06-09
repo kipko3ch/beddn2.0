@@ -158,6 +158,12 @@
   color: #fff;
 }
 
+/* The category icons are maroon line-art PNGs; invert them to white on the
+   filled active segment so they stay visible. */
+.tab.active img {
+  filter: brightness(0) invert(1);
+}
+
 .searchContainer {
   position: relative;
   width: 100%;

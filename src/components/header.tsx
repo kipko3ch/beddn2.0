@@ -117,10 +117,7 @@ export function Header() {
               </DropdownMenu>
             ) : (
               <AuthDialog defaultHostIntent>
-                <Button
-                  className="rounded-full bg-black px-5 text-white hover:bg-neutral-800"
-                  size="sm"
-                >
+                <Button className="h-10 rounded-full bg-black px-6 text-sm font-semibold text-white hover:bg-neutral-800">
                   Become a host
                 </Button>
               </AuthDialog>

@@ -142,7 +142,7 @@ export function SearchContent() {
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <form
             onSubmit={handleSearch}
-            className="flex flex-col gap-3 rounded-[28px] border bg-white p-2 shadow-sm sm:flex-row sm:items-center"
+            className="flex flex-col gap-3 rounded-full bg-white p-2 shadow-[0_4px_12px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.1)] transition-shadow focus-within:shadow-[0_4px_16px_rgba(0,0,0,0.12),0_0_0_2px_#000] sm:flex-row sm:items-center"
           >
             <div className="relative min-w-0 flex-1">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
@@ -191,7 +191,7 @@ export function SearchContent() {
                     ? `Search results for ${q}`
                     : "Explore verified stays"}
                 </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+            <h1 className="mt-1 font-brand text-3xl tracking-tight text-[#2b000a] sm:text-4xl">
               {loading
                 ? isExperienceSearch
                   ? "Finding experiences"
