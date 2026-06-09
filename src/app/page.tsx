@@ -65,11 +65,12 @@ const TAB_DATA = {
 
 type TabType = keyof typeof TAB_DATA;
 
+// Bump ?v when you replace an icon file to bust browser/CDN cache.
 const TAB_ICONS: Record<TabType, string> = {
-  All: '/images/cat-all.png',
-  Hourly: '/images/cat-hourly.png',
-  Overnight: '/images/cat-overnight.png',
-  Experiences: '/images/cat-experiences.png',
+  All: '/images/cat-all.png?v=2',
+  Hourly: '/images/cat-hourly.png?v=2',
+  Overnight: '/images/cat-overnight.png?v=2',
+  Experiences: '/images/cat-experiences.png?v=2',
 };
 
 export default function LandingPage() {
