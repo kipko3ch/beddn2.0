@@ -12,7 +12,11 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const collection = require("@iconify-json/mdi/icons.json");
 
-const SOURCES = ["src/lib/amenities.ts", "src/lib/property-types.ts"];
+const SOURCES = [
+  "src/lib/amenities.ts",
+  "src/lib/property-types.ts",
+  "src/lib/experience-types.ts",
+];
 
 const names = new Set();
 for (const file of SOURCES) {

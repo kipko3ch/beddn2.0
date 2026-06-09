@@ -51,6 +51,7 @@ export interface Listing {
   city: string;
   area: string;
   property_type?: string | null;
+  experience_types?: string[];
   private_address: string;
   check_in_instructions?: string | null;
   latitude: number;

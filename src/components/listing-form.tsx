@@ -25,6 +25,7 @@ import { AiPromptHelper } from "@/components/ai-prompt-helper";
 import { Clock, Compass, Moon, Search, ChevronLeft } from "lucide-react";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 import { AMENITY_LABEL } from "@/lib/amenities";
+import { EXPERIENCE_GROUPS, EXPERIENCE_LABEL } from "@/lib/experience-types";
 import type { Listing, ListingCategory } from "@/lib/types";
 
 const CATEGORY_OPTIONS: {
@@ -97,6 +98,10 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   const [city, setCity] = useState(listing?.city ?? "");
   const [area, setArea] = useState(listing?.area ?? "");
   const [propertyType, setPropertyType] = useState(listing?.property_type ?? "");
+  const [experienceTypes, setExperienceTypes] = useState<string[]>(
+    listing?.experience_types ?? []
+  );
+  const [experienceSearch, setExperienceSearch] = useState("");
   const [privateAddress, setPrivateAddress] = useState(listing?.private_address ?? "");
   const [checkInInstructions, setCheckInInstructions] = useState(
     listing?.check_in_instructions ?? ""
@@ -158,6 +163,14 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
   }
+
+  function toggleExperienceType(value: string) {
+    setExperienceTypes((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
+
+  const isExperience = categories.includes("experience");
 
   function generateSlug(value: string): string {
     return value
@@ -294,6 +307,78 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       </div>
     ),
   });
+
+  if (isExperience) {
+    const q = experienceSearch.trim().toLowerCase();
+    steps.push({
+      title: "What kind of experience is it?",
+      subtitle:
+        "Pick everything you offer — guests can find you by activity. Search to filter the list.",
+      valid: experienceTypes.length > 0,
+      content: (
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={experienceSearch}
+              onChange={(e) => setExperienceSearch(e.target.value)}
+              placeholder="Search experiences (safari, yoga, cooking…)"
+              className="pl-9"
+            />
+          </div>
+          {experienceTypes.length > 0 && (
+            <p className="text-xs font-medium text-[#800020]">
+              {experienceTypes.length} selected
+            </p>
+          )}
+          <div className="space-y-5">
+            {EXPERIENCE_GROUPS.map((group) => {
+              const items = group.items.filter(
+                (it) =>
+                  !q ||
+                  it.label.toLowerCase().includes(q) ||
+                  it.value.includes(q)
+              );
+              if (items.length === 0) return null;
+              return (
+                <div key={group.group}>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {group.group}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {items.map((it) => {
+                      const selected = experienceTypes.includes(it.value);
+                      return (
+                        <button
+                          key={it.value}
+                          type="button"
+                          onClick={() => toggleExperienceType(it.value)}
+                          aria-pressed={selected}
+                          className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${
+                            selected
+                              ? "border-[#800020] bg-[#fbf7f8] font-medium text-[#2b000a]"
+                              : "border-border bg-white hover:border-[#d7a9b7]"
+                          }`}
+                        >
+                          <AmenityIcon
+                            icon={it.icon}
+                            width={22}
+                            height={22}
+                            className={selected ? "text-[#800020]" : "text-muted-foreground"}
+                          />
+                          <span className="min-w-0 flex-1 truncate">{it.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ),
+    });
+  }
 
   steps.push({
     title: "Where is it?",
@@ -644,6 +729,14 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
             ["Name", name],
             ["Type", PROPERTY_TYPE_LABEL[propertyType] ?? "—"],
             ["Booking", categories.map((c) => CATEGORY_LABEL[c]).join(", ") || "—"],
+            ...(isExperience
+              ? [
+                  [
+                    "Experiences",
+                    experienceTypes.map((e) => EXPERIENCE_LABEL[e] ?? e).join(", ") || "—",
+                  ] as [string, string],
+                ]
+              : []),
             ["Location", [area, city, country].filter(Boolean).join(", ") || "—"],
             ["Amenities", amenities.length ? `${amenities.length} selected` : "None"],
           ].map(([label, value]) => (
@@ -691,6 +784,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       city,
       area,
       property_type: propertyType || null,
+      experience_types: isExperience ? experienceTypes : [],
       private_address: privateAddress,
       check_in_instructions: checkInInstructions || null,
       latitude,
