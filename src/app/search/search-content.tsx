@@ -161,15 +161,15 @@ export function SearchContent() {
             </Button>
           </form>
 
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          <div className="mt-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-full bg-[#f5eef1] p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {categoryOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => changeCategory(option.value)}
-                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                   category === option.value
-                    ? "border-[#800020] bg-[#800020] text-white"
-                    : "border-neutral-200 bg-white hover:border-[#800020] hover:text-[#800020]"
+                    ? "bg-[#800020] text-white"
+                    : "text-[#6f6568] hover:text-[#2b000a]"
                 }`}
               >
                 {option.label}
