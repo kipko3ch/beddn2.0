@@ -6,6 +6,21 @@ import { ChevronLeft, ChevronRight, Heart, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Listing } from "@/lib/types";
 
+export function ListingCardSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="aspect-[4/3] rounded-xl bg-muted" />
+      <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
+      <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
+      <div className="mt-3 flex gap-1.5">
+        <div className="h-4 w-14 rounded-full bg-muted" />
+        <div className="h-4 w-14 rounded-full bg-muted" />
+      </div>
+      <div className="mt-3 h-4 w-1/3 rounded bg-muted" />
+    </div>
+  );
+}
+
 export function ListingCard({
   listing,
   onHover,
