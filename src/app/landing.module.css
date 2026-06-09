@@ -404,35 +404,31 @@
     text-align: center;
   }
   .title {
-    font-size: 38px;
-    line-height: 1.05;
-    margin-bottom: 20px;
+    font-size: 30px;
+    line-height: 1.1;
+    margin-bottom: 18px;
   }
   .tabs {
     width: 100%;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 22px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
-  }
-  .tabs::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 20px;
   }
   .tab {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    gap: 6px;
-    padding-bottom: 8px;
-    font-size: 15px;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 2px 8px;
+    font-size: 12px;
+    line-height: 1.1;
+    text-align: center;
+    border-bottom-width: 2px;
   }
   .tab img {
-    width: 18px !important;
-    height: 18px !important;
-    margin-right: 4px !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0 0 2px 0 !important;
   }
   .main {
     margin-top: 32px;
@@ -573,7 +569,7 @@
 
 @media (max-width: 420px) {
   .title {
-    font-size: 34px;
+    font-size: 27px;
   }
   .logoArea {
     font-size: 22px;
