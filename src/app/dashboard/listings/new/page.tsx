@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ListingForm } from "@/components/listing-form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export default function NewListingPage() {
@@ -18,6 +17,7 @@ export default function NewListingPage() {
   const [hostName, setHostName] = useState("");
   const [hostPhone, setHostPhone] = useState("");
   const [creatingHost, setCreatingHost] = useState(false);
+  const [step, setStep] = useState(0); // host application wizard step
 
   useEffect(() => {
     async function init() {
@@ -51,8 +51,8 @@ export default function NewListingPage() {
     init();
   }, []);
 
-  async function createHost(e: React.FormEvent) {
-    e.preventDefault();
+  async function createHost(e?: React.FormEvent) {
+    e?.preventDefault();
     setCreatingHost(true);
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) return;
@@ -93,57 +93,133 @@ export default function NewListingPage() {
   }
 
   if (needsHost) {
-    return (
-      <div className="mx-auto max-w-xl">
-        <div className="rounded-2xl border bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#800020]">
-            Become a host
-          </p>
-          <h1 className="mt-1 text-2xl font-bold">Apply to host on Beddn</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Tell us who you are. An admin reviews every host before listings go live — this
-            keeps guests safe and your place trusted.
-          </p>
+    const steps = [
+      { key: "name", label: "About you" },
+      { key: "phone", label: "Contact" },
+      { key: "review", label: "Review" },
+    ];
+    const canNext =
+      (step === 0 && hostName.trim().length > 1) ||
+      (step === 1 && hostPhone.trim().length >= 7) ||
+      step === 2;
 
-          <form onSubmit={createHost} className="mt-6 space-y-4">
+    function next() {
+      setStep((s) => Math.min(s + 1, steps.length - 1));
+    }
+    function back() {
+      setStep((s) => Math.max(s - 1, 0));
+    }
+
+    return (
+      <div className="mx-auto max-w-lg">
+        {/* Progress */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span className="uppercase tracking-wide text-[#800020]">Become a host</span>
+            <span>
+              Step {step + 1} of {steps.length}
+            </span>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#f1e6ea]">
+            <div
+              className="h-full rounded-full bg-[#800020] transition-all duration-300"
+              style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border bg-white p-6 shadow-sm sm:p-8">
+          {step === 0 && (
             <div>
-              <Label htmlFor="hostName">Your name *</Label>
+              <h1 className="text-2xl font-bold">What should guests call you?</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                This is the name shown on your listings and to guests.
+              </p>
               <Input
-                id="hostName"
+                autoFocus
                 value={hostName}
                 onChange={(e) => setHostName(e.target.value)}
-                placeholder="As guests should see it"
-                className="mt-1 h-11"
-                required
+                placeholder="e.g. Amara Otieno"
+                className="mt-5 h-12 text-base"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && canNext) next();
+                }}
               />
             </div>
+          )}
+
+          {step === 1 && (
             <div>
-              <Label htmlFor="hostPhone">Phone number *</Label>
+              <h1 className="text-2xl font-bold">What&apos;s your phone number?</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Used for booking alerts. Shared with a guest only after a confirmed booking.
+              </p>
               <Input
-                id="hostPhone"
+                autoFocus
                 type="tel"
                 value={hostPhone}
                 onChange={(e) => setHostPhone(e.target.value)}
                 placeholder="+254…"
-                className="mt-1 h-11"
-                required
+                className="mt-5 h-12 text-base"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && canNext) next();
+                }}
               />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Used for booking alerts. Shared with guests only after a confirmed booking.
-              </p>
             </div>
-            <Button
-              type="submit"
-              disabled={creatingHost}
-              className="h-11 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
-            >
-              {creatingHost ? "Submitting…" : "Submit application"}
-            </Button>
-          </form>
+          )}
 
-          <p className="mt-4 text-xs text-muted-foreground">
-            You can create listings once an admin approves your host account.
-          </p>
+          {step === 2 && (
+            <div>
+              <h1 className="text-2xl font-bold">Review &amp; submit</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                An admin reviews every host before listings go live — this keeps guests safe
+                and your place trusted.
+              </p>
+              <dl className="mt-5 divide-y rounded-xl border">
+                <div className="flex items-center justify-between gap-3 p-4 text-sm">
+                  <dt className="text-muted-foreground">Name</dt>
+                  <dd className="font-medium">{hostName}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-3 p-4 text-sm">
+                  <dt className="text-muted-foreground">Phone</dt>
+                  <dd className="font-medium">{hostPhone}</dd>
+                </div>
+              </dl>
+            </div>
+          )}
+
+          {/* Controls */}
+          <div className="mt-7 flex items-center gap-3">
+            {step > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={back}
+                className="h-11 rounded-full px-6"
+              >
+                Back
+              </Button>
+            )}
+            {step < steps.length - 1 ? (
+              <Button
+                type="button"
+                onClick={next}
+                disabled={!canNext}
+                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+              >
+                Continue
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={() => createHost()}
+                disabled={creatingHost}
+                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+              >
+                {creatingHost ? "Submitting…" : "Submit application"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );
