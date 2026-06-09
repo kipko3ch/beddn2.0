@@ -404,41 +404,62 @@
     text-align: center;
   }
   .title {
-    font-size: 42px;
-    line-height: 1.04;
-    margin-bottom: 28px;
+    font-size: 38px;
+    line-height: 1.05;
+    margin-bottom: 20px;
   }
   .tabs {
     width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 16px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 22px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    gap: 6px;
+    padding-bottom: 8px;
+    font-size: 15px;
+  }
+  .tab img {
+    width: 18px !important;
+    height: 18px !important;
+    margin-right: 4px !important;
   }
   .main {
-    margin-top: 36px;
-    padding: 0 20px;
+    margin-top: 32px;
+    padding: 0 18px;
   }
   .searchWrapper {
-    border-radius: 24px;
-    padding: 10px 10px 10px 14px;
-    flex-wrap: wrap;
-    gap: 8px;
+    border-radius: 16px;
+    padding: 7px 7px 7px 14px;
+    flex-wrap: nowrap;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.08);
   }
   .searchIcon {
-    width: 20px;
-    height: 20px;
-    margin-right: 2px;
+    width: 19px;
+    height: 19px;
+    margin-right: 6px;
   }
   .searchInput {
     min-width: 0;
-    flex: 1 1 calc(100% - 48px);
-    font-size: 16px;
+    flex: 1 1 auto;
+    font-size: 15px;
   }
   .searchBtn {
     flex: 0 0 auto;
-    margin-left: auto;
-    padding: 10px 20px;
-    font-size: 15px;
+    margin-left: 0;
+    padding: 9px 16px;
+    font-size: 14px;
   }
   .listingsSection {
     margin-top: 36px;
@@ -482,35 +503,31 @@
     padding: 56px 0;
   }
   .container {
-    padding-bottom: 72px;
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
   .mobileBottomNav {
     position: fixed;
     z-index: 40;
-    left: 50%;
-    bottom: max(14px, env(safe-area-inset-bottom));
-    width: min(calc(100% - 32px), 430px);
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-    border: 1px solid rgba(24, 17, 19, 0.08);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.96);
-    padding: 7px;
-    box-shadow: 0 14px 40px rgba(24, 17, 19, 0.16);
-    backdrop-filter: blur(12px);
-    transition: transform 0.24s ease, opacity 0.24s ease;
-    will-change: transform, opacity;
+    border: none;
+    border-top: 1px solid rgba(24, 17, 19, 0.08);
+    background: #fff;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 16px rgba(24, 17, 19, 0.05);
+    transition: transform 0.26s ease;
+    will-change: transform;
   }
   .mobileBottomNavVisible {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
     pointer-events: auto;
   }
   .mobileBottomNavHidden {
-    opacity: 0;
-    transform: translateX(-50%) translateY(calc(100% + 24px));
+    transform: translateY(100%);
     pointer-events: none;
   }
   .mobileBottomNav button {
@@ -518,25 +535,21 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 4px;
     border: 0;
     background: transparent;
-    border-radius: 18px;
-    padding: 8px 4px;
+    border-radius: 14px;
+    padding: 6px 4px;
     color: #6f6568;
     font-size: 11px;
     font-weight: 400;
   }
-  .mobileBottomNav button:hover {
-    background: #f6f6f6;
-  }
   .mobileBottomNavActive {
-    background: #fbf7f8 !important;
     color: #800020 !important;
   }
   .mobileBottomNav svg {
-    width: 19px;
-    height: 19px;
+    width: 22px;
+    height: 22px;
   }
   .emptyActions {
     gap: 10px;

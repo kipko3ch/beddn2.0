@@ -24,7 +24,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Home, LayoutDashboard, LogOut, Menu, Search, UserCircle } from "lucide-react";
+import { Heart, Home, KeyRound, LayoutDashboard, LogOut, Menu, Search, UserCircle } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import { useScrollUpVisibility } from "@/lib/use-scroll-up-visibility";
 
@@ -251,8 +251,8 @@ export function Header() {
         </div>
       </header>
       <nav
-        className={`fixed left-1/2 bottom-[max(14px,env(safe-area-inset-bottom))] z-40 grid w-[min(calc(100vw_-_32px),430px)] -translate-x-1/2 grid-cols-4 gap-1.5 rounded-3xl border border-black/10 bg-white/95 p-1.5 text-center text-[11px] shadow-[0_14px_40px_rgba(24,17,19,0.16)] backdrop-blur transition duration-200 md:hidden ${
-          bottomNavVisible ? "translate-y-0 opacity-100" : "translate-y-[calc(100%+24px)] opacity-0 pointer-events-none"
+        className={`fixed inset-x-0 bottom-0 z-40 grid w-full grid-cols-4 border-t border-black/10 bg-white px-1.5 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] text-center text-[11px] shadow-[0_-4px_16px_rgba(24,17,19,0.05)] transition-transform duration-300 md:hidden ${
+          bottomNavVisible ? "translate-y-0" : "translate-y-full pointer-events-none"
         }`}
       >
           <Link
@@ -299,13 +299,13 @@ export function Header() {
                 pathname?.startsWith(ROUTES.newListing) ? "bg-[#fbf7f8] text-[#800020]" : "text-[#6f6568] hover:bg-muted"
               }`}
             >
-              <Home className="h-5 w-5" />
+              <KeyRound className="h-5 w-5" />
               Host
             </Link>
           ) : (
             <AuthDialog defaultHostIntent>
               <button className="flex w-full flex-col items-center gap-0.5 rounded-2xl px-2 py-2 text-[#6f6568] hover:bg-muted">
-                <Home className="h-5 w-5" />
+                <KeyRound className="h-5 w-5" />
                 Host
               </button>
             </AuthDialog>

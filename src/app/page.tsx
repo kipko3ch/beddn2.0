@@ -11,6 +11,7 @@ import {
   Heart,
   UserCircle,
   Menu,
+  KeyRound,
   Bus,
   Waves,
   Dumbbell
@@ -467,13 +468,13 @@ export default function LandingPage() {
           </button>
         ) : user ? (
           <button onClick={() => router.push(ROUTES.newListing)}>
-            <Home size={20} />
+            <KeyRound size={20} />
             <span>Host</span>
           </button>
         ) : (
           <AuthDialog defaultHostIntent>
             <button>
-              <Home size={20} />
+              <KeyRound size={20} />
               <span>Host</span>
             </button>
           </AuthDialog>
