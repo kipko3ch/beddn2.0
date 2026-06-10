@@ -2,11 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createClient() {
-  // On the server, prefer an internal address (e.g. http://localhost:8000 or a
-  // Docker service name) so requests skip the public domain's DNS + TLS + proxy
-  // hop. Falls back to the public URL when not set.
-  const url =
-    process.env.SUPABASE_INTERNAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // Must use the PUBLIC url: @supabase/ssr derives the auth cookie name from
+  // this URL. The browser client uses the public URL, so this server client has
+  // to match it to read the session cookie + PKCE verifier (Google OAuth code
+  // exchange breaks otherwise). For latency, route heavy reads/writes through
+  // the service-role admin client, which can safely use SUPABASE_INTERNAL_URL.
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
