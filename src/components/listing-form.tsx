@@ -136,7 +136,6 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   );
   const [amenities, setAmenities] = useState<string[]>(listing?.amenities ?? []);
   const [houseRules, setHouseRules] = useState(listing?.house_rules ?? "");
-  const [isActive, setIsActive] = useState(listing?.is_active ?? true);
   const [isVerified, setIsVerified] = useState(listing?.is_verified ?? false);
   const [imageUrls, setImageUrls] = useState(
     listing?.listing_images?.map((img) => img.url).join("\n") ?? ""
@@ -751,8 +750,8 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   }
 
   steps.push({
-    title: "Review & publish",
-    subtitle: "Your listing goes live now. The verified badge waits for admin review.",
+    title: "Review & go live",
+    subtitle: "Check the details, then choose to publish now or save and finish later.",
     valid: true,
     content: (
       <div className="space-y-4">
@@ -778,10 +777,14 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
             </div>
           ))}
         </dl>
-        <label className="flex items-center gap-2 text-sm">
-          <Checkbox checked={isActive} onCheckedChange={(v) => setIsActive(v === true)} />
-          Active (visible to guests)
-        </label>
+        <div className="rounded-xl bg-[#fbf7f8] p-4 text-sm text-[#2b000a]">
+          <p className="font-semibold">Ready to publish?</p>
+          <p className="mt-1 text-muted-foreground">
+            Tap <strong>Go live</strong> below to make this listing visible to guests right
+            away. Not done yet? <strong>Save draft</strong> keeps it private so you can
+            finish later. The verified badge is added later by admin review.
+          </p>
+        </div>
       </div>
     ),
   });
@@ -815,7 +818,8 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
     if (asDraft) setSavingDraft(true);
     else setSubmitting(true);
 
-    const active = asDraft ? false : isActive;
+    // Publish (non-draft) always goes live and visible; draft stays private.
+    const active = !asDraft;
     const payload = {
       slug: listing?.slug ?? generateSlug(name || "draft") + "-" + Date.now().toString(36),
       title: name,
@@ -953,7 +957,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
               disabled={submitting || savingDraft}
               className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
             >
-              {submitting ? "Saving…" : listing ? "Update listing" : "Publish listing"}
+              {submitting ? "Going live…" : listing ? "Save & go live" : "Go live"}
             </Button>
           )}
           {/* Save progress and finish later — skips the publish validation. */}
