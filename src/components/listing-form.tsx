@@ -394,7 +394,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
 
   steps.push({
     title: "Where is it?",
-    subtitle: "Pick country → region → district → area, then drag the pin to the exact spot.",
+    subtitle: "Drop the pin with your GPS or a nearby landmark — no exact address needed.",
     valid: country.trim().length > 0 && city.trim().length > 0 && area.trim().length > 0,
     content: (
       <div className="space-y-4">

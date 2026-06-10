@@ -4,6 +4,7 @@ type NominatimResult = {
   lat: string;
   lon: string;
   display_name?: string;
+  address?: NominatimAddress;
 };
 
 type NominatimAddress = {
@@ -84,7 +85,7 @@ export async function GET(request: Request) {
       q: query,
       format: "jsonv2",
       limit: "1",
-      addressdetails: "0",
+      addressdetails: "1",
     }).toString()}`,
     { headers: NOMINATIM_HEADERS }
   );
@@ -100,8 +101,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Area not found" }, { status: 404 });
   }
 
+  const a = first.address ?? {};
   return NextResponse.json({
     center: [Number(first.lon), Number(first.lat)],
     label: first.display_name || query,
+    address: {
+      country: a.country ?? "",
+      region: a.state || a.region || a.county || "",
+      area: a.suburb || a.neighbourhood || a.village || a.town || a.city || a.road || "",
+    },
   });
 }
