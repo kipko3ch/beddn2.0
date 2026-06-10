@@ -13,7 +13,7 @@ import {
   type TzRegionData,
 } from "@/lib/locations";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, MapPin } from "lucide-react";
 
 interface LocationPickerProps {
   latitude: number;
@@ -52,6 +52,8 @@ export function LocationPicker({
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState("");
   const [autoGeo, setAutoGeo] = useState<"idle" | "loading" | "ok" | "fail">("idle");
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState("");
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -219,8 +221,7 @@ export function LocationPicker({
     });
   }
 
-  async function searchGeocode(e: React.FormEvent) {
-    e.preventDefault();
+  async function searchGeocode() {
     if (!geoQuery.trim()) return;
     setGeoLoading(true);
     setGeoError("");
@@ -239,12 +240,76 @@ export function LocationPicker({
     }
   }
 
+  // Use the device's GPS to drop the pin and auto-fill the place names.
+  function useMyLocation() {
+    setLocateError("");
+    if (!navigator.geolocation) {
+      setLocateError("Your browser can't share location. Search the address instead.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        flyTo(lat, lng, 16);
+        onCoordsChange(lat, lng);
+        // Reverse-geocode so the country/region/area fields fill themselves.
+        try {
+          const res = await fetch(`/api/geocode?lat=${lat}&lon=${lng}`);
+          if (res.ok) {
+            const data: {
+              address?: { country?: string; region?: string; area?: string };
+            } = await res.json();
+            const a = data.address;
+            if (a) {
+              onPlaceChange({
+                country: a.country ?? "",
+                region: a.region ?? "",
+                district: "",
+                village: a.area ?? "",
+              });
+            }
+          }
+        } catch {
+          // Pin is already placed; names can be typed manually.
+        } finally {
+          setLocating(false);
+        }
+      },
+      () => {
+        setLocating(false);
+        setLocateError(
+          "Couldn't get your location. Allow location access, or search the address below."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
   const levels = meta?.levels ?? [];
   const isManual = meta?.mode === "manual";
   const isCascade = meta?.mode === "file" || meta?.mode === "region-files";
 
   return (
     <div className="space-y-4">
+      {/* Quick auto-locate — for hosts creating the listing at the property. */}
+      <div className="flex flex-col gap-2 rounded-xl border border-[#e7cdd6] bg-[#fbf7f8] p-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-[#2b000a]">
+          <span className="font-semibold">Are you at the place right now?</span>{" "}
+          <span className="text-muted-foreground">Drop the pin with your GPS.</span>
+        </p>
+        <button
+          type="button"
+          onClick={useMyLocation}
+          disabled={locating}
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-[#600018] disabled:opacity-60"
+        >
+          <MapPin className="h-4 w-4" />
+          {locating ? "Locating…" : "Use my current location"}
+        </button>
+      </div>
+      {locateError && <p className="text-xs text-amber-600">{locateError}</p>}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {/* Country */}
         <div>
@@ -350,24 +415,34 @@ export function LocationPicker({
             ? "Search your address to drop the pin:"
             : "Can't find your place in the lists? Search any address:"}
         </p>
-        <form onSubmit={searchGeocode} className="flex gap-2">
+        {/* Not a <form> on purpose: this lives inside the wizard's form, and a
+            nested form would submit the wizard (advancing the step) instead. */}
+        <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={geoQuery}
               onChange={(e) => setGeoQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  searchGeocode();
+                }
+              }}
               placeholder="e.g. Serena Hotel, Kampala"
               className="pl-9"
             />
           </div>
           <button
-            type="submit"
+            type="button"
+            onClick={searchGeocode}
             disabled={geoLoading}
             className="shrink-0 rounded-md bg-[#800020] px-4 text-sm font-semibold text-white hover:bg-[#600018] disabled:opacity-60"
           >
             {geoLoading ? "…" : "Find"}
           </button>
-        </form>
+        </div>
         {geoError && <p className="mt-1 text-xs text-red-600">{geoError}</p>}
       </div>
     </div>

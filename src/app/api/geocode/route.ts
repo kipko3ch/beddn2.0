@@ -6,10 +6,75 @@ type NominatimResult = {
   display_name?: string;
 };
 
+type NominatimAddress = {
+  country?: string;
+  state?: string;
+  region?: string;
+  county?: string;
+  city?: string;
+  town?: string;
+  village?: string;
+  suburb?: string;
+  neighbourhood?: string;
+  road?: string;
+};
+
+type NominatimReverse = {
+  lat: string;
+  lon: string;
+  display_name?: string;
+  address?: NominatimAddress;
+};
+
+const NOMINATIM_HEADERS = {
+  Accept: "application/json",
+  "User-Agent": "Beddn MVP",
+};
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q")?.trim();
+  const lat = searchParams.get("lat");
+  const lon = searchParams.get("lon");
 
+  // Reverse geocode: coordinates -> place names (used by "use my location").
+  if (lat && lon) {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?${new URLSearchParams({
+        lat,
+        lon,
+        format: "jsonv2",
+        addressdetails: "1",
+        zoom: "16",
+      }).toString()}`,
+      { headers: NOMINATIM_HEADERS }
+    );
+
+    if (!response.ok) {
+      return NextResponse.json({ error: "Could not resolve location" }, { status: 502 });
+    }
+
+    const result = (await response.json()) as NominatimReverse;
+    const a = result.address ?? {};
+    return NextResponse.json({
+      center: [Number(result.lon ?? lon), Number(result.lat ?? lat)],
+      label: result.display_name || "",
+      address: {
+        country: a.country ?? "",
+        region: a.state || a.region || a.county || "",
+        area:
+          a.suburb ||
+          a.neighbourhood ||
+          a.village ||
+          a.town ||
+          a.city ||
+          a.road ||
+          "",
+      },
+    });
+  }
+
+  // Forward geocode: query string -> coordinates.
+  const query = searchParams.get("q")?.trim();
   if (!query) {
     return NextResponse.json({ error: "Missing query" }, { status: 400 });
   }
@@ -21,12 +86,7 @@ export async function GET(request: Request) {
       limit: "1",
       addressdetails: "0",
     }).toString()}`,
-    {
-      headers: {
-        "Accept": "application/json",
-        "User-Agent": "Beddn MVP local development",
-      },
-    }
+    { headers: NOMINATIM_HEADERS }
   );
 
   if (!response.ok) {

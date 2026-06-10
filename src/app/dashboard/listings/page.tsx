@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
+import { BeddnLoader } from "@/components/beddn-loader";
 import { Plus, Pencil } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
@@ -66,7 +67,7 @@ export default function ListingsPage() {
         </Link>
       </div>
 
-      {loading ? null : listings.length === 0 ? (
+      {loading ? <BeddnLoader label="Loading your listings…" /> : listings.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-listings_xklz7s.png"
           title="No listings yet"

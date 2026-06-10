@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
+import { BeddnLoader } from "@/components/beddn-loader";
 import type { Booking } from "@/lib/types";
 
 type BookingWithListing = Booking & {
@@ -68,7 +69,7 @@ export default function BookingsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Bookings</h1>
-      {loading ? null : bookings.length === 0 ? (
+      {loading ? <BeddnLoader label="Loading bookings…" /> : bookings.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029373/empty-bookings_dpa4kz.png"
           title="No bookings yet"

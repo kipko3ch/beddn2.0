@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BeddnLoader } from "@/components/beddn-loader";
 import { ROUTES } from "@/lib/routes";
 import {
   AlertTriangle,
@@ -202,7 +203,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {loading ? null : stats.length === 0 ? (
+      {loading ? <BeddnLoader label="Loading your dashboard…" /> : stats.length === 0 ? (
         <div className="rounded-2xl border bg-[#fbf7f8] p-6">
           <Image
             src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029370/empty-host-needed_vum5fe.png"

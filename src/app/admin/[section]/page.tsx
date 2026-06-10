@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
+import { BeddnLoader } from "@/components/beddn-loader";
 
 type Row = Record<string, unknown> & { id: string };
 
@@ -115,7 +116,9 @@ export default function AdminSectionPage() {
           </div>
         )}
       </div>
-      {loading ? null : rows.length === 0 ? (
+      {loading ? (
+        <BeddnLoader label={`Loading ${title.toLowerCase()}…`} />
+      ) : rows.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-admin_ypowli.png"
           title="No records yet"
