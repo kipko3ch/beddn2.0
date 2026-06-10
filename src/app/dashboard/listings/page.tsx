@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { BeddnLoader } from "@/components/beddn-loader";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Eye } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
 export default function ListingsPage() {
@@ -107,14 +107,28 @@ export default function ListingsPage() {
                   </Badge>
                 </div>
               </div>
-              <Link href={`/dashboard/listings/${listing.id}/edit`}>
-                <Button variant="ghost" size="sm" className="gap-1">
-                  <Pencil className="h-4 w-4" />
-                  {listing.listing_status === "draft" && (
-                    <span className="text-xs font-medium">Continue</span>
-                  )}
-                </Button>
-              </Link>
+              <div className="flex items-center gap-1">
+                <a
+                  href={`/property/${listing.slug}${listing.is_active ? "" : "?preview=1"}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="ghost" size="sm" className="gap-1">
+                    <Eye className="h-4 w-4" />
+                    <span className="text-xs font-medium">
+                      {listing.is_active ? "View" : "Preview"}
+                    </span>
+                  </Button>
+                </a>
+                <Link href={`/dashboard/listings/${listing.id}/edit`}>
+                  <Button variant="ghost" size="sm" className="gap-1">
+                    <Pencil className="h-4 w-4" />
+                    {listing.listing_status === "draft" && (
+                      <span className="text-xs font-medium">Continue</span>
+                    )}
+                  </Button>
+                </Link>
+              </div>
             </div>
           ))}
         </div>

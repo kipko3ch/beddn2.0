@@ -5,18 +5,33 @@ import { PropertyContent } from "./property-content";
 
 export default async function PropertyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { slug } = await params;
+  const { preview } = await searchParams;
+  const isPreview = preview === "1";
   const supabase = await createClient();
 
-  const { data: listingData } = await supabase
+  // One round trip: pull the listing with its images, host, reviews and blocked
+  // dates all embedded, instead of three separate queries.
+  let query = supabase
     .from("listings")
-    .select("*, listing_images(*), host:hosts(name, is_verified)")
+    .select(
+      "*, listing_images(*), host:hosts(name, is_verified), reviews(*, profile:profiles(full_name)), blocked_dates(date)"
+    )
     .eq("slug", slug)
-    .eq("is_active", true)
-    .single();
+    .order("created_at", { ascending: false, referencedTable: "reviews" });
+
+  // Preview lets an owner/admin see a not-yet-live listing — RLS only returns it
+  // to them. Public visitors still only get active listings.
+  if (!isPreview) {
+    query = query.eq("is_active", true);
+  }
+
+  const { data: listingData } = await query.single();
 
   if (!listingData) {
     return (
@@ -29,25 +44,23 @@ export default async function PropertyPage({
     );
   }
 
-  const [reviewsRes, blockedRes] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select("*, profile:profiles(full_name)")
-      .eq("listing_id", listingData.id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("blocked_dates")
-      .select("date")
-      .eq("listing_id", listingData.id),
-  ]);
+  const reviews = (listingData.reviews as Review[]) ?? [];
+  const blockedDateStrings = ((listingData.blocked_dates as { date: string }[]) ?? []).map(
+    (item) => item.date
+  );
 
   return (
     <>
       <Header />
+      {isPreview && !listingData.is_active && (
+        <div className="bg-[#800020] px-4 py-2 text-center text-sm font-medium text-white">
+          Preview — this is how your listing will look. It is not live to guests yet.
+        </div>
+      )}
       <PropertyContent
         listing={listingData as Listing}
-        reviews={(reviewsRes.data as Review[]) ?? []}
-        blockedDateStrings={(blockedRes.data ?? []).map((item: { date: string }) => item.date)}
+        reviews={reviews}
+        blockedDateStrings={blockedDateStrings}
       />
     </>
   );
