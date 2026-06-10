@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { CalendarDays, Clock, TicketCheck } from "lucide-react";
+import { CalendarDays, Clock, TicketCheck, RefreshCw } from "lucide-react";
 import type { Booking, Listing } from "@/lib/types";
 
 interface AvailabilitySlot {
@@ -31,8 +31,36 @@ export default function CalendarPage() {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
 
+  const [importUrl, setImportUrl] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState("");
+  const [copied, setCopied] = useState(false);
+
   const selectedListing = listings.find((listing) => listing.id === listingId);
   const isExperience = Boolean(selectedListing?.categories?.includes("experience"));
+  const exportUrl =
+    typeof window !== "undefined" && listingId
+      ? `${window.location.origin}/api/ical/${listingId}`
+      : "";
+
+  async function runImport() {
+    if (!listingId || !importUrl.trim()) return;
+    setSyncing(true);
+    setSyncResult("");
+    const res = await fetch("/api/ical/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId, url: importUrl.trim() }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setSyncResult(`Synced — ${json.imported ?? 0} date${json.imported === 1 ? "" : "s"} blocked.`);
+      await load();
+    } else {
+      setSyncResult(json.error ?? "Sync failed. Check the URL and try again.");
+    }
+    setSyncing(false);
+  }
 
   async function load() {
     const [bookingsRes, slotsRes, listingsRes] = await Promise.all([
@@ -160,6 +188,68 @@ export default function CalendarPage() {
           </Button>
         </div>
       </form>
+
+      {/* iCal sync with other platforms */}
+      <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
+        <div className="mb-1 flex items-center gap-2">
+          <RefreshCw className="h-5 w-5 text-[#800020]" />
+          <h2 className="font-bold">Sync with Airbnb, Booking.com & others (iCal)</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Keep calendars in sync across platforms so you never get double-booked.
+          {selectedListing ? ` Applies to “${selectedListing.title || selectedListing.name}” (selected above).` : ""}
+        </p>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl border p-4">
+            <p className="text-sm font-semibold text-[#181113]">Export — Beddn → other platforms</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Paste this link into the other platform&apos;s &quot;Import calendar&quot; option. Your
+              Beddn bookings and blocked dates will block there automatically.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <Input readOnly value={listingId ? exportUrl : ""} className="flex-1 text-xs" />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!listingId}
+                onClick={async () => {
+                  await navigator.clipboard.writeText(exportUrl);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? "Copied!" : "Copy"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-xl border p-4">
+            <p className="text-sm font-semibold text-[#181113]">Import — other platforms → Beddn</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Paste the iCal/ics export link from Airbnb or Booking.com. Those dates get blocked
+              here. Re-run the sync anytime to refresh.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <Input
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                placeholder="https://www.airbnb.com/calendar/ical/…ics"
+                className="flex-1 text-xs"
+              />
+              <Button
+                type="button"
+                disabled={!listingId || !importUrl.trim() || syncing}
+                onClick={runImport}
+                className="bg-[#800020] hover:bg-[#600018]"
+              >
+                {syncing ? "Syncing…" : "Sync now"}
+              </Button>
+            </div>
+            {syncResult && <p className="mt-2 text-xs font-medium text-[#800020]">{syncResult}</p>}
+          </div>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section>

@@ -785,6 +785,13 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
             finish later. The verified badge is added later by admin review.
           </p>
         </div>
+        <div className="rounded-xl border border-dashed border-[#d7a9b7] p-4 text-sm">
+          <p className="font-semibold text-[#2b000a]">After publishing: set your calendar</p>
+          <p className="mt-1 text-muted-foreground">
+            Block dates you&apos;re unavailable and sync with Airbnb or Booking.com via iCal from{" "}
+            <strong>Dashboard → Calendar</strong> — it prevents double bookings across platforms.
+          </p>
+        </div>
       </div>
     ),
   });

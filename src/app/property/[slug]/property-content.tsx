@@ -12,6 +12,8 @@ import {
   Check,
   BadgeCheck,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Compass,
   Heart,
@@ -22,6 +24,7 @@ import {
   Utensils,
   Wifi,
   Wind,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -89,8 +92,12 @@ export function PropertyContent({
   blockedDateStrings: string[];
 }) {
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+
+  function openLightbox(index: number) {
+    setLightboxIndex(index);
+  }
   const categories = (listing.categories || listing.category || []) as ListingCategory[];
   const [selectedCategory, setSelectedCategory] = useState<ListingCategory>(
     categories[0] || "overnight"
@@ -180,7 +187,7 @@ export function PropertyContent({
   }
 
   return (
-    <main className="bg-white text-[#181113]">
+    <main className="bg-white pb-24 text-[#181113] lg:pb-0">
       <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         <div className="mb-4">
           <Link
@@ -246,37 +253,136 @@ export function PropertyContent({
           </div>
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-[2fr_1fr]">
-          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-muted sm:aspect-[16/8]">
-            <Image
-              src={images[selectedImage]?.url || LOGO_SRC}
-              alt={listing.name}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 66vw"
-              className="object-cover"
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-3 overflow-x-auto lg:grid-cols-1 lg:overflow-visible">
-            {images.slice(0, 4).map((image, index) => (
+        {/* Mobile: swipeable full-width carousel with counter */}
+        <div className="relative -mx-4 sm:hidden">
+          <div className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {images.map((image, index) => (
               <button
                 key={image.id}
-                onClick={() => setSelectedImage(index)}
-                className={`relative aspect-[4/3] min-w-28 overflow-hidden rounded-xl border-2 bg-muted ${
-                  index === selectedImage ? "border-[#800020]" : "border-transparent"
-                }`}
+                type="button"
+                onClick={() => openLightbox(index)}
+                className="relative aspect-[4/3] w-full shrink-0 snap-center bg-muted"
               >
                 <Image
                   src={image.url}
-                  alt=""
+                  alt={`${listing.name} photo ${index + 1}`}
                   fill
-                  sizes="160px"
+                  priority={index === 0}
+                  sizes="100vw"
                   className="object-cover"
                 />
               </button>
             ))}
           </div>
+          <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white">
+            {images.length} photo{images.length === 1 ? "" : "s"}
+          </span>
         </div>
+
+        {/* Desktop: Airbnb-style mosaic — one hero + four tiles, equal gutters */}
+        <div className="relative hidden overflow-hidden rounded-2xl sm:block">
+          <div className="grid h-[420px] grid-cols-4 grid-rows-2 gap-2 lg:h-[480px]">
+            <button
+              type="button"
+              onClick={() => openLightbox(0)}
+              className="relative col-span-2 row-span-2 bg-muted"
+            >
+              <Image
+                src={images[0]?.url || LOGO_SRC}
+                alt={listing.name}
+                fill
+                priority
+                sizes="50vw"
+                className="object-cover transition-opacity hover:opacity-95"
+              />
+            </button>
+            {Array.from({ length: 4 }).map((_, i) => {
+              const image = images[i + 1];
+              if (!image) {
+                return <div key={`empty-${i}`} className="bg-[#f1e6ea]" />;
+              }
+              return (
+                <button
+                  key={image.id}
+                  type="button"
+                  onClick={() => openLightbox(i + 1)}
+                  className="relative bg-muted"
+                >
+                  <Image
+                    src={image.url}
+                    alt={`${listing.name} photo ${i + 2}`}
+                    fill
+                    sizes="25vw"
+                    className="object-cover transition-opacity hover:opacity-95"
+                  />
+                </button>
+              );
+            })}
+          </div>
+          {images.length > 5 && (
+            <button
+              type="button"
+              onClick={() => openLightbox(0)}
+              className="absolute bottom-4 right-4 rounded-lg border border-[#181113] bg-white px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-neutral-50"
+            >
+              Show all {images.length} photos
+            </button>
+          )}
+        </div>
+
+        {/* Lightbox */}
+        {lightboxIndex !== null && (
+          <div
+            className="fixed inset-0 z-[90] flex flex-col bg-black/95"
+            role="dialog"
+            aria-label="Photo viewer"
+          >
+            <div className="flex items-center justify-between p-4 text-white">
+              <span className="text-sm">
+                {lightboxIndex + 1} / {images.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(null)}
+                aria-label="Close photos"
+                className="rounded-full bg-white/10 p-2 hover:bg-white/20"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="relative flex-1">
+              <Image
+                src={images[lightboxIndex].url}
+                alt={`${listing.name} photo ${lightboxIndex + 1}`}
+                fill
+                sizes="100vw"
+                className="object-contain"
+              />
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setLightboxIndex((lightboxIndex - 1 + images.length) % images.length)
+                    }
+                    aria-label="Previous photo"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLightboxIndex((lightboxIndex + 1) % images.length)}
+                    aria-label="Next photo"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
@@ -318,7 +424,7 @@ export function PropertyContent({
             <h2 className="mb-4 text-xl font-bold">Room features</h2>
             <div className="grid gap-x-12 gap-y-4 sm:grid-cols-2">
               <AmenityItem label="Private booking code" />
-              <AmenityItem label="Host confirmation by SMS" />
+              <AmenityItem label="Booking updates in your account" />
               <AmenityItem label="Exact address after confirmation" />
               <AmenityItem label="Secure reserve fee" />
               {listing.minimum_hours && <AmenityItem label={`${listing.minimum_hours}+ hour minimum`} />}
@@ -644,17 +750,37 @@ export function PropertyContent({
         </aside>
       </section>
 
-      <div className="fixed inset-x-0 bottom-16 z-40 border-t bg-white p-3 shadow-lg lg:hidden">
-        <Button
-          onClick={() => {
-            document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
-            checkAvailability();
-          }}
-          className="w-full rounded-full bg-[#800020] hover:bg-[#600018]"
-          size="lg"
-        >
-          Check availability
-        </Button>
+      {/* Mobile booking bar — anchored to the true bottom (this page has no
+          bottom nav), price on the left, single action on the right. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 lg:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-base font-bold">
+              {priceCurrency(listing)}{" "}
+              {Number(
+                listing.hourly_price ?? listing.overnight_price ?? listing.experience_price ?? 0
+              ).toLocaleString()}
+              <span className="text-sm font-normal text-muted-foreground">
+                {listing.hourly_price ? "/hr" : listing.overnight_price ? "/night" : "/session"}
+              </span>
+            </p>
+            {reviews.length > 0 && (
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Star className="h-3 w-3 fill-[#800020] text-[#800020]" />
+                {avgRating.toFixed(1)} ({reviews.length})
+              </p>
+            )}
+          </div>
+          <Button
+            onClick={() => {
+              document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              checkAvailability();
+            }}
+            className="h-11 shrink-0 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
+          >
+            Check availability
+          </Button>
+        </div>
       </div>
     </main>
   );

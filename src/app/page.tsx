@@ -21,7 +21,7 @@ import { Icon } from '@/components/icon';
 import styles from './landing.module.css';
 import { createClient } from '@/lib/supabase/client';
 import { useSavedListings, useUserRole } from '@/lib/hooks';
-import { ListingCard } from '@/components/listing-card';
+import { ListingCard, ListingCardSkeleton } from '@/components/listing-card';
 import { AuthDialog } from '@/components/auth-dialog';
 import {
   Sheet,
@@ -110,27 +110,20 @@ export default function LandingPage() {
     }
 
     setLoading(true);
-    let query = supabase
-      .from('listings')
-      // Only the columns ListingCard renders — avoids shipping the full row
-      // (description, address, rules…) for every card.
-      .select(
-        'id, slug, name, title, area, city, categories, currency, hourly_price, overnight_price, experience_price, listing_images(id, url, position), reviews(rating)'
-      )
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    if (key !== 'all') {
-      query = query.filter('categories', 'cs', `{${key}}`);
+    try {
+      // Server route uses the service role, so listings show for everyone —
+      // signed in or not — regardless of database policy state.
+      const res = await fetch(`/api/public/listings?category=${key}&limit=20`);
+      const json: { listings?: Listing[] } = res.ok ? await res.json() : {};
+      const rows = json.listings ?? [];
+      listingCache.current.set(key, rows);
+      setListings(rows);
+    } catch {
+      setListings([]);
+    } finally {
+      setLoading(false);
     }
-
-    const { data } = await query;
-    const rows = (data as Listing[]) ?? [];
-    listingCache.current.set(key, rows);
-    setListings(rows);
-    setLoading(false);
-  }, [currentData.category, supabase]);
+  }, [currentData.category]);
 
   useEffect(() => {
     fetchListings();
@@ -422,7 +415,15 @@ export default function LandingPage() {
 
       {/* Listings grid */}
       <section className={styles.listingsSection}>
-        {loading ? null : listings.length > 0 ? (
+        {loading ? (
+          <div className={styles.listingsGrid}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className={styles.listingRailItem}>
+                <ListingCardSkeleton />
+              </div>
+            ))}
+          </div>
+        ) : listings.length > 0 ? (
           <div className={styles.listingsGrid}>
             {listings.map((listing) => (
               <div key={listing.id} className={styles.listingRailItem}>

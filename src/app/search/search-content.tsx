@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ListingCard } from "@/components/listing-card";
+import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
 import { MapPin, Search, X } from "lucide-react";
@@ -37,27 +37,18 @@ export function SearchContent() {
   const fetchResults = useCallback(async () => {
     setLoading(true);
 
-    let query = supabase
-      .from("listings")
-      .select(
-        "id, slug, name, title, area, city, latitude, longitude, categories, property_type, currency, hourly_price, overnight_price, experience_price, listing_images(id, url, position), reviews(rating)"
-      )
-      .eq("is_active", true);
-
-    if (category !== "all") {
-      query = query.contains("categories", [category]);
+    // Server route uses the service role so results show for everyone,
+    // signed in or not, regardless of database policy state.
+    const params = new URLSearchParams({ category, type: propertyType, limit: "50" });
+    if (q) params.set("q", q);
+    let results: Listing[] = [];
+    try {
+      const res = await fetch(`/api/public/listings?${params.toString()}`);
+      const json: { listings?: Listing[] } = res.ok ? await res.json() : {};
+      results = json.listings ?? [];
+    } catch {
+      results = [];
     }
-
-    if (propertyType !== "all") {
-      query = query.eq("property_type", propertyType);
-    }
-
-    if (q) {
-      query = query.or(`name.ilike.%${q}%,city.ilike.%${q}%,area.ilike.%${q}%,country.ilike.%${q}%`);
-    }
-
-    const { data } = await query.order("created_at", { ascending: false }).limit(50);
-    const results = (data as Listing[]) ?? [];
     setListings(results);
     setLoading(false);
 
@@ -240,7 +231,13 @@ export function SearchContent() {
               : "Tip: pick a place, then reserve with your phone number."}
           </p>
 
-          {loading ? null : listings.length > 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <ListingCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : listings.length > 0 ? (
             <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 xl:grid-cols-3">
               {listings.map((listing) => (
                 <div

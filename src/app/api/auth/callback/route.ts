@@ -23,8 +23,21 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Admins land on their dashboard (they can hop to the main page from
+      // there), instead of host setup / wherever the login button was.
+      const userId = data.session?.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", userId)
+          .maybeSingle();
+        if (profile?.is_admin) {
+          return NextResponse.redirect(`${baseUrl}/dashboard`);
+        }
+      }
       return NextResponse.redirect(`${baseUrl}${next}`);
     }
   }

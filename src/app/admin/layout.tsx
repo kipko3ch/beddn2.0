@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Search,
   Loader2,
+  Bell,
 } from "lucide-react";
 
 const ADMIN_NAV = [
@@ -31,6 +32,7 @@ const ADMIN_NAV = [
   { href: ROUTES.adminDisputes, label: "Disputes", icon: ShieldCheck },
   { href: ROUTES.adminFeedback, label: "Feedback", icon: MessageSquare },
   { href: ROUTES.adminDemand, label: "Demand", icon: TrendingUp },
+  { href: ROUTES.adminNotifications, label: "Notifications", icon: Bell },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

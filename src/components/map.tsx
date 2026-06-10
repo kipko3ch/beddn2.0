@@ -58,33 +58,41 @@ export function Map({
     markersRef.current.clear();
 
     listings.forEach((listing) => {
-      let lng = listing.longitude;
-      let lat = listing.latitude;
-
-      if (approximate) {
-        lng += (Math.random() - 0.5) * 0.005;
-        lat += (Math.random() - 0.5) * 0.005;
-      }
-
-      const price =
-        listing.hourly_price ??
-        listing.overnight_price ??
-        listing.experience_price ??
-        0;
+      const lng = listing.longitude;
+      const lat = listing.latitude;
 
       const el = document.createElement("div");
-      el.className = "map-price-pin";
-      el.textContent = `${listing.currency || "KES"} ${Number(price).toLocaleString()}`;
-      el.style.cssText = `
-        background: white; border: 2px solid ${listing.id === highlightedId ? "#800020" : "#333"};
-        border-radius: 20px; padding: 2px 8px; font-size: 12px; font-weight: 600;
-        cursor: pointer; white-space: nowrap;
-        transform: ${listing.id === highlightedId ? "scale(1.15)" : "scale(1)"};
-        transition: transform 0.15s, border-color 0.15s;
-        z-index: ${listing.id === highlightedId ? 10 : 1};
-      `;
 
-      el.addEventListener("click", () => onPinClick?.(listing));
+      if (approximate) {
+        // Privacy mode (property page): a soft circle over the neighbourhood
+        // instead of an exact pin — the precise spot unlocks after booking.
+        el.style.cssText = `
+          width: 110px; height: 110px; border-radius: 50%;
+          background: rgba(128,0,32,0.18); border: 2px solid rgba(128,0,32,0.45);
+          display: flex; align-items: center; justify-content: center;
+        `;
+        const dot = document.createElement("div");
+        dot.style.cssText =
+          "width: 14px; height: 14px; border-radius: 50%; background: #800020; border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);";
+        el.appendChild(dot);
+      } else {
+        const price =
+          listing.hourly_price ??
+          listing.overnight_price ??
+          listing.experience_price ??
+          0;
+        el.className = "map-price-pin";
+        el.textContent = `${listing.currency || "KES"} ${Number(price).toLocaleString()}`;
+        el.style.cssText = `
+          background: white; border: 2px solid ${listing.id === highlightedId ? "#800020" : "#333"};
+          border-radius: 20px; padding: 2px 8px; font-size: 12px; font-weight: 600;
+          cursor: pointer; white-space: nowrap;
+          transform: ${listing.id === highlightedId ? "scale(1.15)" : "scale(1)"};
+          transition: transform 0.15s, border-color 0.15s;
+          z-index: ${listing.id === highlightedId ? 10 : 1};
+        `;
+        el.addEventListener("click", () => onPinClick?.(listing));
+      }
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
@@ -93,7 +101,7 @@ export function Map({
       markersRef.current.set(listing.id, marker);
     });
 
-    if (listings.length > 0 && !highlightedId) {
+    if (listings.length > 1 && !highlightedId && !approximate) {
       const bounds = new maplibregl.LngLatBounds();
       listings.forEach((l) => bounds.extend([l.longitude, l.latitude]));
       map.fitBounds(bounds, { padding: 60, maxZoom: 14 });

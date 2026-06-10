@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { AuthDialog } from "@/components/auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +20,7 @@ import {
 import {
   ArrowLeft,
   CalendarDays,
-  CheckCircle2,
+  ChevronLeft,
   CreditCard,
   HandCoins,
   Mail,
@@ -28,9 +29,11 @@ import {
   ShieldCheck,
   Star,
   TicketCheck,
+  UserCircle,
   Users,
 } from "lucide-react";
 import { LOGO_SRC } from "@/lib/assets";
+import type { User } from "@supabase/supabase-js";
 import type { Listing, ListingCategory, Review } from "@/lib/types";
 
 type ReserveListing = Listing & { reviews?: Pick<Review, "rating">[] };
@@ -66,26 +69,16 @@ function ReserveLoading() {
           <div className="h-8 w-64 animate-pulse rounded-full bg-muted" />
         </div>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="space-y-4">
-            {[0, 1].map((item) => (
-              <div key={item} className="rounded-3xl border bg-white p-5 shadow-sm">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="size-9 animate-pulse rounded-full bg-[#f1e6ea]" />
-                  <div className="space-y-2">
-                    <div className="h-5 w-40 animate-pulse rounded bg-muted" />
-                    <div className="h-3 w-64 max-w-full animate-pulse rounded bg-muted" />
-                  </div>
+          <div className="rounded-3xl border bg-white p-5 shadow-sm">
+            <div className="mb-5 h-6 w-44 animate-pulse rounded bg-muted" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                  <div className="h-11 animate-pulse rounded-xl bg-muted" />
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {Array.from({ length: item === 0 ? 4 : 6 }).map((_, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-                      <div className="h-11 animate-pulse rounded-xl bg-muted" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <div className="rounded-3xl border bg-white p-5 shadow-sm">
             <div className="mb-5 flex gap-4">
@@ -113,9 +106,11 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const supabase = createClient();
 
   const [listing, setListing] = useState<ReserveListing | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isOwnListing, setIsOwnListing] = useState(false);
+  const [step, setStep] = useState(0);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -137,20 +132,35 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from("listings")
-        .select("*, listing_images(*), reviews(rating)")
-        .eq("id", id)
-        .eq("is_active", true)
-        .single();
+      // Public route (service role) so the listing always loads; booking
+      // itself still requires a signed-in user below.
+      const [listingRes, userRes] = await Promise.all([
+        fetch(`/api/public/listings?id=${id}`),
+        supabase.auth.getUser(),
+      ]);
+
+      const json: { listing?: ReserveListing } = listingRes.ok
+        ? await listingRes.json()
+        : {};
+      const data = json.listing ?? null;
+      const authUser = userRes.data.user;
+      setUser(authUser);
+
+      if (authUser) {
+        const fullName = (authUser.user_metadata?.full_name as string | undefined) ?? "";
+        const [first, ...rest] = fullName.split(" ");
+        setFirstName((prev) => prev || first || "");
+        setLastName((prev) => prev || rest.join(" ") || "");
+        setEmail((prev) => prev || authUser.email || "");
+      }
+
       if (data) {
-        setListing(data as ReserveListing);
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
+        setListing(data);
+        if (authUser) {
           const { data: host } = await supabase
             .from("hosts")
             .select("id")
-            .eq("user_id", userData.user.id)
+            .eq("user_id", authUser.id)
             .maybeSingle();
           setIsOwnListing(host?.id === data.host_id);
         }
@@ -209,8 +219,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     return "Overnight stay";
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function pay() {
     if (!listing || submitting) return;
     if (isOwnListing) {
       alert("Hosts cannot reserve their own listing.");
@@ -218,11 +227,26 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     }
     setSubmitting(true);
 
+    // Better-price requests go to the admin dashboard, not the host note alone.
+    if (wantsNegotiation) {
+      await fetch("/api/negotiations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: listing.id,
+          offerAmount,
+          message: negotiationMessage,
+          guestName: `${firstName} ${lastName}`.trim(),
+          guestPhone: phone,
+        }),
+      }).catch(() => undefined);
+    }
+
     const negotiationNote = wantsNegotiation
       ? [
-          "Guest would like to negotiate.",
+          "Guest asked for a better price.",
           offerAmount ? `Offer: ${listing.currency || "KES"} ${offerAmount}` : null,
-          negotiationMessage ? `Reason/message: ${negotiationMessage}` : null,
+          negotiationMessage ? `Message: ${negotiationMessage}` : null,
         ]
           .filter(Boolean)
           .join(" ")
@@ -277,6 +301,39 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     );
   }
 
+  // Booking is for registered users only — browsing stays open to everyone.
+  if (!user) {
+    return (
+      <>
+        <CheckoutHeader backHref={`/property/${listing.slug}`} />
+        <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
+          <UserCircle className="mb-5 h-14 w-14 text-[#800020]" />
+          <h1 className="text-2xl font-bold">Sign in to reserve</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Create a free account or log in to book{" "}
+            <span className="font-semibold text-[#181113]">
+              {listing.title || listing.name}
+            </span>
+            . It takes less than a minute.
+          </p>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <AuthDialog>
+              <Button className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]">
+                Login or sign up
+              </Button>
+            </AuthDialog>
+            <Link
+              href={`/property/${listing.slug}`}
+              className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-muted"
+            >
+              Back to listing
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   const total = computeTotal();
   const availableCategories = listing.categories;
   const reviews = listing.reviews ?? [];
@@ -284,325 +341,369 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
   const isExperience = category === "experience";
+  const payNow = Number(listing.deposit_amount || total);
+
+  const stepOneValid = Boolean(
+    checkIn &&
+      (category !== "overnight" || checkOut) &&
+      (category === "overnight" || startTime)
+  );
+  const stepTwoValid = Boolean(firstName.trim() && lastName.trim() && phone.trim().length >= 7);
+
+  const steps = [
+    { title: "Booking details", valid: stepOneValid },
+    { title: "Your details", valid: stepTwoValid },
+    { title: "Review & pay", valid: true },
+  ];
+  const lastStep = steps.length - 1;
+
+  function next() {
+    if (!steps[step].valid) return;
+    setStep((s) => Math.min(s + 1, lastStep));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function back() {
+    setStep((s) => Math.max(s - 1, 0));
+  }
 
   return (
     <>
       <CheckoutHeader backHref={`/property/${listing.slug}`} />
-      <main className="bg-[#fffdfd] px-4 pb-28 pt-6 text-[#181113] sm:px-6 lg:px-8 lg:pb-10">
+      <main className="bg-[#fffdfd] px-4 pb-32 pt-6 text-[#181113] sm:px-6 lg:px-8 lg:pb-12">
         <div className="mx-auto mb-6 max-w-6xl">
-          <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">Reserve your spot</p>
-          <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                {listing.title || listing.name}
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                Confirm your details, review the reserve fee, and the host will receive your request by SMS.
-              </p>
-            </div>
-            <div className="flex rounded-full border bg-white p-1 text-xs font-bold text-muted-foreground">
-              {["Details", "Stay", "Pay"].map((step, index) => (
+          <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">
+            Reserve your spot
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+            {listing.title || listing.name}
+          </h1>
+
+          {/* Stepper */}
+          <div className="mt-4 flex items-center gap-2">
+            {steps.map((s, i) => (
+              <button
+                key={s.title}
+                type="button"
+                disabled={i > step}
+                onClick={() => i < step && setStep(i)}
+                className="flex flex-1 flex-col gap-1.5 text-left"
+              >
                 <span
-                  key={step}
-                  className={`rounded-full px-3 py-1.5 ${index === 0 ? "bg-[#800020] text-white" : ""}`}
+                  className={`h-1.5 w-full rounded-full ${
+                    i <= step ? "bg-[#800020]" : "bg-[#f1e6ea]"
+                  }`}
+                />
+                <span
+                  className={`text-xs font-semibold ${
+                    i === step ? "text-[#800020]" : "text-muted-foreground"
+                  }`}
                 >
-                  {step}
+                  {s.title}
                 </span>
-              ))}
-            </div>
+              </button>
+            ))}
           </div>
         </div>
-        <form
-          id="reserve-form"
-          onSubmit={handleSubmit}
-          className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_340px]"
-        >
+
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-5">
             {isOwnListing && (
               <div className="rounded-2xl border border-[#800020] bg-[#fbf7f8] p-5 text-sm text-muted-foreground">
                 <p className="font-bold text-[#181113]">You are the host for this listing</p>
                 <p className="mt-1">
-                  Hosts cannot reserve their own homes or experiences. Use the dashboard to manage availability and test bookings from a guest account.
+                  Hosts cannot reserve their own homes or experiences. Use the dashboard to
+                  manage availability instead.
                 </p>
               </div>
             )}
-            <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
-              <div className="mb-5 flex items-start gap-3">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white shadow-sm">
-                  1
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold tracking-tight">Contact details</h1>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    We use this to send SMS updates and your booking confirmation.
-                  </p>
-                </div>
-              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="firstName">First name *</Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last name *</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                    required
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative mt-1">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            {step === 0 && (
+              <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="text-xl font-bold tracking-tight">When are you coming?</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Confirm the dates, guests, and anything the host should know.
+                </p>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <Label>Booking type</Label>
+                    <Select
+                      value={category}
+                      onValueChange={(v) => setCategory(v as ListingCategory)}
+                    >
+                      <SelectTrigger className="mt-1 h-11 border-neutral-400">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableCategories.includes("hourly") && (
+                          <SelectItem value="hourly">Hourly</SelectItem>
+                        )}
+                        {availableCategories.includes("overnight") && (
+                          <SelectItem value="overnight">Overnight</SelectItem>
+                        )}
+                        {availableCategories.includes("experience") && (
+                          <SelectItem value="experience">Experience</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="checkIn">
+                      {isExperience ? "Session date" : "Check-in date"}
+                    </Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Optional, for your payment receipt"
-                      className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
+                      id="checkIn"
+                      type="date"
+                      value={checkIn}
+                      onChange={(e) => setCheckIn(e.target.value)}
+                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                      required
                     />
                   </div>
-                </div>
-                <div className="sm:col-span-2">
-                  <Label htmlFor="phone">Phone number *</Label>
-                  <div className="mt-1 grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
-                    <div className="flex h-11 items-center rounded-lg border border-neutral-400 px-3 text-sm">
-                      Kenya (+254)
+                  {category === "overnight" && (
+                    <div>
+                      <Label htmlFor="checkOut">Check-out date</Label>
+                      <Input
+                        id="checkOut"
+                        type="date"
+                        value={checkOut}
+                        onChange={(e) => setCheckOut(e.target.value)}
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        required
+                      />
                     </div>
-                    <div className="relative">
+                  )}
+                  {(category === "hourly" || category === "experience") && (
+                    <div>
+                      <Label htmlFor="startTime">Start time</Label>
+                      <Input
+                        id="startTime"
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        required
+                      />
+                    </div>
+                  )}
+                  {category === "hourly" && (
+                    <div>
+                      <Label htmlFor="duration">Duration (hours)</Label>
+                      <Input
+                        id="duration"
+                        type="number"
+                        min={listing.minimum_hours || 1}
+                        max="24"
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        required
+                      />
+                      {(listing.minimum_hours ?? 1) > 1 && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Minimum {listing.minimum_hours} hours.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <div>
+                    <Label htmlFor="guests">{isExperience ? "Seats" : "Guests"}</Label>
+                    <div className="relative mt-1">
+                      <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="guests"
+                        type="number"
+                        min="1"
+                        value={guests}
+                        onChange={(e) => setGuests(e.target.value)}
+                        className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
+                        required
+                      />
+                    </div>
+                  </div>
+                  {(listing.total_units ?? 1) > 1 && (
+                    <div>
+                      <Label htmlFor="units">Rooms/units</Label>
+                      <Input
+                        id="units"
+                        type="number"
+                        min="1"
+                        max={listing.total_units ?? 1}
+                        value={units}
+                        onChange={(e) => setUnits(e.target.value)}
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        required
+                      />
+                    </div>
+                  )}
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="note">Note to host (optional)</Label>
+                    <Textarea
+                      id="note"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      rows={3}
+                      placeholder="Arrival notes, special requests, or anything the host should know."
+                      className="mt-1 border-neutral-400 focus-visible:border-[#800020]"
+                    />
+                  </div>
+                  <div className="sm:col-span-2 rounded-2xl border bg-[#fbf7f8] p-4">
+                    <label className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        className="mt-1 size-4 accent-[#800020]"
+                        checked={wantsNegotiation}
+                        onChange={(event) => setWantsNegotiation(event.target.checked)}
+                      />
+                      <span>
+                        <span className="flex items-center gap-2 font-bold">
+                          <HandCoins className="h-4 w-4 text-[#800020]" />
+                          Ask for a better price
+                        </span>
+                        <span className="mt-1 block text-sm text-muted-foreground">
+                          Your request goes to the Beddn team, who negotiate with the host.
+                          Useful for longer stays, repeat visits, or group bookings.
+                        </span>
+                      </span>
+                    </label>
+                    {wantsNegotiation && (
+                      <div className="mt-4 grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
+                        <div>
+                          <Label htmlFor="offerAmount">Your offer</Label>
+                          <Input
+                            id="offerAmount"
+                            inputMode="numeric"
+                            value={offerAmount}
+                            onChange={(event) => setOfferAmount(event.target.value)}
+                            placeholder={`${listing.currency || "KES"} amount`}
+                            className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="negotiationMessage">Message</Label>
+                          <Input
+                            id="negotiationMessage"
+                            value={negotiationMessage}
+                            onChange={(event) => setNegotiationMessage(event.target.value)}
+                            placeholder="Example: staying 5 nights, can we agree a better rate?"
+                            className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {step === 1 && (
+              <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="text-xl font-bold tracking-tight">Who&apos;s booking?</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  The host sees your first name. Your phone is shared only after the booking is
+                  confirmed.
+                </p>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor="firstName">First name *</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last name *</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="phone">Phone number *</Label>
+                    <div className="relative mt-1">
                       <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="phone"
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+254..."
                         className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
                         required
                       />
                     </div>
                   </div>
-                  <label className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                    <input type="checkbox" className="size-4 accent-[#800020]" defaultChecked />
-                    Receive SMS updates about this booking.
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
-              <div className="mb-5 flex items-start gap-3">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
-                  2
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight">Booking details</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Confirm the date you chose, add guests or seats, and send any note to the host.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <Label>Booking type</Label>
-                  <Select
-                    value={category}
-                    onValueChange={(v) => setCategory(v as ListingCategory)}
-                  >
-                    <SelectTrigger className="mt-1 h-11 border-neutral-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableCategories.includes("hourly") && (
-                        <SelectItem value="hourly">Hourly</SelectItem>
-                      )}
-                      {availableCategories.includes("overnight") && (
-                        <SelectItem value="overnight">Overnight</SelectItem>
-                      )}
-                      {availableCategories.includes("experience") && (
-                        <SelectItem value="experience">Experience</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="checkIn">{isExperience ? "Session date" : "Check-in date"}</Label>
-                  <Input
-                    id="checkIn"
-                    type="date"
-                    value={checkIn}
-                    onChange={(e) => setCheckIn(e.target.value)}
-                    className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                    required
-                  />
-                </div>
-                {category === "overnight" && (
-                  <div>
-                    <Label htmlFor="checkOut">Check-out date</Label>
-                    <Input
-                      id="checkOut"
-                      type="date"
-                      value={checkOut}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                      required
-                    />
-                  </div>
-                )}
-                {(category === "hourly" || category === "experience") && (
-                  <div>
-                    <Label htmlFor="startTime">Start time</Label>
-                    <Input
-                      id="startTime"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                      required
-                    />
-                  </div>
-                )}
-                {category === "hourly" && (
-                  <div>
-                    <Label htmlFor="duration">Duration (hours)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      min="1"
-                      max="24"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                      required
-                    />
-                  </div>
-                )}
-                <div>
-                  <Label htmlFor="guests">{isExperience ? "Seats" : "Guests"}</Label>
-                  <div className="relative mt-1">
-                    <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="guests"
-                      type="number"
-                      min="1"
-                      value={guests}
-                      onChange={(e) => setGuests(e.target.value)}
-                      className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
-                      required
-                    />
-                  </div>
-                </div>
-                {(listing.total_units ?? 1) > 1 && (
-                  <div>
-                    <Label htmlFor="units">Rooms/units</Label>
-                    <Input
-                      id="units"
-                      type="number"
-                      min="1"
-                      max={listing.total_units ?? 1}
-                      value={units}
-                      onChange={(e) => setUnits(e.target.value)}
-                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                      required
-                    />
-                  </div>
-                )}
-                <div className="sm:col-span-2">
-                  <Label htmlFor="note">Note to host</Label>
-                  <Textarea
-                    id="note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={3}
-                    placeholder="Arrival notes, special requests, or anything the host should know."
-                    className="mt-1 border-neutral-400 focus-visible:border-[#800020]"
-                  />
-                </div>
-                <div className="sm:col-span-2 rounded-2xl border bg-[#fbf7f8] p-4">
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      className="mt-1 size-4 accent-[#800020]"
-                      checked={wantsNegotiation}
-                      onChange={(event) => setWantsNegotiation(event.target.checked)}
-                    />
-                    <span>
-                      <span className="flex items-center gap-2 font-bold">
-                        <HandCoins className="h-4 w-4 text-[#800020]" />
-                        Ask host for a better price
-                      </span>
-                      <span className="mt-1 block text-sm text-muted-foreground">
-                        Useful for longer stays, repeat visits, weekdays, or group bookings.
-                      </span>
-                    </span>
-                  </label>
-                  {wantsNegotiation && (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
-                      <div>
-                        <Label htmlFor="offerAmount">Your offer</Label>
-                        <Input
-                          id="offerAmount"
-                          inputMode="numeric"
-                          value={offerAmount}
-                          onChange={(event) => setOfferAmount(event.target.value)}
-                          placeholder={`${listing.currency || "KES"} amount`}
-                          className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="negotiationMessage">Message</Label>
-                        <Input
-                          id="negotiationMessage"
-                          value={negotiationMessage}
-                          onChange={(event) => setNegotiationMessage(event.target.value)}
-                          placeholder="Example: staying 5 nights, can we agree a better rate?"
-                          className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
-                        />
-                      </div>
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative mt-1">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="For your payment receipt"
+                        className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
+                      />
                     </div>
-                  )}
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
-              <div className="flex items-start gap-3">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#fbf7f8] text-sm font-bold text-[#800020]">
-                  3
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight">Before you pay</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Your reserve fee starts the booking request. Host contact and exact address stay private until confirmation.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
-                {[
-                  "SMS updates are sent to your phone.",
-                  "Hosts confirm or reject paid requests.",
-                  "Rejected requests are reviewed for resolution.",
-                ].map((item) => (
-                  <div key={item} className="rounded-2xl bg-[#fbf7f8] p-4 text-muted-foreground">
-                    {item}
                   </div>
-                ))}
-              </div>
-            </section>
+                </div>
+              </section>
+            )}
+
+            {step === 2 && (
+              <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="text-xl font-bold tracking-tight">Review your request</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pay the reserve fee to send your request. Track everything from your Beddn
+                  account — host contact and exact address unlock after confirmation.
+                </p>
+
+                <dl className="mt-5 divide-y rounded-xl border text-sm">
+                  {[
+                    ["Booking", bookingTypeLabel()],
+                    ["Dates", bookingDateLabel()],
+                    [
+                      isExperience ? "Seats" : "Guests",
+                      `${guests}${(listing.total_units ?? 1) > 1 ? ` · ${units} unit${units === "1" ? "" : "s"}` : ""}`,
+                    ],
+                    ["Guest", `${firstName} ${lastName}`.trim()],
+                    ["Phone", phone],
+                    ...(wantsNegotiation
+                      ? [["Better price", offerAmount ? money(Number(offerAmount)) : "Requested"] as [string, string]]
+                      : []),
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex items-center justify-between gap-3 p-3">
+                      <dt className="text-muted-foreground">{label}</dt>
+                      <dd className="max-w-[60%] truncate text-right font-medium">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+
+                <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
+                  {[
+                    "Booking updates appear in your Beddn account.",
+                    "Hosts confirm or reject paid requests.",
+                    "Rejected requests are refunded after review.",
+                  ].map((item) => (
+                    <div key={item} className="rounded-2xl bg-[#fbf7f8] p-4 text-muted-foreground">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          {/* Order summary */}
+          <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
             <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
               <div className="p-5">
                 <div className="flex gap-4">
@@ -618,7 +719,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                           <span className="text-muted-foreground">({reviews.length})</span>
                         </>
                       ) : (
-                        <span className="text-muted-foreground">New verified place</span>
+                        <span className="text-muted-foreground">New place</span>
                       )}
                     </div>
                     <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
@@ -626,6 +727,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       {listing.area}, {listing.city}
                     </p>
                   </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={listingImage()}
                     alt={listing.name}
@@ -651,7 +753,8 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     <div>
                       <p className="font-medium">{bookingDateLabel()}</p>
                       <p className="text-muted-foreground">
-                      {guests} {isExperience ? "seat" : "guest"}{guests === "1" ? "" : "s"}
+                        {guests} {isExperience ? "seat" : "guest"}
+                        {guests === "1" ? "" : "s"}
                       </p>
                     </div>
                   </div>
@@ -664,17 +767,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 </div>
               </div>
 
-              <div className="border-y bg-[#fbf7f8] p-5">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                  <CheckCircle2 className="h-4 w-4 text-[#800020]" />
-                  SMS-first booking updates
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Fast booking alerts before your stay. Message rates may apply.
-                </p>
-              </div>
-
-              <div className="space-y-3 p-5">
+              <div className="space-y-3 border-t bg-[#fbf7f8] p-5">
                 <div className="flex justify-between text-sm">
                   <span>Estimated stay total</span>
                   <span className="font-semibold">{money(total)}</span>
@@ -688,44 +781,58 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 <Separator />
                 <div className="flex justify-between text-base font-bold">
                   <span>Pay now</span>
-                  <span>{money(Number(listing.deposit_amount || total))}</span>
+                  <span>{money(payNow)}</span>
                 </div>
-                <Button
-                  type="submit"
-                  disabled={submitting || isOwnListing || !firstName || !lastName || !phone || !checkIn}
-                  className="mt-2 h-11 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
-                >
-                  <CreditCard className="h-4 w-4" />
-                  {submitting ? "Opening secure checkout..." : "Pay reserve fee"}
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                  Your host details unlock only after the booking is confirmed.
-                </p>
               </div>
             </div>
           </aside>
-        </form>
+        </div>
       </main>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:hidden">
+
+      {/* Sticky action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <Link
-            href={`/property/${listing.slug}`}
-            className="flex h-11 shrink-0 items-center justify-center rounded-full border px-4 text-sm font-semibold"
-          >
-            Back
-          </Link>
+          {step > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={back}
+              className="h-11 shrink-0 rounded-full px-5"
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" /> Back
+            </Button>
+          ) : (
+            <Link
+              href={`/property/${listing.slug}`}
+              className="flex h-11 shrink-0 items-center justify-center rounded-full border px-4 text-sm font-semibold"
+            >
+              Back
+            </Link>
+          )}
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground">Pay now</p>
-            <p className="truncate font-bold">{money(Number(listing.deposit_amount || total))}</p>
+            <p className="truncate font-bold">{money(payNow)}</p>
           </div>
-          <Button
-            type="submit"
-            form="reserve-form"
-            disabled={submitting || isOwnListing || !firstName || !lastName || !phone || !checkIn}
-            className="h-11 rounded-full bg-[#800020] px-5 font-bold hover:bg-[#600018]"
-          >
-            {submitting ? "Opening..." : "Reserve"}
-          </Button>
+          {step < lastStep ? (
+            <Button
+              type="button"
+              onClick={next}
+              disabled={!steps[step].valid}
+              className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={pay}
+              disabled={submitting || isOwnListing || !stepOneValid || !stepTwoValid}
+              className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
+            >
+              <CreditCard className="mr-1 h-4 w-4" />
+              {submitting ? "Opening checkout…" : "Pay reserve fee"}
+            </Button>
+          )}
         </div>
       </div>
     </>
