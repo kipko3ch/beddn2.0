@@ -39,7 +39,9 @@ export function SearchContent() {
 
     let query = supabase
       .from("listings")
-      .select("*, listing_images(*), host:hosts(id, name, is_verified), reviews(rating)")
+      .select(
+        "id, slug, name, title, area, city, latitude, longitude, categories, property_type, currency, hourly_price, overnight_price, experience_price, listing_images(id, url, position), reviews(rating)"
+      )
       .eq("is_active", true);
 
     if (category !== "all") {

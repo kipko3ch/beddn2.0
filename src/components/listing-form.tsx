@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import type { ElementType } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { uploadListingImage } from "@/lib/upload-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,7 +87,6 @@ interface ListingFormProps {
 
 export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   const router = useRouter();
-  const supabase = createClient();
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState(0);
 
@@ -123,9 +121,6 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   );
   const [experiencePrice, setExperiencePrice] = useState(
     listing?.experience_price?.toString() ?? ""
-  );
-  const [depositAmount, setDepositAmount] = useState(
-    listing?.deposit_amount?.toString() ?? "0"
   );
   const [platformFeeType, setPlatformFeeType] = useState(listing?.platform_fee_type ?? "fixed");
   const [platformFeeValue, setPlatformFeeValue] = useState(
@@ -561,16 +556,6 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
             />
           </div>
         )}
-        <div>
-          <Label htmlFor="deposit">Deposit amount</Label>
-          <Input
-            id="deposit"
-            type="number"
-            step="0.01"
-            value={depositAmount}
-            onChange={(e) => setDepositAmount(e.target.value)}
-          />
-        </div>
       </div>
     ),
   });
@@ -775,7 +760,6 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
     setSubmitting(true);
 
     const payload = {
-      host_id: listing?.host_id ?? hostId,
       slug: listing?.slug ?? generateSlug(name) + "-" + Date.now().toString(36),
       title: name,
       name,
@@ -794,7 +778,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       hourly_price: hourlyPrice ? parseFloat(hourlyPrice) : null,
       overnight_price: overnightPrice ? parseFloat(overnightPrice) : null,
       experience_price: experiencePrice ? parseFloat(experiencePrice) : null,
-      deposit_amount: parseFloat(depositAmount || "0"),
+      deposit_amount: 0,
       currency,
       total_units: Math.max(1, parseInt(totalUnits || "1")),
       available_units: Math.max(1, parseInt(totalUnits || "1")),
@@ -811,43 +795,30 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       house_rules: houseRules || null,
       is_active: isActive,
       is_verified: isAdmin ? isVerified : listing?.is_verified ?? false,
-      updated_at: new Date().toISOString(),
     };
 
-    let listingId = listing?.id;
+    const imageList = imageUrls
+      .split("\n")
+      .map((u) => u.trim())
+      .filter(Boolean);
 
-    if (listing) {
-      const { error } = await supabase.from("listings").update(payload).eq("id", listing.id);
-      if (error) {
-        alert("Failed to update listing: " + error.message);
-        setSubmitting(false);
-        return;
-      }
-    } else {
-      const { data, error } = await supabase
-        .from("listings")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (error || !data) {
-        alert("Failed to create listing: " + (error?.message ?? "Unknown error"));
-        setSubmitting(false);
-        return;
-      }
-      listingId = data.id;
-    }
+    const res = await fetch("/api/listings", {
+      method: listing ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        listingId: listing?.id,
+        payload,
+        imageUrls: imageList,
+      }),
+    });
 
-    if (listingId) {
-      await supabase.from("listing_images").delete().eq("listing_id", listingId);
-      const urls = imageUrls
-        .split("\n")
-        .map((u) => u.trim())
-        .filter(Boolean);
-      if (urls.length > 0) {
-        await supabase.from("listing_images").insert(
-          urls.map((url, i) => ({ listing_id: listingId, url, position: i }))
-        );
-      }
+    if (!res.ok) {
+      const { error } = await res.json().catch(() => ({ error: "Unknown error" }));
+      alert(
+        `Failed to ${listing ? "update" : "create"} listing: ${error ?? "Unknown error"}`
+      );
+      setSubmitting(false);
+      return;
     }
 
     router.push("/dashboard/listings");

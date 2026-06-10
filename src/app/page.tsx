@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -96,22 +96,39 @@ export default function LandingPage() {
   }, []);
 
   const currentData = TAB_DATA[activeTab];
+  // Cache fetched listings per category so switching tabs you've already
+  // viewed is instant instead of hitting the database again.
+  const listingCache = useRef<Map<string, Listing[]>>(new Map());
 
   const fetchListings = useCallback(async () => {
+    const key = currentData.category;
+    const cached = listingCache.current.get(key);
+    if (cached) {
+      setListings(cached);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     let query = supabase
       .from('listings')
-      .select('*, listing_images(*), host:hosts(id, name, is_verified), reviews(rating)')
+      // Only the columns ListingCard renders — avoids shipping the full row
+      // (description, address, rules…) for every card.
+      .select(
+        'id, slug, name, title, area, city, categories, currency, hourly_price, overnight_price, experience_price, listing_images(id, url, position), reviews(rating)'
+      )
       .eq('is_active', true)
       .order('created_at', { ascending: false })
       .limit(20);
 
-    if (currentData.category !== 'all') {
-      query = query.filter('categories', 'cs', `{${currentData.category}}`);
+    if (key !== 'all') {
+      query = query.filter('categories', 'cs', `{${key}}`);
     }
 
     const { data } = await query;
-    setListings((data as Listing[]) ?? []);
+    const rows = (data as Listing[]) ?? [];
+    listingCache.current.set(key, rows);
+    setListings(rows);
     setLoading(false);
   }, [currentData.category, supabase]);
 

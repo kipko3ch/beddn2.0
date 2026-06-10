@@ -55,22 +55,18 @@ export default function NewListingPage() {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("hosts")
-      .insert({
-        user_id: user.user.id,
-        name: hostName || user.user.user_metadata?.full_name || user.user.email?.split("@")[0] || "Beddn host",
-        phone: hostPhone,
-        is_verified: false,
-      })
-      .select("id")
-      .single();
+    const res = await fetch("/api/host", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: hostName, phone: hostPhone }),
+    });
+    const json = await res.json().catch(() => ({}));
 
-    if (data) {
-      setHostId(data.id);
+    if (res.ok && json.host) {
+      setHostId(json.host.id);
       setNeedsHost(false);
     } else {
-      alert("Failed to create host profile: " + (error?.message ?? ""));
+      alert("Failed to create host profile: " + (json.error ?? ""));
     }
     setCreatingHost(false);
   }

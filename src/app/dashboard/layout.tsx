@@ -20,6 +20,9 @@ import {
   ShieldCheck,
   Search,
   UserCircle,
+  Menu,
+  X,
+  LogOut,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -43,7 +46,20 @@ export default function DashboardLayout({
   const [isHost, setIsHost] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const supabase = createClient();
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMenuOpen(false);
+    setAccountOpen(false);
+  }, [pathname]);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    window.location.href = ROUTES.home;
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -116,50 +132,118 @@ export default function DashboardLayout({
   return (
     <div className="flex-1 flex flex-col bg-[#fffdfd] font-sans">
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
-        <div className="flex h-14 items-center justify-between gap-3 pl-4 pr-4 sm:pr-6">
-          <Link href="/" className="flex items-center font-brand text-2xl leading-none text-[#2b000a]">
-            Beddn
-          </Link>
-          <nav className="hidden md:flex items-center gap-2 text-sm">
-            <Link href={ROUTES.search} className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:bg-muted">
-              <Search className="h-4 w-4" /> Traveler
+        <div className="flex h-14 items-center justify-between gap-3 pl-3 pr-3 sm:pr-6">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full text-[#2b000a] hover:bg-muted"
+            >
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            <Link href="/" className="flex items-center font-brand text-2xl leading-none text-[#2b000a]">
+              Beddn
             </Link>
-            {isAdmin && (
-              <Link
-                href={ROUTES.adminHome}
-                className="inline-flex items-center gap-2 rounded-full bg-[#f8eef2] px-3 py-2 font-semibold text-[#800020] hover:bg-[#f1e1e7]"
-              >
-                <ShieldCheck className="h-4 w-4" /> Admin
+          </div>
+          <div className="flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-2 text-sm">
+              <Link href={ROUTES.search} className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:bg-muted">
+                <Search className="h-4 w-4" /> Traveler
               </Link>
-            )}
-            <Link href={ROUTES.newListing} className="rounded-full bg-[#800020] px-4 py-2 font-semibold text-white hover:bg-[#600018]">
-              List your place
-            </Link>
-          </nav>
-        </div>
-        <div className="md:hidden overflow-x-auto border-t">
-          <nav className="flex gap-2 px-3 py-2 min-w-max">
-            {sidebarItems.map(({ href, label }) => {
-              const active = pathname === href;
-              return (
+              {isAdmin && (
                 <Link
-                  key={href}
-                  href={href}
-                  className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
-                    active ? "bg-[#800020] text-white" : "bg-muted text-muted-foreground"
-                  }`}
+                  href={ROUTES.adminHome}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#f8eef2] px-3 py-2 font-semibold text-[#800020] hover:bg-[#f1e1e7]"
                 >
-                  {label}
+                  <ShieldCheck className="h-4 w-4" /> Admin
                 </Link>
-              );
-            })}
-            {isAdmin && (
-              <Link href={ROUTES.adminHome} className="px-3 py-1.5 rounded-full text-sm whitespace-nowrap border border-[#800020] text-[#800020]">
-                Admin
+              )}
+              <Link href={ROUTES.newListing} className="rounded-full bg-[#800020] px-4 py-2 font-semibold text-white hover:bg-[#600018]">
+                List your place
               </Link>
-            )}
-          </nav>
+            </nav>
+
+            {/* Account button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setAccountOpen((o) => !o)}
+                aria-label="Account"
+                aria-expanded={accountOpen}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#800020] hover:bg-muted"
+              >
+                <UserCircle className="h-6 w-6" />
+              </button>
+              {accountOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setAccountOpen(false)}
+                    aria-hidden
+                  />
+                  <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border bg-white shadow-lg">
+                    <div className="border-b px-4 py-3">
+                      <p className="text-xs text-muted-foreground">Signed in as</p>
+                      <p className="truncate text-sm font-medium">{user?.email}</p>
+                    </div>
+                    <Link href={ROUTES.dashboard} className="block px-4 py-2.5 text-sm hover:bg-muted">
+                      Dashboard
+                    </Link>
+                    <Link href={ROUTES.search} className="block px-4 py-2.5 text-sm hover:bg-muted md:hidden">
+                      Traveler
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={signOut}
+                      className="flex w-full items-center gap-2 border-t px-4 py-2.5 text-left text-sm text-[#800020] hover:bg-muted"
+                    >
+                      <LogOut className="h-4 w-4" /> Sign out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Mobile drawer menu */}
+        {menuOpen && (
+          <div className="md:hidden border-t bg-white">
+            <nav className="space-y-1 p-3">
+              {sidebarItems.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
+                      active ? "bg-[#800020] text-white" : "text-[#2b000a] hover:bg-muted"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </Link>
+                );
+              })}
+              <Link
+                href={ROUTES.newListing}
+                className="flex items-center gap-3 rounded-lg bg-[#800020] px-3 py-2.5 text-sm font-semibold text-white"
+              >
+                <Home className="h-4 w-4" /> List your place
+              </Link>
+              {isAdmin && (
+                <Link
+                  href={ROUTES.adminHome}
+                  className="flex items-center gap-3 rounded-lg border border-[#800020] px-3 py-2.5 text-sm font-semibold text-[#800020]"
+                >
+                  <ShieldCheck className="h-4 w-4" /> Admin
+                </Link>
+              )}
+            </nav>
+          </div>
+        )}
       </header>
       <div className="flex-1 flex min-h-0">
       <aside className="w-60 border-r bg-white hidden md:block">
