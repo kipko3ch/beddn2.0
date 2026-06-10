@@ -9,6 +9,13 @@ import { ROUTES } from '@/lib/routes';
 import { AuthDialog } from '@/components/auth-dialog';
 import { Button } from '@/components/ui/button';
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import {
   LayoutDashboard,
   Home,
   CalendarCheck,
@@ -21,7 +28,6 @@ import {
   Search,
   UserCircle,
   Menu,
-  X,
   LogOut,
 } from 'lucide-react';
 
@@ -136,12 +142,12 @@ export default function DashboardLayout({
           <div className="flex items-center gap-1">
             <button
               type="button"
-              onClick={() => setMenuOpen((o) => !o)}
+              onClick={() => setMenuOpen(true)}
               aria-label="Menu"
               aria-expanded={menuOpen}
               className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full text-[#2b000a] hover:bg-muted"
             >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Menu className="h-5 w-5" />
             </button>
             <Link href="/" className="flex items-center font-brand text-2xl leading-none text-[#2b000a]">
               Beddn
@@ -208,43 +214,60 @@ export default function DashboardLayout({
           </div>
         </div>
 
-        {/* Mobile drawer menu */}
-        {menuOpen && (
-          <div className="md:hidden border-t bg-white">
-            <nav className="space-y-1 p-3">
-              {sidebarItems.map(({ href, label, icon: Icon }) => {
-                const active = pathname === href;
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
-                      active ? "bg-[#800020] text-white" : "text-[#2b000a] hover:bg-muted"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </Link>
-                );
-              })}
-              <Link
-                href={ROUTES.newListing}
-                className="flex items-center gap-3 rounded-lg bg-[#800020] px-3 py-2.5 text-sm font-semibold text-white"
-              >
-                <Home className="h-4 w-4" /> List your place
-              </Link>
-              {isAdmin && (
-                <Link
-                  href={ROUTES.adminHome}
-                  className="flex items-center gap-3 rounded-lg border border-[#800020] px-3 py-2.5 text-sm font-semibold text-[#800020]"
-                >
-                  <ShieldCheck className="h-4 w-4" /> Admin
-                </Link>
-              )}
-            </nav>
-          </div>
-        )}
       </header>
+
+      {/* Mobile nav — slides in from the left as an overlay (does not push content) */}
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetContent side="left" className="w-[min(82vw,320px)] gap-0 bg-white p-0 md:hidden">
+          <SheetHeader className="border-b p-5">
+            <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
+              Beddn
+            </SheetTitle>
+            <SheetDescription className="sr-only">Dashboard navigation</SheetDescription>
+          </SheetHeader>
+          <nav className="space-y-1 p-3">
+            {sidebarItems.map(({ href, label, icon: Icon }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
+                    active ? "bg-[#800020] text-white" : "text-[#2b000a] hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Link>
+              );
+            })}
+            <Link
+              href={ROUTES.newListing}
+              onClick={() => setMenuOpen(false)}
+              className="mt-1 flex items-center gap-3 rounded-lg bg-[#800020] px-3 py-2.5 text-sm font-semibold text-white"
+            >
+              <Home className="h-4 w-4" /> List your place
+            </Link>
+            <Link
+              href={ROUTES.search}
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#2b000a] hover:bg-muted"
+            >
+              <Search className="h-4 w-4" /> Traveler
+            </Link>
+            {isAdmin && (
+              <Link
+                href={ROUTES.adminHome}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 rounded-lg border border-[#800020] px-3 py-2.5 text-sm font-semibold text-[#800020]"
+              >
+                <ShieldCheck className="h-4 w-4" /> Admin
+              </Link>
+            )}
+          </nav>
+        </SheetContent>
+      </Sheet>
       <div className="flex-1 flex min-h-0">
       <aside className="w-60 border-r bg-white hidden md:block">
         <nav className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4 space-y-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ElementType } from "react";
 import { useRouter } from "next/navigation";
 import { uploadListingImage } from "@/lib/upload-image";
@@ -89,6 +89,13 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState(0);
+  const topRef = useRef<HTMLDivElement>(null);
+
+  // Bring the top of the current step into view whenever the step changes —
+  // long steps otherwise leave the user scrolled halfway down.
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [step]);
 
   const [name, setName] = useState(listing?.name ?? "");
   const [description, setDescription] = useState(listing?.description ?? "");
@@ -825,23 +832,41 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
     router.refresh();
   }
 
+  const percent = Math.round(((step + 1) / steps.length) * 100);
+
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl">
+    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl pb-28 sm:pb-0">
+      <div ref={topRef} className="scroll-mt-20" />
+
       {/* Progress */}
       <div className="mb-6">
-        <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+        <div className="flex items-center justify-between text-xs font-semibold">
           <span className="uppercase tracking-wide text-[#800020]">
             {listing ? "Edit listing" : "New listing"}
           </span>
-          <span>
-            Step {step + 1} of {steps.length}
+          <span className="text-muted-foreground">
+            Step {step + 1} of {steps.length} · {percent}%
           </span>
         </div>
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#f1e6ea]">
-          <div
-            className="h-full rounded-full bg-[#800020] transition-all duration-300"
-            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
-          />
+        {/* Segmented progress — each completed step fills in. Tap a filled
+            segment to jump back to it. */}
+        <div className="mt-2 flex gap-1">
+          {steps.map((s, i) => {
+            const done = i < step;
+            const isCurrent = i === step;
+            return (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to step ${i + 1}: ${s.title}`}
+                disabled={i > step}
+                onClick={() => i < step && setStep(i)}
+                className={`h-1.5 flex-1 overflow-hidden rounded-full transition-colors ${
+                  done || isCurrent ? "bg-[#800020]" : "bg-[#f1e6ea]"
+                } ${i < step ? "cursor-pointer" : "cursor-default"}`}
+              />
+            );
+          })}
         </div>
       </div>
 
@@ -853,35 +878,39 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
         <div className="mt-6">{current.content}</div>
       </div>
 
-      <div className="mt-6 flex items-center gap-3">
-        {step > 0 && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={back}
-            className="h-11 rounded-full px-5"
-          >
-            <ChevronLeft className="mr-1 h-4 w-4" /> Back
-          </Button>
-        )}
-        {step < lastStep ? (
-          <Button
-            type="button"
-            onClick={next}
-            disabled={!current.valid}
-            className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
-          >
-            Continue
-          </Button>
-        ) : (
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
-          >
-            {submitting ? "Saving…" : listing ? "Update listing" : "Publish listing"}
-          </Button>
-        )}
+      {/* Action bar — sticky to the bottom of the viewport on mobile so the
+          primary action is always reachable on long steps. */}
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-white/95 px-4 py-3 backdrop-blur sm:static sm:mt-6 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          {step > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={back}
+              className="h-11 rounded-full px-5"
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" /> Back
+            </Button>
+          )}
+          {step < lastStep ? (
+            <Button
+              type="button"
+              onClick={next}
+              disabled={!current.valid}
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+            >
+              {current.valid ? "Continue" : "Complete this step"}
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+            >
+              {submitting ? "Saving…" : listing ? "Update listing" : "Publish listing"}
+            </Button>
+          )}
+        </div>
       </div>
     </form>
   );
