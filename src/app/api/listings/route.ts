@@ -62,11 +62,47 @@ interface ListingRequest {
 
 async function resolveContext(userId: string) {
   const admin = createAdminClient();
-  const [{ data: profile }, { data: host }] = await Promise.all([
+  const [profileRes, hostRes] = await Promise.all([
     admin.from("profiles").select("is_admin").eq("id", userId).maybeSingle(),
-    admin.from("hosts").select("id").eq("user_id", userId).maybeSingle(),
+    // limit(1) instead of maybeSingle(): tolerant of duplicate host rows, which
+    // would otherwise make maybeSingle() error and look like "no host".
+    admin
+      .from("hosts")
+      .select("id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true })
+      .limit(1),
   ]);
-  return { admin, isAdmin: Boolean(profile?.is_admin), host };
+  return {
+    admin,
+    isAdmin: Boolean(profileRes.data?.is_admin),
+    host: hostRes.data?.[0] ?? null,
+    hostError: hostRes.error,
+  };
+}
+
+// Returns the user's host id, creating a host on the fly if none exists, so an
+// authenticated user is never blocked at the end of the wizard.
+async function ensureHostId(
+  admin: ReturnType<typeof createAdminClient>,
+  user: { id: string; email?: string; user_metadata?: Record<string, unknown> },
+  host: { id: string } | null
+) {
+  if (host) return { hostId: host.id as string, error: null as string | null };
+  const { data, error } = await admin
+    .from("hosts")
+    .insert({
+      user_id: user.id,
+      name:
+        (user.user_metadata?.full_name as string | undefined) ||
+        user.email?.split("@")[0] ||
+        "Beddn host",
+      phone: "",
+      is_verified: false,
+    })
+    .select("id")
+    .single();
+  return { hostId: data?.id as string | undefined, error: error?.message ?? null };
 }
 
 async function saveImages(
@@ -93,11 +129,25 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as ListingRequest;
-  const { admin, isAdmin, host } = await resolveContext(auth.user.id);
+  const { admin, isAdmin, host, hostError } = await resolveContext(auth.user.id);
 
-  if (!host) {
+  // A query error here means the DB was unreachable — surface it instead of the
+  // misleading "create a host profile" message.
+  if (hostError) {
     return NextResponse.json(
-      { error: "Create a host profile before listing." },
+      { error: `Could not verify host profile: ${hostError.message}` },
+      { status: 500 }
+    );
+  }
+
+  const { hostId, error: hostCreateError } = await ensureHostId(
+    admin,
+    auth.user,
+    host
+  );
+  if (!hostId) {
+    return NextResponse.json(
+      { error: hostCreateError ?? "Could not resolve host profile" },
       { status: 400 }
     );
   }
@@ -105,7 +155,7 @@ export async function POST(request: Request) {
   const row: AnyRecord = {
     ...pick(body.payload, HOST_FIELDS),
     ...(isAdmin ? pick(body.payload, ADMIN_FIELDS) : {}),
-    host_id: host.id, // never trust client-supplied host_id
+    host_id: hostId, // never trust client-supplied host_id
     updated_at: new Date().toISOString(),
   };
 
@@ -139,7 +189,13 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Missing listing id" }, { status: 400 });
   }
 
-  const { admin, isAdmin, host } = await resolveContext(auth.user.id);
+  const { admin, isAdmin, host, hostError } = await resolveContext(auth.user.id);
+  if (hostError) {
+    return NextResponse.json(
+      { error: `Could not verify host profile: ${hostError.message}` },
+      { status: 500 }
+    );
+  }
 
   const { data: existing } = await admin
     .from("listings")

@@ -19,15 +19,16 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as HostBody;
   const admin = createAdminClient();
 
-  // Already a host? Return it.
-  const { data: existing } = await admin
+  // Already a host? Return it. limit(1) tolerates any duplicate rows.
+  const { data: existingRows } = await admin
     .from("hosts")
     .select("id, name, phone, is_verified")
     .eq("user_id", auth.user.id)
-    .maybeSingle();
+    .order("created_at", { ascending: true })
+    .limit(1);
 
-  if (existing) {
-    return NextResponse.json({ host: existing });
+  if (existingRows && existingRows.length > 0) {
+    return NextResponse.json({ host: existingRows[0] });
   }
 
   const name =

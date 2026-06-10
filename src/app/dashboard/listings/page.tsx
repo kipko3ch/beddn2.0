@@ -87,12 +87,18 @@ export default function ListingsPage() {
                   {listing.area}, {listing.city}
                 </p>
                 <div className="flex gap-1 mt-1">
-                  <Badge
-                    variant={listing.is_active ? "default" : "secondary"}
-                    className="text-xs"
-                  >
-                    {listing.is_active ? "Active" : "Inactive"}
-                  </Badge>
+                  {listing.listing_status === "draft" ? (
+                    <Badge className="text-xs bg-amber-100 text-amber-800 hover:bg-amber-100">
+                      Draft
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant={listing.is_active ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {listing.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  )}
                   <Badge
                     variant={listing.is_verified ? "default" : "outline"}
                     className="text-xs"
@@ -102,8 +108,11 @@ export default function ListingsPage() {
                 </div>
               </div>
               <Link href={`/dashboard/listings/${listing.id}/edit`}>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="gap-1">
                   <Pencil className="h-4 w-4" />
+                  {listing.listing_status === "draft" && (
+                    <span className="text-xs font-medium">Continue</span>
+                  )}
                 </Button>
               </Link>
             </div>

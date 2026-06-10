@@ -21,7 +21,7 @@ import { AmenityPicker } from "@/components/amenity-picker";
 import { AmenityIcon } from "@/components/amenity-icon";
 import { CopyGuide } from "@/components/copy-guide";
 import { AiPromptHelper } from "@/components/ai-prompt-helper";
-import { Clock, Compass, Moon, Search, ChevronLeft } from "lucide-react";
+import { Clock, Compass, Moon, Search, ChevronLeft, X } from "lucide-react";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 import { AMENITY_LABEL } from "@/lib/amenities";
 import { EXPERIENCE_GROUPS, EXPERIENCE_LABEL } from "@/lib/experience-types";
@@ -88,6 +88,7 @@ interface ListingFormProps {
 export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [step, setStep] = useState(0);
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -158,6 +159,15 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
     } finally {
       setUploading(false);
     }
+  }
+
+  const imageList = imageUrls
+    .split("\n")
+    .map((u) => u.trim())
+    .filter(Boolean);
+
+  function removeImageAt(index: number) {
+    setImageUrls(imageList.filter((_, i) => i !== index).join("\n"));
   }
 
   function toggleCategory(cat: ListingCategory) {
@@ -459,7 +469,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   steps.push({
     title: "Capacity & timing",
     subtitle: "How many units and when guests can come and go.",
-    valid: true,
+    valid: !categories.includes("hourly") || parseInt(minimumHours || "0") >= 1,
     content: (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
@@ -474,14 +484,20 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
         </div>
         {categories.includes("hourly") && (
           <div>
-            <Label htmlFor="minimumHours">Minimum hours</Label>
+            <Label htmlFor="minimumHours">
+              Minimum hours bookable <span className="text-[#800020]">*</span>
+            </Label>
             <Input
               id="minimumHours"
               type="number"
               min="1"
               value={minimumHours}
               onChange={(e) => setMinimumHours(e.target.value)}
+              placeholder="e.g. 2"
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Guests must book at least this many hours per reservation.
+            </p>
           </div>
         )}
         <div>
@@ -509,7 +525,10 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   steps.push({
     title: "Pricing",
     subtitle: "Set the rates for the booking types you chose.",
-    valid: true,
+    valid:
+      (!categories.includes("hourly") || parseFloat(hourlyPrice || "0") > 0) &&
+      (!categories.includes("overnight") || parseFloat(overnightPrice || "0") > 0) &&
+      (!categories.includes("experience") || parseFloat(experiencePrice || "0") > 0),
     content: (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
@@ -636,16 +655,37 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
         </p>
         {uploading && <p className="text-xs font-medium text-[#800020]">Uploading…</p>}
         {uploadError && <p className="text-xs font-medium text-red-600">{uploadError}</p>}
-        <Label htmlFor="images" className="pt-2">
-          Image URLs (one per line)
-        </Label>
-        <Textarea
-          id="images"
-          value={imageUrls}
-          onChange={(e) => setImageUrls(e.target.value)}
-          rows={4}
-          placeholder="Uploaded photos appear here. You can also paste image URLs."
-        />
+
+        {imageList.length > 0 ? (
+          <div className="grid grid-cols-3 gap-2 pt-2 sm:grid-cols-4">
+            {imageList.map((url, i) => (
+              <div
+                key={`${url}-${i}`}
+                className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImageAt(i)}
+                  aria-label={`Remove photo ${i + 1}`}
+                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity hover:bg-black/80 group-hover:opacity-100"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+                {i === 0 && (
+                  <span className="absolute bottom-1 left-1 rounded bg-[#800020] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    Cover
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="pt-2 text-xs text-muted-foreground">
+            No photos yet. The first one you add becomes the cover photo.
+          </p>
+        )}
       </div>
     ),
   });
@@ -763,11 +803,21 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       next();
       return;
     }
-    if (submitting) return;
-    setSubmitting(true);
+    await submitListing(false);
+  }
 
+  async function submitListing(asDraft: boolean) {
+    if (asDraft && name.trim().length < 2) {
+      alert("Add a listing name before saving a draft.");
+      return;
+    }
+    if (submitting || savingDraft) return;
+    if (asDraft) setSavingDraft(true);
+    else setSubmitting(true);
+
+    const active = asDraft ? false : isActive;
     const payload = {
-      slug: listing?.slug ?? generateSlug(name) + "-" + Date.now().toString(36),
+      slug: listing?.slug ?? generateSlug(name || "draft") + "-" + Date.now().toString(36),
       title: name,
       name,
       description: description || null,
@@ -792,7 +842,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       booking_mode: isAdmin ? bookingMode : listing?.booking_mode ?? "manual_accept",
       verification_status:
         isAdmin && isVerified ? "verified" : listing?.verification_status ?? "pending",
-      listing_status: isActive ? "active" : "paused",
+      listing_status: asDraft ? "draft" : active ? "active" : "paused",
       platform_fee_type: platformFeeType,
       platform_fee_value: parseFloat(platformFeeValue || "0"),
       minimum_hours: Math.max(1, parseInt(minimumHours || "1")),
@@ -800,14 +850,9 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       check_out_time: checkOutTime || null,
       amenities,
       house_rules: houseRules || null,
-      is_active: isActive,
+      is_active: active,
       is_verified: isAdmin ? isVerified : listing?.is_verified ?? false,
     };
-
-    const imageList = imageUrls
-      .split("\n")
-      .map((u) => u.trim())
-      .filter(Boolean);
 
     const res = await fetch("/api/listings", {
       method: listing ? "PATCH" : "POST",
@@ -825,6 +870,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
         `Failed to ${listing ? "update" : "create"} listing: ${error ?? "Unknown error"}`
       );
       setSubmitting(false);
+      setSavingDraft(false);
       return;
     }
 
@@ -904,12 +950,22 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
           ) : (
             <Button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || savingDraft}
               className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
             >
               {submitting ? "Saving…" : listing ? "Update listing" : "Publish listing"}
             </Button>
           )}
+          {/* Save progress and finish later — skips the publish validation. */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => submitListing(true)}
+            disabled={savingDraft || submitting || name.trim().length < 2}
+            className="h-11 shrink-0 rounded-full px-4"
+          >
+            {savingDraft ? "Saving…" : "Save draft"}
+          </Button>
         </div>
       </div>
     </form>
