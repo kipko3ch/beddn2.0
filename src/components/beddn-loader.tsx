@@ -28,9 +28,11 @@ export function BeddnLoader({
 
   return (
     <div
-      className={`flex min-h-[50vh] w-full flex-col items-center justify-center gap-5 ${className}`}
+      role="status"
+      aria-live="polite"
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-white ${className}`}
     >
-      <span className="font-brand text-5xl leading-none text-[#2b000a]">Beddn</span>
+      <span className="font-brand text-6xl leading-none text-[#2b000a]">Beddn</span>
       <span className="flex gap-1.5" aria-hidden>
         <span className="h-2 w-2 animate-bounce rounded-full bg-[#800020] [animation-delay:-0.3s]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-[#800020] [animation-delay:-0.15s]" />
