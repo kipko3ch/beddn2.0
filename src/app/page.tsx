@@ -67,12 +67,11 @@ const TAB_DATA = {
 
 type TabType = keyof typeof TAB_DATA;
 
-// Bump ?v when you replace an icon file to bust browser/CDN cache.
 const TAB_ICONS: Record<TabType, string> = {
-  All: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029385/cat-all_ladc5u.png?v=2',
-  Hourly: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/cat-hourly_fpocci.png?v=2',
-  Overnight: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029362/cat-overnight_nmbyzv.png?v=2',
-  Experiences: 'https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029371/cat-experiences_ojbz72.png?v=2',
+  All: '/images/cat-all.png',
+  Hourly: '/images/cat-hourly.png',
+  Overnight: '/images/cat-overnight.png',
+  Experiences: '/images/cat-experiences.png',
 };
 
 export default function LandingPage() {
@@ -370,10 +369,9 @@ export default function LandingPage() {
               <Image
                 src={TAB_ICONS[tab.name]}
                 alt=""
-                width={22}
-                height={22}
-                unoptimized
-                style={{ width: 22, height: 22, marginRight: 8, verticalAlign: 'middle', display: 'inline-block' }}
+                width={30}
+                height={30}
+                className={styles.tabIcon}
                 aria-hidden
               />
               {tab.name}
