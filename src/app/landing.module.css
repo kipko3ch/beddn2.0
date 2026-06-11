@@ -169,6 +169,43 @@
   object-fit: contain;
 }
 
+.priceToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.priceToggleLabel {
+  font-size: 13px;
+  color: #6f6568;
+}
+
+.priceToggle {
+  display: inline-flex;
+  background: #f5eef1;
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.priceToggle button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6f6568;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.priceToggleActive {
+  background: #800020 !important;
+  color: #fff !important;
+}
+
 .searchContainer {
   position: relative;
   width: 100%;

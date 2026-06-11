@@ -26,6 +26,7 @@ export function SearchContent() {
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [priceMode, setPriceMode] = useState<"hourly" | "overnight">("hourly");
   const [searchQuery, setSearchQuery] = useState(q);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
@@ -225,11 +226,33 @@ export function SearchContent() {
                 : "No verified places here yet"}
             </h1>
           </div>
-          <p className="mb-5 text-sm text-muted-foreground">
-            {isExperienceSearch
-              ? "Tip: try simple words like road trip, swimming, or yoga."
-              : "Tip: pick a place, then reserve with your phone number."}
-          </p>
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {isExperienceSearch
+                ? "Tip: try simple words like road trip, swimming, or yoga."
+                : "Tip: pick a place, then reserve with your phone number."}
+            </p>
+            {!isExperienceSearch && listings.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Show prices</span>
+                <div className="inline-flex rounded-full bg-[#f5eef1] p-0.5" role="group">
+                  {(["hourly", "overnight"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setPriceMode(mode)}
+                      aria-pressed={priceMode === mode}
+                      className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                        priceMode === mode ? "bg-[#800020] text-white" : "text-muted-foreground"
+                      }`}
+                    >
+                      {mode === "hourly" ? "Hourly" : "Nightly"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {loading ? (
             <div className="grid grid-cols-2 gap-4 sm:gap-6 xl:grid-cols-3">
@@ -252,6 +275,7 @@ export function SearchContent() {
                     onHover={setHighlightedId}
                     isSaved={savedIds.has(listing.id)}
                     onToggleSave={() => toggle(listing.id)}
+                    priceMode={priceMode}
                   />
                 </div>
               ))}

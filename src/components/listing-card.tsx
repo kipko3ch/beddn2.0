@@ -10,7 +10,7 @@ import type { Listing } from "@/lib/types";
 export function ListingCardSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="aspect-[4/3] rounded-xl bg-muted" />
+      <div className="aspect-square rounded-xl bg-muted" />
       <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
       <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
       <div className="mt-3 flex gap-1.5">
@@ -27,25 +27,38 @@ export function ListingCard({
   onHover,
   isSaved,
   onToggleSave,
+  priceMode = "hourly",
 }: {
   listing: Listing;
   onHover?: (id: string | null) => void;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  /** Which rate to feature on the card. Falls back to whatever exists. */
+  priceMode?: "hourly" | "overnight";
 }) {
   const [imageIndex, setImageIndex] = useState(0);
   const images = listing.listing_images?.length ? listing.listing_images : [];
   const image = images[imageIndex]?.url;
-  const price =
-    listing.hourly_price ??
-    listing.overnight_price ??
-    listing.experience_price ??
-    0;
-  const priceLabel = listing.hourly_price
-    ? "/hr"
-    : listing.overnight_price
-    ? "/night"
-    : "/session";
+
+  // Show the requested rate when the listing has it, otherwise fall back.
+  let price = 0;
+  let priceLabel = "/session";
+  if (priceMode === "overnight" && listing.overnight_price) {
+    price = Number(listing.overnight_price);
+    priceLabel = "/night";
+  } else if (priceMode === "hourly" && listing.hourly_price) {
+    price = Number(listing.hourly_price);
+    priceLabel = "/hr";
+  } else if (listing.hourly_price) {
+    price = Number(listing.hourly_price);
+    priceLabel = "/hr";
+  } else if (listing.overnight_price) {
+    price = Number(listing.overnight_price);
+    priceLabel = "/night";
+  } else if (listing.experience_price) {
+    price = Number(listing.experience_price);
+    priceLabel = "/session";
+  }
   const reviews = listing.reviews ?? [];
   const avgRating = reviews.length
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
@@ -65,7 +78,7 @@ export function ListingCard({
       onMouseEnter={() => onHover?.(listing.id)}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
         {image ? (
           <Image
             src={image}

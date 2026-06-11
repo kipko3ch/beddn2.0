@@ -76,6 +76,7 @@ const TAB_ICONS: Record<TabType, string> = {
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<TabType>('All');
+  const [priceMode, setPriceMode] = useState<'hourly' | 'overnight'>('hourly');
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -413,6 +414,29 @@ export default function LandingPage() {
 
       {/* Listings grid */}
       <section className={styles.listingsSection}>
+        {!loading && listings.length > 0 && (
+          <div className={styles.priceToggleRow}>
+            <span className={styles.priceToggleLabel}>Show prices</span>
+            <div className={styles.priceToggle} role="group" aria-label="Price view">
+              <button
+                type="button"
+                onClick={() => setPriceMode('hourly')}
+                className={priceMode === 'hourly' ? styles.priceToggleActive : ''}
+                aria-pressed={priceMode === 'hourly'}
+              >
+                Hourly
+              </button>
+              <button
+                type="button"
+                onClick={() => setPriceMode('overnight')}
+                className={priceMode === 'overnight' ? styles.priceToggleActive : ''}
+                aria-pressed={priceMode === 'overnight'}
+              >
+                Nightly
+              </button>
+            </div>
+          </div>
+        )}
         {loading ? (
           <div className={styles.listingsGrid}>
             {Array.from({ length: 8 }).map((_, i) => (
@@ -429,6 +453,7 @@ export default function LandingPage() {
                   listing={listing}
                   isSaved={savedIds.has(listing.id)}
                   onToggleSave={() => toggle(listing.id)}
+                  priceMode={priceMode}
                 />
               </div>
             ))}
