@@ -123,18 +123,17 @@
 
 .tabs {
   display: inline-flex;
-  gap: 4px;
+  gap: 10px;
   margin-bottom: 28px;
-  background: #f5eef1;
-  border-radius: 999px;
-  padding: 5px;
+  background: none;
+  padding: 0;
 }
 
 .tab {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 18px 7px 14px;
+  padding: 7px 14px;
   font-size: 15px;
   font-weight: 500;
   color: #6f6568;
@@ -142,17 +141,20 @@
   background: none;
   border: none;
   border-radius: 999px;
-  transition: background-color 0.18s ease, color 0.18s ease;
+  transition: color 0.18s ease;
 }
 
 .tab:hover {
   color: #2b000a;
 }
 
+/* Active state is shown by colour + weight only — the 3D icons stay on a
+   transparent background so they read as independent objects. */
 .tab.active {
   color: #800020;
-  background: #fff;
-  box-shadow: 0 2px 10px rgba(43, 0, 10, 0.08);
+  font-weight: 700;
+  background: none;
+  box-shadow: none;
 }
 
 .tab.active:hover {
@@ -161,8 +163,8 @@
 
 .tabIcon {
   display: inline-block;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   flex: 0 0 auto;
   object-fit: contain;
 }
@@ -428,24 +430,23 @@
     width: 100%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 3px;
+    gap: 4px;
     margin-bottom: 20px;
-    padding: 4px;
-    border-radius: 20px;
+    padding: 0;
+    background: none;
   }
   .tab {
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 8px 2px;
+    gap: 5px;
+    padding: 6px 2px;
     font-size: 11px;
     line-height: 1.1;
     text-align: center;
-    border-radius: 14px;
   }
   .tabIcon {
-    width: 24px;
-    height: 24px;
+    width: 34px;
+    height: 34px;
   }
   .main {
     margin-top: 32px;

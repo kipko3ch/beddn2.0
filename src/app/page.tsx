@@ -369,8 +369,8 @@ export default function LandingPage() {
               <Image
                 src={TAB_ICONS[tab.name]}
                 alt=""
-                width={30}
-                height={30}
+                width={68}
+                height={68}
                 className={styles.tabIcon}
                 aria-hidden
               />
