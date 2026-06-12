@@ -118,13 +118,14 @@ export function SearchPill({
   }, [whereOpen]);
 
   // Lock body scroll while the mobile overlay is open, starting on "Where".
+  // Always restore to "" on close — never to a captured value, which can
+  // re-apply a stale lock when multiple overlays open and close together.
   useEffect(() => {
     if (!mobileOpen) return;
     setMobileSection("where");
-    const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = "";
     };
   }, [mobileOpen]);
 

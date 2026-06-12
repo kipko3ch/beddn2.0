@@ -265,6 +265,31 @@
   background-color: #660019;
 }
 
+.searchResultsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.searchResultsBar p {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2b000a;
+}
+
+.searchResultsBar button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #800020;
+  text-decoration: underline;
+  padding: 6px 0;
+}
+
 .listingsSection {
   width: 100%;
   max-width: 1280px;
@@ -517,6 +542,9 @@
     max-width: none;
     overflow: hidden;
     padding: 0 0 56px;
+  }
+  .searchResultsBar {
+    padding: 0 16px;
   }
   .listingsGrid {
     display: flex;

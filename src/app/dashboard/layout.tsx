@@ -29,17 +29,33 @@ import {
   UserCircle,
   Menu,
   LogOut,
+  Plus,
 } from 'lucide-react';
 
-const NAV_ITEMS = [
-  { href: ROUTES.dashboard, label: "Overview", icon: LayoutDashboard },
-  { href: ROUTES.dashboardListings, label: "Listings", icon: Home },
-  { href: ROUTES.dashboardBookings, label: "Bookings", icon: CalendarCheck },
-  { href: ROUTES.dashboardCalendar, label: "Calendar", icon: CalendarDays },
-  { href: ROUTES.dashboardWithdrawals, label: "Withdrawals", icon: Wallet },
-  { href: ROUTES.dashboardFeedback, label: "Feedback", icon: MessageSquare },
-  { href: ROUTES.dashboardPayments, label: "Payments", icon: CreditCard },
-  { href: ROUTES.dashboardDemand, label: "Demand", icon: TrendingUp },
+const NAV_SECTIONS: { title: string; items: { href: string; label: string; icon: React.ElementType }[] }[] = [
+  {
+    title: 'Hosting',
+    items: [
+      { href: ROUTES.dashboard, label: 'Overview', icon: LayoutDashboard },
+      { href: ROUTES.dashboardListings, label: 'Listings', icon: Home },
+      { href: ROUTES.dashboardBookings, label: 'Bookings', icon: CalendarCheck },
+      { href: ROUTES.dashboardCalendar, label: 'Calendar', icon: CalendarDays },
+    ],
+  },
+  {
+    title: 'Money',
+    items: [
+      { href: ROUTES.dashboardWithdrawals, label: 'Withdrawals', icon: Wallet },
+      { href: ROUTES.dashboardPayments, label: 'Payments', icon: CreditCard },
+    ],
+  },
+  {
+    title: 'Insights',
+    items: [
+      { href: ROUTES.dashboardFeedback, label: 'Feedback', icon: MessageSquare },
+      { href: ROUTES.dashboardDemand, label: 'Demand', icon: TrendingUp },
+    ],
+  },
 ];
 
 export default function DashboardLayout({
@@ -95,7 +111,21 @@ export default function DashboardLayout({
     return true; // Overview is always visible
   }
 
-  const sidebarItems = NAV_ITEMS.filter((item) => navVisible(item.href));
+  const sections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => navVisible(item.href)),
+  })).filter((section) => section.items.length > 0);
+
+  const flatItems = sections.flatMap((section) => section.items);
+  const pageTitle =
+    flatItems.find((item) =>
+      item.href === ROUTES.dashboard ? pathname === item.href : pathname?.startsWith(item.href)
+    )?.label ?? 'Dashboard';
+
+  function isActive(href: string) {
+    if (href === ROUTES.dashboard) return pathname === href;
+    return pathname?.startsWith(href) ?? false;
+  }
 
   if (!loading && !user) {
     return (
@@ -103,7 +133,7 @@ export default function DashboardLayout({
         <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
             <Link href={ROUTES.home} className="font-brand text-3xl leading-none text-[#2b000a]">
-            Beddn
+              Beddn
             </Link>
             <nav className="flex items-center gap-1 text-sm">
               <Link href={ROUTES.search} className="rounded-full px-3 py-2 hover:bg-muted">Discover</Link>
@@ -135,172 +165,190 @@ export default function DashboardLayout({
     );
   }
 
-  return (
-    <div className="flex-1 flex flex-col bg-[#fffdfd] font-sans">
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
-        <div className="flex h-14 items-center justify-between gap-3 pl-3 pr-3 sm:pr-6">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Menu"
-              aria-expanded={menuOpen}
-              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full text-[#2b000a] hover:bg-muted"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <Link href="/" className="flex items-center font-brand text-2xl leading-none text-[#2b000a]">
-              Beddn
-            </Link>
-          </div>
-          <div className="flex items-center gap-1">
-            <nav className="hidden md:flex items-center gap-2 text-sm">
-              <Link href={ROUTES.search} className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:bg-muted">
-                <Search className="h-4 w-4" /> Traveler
-              </Link>
-              {isAdmin && (
+  const navList = (onNavigate?: () => void) => (
+    <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+      {sections.map((section) => (
+        <div key={section.title}>
+          <p className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#b09aa1]">
+            {section.title}
+          </p>
+          <div className="space-y-0.5">
+            {section.items.map(({ href, label, icon: Icon }) => {
+              const active = isActive(href);
+              return (
                 <Link
-                  href={ROUTES.adminHome}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#f8eef2] px-3 py-2 font-semibold text-[#800020] hover:bg-[#f1e1e7]"
+                  key={href}
+                  href={href}
+                  onClick={onNavigate}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-[#800020] text-white shadow-sm'
+                      : 'text-[#5d4f54] hover:bg-[#faf4f6] hover:text-[#2b000a]'
+                  }`}
                 >
-                  <ShieldCheck className="h-4 w-4" /> Admin
+                  <Icon className={`h-4 w-4 ${active ? '' : 'text-[#a08b92]'}`} />
+                  {label}
                 </Link>
-              )}
-              <Link href={ROUTES.newListing} className="rounded-full bg-[#800020] px-4 py-2 font-semibold text-white hover:bg-[#600018]">
-                List your place
-              </Link>
-            </nav>
-
-            {/* Account button */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setAccountOpen((o) => !o)}
-                aria-label="Account"
-                aria-expanded={accountOpen}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#800020] hover:bg-muted"
-              >
-                <UserCircle className="h-6 w-6" />
-              </button>
-              {accountOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setAccountOpen(false)}
-                    aria-hidden
-                  />
-                  <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border bg-white shadow-lg">
-                    <div className="border-b px-4 py-3">
-                      <p className="text-xs text-muted-foreground">Signed in as</p>
-                      <p className="truncate text-sm font-medium">{user?.email}</p>
-                    </div>
-                    <Link href={ROUTES.dashboard} className="block px-4 py-2.5 text-sm hover:bg-muted">
-                      Dashboard
-                    </Link>
-                    <Link href={ROUTES.search} className="block px-4 py-2.5 text-sm hover:bg-muted md:hidden">
-                      Traveler
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={signOut}
-                      className="flex w-full items-center gap-2 border-t px-4 py-2.5 text-left text-sm text-[#800020] hover:bg-muted"
-                    >
-                      <LogOut className="h-4 w-4" /> Sign out
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+              );
+            })}
           </div>
         </div>
+      ))}
+      {isAdmin && (
+        <div>
+          <p className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#b09aa1]">
+            Admin
+          </p>
+          <Link
+            href={ROUTES.adminHome}
+            onClick={onNavigate}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#800020] hover:bg-[#faf4f6]"
+          >
+            <ShieldCheck className="h-4 w-4" /> Admin dashboard
+          </Link>
+        </div>
+      )}
+    </nav>
+  );
 
-      </header>
+  const navFooter = (onNavigate?: () => void) => (
+    <div className="border-t p-3">
+      <Link
+        href={ROUTES.search}
+        onClick={onNavigate}
+        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#5d4f54] hover:bg-[#faf4f6] hover:text-[#2b000a]"
+      >
+        <Search className="h-4 w-4 text-[#a08b92]" /> Switch to traveler
+      </Link>
+      <div className="mt-2 flex items-center gap-3 rounded-xl bg-[#faf4f6] px-3 py-2.5">
+        <UserCircle className="h-8 w-8 shrink-0 text-[#800020]" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-semibold text-[#2b000a]">{user?.email}</p>
+          <button
+            type="button"
+            onClick={signOut}
+            className="flex items-center gap-1 text-xs text-[#800020] hover:underline"
+          >
+            <LogOut className="h-3 w-3" /> Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
-      {/* Mobile nav — slides in from the left as an overlay (does not push content) */}
+  return (
+    <div className="flex min-h-screen bg-[#f7f3f4] font-sans text-[#181113]">
+      {/* Desktop sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r bg-white md:flex">
+        <div className="flex h-16 items-center gap-2 border-b px-5">
+          <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
+            Beddn
+          </Link>
+          <span className="rounded-full bg-[#f8eef2] px-2 py-0.5 text-[11px] font-bold text-[#800020]">
+            Host
+          </span>
+        </div>
+        {navList()}
+        {navFooter()}
+      </aside>
+
+      {/* Mobile nav drawer */}
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="left" className="w-[min(82vw,320px)] gap-0 bg-white p-0 md:hidden">
+        <SheetContent side="left" className="flex w-[min(82vw,320px)] flex-col gap-0 bg-white p-0 md:hidden">
           <SheetHeader className="border-b p-5">
             <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
               Beddn
             </SheetTitle>
             <SheetDescription className="sr-only">Dashboard navigation</SheetDescription>
           </SheetHeader>
-          <nav className="space-y-1 p-3">
-            {sidebarItems.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMenuOpen(false)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
-                    active ? "bg-[#800020] text-white" : "text-[#2b000a] hover:bg-muted"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </Link>
-              );
-            })}
-            <Link
-              href={ROUTES.newListing}
-              onClick={() => setMenuOpen(false)}
-              className="mt-1 flex items-center gap-3 rounded-lg bg-[#800020] px-3 py-2.5 text-sm font-semibold text-white"
-            >
-              <Home className="h-4 w-4" /> List your place
-            </Link>
-            <Link
-              href={ROUTES.search}
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#2b000a] hover:bg-muted"
-            >
-              <Search className="h-4 w-4" /> Traveler
-            </Link>
-            {isAdmin && (
-              <Link
-                href={ROUTES.adminHome}
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 rounded-lg border border-[#800020] px-3 py-2.5 text-sm font-semibold text-[#800020]"
-              >
-                <ShieldCheck className="h-4 w-4" /> Admin
-              </Link>
-            )}
-          </nav>
+          {navList(() => setMenuOpen(false))}
+          {navFooter(() => setMenuOpen(false))}
         </SheetContent>
       </Sheet>
-      <div className="flex-1 flex min-h-0">
-      <aside className="w-60 border-r bg-white hidden md:block">
-        <nav className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4 space-y-1">
-          {sidebarItems.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm ${
-                  active
-                    ? "bg-[#800020] text-white shadow-sm"
-                    : "text-muted-foreground hover:bg-[#fbf7f8] hover:text-[#2b000a]"
-                }`}
+
+      <div className="flex min-w-0 flex-1 flex-col md:pl-64">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 border-b bg-white/95 backdrop-blur">
+          <div className="flex h-14 items-center justify-between gap-3 px-3 sm:h-16 sm:px-6">
+            <div className="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMenuOpen(true)}
+                aria-label="Menu"
+                aria-expanded={menuOpen}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#2b000a] hover:bg-muted md:hidden"
               >
-                <Icon className="h-4 w-4" />
-                {label}
+                <Menu className="h-5 w-5" />
+              </button>
+              <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a] md:hidden">
+                Beddn
               </Link>
-            );
-          })}
-          {isAdmin && (
-            <div className="pt-4 mt-4 border-t">
-              <Link
-                href={ROUTES.adminHome}
-                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold text-[#800020] hover:bg-[#fbf7f8]"
-              >
-                <ShieldCheck className="h-4 w-4" /> Admin dashboard
-              </Link>
+              <h2 className="hidden truncate text-lg font-bold text-[#2b000a] md:block">{pageTitle}</h2>
             </div>
-          )}
-        </nav>
-      </aside>
-      <main className="flex-1 min-w-0 p-4 sm:p-6">{children}</main>
+            <div className="flex items-center gap-2">
+              <Link
+                href={ROUTES.newListing}
+                className="hidden items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-[#600018] sm:inline-flex"
+              >
+                <Plus className="h-4 w-4" /> List your place
+              </Link>
+              {isAdmin && (
+                <Link
+                  href={ROUTES.adminHome}
+                  className="hidden items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-2 text-sm font-semibold text-[#800020] hover:bg-[#f1e1e7] sm:inline-flex"
+                >
+                  <ShieldCheck className="h-4 w-4" /> Admin
+                </Link>
+              )}
+
+              {/* Account button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen((o) => !o)}
+                  aria-label="Account"
+                  aria-expanded={accountOpen}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#800020] hover:bg-muted"
+                >
+                  <UserCircle className="h-6 w-6" />
+                </button>
+                {accountOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setAccountOpen(false)}
+                      aria-hidden
+                    />
+                    <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border bg-white shadow-lg">
+                      <div className="border-b px-4 py-3">
+                        <p className="text-xs text-muted-foreground">Signed in as</p>
+                        <p className="truncate text-sm font-medium">{user?.email}</p>
+                      </div>
+                      <Link href={ROUTES.dashboard} className="block px-4 py-2.5 text-sm hover:bg-muted">
+                        Dashboard
+                      </Link>
+                      <Link href={ROUTES.newListing} className="block px-4 py-2.5 text-sm hover:bg-muted sm:hidden">
+                        List your place
+                      </Link>
+                      <Link href={ROUTES.search} className="block px-4 py-2.5 text-sm hover:bg-muted md:hidden">
+                        Traveler
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={signOut}
+                        className="flex w-full items-center gap-2 border-t px-4 py-2.5 text-left text-sm text-[#800020] hover:bg-muted"
+                      >
+                        <LogOut className="h-4 w-4" /> Sign out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-7">{children}</main>
       </div>
     </div>
   );

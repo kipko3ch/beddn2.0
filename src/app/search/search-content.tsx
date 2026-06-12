@@ -63,7 +63,7 @@ function ChipSelect({
         {active ? selected.label : label}
         <ChevronDown className="h-4 w-4" />
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-56 rounded-2xl p-2">
+      <PopoverContent align="start" className="max-h-80 w-60 overflow-y-auto rounded-2xl p-2">
         {options.map((option) => (
           <button
             key={option.value}
@@ -178,13 +178,13 @@ export function SearchContent() {
     };
   }, [q, lat, lng]);
 
-  // Lock body scroll while the mobile map overlay is open.
+  // Lock body scroll while the mobile map overlay is open. Always restore to
+  // "" so a stale captured value can never leave the page unscrollable.
   useEffect(() => {
     if (!showMap) return;
-    const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = "";
     };
   }, [showMap]);
 
@@ -356,7 +356,9 @@ export function SearchContent() {
               key={listing.id}
               id={`listing-${listing.id}`}
               className={`rounded-xl transition-shadow ${
-                highlightedId === listing.id ? "ring-2 ring-[#800020] ring-offset-2" : ""
+                // Highlight only where the side map exists — on touch screens a
+                // tap fires hover and would leave a stray ring on the card.
+                highlightedId === listing.id ? "lg:ring-2 lg:ring-[#800020] lg:ring-offset-2" : ""
               }`}
             >
               <ListingCard
@@ -481,10 +483,12 @@ export function SearchContent() {
         </div>
       </div>
 
-      {/* Desktop / tablet: full pill + inline filters */}
-      <section className="hidden border-b bg-white md:block">
-        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl">
+      {/* One SearchPill for all sizes: it renders the desktop pill on md+ and
+          only the (header-controlled) full-screen overlay on mobile. Keeping a
+          single instance also keeps a single body-scroll lock. */}
+      <section className="bg-white md:border-b">
+        <div className="mx-auto max-w-7xl md:px-6 md:py-5 lg:px-8">
+          <div className="mx-auto md:max-w-3xl">
             <SearchPill
               key={`${q}|${checkIn}|${checkOut}|${guests}`}
               initialQuery={q}
@@ -498,7 +502,7 @@ export function SearchContent() {
               onOpenChange={setSearchOverlayOpen}
             />
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="mt-4 hidden flex-wrap items-center gap-3 md:flex">
             <div className="inline-flex gap-1 rounded-full bg-[#f5eef1] p-1">
               {CATEGORY_OPTIONS.map((option) => (
                 <button
@@ -514,18 +518,12 @@ export function SearchContent() {
                 </button>
               ))}
             </div>
-            <select
+            <ChipSelect
+              label="Property type"
               value={propertyType}
-              onChange={(e) => pushSearch({ type: e.target.value })}
-              className="h-10 rounded-full border border-[#e3d3d9] bg-white px-4 text-sm font-semibold text-[#2b000a] shadow-sm focus:border-[#800020] focus:outline-none focus:ring-2 focus:ring-[#800020]/20"
-            >
-              <option value="all">All property types</option>
-              {PROPERTY_TYPES.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
+              options={[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES]}
+              onChange={(value) => pushSearch({ type: value })}
+            />
           </div>
         </div>
       </section>
@@ -561,22 +559,8 @@ export function SearchContent() {
             </div>
             <div>
               <p className="mb-3 text-sm font-bold text-[#2b000a]">Property type</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    pushSearch({ type: "all" });
-                    setFiltersOpen(false);
-                  }}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold ${
-                    propertyType === "all"
-                      ? "border-[#800020] bg-[#800020] text-white"
-                      : "border-[#e3d3d9] bg-white text-[#2b000a]"
-                  }`}
-                >
-                  All property types
-                </button>
-                {PROPERTY_TYPES.map((p) => (
+              <div className="grid grid-cols-2 gap-2">
+                {[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES].map((p) => (
                   <button
                     key={p.value}
                     type="button"
@@ -584,13 +568,14 @@ export function SearchContent() {
                       pushSearch({ type: p.value });
                       setFiltersOpen(false);
                     }}
-                    className={`rounded-full border px-4 py-2 text-sm font-semibold ${
+                    className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-semibold ${
                       propertyType === p.value
                         ? "border-[#800020] bg-[#800020] text-white"
                         : "border-[#e3d3d9] bg-white text-[#2b000a]"
                     }`}
                   >
-                    {p.label}
+                    <span className="truncate">{p.label}</span>
+                    {propertyType === p.value && <Check className="h-4 w-4 shrink-0" />}
                   </button>
                 ))}
               </div>
@@ -598,22 +583,6 @@ export function SearchContent() {
           </div>
         </SheetContent>
       </Sheet>
-
-      {/* Mobile search overlay lives in the pill; we open it from the header */}
-      <div className="md:hidden">
-        <SearchPill
-          key={`m|${q}|${checkIn}|${checkOut}|${guests}`}
-          initialQuery={q}
-          initialCheckIn={checkIn}
-          initialCheckOut={checkOut}
-          initialGuests={guests}
-          onSearch={handlePillSearch}
-          onNearby={handleNearby}
-          showMobileTrigger={false}
-          open={searchOverlayOpen}
-          onOpenChange={setSearchOverlayOpen}
-        />
-      </div>
 
       {/* Mobile / tablet: map preview with the results panel sliding over it */}
       {!isDesktop && (

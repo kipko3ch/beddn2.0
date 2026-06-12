@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Search,
-  MapPin,
   Home,
   Heart,
   UserCircle,
@@ -23,6 +22,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useSavedListings, useUserRole } from '@/lib/hooks';
 import { ListingCard, ListingCardSkeleton } from '@/components/listing-card';
 import { PopularDestinations, CityRails } from '@/components/home-sections';
+import { SearchPill, type SearchPillValues } from '@/components/search-pill';
 import { AuthDialog } from '@/components/auth-dialog';
 import {
   Sheet,
@@ -78,7 +78,8 @@ const TAB_ICONS: Record<TabType, string> = {
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<TabType>('All');
   const [priceMode, setPriceMode] = useState<'hourly' | 'overnight'>('hourly');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Active in-page search (no redirect): results replace the listings grid.
+  const [search, setSearch] = useState<SearchPillValues | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -102,7 +103,8 @@ export default function LandingPage() {
   const listingCache = useRef<Map<string, Listing[]>>(new Map());
 
   const fetchListings = useCallback(async () => {
-    const key = currentData.category;
+    const q = search?.q?.trim() ?? '';
+    const key = `${currentData.category}|${q}`;
     const cached = listingCache.current.get(key);
     if (cached) {
       setListings(cached);
@@ -114,7 +116,9 @@ export default function LandingPage() {
     try {
       // Server route uses the service role, so listings show for everyone —
       // signed in or not — regardless of database policy state.
-      const res = await fetch(`/api/public/listings?category=${key}&limit=20`);
+      const params = new URLSearchParams({ category: currentData.category, limit: '20' });
+      if (q) params.set('q', q);
+      const res = await fetch(`/api/public/listings?${params.toString()}`);
       const json: { listings?: Listing[] } = res.ok ? await res.json() : {};
       const rows = json.listings ?? [];
       listingCache.current.set(key, rows);
@@ -124,16 +128,16 @@ export default function LandingPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentData.category]);
+  }, [currentData.category, search?.q]);
 
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&category=${currentData.category}`);
+  function handleSearch(values: SearchPillValues) {
+    // Search right here on the landing page — results swap into the grid below.
+    setSearch(values.q ? values : null);
+    document.getElementById('home-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function handleNearby() {
@@ -381,42 +385,32 @@ export default function LandingPage() {
           ))}
         </div>
 
-        <form onSubmit={handleSearch} className={styles.searchContainer}>
-          <div className={styles.searchWrapper}>
-            <Search className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder={currentData.placeholder}
-              className={styles.searchInput}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              type="button"
-              onClick={handleNearby}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#666',
-              }}
-              title="Use my current location"
-            >
-              <MapPin size={20} />
-            </button>
-            <button type="submit" className={styles.searchBtn}>Search</button>
-          </div>
-        </form>
+        <div className={styles.searchContainer}>
+          <SearchPill
+            initialQuery={search?.q ?? ''}
+            onSearch={handleSearch}
+            onNearby={handleNearby}
+          />
+        </div>
 
       </main>
 
-      <PopularDestinations />
+      {!search && <PopularDestinations />}
 
       {/* Listings grid */}
-      <section className={styles.listingsSection}>
+      <section id="home-results" className={styles.listingsSection}>
+        {search && (
+          <div className={styles.searchResultsBar}>
+            <p>
+              {loading
+                ? `Searching “${search.q}”…`
+                : `${listings.length} result${listings.length === 1 ? '' : 's'} for “${search.q}”`}
+            </p>
+            <button type="button" onClick={() => setSearch(null)}>
+              Clear search
+            </button>
+          </div>
+        )}
         {!loading && listings.length > 0 && (
           <div className={styles.priceToggleRow}>
             <span className={styles.priceToggleLabel}>Show prices</span>
@@ -521,7 +515,7 @@ export default function LandingPage() {
         )}
       </section>
 
-      <CityRails savedIds={savedIds} onToggleSave={toggle} priceMode={priceMode} />
+      {!search && <CityRails savedIds={savedIds} onToggleSave={toggle} priceMode={priceMode} />}
 
       <footer className={styles.footer}>
         <div className={styles.footerBrand}>
