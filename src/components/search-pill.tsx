@@ -6,6 +6,7 @@ import { format, parseISO } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import {
   CalendarDays,
+  Clock,
   Minus,
   Navigation,
   Plus,
@@ -20,8 +21,11 @@ export interface SearchPillValues {
   q: string;
   checkIn?: string; // yyyy-MM-dd
   checkOut?: string;
+  startTime?: string;
   guests?: number;
 }
+
+export type SearchPillMode = "all" | "hourly" | "overnight" | "experience";
 
 interface Destination {
   id: string;
@@ -43,8 +47,9 @@ function fromIso(value: string | undefined | null): Date | undefined {
   }
 }
 
-function rangeLabel(range: DateRange | undefined): string {
+function rangeLabel(range: DateRange | undefined, singleDate = false): string {
   if (!range?.from) return "Add dates";
+  if (singleDate) return format(range.from, "MMM d");
   if (!range.to) return format(range.from, "MMM d");
   return `${format(range.from, "MMM d")} – ${format(range.to, "MMM d")}`;
 }
@@ -58,7 +63,9 @@ export function SearchPill({
   initialQuery = "",
   initialCheckIn,
   initialCheckOut,
+  initialStartTime,
   initialGuests,
+  mode = "all",
   onSearch,
   onNearby,
   open,
@@ -68,7 +75,9 @@ export function SearchPill({
   initialQuery?: string;
   initialCheckIn?: string | null;
   initialCheckOut?: string | null;
+  initialStartTime?: string | null;
   initialGuests?: number | null;
+  mode?: SearchPillMode;
   onSearch: (values: SearchPillValues) => void;
   onNearby?: () => void;
   /** Controlled mode for the mobile overlay (e.g. opened from a page header). */
@@ -83,13 +92,52 @@ export function SearchPill({
     if (!from) return undefined;
     return { from, to: fromIso(initialCheckOut) };
   });
+  const [startTime, setStartTime] = useState(initialStartTime ?? "");
   const [guests, setGuests] = useState(initialGuests && initialGuests > 0 ? initialGuests : 0);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [whereOpen, setWhereOpen] = useState(false);
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
   const mobileOpen = open ?? internalMobileOpen;
-  const [mobileSection, setMobileSection] = useState<"where" | "when" | "who">("where");
+  const [mobileSection, setMobileSection] = useState<"where" | "when" | "time" | "who">("where");
   const whereRef = useRef<HTMLDivElement>(null);
+  const asksForTime = mode === "hourly" || mode === "experience";
+  const singleDate = asksForTime;
+  const isExperience = mode === "experience";
+  const copy = isExperience
+    ? {
+        whereLabel: "What",
+        whereTitle: "What are you looking for?",
+        wherePlaceholder: "Road trip, yoga, swimming class...",
+        suggestionTitle: "Experience ideas",
+        nearbyBody: "Find activities near you",
+        whenLabel: "Date",
+        whenTitle: "Pick a session date",
+        whenEmpty: "Add date",
+        timeLabel: "Time",
+        timeEmpty: "Add time",
+        whoLabel: "Seats",
+        whoTitle: "Seats",
+        whoBody: "How many seats do you need?",
+        whoEmpty: "Add seats",
+        flexible: "Any experience",
+      }
+    : {
+        whereLabel: "Where",
+        whereTitle: "Where?",
+        wherePlaceholder: "Search destinations",
+        suggestionTitle: "Suggested destinations",
+        nearbyBody: "Find what's around you",
+        whenLabel: asksForTime ? "Date" : "When",
+        whenTitle: asksForTime ? "Pick a date" : "When?",
+        whenEmpty: asksForTime ? "Add date" : "Add dates",
+        timeLabel: "Time",
+        timeEmpty: "Add time",
+        whoLabel: "Who",
+        whoTitle: "Who?",
+        whoBody: "How many are coming?",
+        whoEmpty: "Add guests",
+        flexible: "I'm flexible",
+      };
 
   function setMobileOpen(next: boolean) {
     onOpenChange?.(next);
@@ -99,6 +147,19 @@ export function SearchPill({
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
+
+  useEffect(() => {
+    const from = fromIso(initialCheckIn);
+    if (!from) {
+      setRange(undefined);
+      return;
+    }
+    setRange({ from, to: singleDate ? undefined : fromIso(initialCheckOut) });
+  }, [initialCheckIn, initialCheckOut, singleDate]);
+
+  useEffect(() => {
+    setStartTime(initialStartTime ?? "");
+  }, [initialStartTime]);
 
   useEffect(() => {
     fetch("/api/public/destinations")
@@ -135,7 +196,8 @@ export function SearchPill({
     onSearch({
       q: (overrideQuery ?? query).trim(),
       checkIn: toIso(range?.from),
-      checkOut: toIso(range?.to),
+      checkOut: singleDate ? undefined : toIso(range?.to),
+      startTime: asksForTime && startTime ? startTime : undefined,
       guests: guests > 0 ? guests : undefined,
     });
   }
@@ -143,6 +205,7 @@ export function SearchPill({
   function clearAll() {
     setQuery("");
     setRange(undefined);
+    setStartTime("");
     setGuests(0);
   }
 
@@ -155,7 +218,13 @@ export function SearchPill({
     }
   }
 
-  const guestsLabel = guests > 0 ? `${guests} guest${guests === 1 ? "" : "s"}` : "Add guests";
+  const dateText = rangeLabel(range, singleDate);
+  const guestsLabel =
+    guests > 0
+      ? `${guests} ${isExperience ? "seat" : "guest"}${guests === 1 ? "" : "s"}`
+      : copy.whoEmpty;
+  const timeLabel = startTime || copy.timeEmpty;
+  const afterWhenSection = asksForTime ? "time" : "who";
 
   const suggestions = (
     <ul className="max-h-72 overflow-y-auto">
@@ -175,7 +244,7 @@ export function SearchPill({
             </span>
             <span>
               <span className="block text-sm font-semibold">Nearby</span>
-              <span className="block text-xs text-muted-foreground">Find what’s around you</span>
+              <span className="block text-xs text-muted-foreground">{copy.nearbyBody}</span>
             </span>
           </button>
         </li>
@@ -206,8 +275,8 @@ export function SearchPill({
   const guestStepper = (
     <div className="flex items-center justify-between px-1 py-2">
       <div>
-        <p className="text-sm font-semibold">Guests</p>
-        <p className="text-xs text-muted-foreground">How many are coming?</p>
+        <p className="text-sm font-semibold">{copy.whoTitle}</p>
+        <p className="text-xs text-muted-foreground">{copy.whoBody}</p>
       </div>
       <div className="flex items-center gap-3">
         <button
@@ -232,6 +301,32 @@ export function SearchPill({
     </div>
   );
 
+  function calendarPicker(numberOfMonths: number, className?: string) {
+    if (singleDate) {
+      return (
+        <Calendar
+          mode="single"
+          numberOfMonths={numberOfMonths}
+          selected={range?.from}
+          onSelect={(date) => setRange(date ? { from: date } : undefined)}
+          disabled={{ before: new Date() }}
+          className={className}
+        />
+      );
+    }
+
+    return (
+      <Calendar
+        mode="range"
+        numberOfMonths={numberOfMonths}
+        selected={range}
+        onSelect={setRange}
+        disabled={{ before: new Date() }}
+        className={className}
+      />
+    );
+  }
+
   return (
     <>
       {/* Desktop pill */}
@@ -244,19 +339,19 @@ export function SearchPill({
       >
         <div ref={whereRef} className="relative min-w-0 flex-[1.4]">
           <label className="block cursor-pointer rounded-full px-7 py-2.5 hover:bg-black/4">
-            <span className="block text-xs font-bold">Where</span>
+            <span className="block text-xs font-bold">{copy.whereLabel}</span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setWhereOpen(true)}
-              placeholder="Search destinations"
+              placeholder={copy.wherePlaceholder}
               className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </label>
           {whereOpen && (destinations.length > 0 || onNearby) && (
             <div className="absolute left-0 top-[calc(100%+12px)] z-40 w-[380px] rounded-3xl bg-white p-3 shadow-xl ring-1 ring-black/10">
               <p className="px-3 pb-1 pt-2 text-xs font-semibold text-muted-foreground">
-                Suggested destinations
+                {copy.suggestionTitle}
               </p>
               {suggestions}
             </div>
@@ -269,21 +364,15 @@ export function SearchPill({
           <PopoverTrigger
             render={<button type="button" className="min-w-0 flex-1 cursor-pointer rounded-full px-6 py-2.5 text-left hover:bg-black/4" />}
           >
-            <span className="block text-xs font-bold">When</span>
+            <span className="block text-xs font-bold">{copy.whenLabel}</span>
             <span
               className={`block truncate text-sm ${range?.from ? "" : "text-muted-foreground"}`}
             >
-              {rangeLabel(range)}
+              {range?.from ? dateText : copy.whenEmpty}
             </span>
           </PopoverTrigger>
           <PopoverContent align="center" className="w-auto rounded-3xl p-4">
-            <Calendar
-              mode="range"
-              numberOfMonths={2}
-              selected={range}
-              onSelect={setRange}
-              disabled={{ before: new Date() }}
-            />
+            {calendarPicker(2)}
             {range?.from && (
               <button
                 type="button"
@@ -298,12 +387,30 @@ export function SearchPill({
 
         <span className="my-3 w-px bg-black/10" />
 
+        {asksForTime && (
+          <>
+            <label className="min-w-0 flex-[0.8] cursor-pointer rounded-full px-6 py-2.5 hover:bg-black/4">
+              <span className="block text-xs font-bold">{copy.timeLabel}</span>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(event) => setStartTime(event.target.value)}
+                className={`w-full border-0 bg-transparent text-sm outline-none ${
+                  startTime ? "" : "text-muted-foreground"
+                }`}
+              />
+            </label>
+
+            <span className="my-3 w-px bg-black/10" />
+          </>
+        )}
+
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full pr-2 hover:bg-black/4">
           <Popover>
             <PopoverTrigger
               render={<button type="button" className="min-w-0 flex-1 cursor-pointer rounded-full px-6 py-2.5 text-left" />}
             >
-              <span className="block text-xs font-bold">Who</span>
+              <span className="block text-xs font-bold">{copy.whoLabel}</span>
               <span className={`block truncate text-sm ${guests > 0 ? "" : "text-muted-foreground"}`}>
                 {guestsLabel}
               </span>
@@ -335,11 +442,12 @@ export function SearchPill({
         <Search className="h-5 w-5 shrink-0 text-[#2b000a]" />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold">
-            {query || "Where to?"}
+            {query || (isExperience ? "Find an experience" : "Where to?")}
           </span>
           <span className="block truncate text-xs text-muted-foreground">
-            {rangeLabel(range) === "Add dates" ? "Anytime" : rangeLabel(range)} ·{" "}
-            {guests > 0 ? guestsLabel : "Add guests"}
+            {dateText === "Add dates" ? "Anytime" : dateText}
+            {asksForTime && startTime ? ` at ${startTime}` : ""} ·{" "}
+            {guests > 0 ? guestsLabel : copy.whoEmpty}
           </span>
         </span>
       </button>
@@ -364,14 +472,14 @@ export function SearchPill({
             <div className="rounded-3xl bg-white p-4 shadow-sm">
               {mobileSection === "where" ? (
                 <>
-                  <p className="mb-3 text-xl font-bold text-[#2b000a]">Where?</p>
+                  <p className="mb-3 text-xl font-bold text-[#2b000a]">{copy.whereTitle}</p>
                   <div className="flex items-center gap-2 rounded-xl border px-3 py-2.5">
                     <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <input
                       autoFocus
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search destinations"
+                      placeholder={copy.wherePlaceholder}
                       className="w-full border-0 bg-transparent text-sm outline-none"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") submit();
@@ -379,7 +487,7 @@ export function SearchPill({
                     />
                   </div>
                   <p className="px-1 pb-1 pt-4 text-xs font-semibold text-muted-foreground">
-                    Suggested destinations
+                    {copy.suggestionTitle}
                   </p>
                   {suggestions}
                 </>
@@ -389,8 +497,8 @@ export function SearchPill({
                   onClick={() => setMobileSection("where")}
                   className="flex w-full items-center justify-between"
                 >
-                  <span className="text-sm font-semibold text-muted-foreground">Where</span>
-                  <span className="text-sm font-semibold">{query || "I’m flexible"}</span>
+                  <span className="text-sm font-semibold text-muted-foreground">{copy.whereLabel}</span>
+                  <span className="text-sm font-semibold">{query || copy.flexible}</span>
                 </button>
               )}
             </div>
@@ -399,15 +507,8 @@ export function SearchPill({
             <div className="rounded-3xl bg-white p-4 shadow-sm">
               {mobileSection === "when" ? (
                 <>
-                  <p className="mb-1 text-xl font-bold text-[#2b000a]">When?</p>
-                  <Calendar
-                    mode="range"
-                    numberOfMonths={1}
-                    selected={range}
-                    onSelect={setRange}
-                    disabled={{ before: new Date() }}
-                    className="mx-auto"
-                  />
+                  <p className="mb-1 text-xl font-bold text-[#2b000a]">{copy.whenTitle}</p>
+                  {calendarPicker(1, "mx-auto")}
                   <div className="flex items-center justify-between">
                     {range?.from ? (
                       <button
@@ -422,10 +523,10 @@ export function SearchPill({
                     )}
                     <button
                       type="button"
-                      onClick={() => setMobileSection("who")}
+                      onClick={() => setMobileSection(afterWhenSection)}
                       className="rounded-full bg-[#f5eef1] px-4 py-2 text-sm font-semibold text-[#2b000a]"
                     >
-                      {range?.from ? "Next" : "Skip dates"}
+                      {range?.from ? "Next" : `Skip ${asksForTime ? "date" : "dates"}`}
                     </button>
                   </div>
                 </>
@@ -436,18 +537,57 @@ export function SearchPill({
                   className="flex w-full items-center justify-between"
                 >
                   <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                    <CalendarDays className="h-4 w-4" /> When
+                    <CalendarDays className="h-4 w-4" /> {copy.whenLabel}
                   </span>
-                  <span className="text-sm font-semibold">{rangeLabel(range)}</span>
+                  <span className="text-sm font-semibold">{range?.from ? dateText : copy.whenEmpty}</span>
                 </button>
               )}
             </div>
+
+            {asksForTime && (
+              <div className="rounded-3xl bg-white p-4 shadow-sm">
+                {mobileSection === "time" ? (
+                  <>
+                    <p className="mb-3 text-xl font-bold text-[#2b000a]">What time?</p>
+                    <label className="flex items-center gap-3 rounded-xl border px-3 py-3">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="time"
+                        value={startTime}
+                        onChange={(event) => setStartTime(event.target.value)}
+                        className="w-full border-0 bg-transparent text-sm outline-none"
+                      />
+                    </label>
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setMobileSection("who")}
+                        className="rounded-full bg-[#f5eef1] px-4 py-2 text-sm font-semibold text-[#2b000a]"
+                      >
+                        {startTime ? "Next" : "Skip time"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setMobileSection("time")}
+                    className="flex w-full items-center justify-between"
+                  >
+                    <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                      <Clock className="h-4 w-4" /> {copy.timeLabel}
+                    </span>
+                    <span className="text-sm font-semibold">{timeLabel}</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Who */}
             <div className="rounded-3xl bg-white p-4 shadow-sm">
               {mobileSection === "who" ? (
                 <>
-                  <p className="mb-1 text-xl font-bold text-[#2b000a]">Who?</p>
+                  <p className="mb-1 text-xl font-bold text-[#2b000a]">{copy.whoTitle}</p>
                   {guestStepper}
                 </>
               ) : (
@@ -457,7 +597,7 @@ export function SearchPill({
                   className="flex w-full items-center justify-between"
                 >
                   <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                    <Users className="h-4 w-4" /> Who
+                    <Users className="h-4 w-4" /> {copy.whoLabel}
                   </span>
                   <span className="text-sm font-semibold">{guestsLabel}</span>
                 </button>

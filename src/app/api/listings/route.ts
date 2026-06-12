@@ -26,6 +26,7 @@ const HOST_FIELDS = [
   "currency",
   "total_units",
   "available_units",
+  "available_days",
   "minimum_hours",
   "check_in_time",
   "check_out_time",
@@ -57,6 +58,12 @@ function pick(source: AnyRecord, keys: readonly string[]): AnyRecord {
 interface ListingRequest {
   listingId?: string;
   imageUrls?: string[];
+  availabilitySlots?: Array<{
+    startDatetime: string;
+    endDatetime: string;
+    totalUnits?: number;
+    availableUnits?: number;
+  }>;
   payload: AnyRecord;
 }
 
@@ -120,6 +127,34 @@ async function saveImages(
   }
 }
 
+async function saveAvailabilitySlots(
+  admin: ReturnType<typeof createAdminClient>,
+  listingId: string,
+  slots: ListingRequest["availabilitySlots"] | undefined,
+  fallbackUnits: number
+) {
+  const rows = (slots ?? [])
+    .filter((slot) => slot.startDatetime && slot.endDatetime)
+    .map((slot) => {
+      const totalUnits = Math.max(1, Number(slot.totalUnits || fallbackUnits || 1));
+      const availableUnits = Math.max(0, Number(slot.availableUnits ?? totalUnits));
+      return {
+        listing_id: listingId,
+        start_datetime: slot.startDatetime,
+        end_datetime: slot.endDatetime,
+        total_units: totalUnits,
+        booked_units: 0,
+        available_units: Math.min(availableUnits, totalUnits),
+        status: availableUnits > 0 ? "available" : "blocked",
+      };
+    });
+
+  if (rows.length === 0) return;
+  await admin.from("availability_slots").upsert(rows, {
+    onConflict: "listing_id,start_datetime,end_datetime",
+  });
+}
+
 // Create a listing.
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -173,6 +208,12 @@ export async function POST(request: Request) {
   }
 
   await saveImages(admin, listing.id, body.imageUrls);
+  await saveAvailabilitySlots(
+    admin,
+    listing.id,
+    body.availabilitySlots,
+    Number(row.total_units || 1)
+  );
   return NextResponse.json({ id: listing.id, slug: listing.slug });
 }
 
@@ -226,5 +267,11 @@ export async function PATCH(request: Request) {
   }
 
   await saveImages(admin, body.listingId, body.imageUrls);
+  await saveAvailabilitySlots(
+    admin,
+    body.listingId,
+    body.availabilitySlots,
+    Number(row.total_units || 1)
+  );
   return NextResponse.json({ id: body.listingId });
 }

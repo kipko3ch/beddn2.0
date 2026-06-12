@@ -10,7 +10,6 @@ import {
   Heart,
   UserCircle,
   Menu,
-  LogIn,
   ShieldCheck,
   Bus,
   Waves,
@@ -190,9 +189,9 @@ export default function LandingPage() {
                 Review a stay
               </a>
               {!user && (
-                <AuthDialog>
-                  <button className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm hover:bg-muted">
-                    <LogIn className="h-4 w-4" /> Login
+                <AuthDialog defaultHostIntent>
+                  <button className="flex items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-3 text-sm font-bold text-white hover:bg-[#600018]">
+                    <Home className="h-4 w-4" /> Become a host
                   </button>
                 </AuthDialog>
               )}
@@ -353,8 +352,8 @@ export default function LandingPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <AuthDialog defaultHostIntent>
-              <button type="button" className={styles.mobileProfileButton} aria-label="Become a host">
+            <AuthDialog>
+              <button type="button" className={styles.mobileProfileButton} aria-label="Log in or sign up">
                 <UserCircle size={21} />
               </button>
             </AuthDialog>
@@ -388,6 +387,10 @@ export default function LandingPage() {
         <div className={styles.searchContainer}>
           <SearchPill
             initialQuery={search?.q ?? ''}
+            initialCheckIn={search?.checkIn}
+            initialStartTime={search?.startTime}
+            initialGuests={search?.guests}
+            mode={currentData.category}
             onSearch={handleSearch}
             onNearby={handleNearby}
           />

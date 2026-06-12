@@ -22,6 +22,7 @@ import {
   ShowerHead,
   Star,
   Utensils,
+  UserCircle,
   Wifi,
   Wind,
   X,
@@ -397,6 +398,47 @@ export function PropertyContent({
           <Separator />
 
           <section>
+            <h2 className="mb-4 text-xl font-bold">Meet your host</h2>
+            <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[#f8eef2] text-[#800020]">
+                  <UserCircle className="h-8 w-8" />
+                </span>
+                <div>
+                  <p className="font-bold text-[#181113]">
+                    Hosted by {listing.host?.name || "a Beddn host"}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Host details and exact directions unlock after your booking is confirmed.
+                  </p>
+                </div>
+              </div>
+              {listing.host?.is_verified && (
+                <Badge className="w-fit gap-1 rounded-full bg-[#f8eef2] px-3 py-1 text-[#800020] hover:bg-[#f8eef2]">
+                  <BadgeCheck className="h-3.5 w-3.5" /> Verified host
+                </Badge>
+              )}
+            </div>
+          </section>
+
+          <section id="location">
+            <h2 className="mb-2 text-xl font-bold">Where you&apos;ll be</h2>
+            <p className="mb-3 text-sm text-muted-foreground">
+              You&apos;ll get the exact address after your booking is confirmed by the host.
+            </p>
+            <div className="h-64 overflow-hidden rounded-2xl border sm:h-80">
+              <Map
+                listings={[listing]}
+                center={[listing.longitude, listing.latitude]}
+                zoom={13}
+                approximate
+              />
+            </div>
+          </section>
+
+          <Separator />
+
+          <section>
             <h2 className="mb-4 text-xl font-bold">Property amenities</h2>
             {listing.amenities.length > 0 ? (
               <>
@@ -548,7 +590,7 @@ export function PropertyContent({
                   Select dates to find the best prices for your trip
                 </h2>
               </div>
-              <div className="p-3 sm:p-5">
+              <div className="overflow-hidden p-2 sm:p-5">
                 <div className="mx-auto grid max-w-[760px] gap-6 lg:grid-cols-2 lg:items-start">
                   <Calendar
                     mode="range"
@@ -558,13 +600,13 @@ export function PropertyContent({
                     onMonthChange={setCalendarMonth}
                     numberOfMonths={1}
                     disabled={blockedDates}
-                    className="mx-auto w-full [--cell-radius:0.5rem] [--cell-size:2.25rem] sm:[--cell-size:2.45rem]"
+                    className="mx-auto w-full max-w-full [--cell-radius:0.5rem] [--cell-size:clamp(1.85rem,11.5vw,2.25rem)] sm:[--cell-size:2.45rem]"
                     classNames={{
-                      root: "w-full max-w-[330px] sm:max-w-[340px]",
+                      root: "w-full max-w-full sm:max-w-[340px]",
                       months: "flex flex-col gap-4",
                       month: "w-full",
-                      caption_label: "text-base sm:text-lg font-bold text-[#2b000a]",
-                      weekday: "flex h-(--cell-size) items-center justify-center text-center text-neutral-800 font-medium",
+                      caption_label: "text-sm font-bold text-[#2b000a] sm:text-lg",
+                      weekday: "flex h-(--cell-size) items-center justify-center text-center text-xs font-medium text-neutral-800 sm:text-sm",
                       button_previous: "text-[#800020] hover:bg-[#f8eef2]",
                       button_next: "text-[#800020] hover:bg-[#f8eef2]",
                       day_button:
@@ -683,20 +725,6 @@ export function PropertyContent({
             )}
           </section>
 
-          <section id="location">
-            <h2 className="mb-2 text-xl font-bold">Approximate location</h2>
-            <p className="mb-3 text-sm text-muted-foreground">
-              Exact address is shared after your booking is confirmed by the host.
-            </p>
-            <div className="h-72 overflow-hidden rounded-2xl border">
-              <Map
-                listings={[listing]}
-                center={[listing.longitude, listing.latitude]}
-                zoom={13}
-                approximate
-              />
-            </div>
-          </section>
         </div>
 
         <aside className="lg:pt-1">

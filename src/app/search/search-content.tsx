@@ -97,6 +97,7 @@ export function SearchContent() {
   const propertyType = searchParams.get("type") ?? "all";
   const checkIn = searchParams.get("checkin");
   const checkOut = searchParams.get("checkout");
+  const startTime = searchParams.get("startTime");
   const guests = Number(searchParams.get("guests")) || 0;
 
   const [listings, setListings] = useState<Listing[]>([]);
@@ -111,6 +112,7 @@ export function SearchContent() {
   const [mapLabel, setMapLabel] = useState("");
   const { savedIds, toggle } = useSavedListings();
   const isExperienceSearch = category === "experience";
+  const asksForTime = category === "hourly" || category === "experience";
 
   // Only mount one MapLibre instance at a time (preview vs. side map).
   useEffect(() => {
@@ -194,6 +196,7 @@ export function SearchContent() {
     type?: string;
     checkIn?: string | null;
     checkOut?: string | null;
+    startTime?: string | null;
     guests?: number | null;
   }) {
     const params = new URLSearchParams();
@@ -202,12 +205,14 @@ export function SearchContent() {
     const type = next.type ?? propertyType;
     const nextCheckIn = next.checkIn !== undefined ? next.checkIn : checkIn;
     const nextCheckOut = next.checkOut !== undefined ? next.checkOut : checkOut;
+    const nextStartTime = next.startTime !== undefined ? next.startTime : startTime;
     const nextGuests = next.guests !== undefined ? next.guests : guests;
     if (nextQ) params.set("q", nextQ);
     if (cat !== "all") params.set("category", cat);
-    if (type !== "all") params.set("type", type);
+    if (type !== "all" && cat !== "experience") params.set("type", type);
     if (nextCheckIn) params.set("checkin", nextCheckIn);
-    if (nextCheckOut) params.set("checkout", nextCheckOut);
+    if (nextCheckOut && cat !== "hourly" && cat !== "experience") params.set("checkout", nextCheckOut);
+    if (nextStartTime && (cat === "hourly" || cat === "experience")) params.set("startTime", nextStartTime);
     if (nextGuests) params.set("guests", String(nextGuests));
     router.push(`/search?${params.toString()}`);
   }
@@ -217,6 +222,7 @@ export function SearchContent() {
       q: values.q,
       checkIn: values.checkIn ?? null,
       checkOut: values.checkOut ?? null,
+      startTime: values.startTime ?? null,
       guests: values.guests ?? null,
     });
   }
@@ -253,7 +259,8 @@ export function SearchContent() {
   const mapCenter: [number, number] | undefined =
     lat && lng ? [parseFloat(lng), parseFloat(lat)] : lookupQueryCenter(q) || geocodedCenter;
 
-  const activeFilterCount = (category !== "all" ? 1 : 0) + (propertyType !== "all" ? 1 : 0);
+  const activeFilterCount =
+    (category !== "all" ? 1 : 0) + (!isExperienceSearch && propertyType !== "all" ? 1 : 0);
 
   const headerTitle = q
     ? `${isExperienceSearch ? "Experiences" : "Stays"} in ${q}`
@@ -269,7 +276,13 @@ export function SearchContent() {
       return "Anytime";
     }
   })();
-  const guestSummary = guests > 0 ? `${guests} guest${guests === 1 ? "" : "s"}` : "Add guests";
+  const timeSummary = asksForTime && startTime ? ` at ${startTime}` : "";
+  const guestSummary =
+    guests > 0
+      ? `${guests} ${isExperienceSearch ? "seat" : "guest"}${guests === 1 ? "" : "s"}`
+      : isExperienceSearch
+      ? "Add seats"
+      : "Add guests";
 
   const mapView = (
     <>
@@ -284,7 +297,7 @@ export function SearchContent() {
         center={mapCenter}
         highlightedId={highlightedId}
         onPinClick={handlePinClick}
-        approximate
+        priceMode={isExperienceSearch ? "experience" : priceMode}
       />
     </>
   );
@@ -441,7 +454,7 @@ export function SearchContent() {
           >
             <span className="max-w-full truncate text-sm font-semibold">{headerTitle}</span>
             <span className="max-w-full truncate text-xs text-muted-foreground">
-              {dateSummary} · {guestSummary}
+              {dateSummary}{timeSummary} · {guestSummary}
             </span>
           </button>
           <button
@@ -465,21 +478,25 @@ export function SearchContent() {
             options={CATEGORY_OPTIONS}
             onChange={(value) => pushSearch({ category: value })}
           />
-          <ChipSelect
-            label="Type of place"
-            value={propertyType}
-            options={[{ value: "all", label: "Any type of place" }, ...PROPERTY_TYPES]}
-            onChange={(value) => pushSearch({ type: value })}
-          />
-          <ChipSelect
-            label="Price"
-            value={priceMode}
-            options={[
-              { value: "hourly", label: "Hourly prices" },
-              { value: "overnight", label: "Nightly prices" },
-            ]}
-            onChange={(value) => setPriceMode(value as "hourly" | "overnight")}
-          />
+          {!isExperienceSearch && (
+            <>
+              <ChipSelect
+                label="Type of place"
+                value={propertyType}
+                options={[{ value: "all", label: "Any type of place" }, ...PROPERTY_TYPES]}
+                onChange={(value) => pushSearch({ type: value })}
+              />
+              <ChipSelect
+                label="Price"
+                value={priceMode}
+                options={[
+                  { value: "hourly", label: "Hourly prices" },
+                  { value: "overnight", label: "Nightly prices" },
+                ]}
+                onChange={(value) => setPriceMode(value as "hourly" | "overnight")}
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -490,11 +507,13 @@ export function SearchContent() {
         <div className="mx-auto max-w-7xl md:px-6 md:py-5 lg:px-8">
           <div className="mx-auto md:max-w-3xl">
             <SearchPill
-              key={`${q}|${checkIn}|${checkOut}|${guests}`}
+              key={`${q}|${category}|${checkIn}|${checkOut}|${startTime}|${guests}`}
               initialQuery={q}
               initialCheckIn={checkIn}
               initialCheckOut={checkOut}
+              initialStartTime={startTime}
               initialGuests={guests}
+              mode={category === "all" ? "all" : category === "hourly" ? "hourly" : category === "experience" ? "experience" : "overnight"}
               onSearch={handlePillSearch}
               onNearby={handleNearby}
               showMobileTrigger={false}
@@ -518,12 +537,14 @@ export function SearchContent() {
                 </button>
               ))}
             </div>
-            <ChipSelect
-              label="Property type"
-              value={propertyType}
-              options={[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES]}
-              onChange={(value) => pushSearch({ type: value })}
-            />
+            {!isExperienceSearch && (
+              <ChipSelect
+                label="Property type"
+                value={propertyType}
+                options={[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES]}
+                onChange={(value) => pushSearch({ type: value })}
+              />
+            )}
           </div>
         </div>
       </section>
@@ -557,29 +578,31 @@ export function SearchContent() {
                 ))}
               </div>
             </div>
-            <div>
-              <p className="mb-3 text-sm font-bold text-[#2b000a]">Property type</p>
-              <div className="grid grid-cols-2 gap-2">
-                {[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES].map((p) => (
-                  <button
-                    key={p.value}
-                    type="button"
-                    onClick={() => {
-                      pushSearch({ type: p.value });
-                      setFiltersOpen(false);
-                    }}
-                    className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-semibold ${
-                      propertyType === p.value
-                        ? "border-[#800020] bg-[#800020] text-white"
-                        : "border-[#e3d3d9] bg-white text-[#2b000a]"
-                    }`}
-                  >
-                    <span className="truncate">{p.label}</span>
-                    {propertyType === p.value && <Check className="h-4 w-4 shrink-0" />}
-                  </button>
-                ))}
+            {!isExperienceSearch && (
+              <div>
+                <p className="mb-3 text-sm font-bold text-[#2b000a]">Property type</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES].map((p) => (
+                    <button
+                      key={p.value}
+                      type="button"
+                      onClick={() => {
+                        pushSearch({ type: p.value });
+                        setFiltersOpen(false);
+                      }}
+                      className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-semibold ${
+                        propertyType === p.value
+                          ? "border-[#800020] bg-[#800020] text-white"
+                          : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                      }`}
+                    >
+                      <span className="truncate">{p.label}</span>
+                      {propertyType === p.value && <Check className="h-4 w-4 shrink-0" />}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>
