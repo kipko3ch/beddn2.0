@@ -21,7 +21,7 @@ import { AmenityPicker } from "@/components/amenity-picker";
 import { AmenityIcon } from "@/components/amenity-icon";
 import { CopyGuide } from "@/components/copy-guide";
 import { AiPromptHelper } from "@/components/ai-prompt-helper";
-import { Clock, Compass, Moon, Search, ChevronLeft, X } from "lucide-react";
+import { CalendarDays, Clock, Compass, Moon, Plus, Search, Trash2, ChevronLeft, X } from "lucide-react";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 import { AMENITY_LABEL } from "@/lib/amenities";
 import { EXPERIENCE_GROUPS, EXPERIENCE_LABEL } from "@/lib/experience-types";
@@ -57,6 +57,24 @@ const CATEGORY_LABEL: Record<ListingCategory, string> = {
   hourly: "Hourly stay",
   overnight: "Overnight stay",
   experience: "Experience",
+};
+
+const WEEK_DAYS = [
+  { value: 0, label: "Sun" },
+  { value: 1, label: "Mon" },
+  { value: 2, label: "Tue" },
+  { value: 3, label: "Wed" },
+  { value: 4, label: "Thu" },
+  { value: 5, label: "Fri" },
+  { value: 6, label: "Sat" },
+];
+
+type DateSlot = {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  availableUnits: string;
 };
 
 const DESCRIPTION_GUIDE = `Tucked in a quiet corner of [area], this [property type] is perfect for [who it suits — couples, remote workers, families].
@@ -120,6 +138,10 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   const [minimumHours, setMinimumHours] = useState(listing?.minimum_hours?.toString() ?? "1");
   const [checkInTime, setCheckInTime] = useState(listing?.check_in_time ?? "");
   const [checkOutTime, setCheckOutTime] = useState(listing?.check_out_time ?? "");
+  const [availableDays, setAvailableDays] = useState<number[]>(
+    listing?.available_days?.length ? listing.available_days : [0, 1, 2, 3, 4, 5, 6]
+  );
+  const [dateSlots, setDateSlots] = useState<DateSlot[]>([]);
   const [categories, setCategories] = useState<ListingCategory[]>(
     (listing?.categories as ListingCategory[]) ?? []
   );
@@ -179,6 +201,35 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
     setExperienceTypes((prev) =>
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
     );
+  }
+
+  function toggleAvailableDay(day: number) {
+    setAvailableDays((prev) =>
+      prev.includes(day) ? prev.filter((item) => item !== day) : [...prev, day].sort()
+    );
+  }
+
+  function addDateSlot() {
+    setDateSlots((prev) => [
+      ...prev,
+      {
+        id: `slot-${Date.now()}-${prev.length}`,
+        date: "",
+        startTime: checkInTime || "09:00",
+        endTime: checkOutTime || "17:00",
+        availableUnits: totalUnits || "1",
+      },
+    ]);
+  }
+
+  function updateDateSlot(id: string, patch: Partial<DateSlot>) {
+    setDateSlots((prev) =>
+      prev.map((slot) => (slot.id === id ? { ...slot, ...patch } : slot))
+    );
+  }
+
+  function removeDateSlot(id: string) {
+    setDateSlots((prev) => prev.filter((slot) => slot.id !== id));
   }
 
   const isExperience = categories.includes("experience");
@@ -522,6 +573,123 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   });
 
   steps.push({
+    title: "Set your calendar",
+    subtitle: "Choose your usual open days, then add exact date hours for special sessions or custom availability.",
+    valid: availableDays.length > 0,
+    content: (
+      <div className="space-y-5">
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-[#800020]" />
+            <p className="text-sm font-bold text-[#181113]">Usual open days</p>
+          </div>
+          <div className="grid grid-cols-7 gap-1.5">
+            {WEEK_DAYS.map((day) => {
+              const selected = availableDays.includes(day.value);
+              return (
+                <button
+                  key={day.value}
+                  type="button"
+                  onClick={() => toggleAvailableDay(day.value)}
+                  aria-pressed={selected}
+                  className={`h-10 rounded-xl border text-xs font-bold transition ${
+                    selected
+                      ? "border-[#800020] bg-[#800020] text-white"
+                      : "border-border bg-white text-[#6f6568] hover:border-[#d7a9b7]"
+                  }`}
+                >
+                  {day.label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            These days become your default bookable rhythm. You can still block dates later.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-[#fbf7f8] p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#181113]">Date-specific hours</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add exact hours for a particular date, class, trip, or hourly opening.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addDateSlot}
+              className="h-10 rounded-full bg-white"
+            >
+              <Plus className="mr-1 h-4 w-4" /> Add date
+            </Button>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {dateSlots.length === 0 ? (
+              <p className="rounded-xl border border-dashed bg-white px-4 py-5 text-center text-xs text-muted-foreground">
+                No custom date hours yet. Your usual open days and timing will be used.
+              </p>
+            ) : (
+              dateSlots.map((slot) => (
+                <div key={slot.id} className="grid gap-3 rounded-xl bg-white p-3 sm:grid-cols-[1.2fr_1fr_1fr_0.9fr_auto] sm:items-end">
+                  <div>
+                    <Label className="text-xs">Date</Label>
+                    <Input
+                      type="date"
+                      value={slot.date}
+                      onChange={(event) => updateDateSlot(slot.id, { date: event.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Start</Label>
+                    <Input
+                      type="time"
+                      value={slot.startTime}
+                      onChange={(event) => updateDateSlot(slot.id, { startTime: event.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">End</Label>
+                    <Input
+                      type="time"
+                      value={slot.endTime}
+                      onChange={(event) => updateDateSlot(slot.id, { endTime: event.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">
+                      {isExperience ? "Seats" : "Units"}
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={slot.availableUnits}
+                      onChange={(event) =>
+                        updateDateSlot(slot.id, { availableUnits: event.target.value })
+                      }
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => removeDateSlot(slot.id)}
+                    className="h-10 rounded-full px-3"
+                    aria-label="Remove date-specific hours"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    ),
+  });
+
+  steps.push({
     title: "Pricing",
     subtitle: "Set the rates for the booking types you chose.",
     valid:
@@ -786,10 +954,10 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
           </p>
         </div>
         <div className="rounded-xl border border-dashed border-[#d7a9b7] p-4 text-sm">
-          <p className="font-semibold text-[#2b000a]">After publishing: set your calendar</p>
+          <p className="font-semibold text-[#2b000a]">Calendar is included</p>
           <p className="mt-1 text-muted-foreground">
-            Block dates you&apos;re unavailable and sync with Airbnb or Booking.com via iCal from{" "}
-            <strong>Dashboard → Calendar</strong> — it prevents double bookings across platforms.
+            Your open days and date-specific hours will be saved with this listing. You can
+            still sync iCal later from <strong>Dashboard → Calendar</strong>.
           </p>
         </div>
       </div>
@@ -811,9 +979,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
     e.preventDefault();
     if (step < lastStep) {
       next();
-      return;
     }
-    await submitListing(false);
   }
 
   async function submitListing(asDraft: boolean) {
@@ -850,6 +1016,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       currency,
       total_units: Math.max(1, parseInt(totalUnits || "1")),
       available_units: Math.max(1, parseInt(totalUnits || "1")),
+      available_days: availableDays,
       booking_mode: isAdmin ? bookingMode : listing?.booking_mode ?? "manual_accept",
       verification_status:
         isAdmin && isVerified ? "verified" : listing?.verification_status ?? "pending",
@@ -865,6 +1032,15 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       is_verified: isAdmin ? isVerified : listing?.is_verified ?? false,
     };
 
+    const availabilitySlots = dateSlots
+      .filter((slot) => slot.date && slot.startTime && slot.endTime)
+      .map((slot) => ({
+        startDatetime: `${slot.date}T${slot.startTime}:00`,
+        endDatetime: `${slot.date}T${slot.endTime}:00`,
+        totalUnits: Math.max(1, parseInt(totalUnits || "1")),
+        availableUnits: Math.max(0, parseInt(slot.availableUnits || totalUnits || "1")),
+      }));
+
     const res = await fetch("/api/listings", {
       method: listing ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -872,6 +1048,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
         listingId: listing?.id,
         payload,
         imageUrls: imageList,
+        availabilitySlots,
       }),
     });
 
@@ -960,7 +1137,8 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
             </Button>
           ) : (
             <Button
-              type="submit"
+              type="button"
+              onClick={() => submitListing(false)}
               disabled={submitting || savingDraft}
               className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
             >

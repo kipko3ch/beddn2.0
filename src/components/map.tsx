@@ -13,6 +13,7 @@ interface MapProps {
   onPinClick?: (listing: Listing) => void;
   className?: string;
   approximate?: boolean;
+  priceMode?: "hourly" | "overnight" | "experience";
 }
 
 export function Map({
@@ -23,6 +24,7 @@ export function Map({
   onPinClick,
   className = "w-full h-full",
   approximate = false,
+  priceMode = "hourly",
 }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -77,19 +79,31 @@ export function Map({
         el.appendChild(dot);
       } else {
         const price =
-          listing.hourly_price ??
-          listing.overnight_price ??
-          listing.experience_price ??
-          0;
+          priceMode === "overnight" && listing.overnight_price
+            ? listing.overnight_price
+            : priceMode === "experience" && listing.experience_price
+            ? listing.experience_price
+            : priceMode === "hourly" && listing.hourly_price
+            ? listing.hourly_price
+            : listing.hourly_price ?? listing.overnight_price ?? listing.experience_price ?? 0;
+        const active = listing.id === highlightedId;
         el.className = "map-price-pin";
         el.textContent = `${listing.currency || "KES"} ${Number(price).toLocaleString()}`;
         el.style.cssText = `
-          background: white; border: 2px solid ${listing.id === highlightedId ? "#800020" : "#333"};
-          border-radius: 20px; padding: 2px 8px; font-size: 12px; font-weight: 600;
-          cursor: pointer; white-space: nowrap;
-          transform: ${listing.id === highlightedId ? "scale(1.15)" : "scale(1)"};
-          transition: transform 0.15s, border-color 0.15s;
-          z-index: ${listing.id === highlightedId ? 10 : 1};
+          background: ${active ? "#800020" : "#fff"};
+          border: 1px solid ${active ? "#800020" : "rgba(24,17,19,0.16)"};
+          border-radius: 999px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          color: ${active ? "#fff" : "#181113"};
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 800;
+          line-height: 1;
+          padding: 8px 11px;
+          white-space: nowrap;
+          transform: ${active ? "scale(1.12)" : "scale(1)"};
+          transition: transform 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+          z-index: ${active ? 10 : 1};
         `;
         el.addEventListener("click", () => onPinClick?.(listing));
       }
@@ -106,7 +120,7 @@ export function Map({
       listings.forEach((l) => bounds.extend([l.longitude, l.latitude]));
       map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
     }
-  }, [listings, highlightedId, approximate, onPinClick]);
+  }, [listings, highlightedId, approximate, onPinClick, priceMode]);
 
   return <div ref={containerRef} className={className} />;
 }
