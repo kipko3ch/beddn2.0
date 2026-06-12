@@ -22,6 +22,7 @@ import styles from './landing.module.css';
 import { createClient } from '@/lib/supabase/client';
 import { useSavedListings, useUserRole } from '@/lib/hooks';
 import { ListingCard, ListingCardSkeleton } from '@/components/listing-card';
+import { PopularDestinations, CityRails } from '@/components/home-sections';
 import { AuthDialog } from '@/components/auth-dialog';
 import {
   Sheet,
@@ -412,6 +413,8 @@ export default function LandingPage() {
 
       </main>
 
+      <PopularDestinations />
+
       {/* Listings grid */}
       <section className={styles.listingsSection}>
         {!loading && listings.length > 0 && (
@@ -517,6 +520,9 @@ export default function LandingPage() {
           </div>
         )}
       </section>
+
+      <CityRails savedIds={savedIds} onToggleSave={toggle} priceMode={priceMode} />
+
       <footer className={styles.footer}>
         <div className={styles.footerBrand}>
           <span>Beddn</span>

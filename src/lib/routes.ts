@@ -25,6 +25,7 @@ export const ROUTES = {
   adminFeedback: "/admin/feedback",
   adminDemand: "/admin/demand",
   adminNotifications: "/admin/notifications",
+  adminDestinations: "/admin/destinations",
   adminUser: (id: string) => `/admin/users/${id}`,
   property: (slug: string) => `/property/${slug}`,
   reserve: (id: string) => `/reserve/${id}`,
@@ -53,4 +54,5 @@ export const ADMIN_ROUTES = [
   ROUTES.adminFeedback,
   ROUTES.adminDemand,
   ROUTES.adminNotifications,
+  ROUTES.adminDestinations,
 ] as const;

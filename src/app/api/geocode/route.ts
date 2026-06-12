@@ -61,6 +61,7 @@ export async function GET(request: Request) {
       label: result.display_name || "",
       address: {
         country: a.country ?? "",
+        city: a.city || a.town || a.village || a.county || "",
         region: a.state || a.region || a.county || "",
         area:
           a.suburb ||
@@ -107,6 +108,7 @@ export async function GET(request: Request) {
     label: first.display_name || query,
     address: {
       country: a.country ?? "",
+      city: a.city || a.town || a.village || a.county || "",
       region: a.state || a.region || a.county || "",
       area: a.suburb || a.neighbourhood || a.village || a.town || a.city || a.road || "",
     },
