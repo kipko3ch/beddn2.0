@@ -171,7 +171,13 @@ export async function POST(request: Request) {
       if (!target?.email) {
         errorMessage = "No email on file for this user.";
       } else {
-        const origin = new URL(request.url).origin;
+        const { origin } = new URL(request.url);
+        const forwardedHost = request.headers.get("x-forwarded-host");
+        const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+        const baseUrl = (
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          (forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin)
+        ).replace(/\/$/, "");
         const anon = createSupabaseClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -180,7 +186,7 @@ export async function POST(request: Request) {
           email: target.email,
           options: {
             shouldCreateUser: false,
-            emailRedirectTo: `${origin}/api/auth/callback`,
+            emailRedirectTo: `${baseUrl}/api/auth/callback`,
           },
         });
         errorMessage = error?.message || null;

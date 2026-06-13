@@ -34,7 +34,7 @@ const STATE_PREFIX = "beddn_inquiry_";
 type FormDraft = { guestName: string; guestWhatsapp: string; message: string };
 
 /**
- * Full-screen, Beddn-styled inquiry flow. AuthDialog redirects for OAuth/OTP,
+ * Full-screen, Beddn-styled inquiry flow. AuthDialog redirects for Google or email magic links,
  * so the typed draft is saved to sessionStorage and the sheet re-opens on
  * return (the property page reads ?inquiry=1). The WhatsApp hand-off is part of
  * the same flow and is tied to the created inquiry id.

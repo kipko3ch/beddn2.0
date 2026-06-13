@@ -17,6 +17,7 @@ export default function HostLoginPage() {
   const router = useRouter();
   const [showEmail, setShowEmail] = useState(false);
   const [email, setEmail] = useState("");
+  const [sentEmail, setSentEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
@@ -28,8 +29,12 @@ export default function HostLoginPage() {
     });
   }, [supabase, router]);
 
+  function publicBaseUrl() {
+    return (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
+  }
+
   function callbackUrl() {
-    return `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(ROUTES.dashboard)}`;
+    return `${publicBaseUrl()}/api/auth/callback?next=${encodeURIComponent(ROUTES.dashboard)}`;
   }
 
   async function continueWithGoogle() {
@@ -45,12 +50,16 @@ export default function HostLoginPage() {
     }
   }
 
-  async function continueWithEmail(event: React.FormEvent) {
-    event.preventDefault();
+  async function sendMagicLink() {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError("Enter your email address to receive a magic link.");
+      return;
+    }
     setError("");
     setWorking(true);
     const { error: authError } = await supabase.auth.signInWithOtp({
-      email,
+      email: normalizedEmail,
       options: { shouldCreateUser: true, emailRedirectTo: callbackUrl() },
     });
     setWorking(false);
@@ -58,7 +67,13 @@ export default function HostLoginPage() {
       setError(authError.message);
       return;
     }
+    setSentEmail(normalizedEmail);
     setSent(true);
+  }
+
+  async function continueWithEmail(event: React.FormEvent) {
+    event.preventDefault();
+    await sendMagicLink();
   }
 
   return (
@@ -104,19 +119,33 @@ export default function HostLoginPage() {
               className="h-14 w-full rounded-full border-[#2b000a] text-base font-bold"
             >
               <Mail className="mr-4 h-5 w-5" />
-              Login or sign up with OTP
+              Continue with magic link via email
             </Button>
           ) : sent ? (
-            <div className="rounded-2xl bg-[#fbf7f8] p-4 text-sm">
-              Check your email for your one-time sign-in link. If you are new, your host account is
-              created automatically.
+            <div className="space-y-3 rounded-2xl bg-[#fbf7f8] p-4 text-sm">
+              <p>
+                Magic link sent to <span className="font-semibold text-[#2b000a]">{sentEmail}</span>.
+                Open it from the same device to finish signing in.
+              </p>
+              {error && <p className="text-red-700">{error}</p>}
+              <button
+                type="button"
+                onClick={sendMagicLink}
+                disabled={working}
+                className="font-bold text-[#800020] underline-offset-4 hover:underline disabled:opacity-60"
+              >
+                {working ? "Sending..." : "Send magic link again"}
+              </button>
             </div>
           ) : (
             <form onSubmit={continueWithEmail} className="space-y-3">
               <Input
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setError("");
+                }}
                 placeholder="you@example.com"
                 className="h-12 rounded-full border-[#2b000a] px-5"
                 required
@@ -127,7 +156,7 @@ export default function HostLoginPage() {
                 disabled={working}
                 className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
               >
-                {working ? "Sending..." : "Send OTP link"}
+                {working ? "Sending..." : "Send magic link"}
               </Button>
             </form>
           )}
