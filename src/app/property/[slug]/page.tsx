@@ -63,6 +63,11 @@ export default async function PropertyPage({
   const blockedDateStrings = ((listingData.blocked_dates as { date: string }[]) ?? []).map(
     (item) => item.date
   );
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const isOwnListing =
+    Boolean(auth.user?.id) &&
+    (listingData.host as { user_id?: string } | null | undefined)?.user_id === auth.user?.id;
 
   // Never ship private host data to the browser — the exact address and
   // check-in details unlock only after a confirmed booking.
@@ -82,6 +87,7 @@ export default async function PropertyPage({
         listing={listingData as Listing}
         reviews={reviews}
         blockedDateStrings={blockedDateStrings}
+        isOwnListing={isOwnListing}
       />
     </>
   );

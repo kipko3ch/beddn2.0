@@ -10,7 +10,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import type { User } from "@supabase/supabase-js";
-import { Star, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  Camera,
+  Check,
+  KeyRound,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Tag,
+  ThumbsDown,
+  ThumbsUp,
+  UserRound,
+} from "lucide-react";
+
+const TAGS = [
+  { value: "clean", label: "Clean", icon: Sparkles },
+  { value: "safe", label: "Safe", icon: ShieldCheck },
+  { value: "good_host", label: "Good host", icon: UserRound },
+  { value: "accurate_photos", label: "Accurate photos", icon: Camera },
+  { value: "easy_check_in", label: "Easy check-in", icon: KeyRound },
+  { value: "good_value", label: "Good value", icon: Tag },
+  { value: "good_location", label: "Good location", icon: MapPin },
+] as const;
+
+const MAX = 1000;
 
 function ReviewInner() {
   const searchParams = useSearchParams();
@@ -18,10 +42,13 @@ function ReviewInner() {
   const listingParam = searchParams.get("listing") ?? "";
 
   const [user, setUser] = useState<User | null>(null);
-  const [listingName, setListingName] = useState<string>("");
+  const [listingName, setListingName] = useState("");
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
   const [comment, setComment] = useState("");
+  const [privateNote, setPrivateNote] = useState("");
+  const [recommend, setRecommend] = useState<boolean | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -29,7 +56,6 @@ function ReviewInner() {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
   }, [supabase]);
 
-  // Show which place they're reviewing (host link carries ?listing=slug).
   useEffect(() => {
     if (!listingParam) return;
     fetch(`/api/public/listings?q=${encodeURIComponent(listingParam)}&limit=1`)
@@ -40,6 +66,10 @@ function ReviewInner() {
       })
       .catch(() => {});
   }, [listingParam]);
+
+  function toggleTag(value: string) {
+    setTags((cur) => (cur.includes(value) ? cur.filter((t) => t !== value) : [...cur, value]));
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -52,7 +82,14 @@ function ReviewInner() {
     const res = await fetch("/api/reviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listing: listingParam, rating, comment }),
+      body: JSON.stringify({
+        listing: listingParam,
+        rating,
+        tags,
+        comment,
+        privateNote,
+        wouldRecommend: recommend,
+      }),
     });
     const json = (await res.json().catch(() => ({}))) as { error?: string };
     setSubmitting(false);
@@ -64,16 +101,12 @@ function ReviewInner() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:py-12">
-      <div className="mb-6 text-center">
-        <span className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-[#f8eef2] text-[#800020]">
-          <Star className="h-6 w-6" />
-        </span>
-        <h1 className="font-brand text-4xl text-[#2b000a]">Leave a review</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {listingName
-            ? <>Share how your stay at <span className="font-semibold text-[#2b000a]">{listingName}</span> went.</>
-            : "Share how your stay went to help future guests."}
+    <main className="mx-auto max-w-xl px-4 py-8 sm:px-6 lg:py-12">
+      <div className="mb-5">
+        <h1 className="font-brand text-4xl text-[#2b000a]">How was your stay?</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Your review helps other guests choose trusted places on Beddn.
+          {listingName ? <> You&apos;re reviewing <span className="font-semibold text-[#2b000a]">{listingName}</span>.</> : null}
         </p>
       </div>
 
@@ -104,10 +137,10 @@ function ReviewInner() {
           </AuthDialog>
         </div>
       ) : (
-        <form onSubmit={submit} className="rounded-3xl border bg-white p-6 shadow-sm sm:p-8">
-          <div className="text-center">
-            <p className="text-sm font-semibold text-[#2b000a]">Your rating</p>
-            <div className="mt-3 flex justify-center gap-1.5">
+        <form onSubmit={submit} className="space-y-6">
+          {/* Stars */}
+          <div className="flex justify-center rounded-3xl border bg-white py-6 shadow-sm">
+            <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((value) => {
                 const active = (hover || rating) >= value;
                 return (
@@ -118,45 +151,121 @@ function ReviewInner() {
                     onMouseEnter={() => setHover(value)}
                     onMouseLeave={() => setHover(0)}
                     aria-label={`${value} star${value === 1 ? "" : "s"}`}
-                    className="p-1 transition-transform hover:scale-110"
+                    className="transition-transform hover:scale-110"
                   >
-                    <Star
-                      className={`h-9 w-9 ${active ? "fill-[#800020] text-[#800020]" : "text-[#e3d3d9]"}`}
-                    />
+                    <Star className={`h-9 w-9 ${active ? "fill-[#800020] text-[#800020]" : "text-[#e3d3d9]"}`} />
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="mt-6">
-            <label htmlFor="comment" className="text-sm font-semibold text-[#2b000a]">
-              Tell guests more (optional)
+          {/* Tags */}
+          <div>
+            <p className="mb-3 text-sm font-bold text-[#2b000a]">What stood out?</p>
+            <div className="flex flex-wrap gap-2">
+              {TAGS.map(({ value, label, icon: Icon }) => {
+                const on = tags.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggleTag(value)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                      on ? "border-[#800020] bg-[#fbf0f3] text-[#800020]" : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                    {on && (
+                      <span className="flex size-4 items-center justify-center rounded-full bg-[#800020] text-white">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Public review */}
+          <div>
+            <label htmlFor="comment" className="text-sm font-bold text-[#2b000a]">Write your review</label>
+            <div className="relative mt-2">
+              <Textarea
+                id="comment"
+                value={comment}
+                maxLength={MAX}
+                onChange={(e) => setComment(e.target.value)}
+                rows={4}
+                placeholder="Share details about your stay—what you loved, what could be better, and any tips for future guests."
+                className="rounded-2xl"
+              />
+              <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-muted-foreground">
+                {comment.length}/{MAX}
+              </span>
+            </div>
+          </div>
+
+          {/* Private feedback */}
+          <div>
+            <label htmlFor="private" className="text-sm font-bold text-[#2b000a]">
+              Private feedback to Beddn <span className="font-normal text-muted-foreground">(optional)</span>
             </label>
-            <Textarea
-              id="comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={4}
-              placeholder="What stood out? Cleanliness, location, the host…"
-              className="mt-2 rounded-xl"
-            />
+            <div className="relative mt-2">
+              <Textarea
+                id="private"
+                value={privateNote}
+                maxLength={MAX}
+                onChange={(e) => setPrivateNote(e.target.value)}
+                rows={3}
+                placeholder="Share any private feedback with Beddn. This will not be visible to the host."
+                className="rounded-2xl"
+              />
+              <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-muted-foreground">
+                {privateNote.length}/{MAX}
+              </span>
+            </div>
+          </div>
+
+          {/* Recommend */}
+          <div>
+            <p className="mb-3 text-sm font-bold text-[#2b000a]">Would you recommend this place?</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setRecommend(true)}
+                className={`flex h-12 items-center justify-center gap-2 rounded-full border text-sm font-semibold ${
+                  recommend === true ? "border-[#800020] bg-[#800020] text-white" : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                }`}
+              >
+                <ThumbsUp className="h-4 w-4" /> Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => setRecommend(false)}
+                className={`flex h-12 items-center justify-center gap-2 rounded-full border text-sm font-semibold ${
+                  recommend === false ? "border-[#800020] bg-[#800020] text-white" : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                }`}
+              >
+                <ThumbsDown className="h-4 w-4" /> No
+              </button>
+            </div>
           </div>
 
           {status?.type === "error" && (
-            <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{status.message}</p>
+            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{status.message}</p>
           )}
 
           <Button
             type="submit"
             disabled={submitting}
-            className="mt-5 h-12 w-full rounded-full bg-[#800020] text-base font-bold hover:bg-[#600018]"
+            className="h-13 w-full rounded-full bg-[#800020] py-3.5 text-base font-bold hover:bg-[#600018]"
           >
             {submitting ? "Submitting…" : "Submit review"}
           </Button>
-          <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-[#800020]" />
-            Verified guests keep Beddn reviews trustworthy.
+          <p className="text-center text-xs text-muted-foreground">
+            Only guests who connected with the host through Beddn can review. Reviews may appear after moderation.
           </p>
         </form>
       )}

@@ -5,30 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { BeddnLoader } from "@/components/beddn-loader";
+import { Icon } from "@/components/icon";
+import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
 import { ROUTES } from "@/lib/routes";
-import {
-  AlertTriangle,
-  ArrowRight,
-  ArrowUpRight,
-  CalendarCheck,
-  CalendarDays,
-  CheckCircle2,
-  CreditCard,
-  Eye,
-  Home,
-  MessageCircle,
-  MessageSquare,
-  Plus,
-  ShieldCheck,
-  TrendingUp,
-  Wallet,
-} from "lucide-react";
 
 type Stat = {
   label: string;
   value: string | number;
-  icon: React.ElementType;
+  icon: string;
   href: string;
   tone?: "brand" | "warning" | "muted";
 };
@@ -40,13 +24,13 @@ type HostStatus = {
 } | null;
 
 const QUICK_ACTIONS = [
-  { label: "Create listing", description: "Add a new place or experience", href: ROUTES.newListing, icon: Plus },
-  { label: "Inquiries", description: "See and reply to leads", href: ROUTES.dashboardInquiries, icon: MessageCircle },
-  { label: "Calendar", description: "Block dates and see demand", href: ROUTES.dashboardCalendar, icon: CalendarDays },
-  { label: "Feedback", description: "See what guests said", href: ROUTES.dashboardFeedback, icon: MessageSquare },
+  { label: "Create listing", description: "Add a new place or experience", href: ROUTES.newListing, icon: "line-md:plus" },
+  { label: "Inquiries", description: "See and reply to leads", href: ROUTES.dashboardInquiries, icon: "line-md:bell" },
+  { label: "Calendar", description: "Block dates and see demand", href: ROUTES.dashboardCalendar, icon: "line-md:calendar" },
+  { label: "Feedback", description: "See what guests said", href: ROUTES.dashboardFeedback, icon: "line-md:star" },
 ];
 
-function StatCard({ label, value, icon: Icon, href, tone }: Stat) {
+function StatCard({ label, value, icon, href, tone }: Stat) {
   return (
     <Link
       href={href}
@@ -62,9 +46,9 @@ function StatCard({ label, value, icon: Icon, href, tone }: Stat) {
               : "bg-[#f5f1f2] text-[#6f6568]"
           }`}
         >
-          <Icon className="h-5 w-5" />
+          <Icon icon={icon} className="h-5 w-5" />
         </span>
-        <ArrowUpRight className="h-4 w-4 text-[#d8c8cd] transition-colors group-hover:text-[#800020]" />
+        <Icon icon="line-md:chevron-right" className="h-4 w-4 text-[#d8c8cd] transition-colors group-hover:text-[#800020]" />
       </div>
       <p className="mt-4 text-2xl font-bold text-[#2b000a]">{value}</p>
       <p className="mt-0.5 text-sm text-muted-foreground">{label}</p>
@@ -136,14 +120,14 @@ export default function DashboardPage() {
         ]);
 
         setStats([
-          { label: "Host badges pending", value: pendingHosts.count ?? 0, icon: ShieldCheck, href: ROUTES.adminHosts, tone: "warning" },
-          { label: "Listing badges pending", value: pendingListings.count ?? 0, icon: Home, href: ROUTES.adminListings, tone: "warning" },
-          { label: "Active paid bookings", value: paidBookings.count ?? 0, icon: CalendarCheck, href: ROUTES.adminBookings, tone: "brand" },
-          { label: "Disputes / rejected", value: disputes.count ?? 0, icon: AlertTriangle, href: ROUTES.adminDisputes, tone: "warning" },
-          { label: "Withdrawal requests", value: withdrawals.count ?? 0, icon: Wallet, href: ROUTES.adminWithdrawals, tone: "brand" },
-          { label: "Feedback items", value: feedback.count ?? 0, icon: MessageSquare, href: ROUTES.adminFeedback },
-          { label: "Demand searches", value: demand.count ?? 0, icon: TrendingUp, href: ROUTES.adminDemand },
-          { label: "Open payments", value: payments.count ?? 0, icon: CreditCard, href: ROUTES.adminPayments },
+          { label: "Host badges pending", value: pendingHosts.count ?? 0, icon: "line-md:account", href: ROUTES.adminHosts, tone: "warning" },
+          { label: "Listing badges pending", value: pendingListings.count ?? 0, icon: "line-md:home", href: ROUTES.adminListings, tone: "warning" },
+          { label: "Active paid bookings", value: paidBookings.count ?? 0, icon: "line-md:calendar", href: ROUTES.adminBookings, tone: "brand" },
+          { label: "Disputes / rejected", value: disputes.count ?? 0, icon: "line-md:bell", href: ROUTES.adminDisputes, tone: "warning" },
+          { label: "Withdrawal requests", value: withdrawals.count ?? 0, icon: "line-md:briefcase", href: ROUTES.adminWithdrawals, tone: "brand" },
+          { label: "Feedback items", value: feedback.count ?? 0, icon: "line-md:star", href: ROUTES.adminFeedback },
+          { label: "Demand searches", value: demand.count ?? 0, icon: "line-md:search", href: ROUTES.adminDemand },
+          { label: "Open payments", value: payments.count ?? 0, icon: "line-md:check-all", href: ROUTES.adminPayments },
         ]);
         setLoading(false);
         return;
@@ -190,12 +174,12 @@ export default function DashboardPage() {
 
       setPendingNew(newInquiries.count ?? 0);
       setStats([
-        { label: "Listing views", value: countEvent("LISTING_VIEW"), icon: Eye, href: ROUTES.dashboardListings },
-        { label: "Availability checks", value: countEvent("AVAILABILITY_CHECKED"), icon: CalendarCheck, href: ROUTES.dashboardCalendar },
-        { label: "Inquiries", value: totalInquiries.count ?? 0, icon: MessageCircle, href: ROUTES.dashboardInquiries, tone: "brand" },
-        { label: "New inquiries", value: newInquiries.count ?? 0, icon: MessageSquare, href: ROUTES.dashboardInquiries, tone: "warning" },
-        { label: "WhatsApp clicks", value: countEvent("WHATSAPP_CLICK"), icon: MessageCircle, href: ROUTES.dashboardInquiries },
-        { label: "Active listings", value: activeListings, icon: CheckCircle2, href: ROUTES.dashboardListings, tone: "brand" },
+        { label: "Listing views", value: countEvent("LISTING_VIEW"), icon: "line-md:home", href: ROUTES.dashboardListings },
+        { label: "Availability checks", value: countEvent("AVAILABILITY_CHECKED"), icon: "line-md:calendar", href: ROUTES.dashboardCalendar },
+        { label: "Inquiries", value: totalInquiries.count ?? 0, icon: "line-md:bell", href: ROUTES.dashboardInquiries, tone: "brand" },
+        { label: "New inquiries", value: newInquiries.count ?? 0, icon: "line-md:bell", href: ROUTES.dashboardInquiries, tone: "warning" },
+        { label: "WhatsApp clicks", value: countEvent("WHATSAPP_CLICK"), icon: "line-md:account", href: ROUTES.dashboardInquiries },
+        { label: "Active listings", value: activeListings, icon: "line-md:check-all", href: ROUTES.dashboardListings, tone: "brand" },
       ]);
       setLoading(false);
     }
@@ -213,7 +197,7 @@ export default function DashboardPage() {
   const greetingName = host?.name?.split(" ")[0] || userEmail.split("@")[0] || "there";
 
   if (loading) {
-    return <BeddnLoader label="Loading your dashboard…" />;
+    return <DashboardOverviewSkeleton />;
   }
 
   // No host profile yet — invite them to create one.
@@ -234,7 +218,7 @@ export default function DashboardPage() {
               href={ROUTES.newListing}
               className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
             >
-              Create host profile <ArrowRight className="h-4 w-4" />
+              Create host profile <Icon icon="line-md:chevron-right" className="h-4 w-4" />
             </Link>
           </div>
           <Image
@@ -276,12 +260,12 @@ export default function DashboardPage() {
           className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors hover:bg-amber-100/60"
         >
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-            <AlertTriangle className="h-4 w-4" />
+            <Icon icon="line-md:bell" className="h-4 w-4" />
           </span>
           <p className="text-sm font-semibold text-amber-900">
             {pendingNew} new inquiry{pendingNew === 1 ? "" : "s"} waiting for your response
           </p>
-          <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
+          <Icon icon="line-md:chevron-right" className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
         </Link>
       )}
 
@@ -322,19 +306,19 @@ export default function DashboardPage() {
               href={ROUTES.dashboardInquiries}
               className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-[#800020] transition-colors hover:bg-white/90"
             >
-              <MessageCircle className="h-4 w-4" /> View inquiries
+              <Icon icon="line-md:bell" className="h-4 w-4" /> View inquiries
             </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {QUICK_ACTIONS.map(({ label, description, href, icon: Icon }) => (
+            {QUICK_ACTIONS.map(({ label, description, href, icon }) => (
               <Link
                 key={label}
                 href={href}
                 className="group flex flex-col justify-between rounded-2xl border bg-white p-4 transition-shadow hover:shadow-md"
               >
                 <span className="flex size-9 items-center justify-center rounded-xl bg-[#f8eef2] text-[#800020]">
-                  <Icon className="h-4 w-4" />
+                  <Icon icon={icon} className="h-4 w-4" />
                 </span>
                 <div className="mt-3">
                   <p className="text-sm font-bold text-[#2b000a]">{label}</p>

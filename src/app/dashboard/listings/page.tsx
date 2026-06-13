@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { BeddnLoader } from "@/components/beddn-loader";
-import { Plus, Pencil, Eye, Link2, Check } from "lucide-react";
+import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
+import { Icon } from "@/components/icon";
 import type { Listing } from "@/lib/types";
 
 export default function ListingsPage() {
@@ -74,12 +74,12 @@ export default function ListingsPage() {
         <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
         <Link href="/dashboard/listings/new">
           <Button className="bg-[#800020] hover:bg-[#600018] gap-1">
-            <Plus className="h-4 w-4" /> New listing
+            <Icon icon="line-md:plus" className="h-4 w-4" /> New listing
           </Button>
         </Link>
       </div>
 
-      {loading ? <BeddnLoader label="Loading your listings…" /> : listings.length === 0 ? (
+      {loading ? <DashboardListSkeleton rows={4} /> : listings.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-listings_xklz7s.png"
           title="No listings yet"
@@ -128,9 +128,9 @@ export default function ListingsPage() {
                   title="Copy a link guests can use to review this stay"
                 >
                   {copiedId === listing.id ? (
-                    <Check className="h-4 w-4 text-[#128c4b]" />
+                    <Icon icon="line-md:check-all" className="h-4 w-4 text-[#128c4b]" />
                   ) : (
-                    <Link2 className="h-4 w-4" />
+                    <Icon icon="line-md:star" className="h-4 w-4" />
                   )}
                   <span className="hidden text-xs font-medium sm:inline">
                     {copiedId === listing.id ? "Copied" : "Review link"}
@@ -142,7 +142,7 @@ export default function ListingsPage() {
                   rel="noopener noreferrer"
                 >
                   <Button variant="ghost" size="sm" className="gap-1">
-                    <Eye className="h-4 w-4" />
+                    <Icon icon="line-md:search" className="h-4 w-4" />
                     <span className="text-xs font-medium">
                       {listing.is_active ? "View" : "Preview"}
                     </span>
@@ -150,7 +150,7 @@ export default function ListingsPage() {
                 </a>
                 <Link href={`/dashboard/listings/${listing.id}/edit`}>
                   <Button variant="ghost" size="sm" className="gap-1">
-                    <Pencil className="h-4 w-4" />
+                    <Icon icon="line-md:briefcase" className="h-4 w-4" />
                     {listing.listing_status === "draft" && (
                       <span className="text-xs font-medium">Continue</span>
                     )}

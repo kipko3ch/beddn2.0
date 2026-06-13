@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { CalendarDays, Clock, TicketCheck, RefreshCw, TrendingUp } from "lucide-react";
+import { Icon } from "@/components/icon";
 import type { Booking, Inquiry, Listing } from "@/lib/types";
 
 interface AvailabilitySlot {
@@ -180,9 +180,9 @@ export default function CalendarPage() {
       <form onSubmit={blockSlot} className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           {isExperience ? (
-            <TicketCheck className="h-5 w-5 text-[#800020]" />
+            <Icon icon="line-md:star" className="h-5 w-5 text-[#800020]" />
           ) : (
-            <CalendarDays className="h-5 w-5 text-[#800020]" />
+            <Icon icon="line-md:calendar" className="h-5 w-5 text-[#800020]" />
           )}
           <h2 className="font-bold">
             {isExperience ? "Block an experience session" : "Block a stay slot"}
@@ -224,7 +224,7 @@ export default function CalendarPage() {
       {/* iCal sync with other platforms */}
       <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-1 flex items-center gap-2">
-          <RefreshCw className="h-5 w-5 text-[#800020]" />
+          <Icon icon="line-md:loading-twotone-loop" className="h-5 w-5 text-[#800020]" />
           <h2 className="font-bold">Sync with Airbnb, Booking.com & others (iCal)</h2>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
@@ -286,7 +286,7 @@ export default function CalendarPage() {
       {/* Demand calendar — organized inquiry demand, not random messages. */}
       <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-1 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-[#800020]" />
+          <Icon icon="line-md:search" className="h-5 w-5 text-[#800020]" />
           <h2 className="font-bold">Demand calendar</h2>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
@@ -369,7 +369,7 @@ export default function CalendarPage() {
                 <div key={booking.id} className="p-4 text-sm">
                   <p className="font-medium">{booking.guest_name}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
+                    <Icon icon="line-md:calendar" className="h-3.5 w-3.5" />
                     <span>{booking.start_datetime?.replace("T", " ").slice(0, 16)}</span>
                     <Badge variant="secondary" className="rounded-full capitalize">
                       {booking.category}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BeddnLoader } from "@/components/beddn-loader";
+import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
@@ -69,7 +69,7 @@ export default function HostInquiriesPage() {
       </div>
 
       {loading ? (
-        <BeddnLoader label="Loading inquiries…" />
+        <DashboardListSkeleton rows={5} />
       ) : rows.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-bookings_e7n8sb.png"

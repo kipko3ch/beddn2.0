@@ -15,36 +15,23 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import {
-  LayoutDashboard,
-  Home,
-  TrendingUp,
-  CalendarDays,
-  MessageSquare,
-  Star,
-  ShieldCheck,
-  Search,
-  UserCircle,
-  Menu,
-  LogOut,
-  Plus,
-} from 'lucide-react';
+import { Icon } from '@/components/icon';
 
-const NAV_SECTIONS: { title: string; items: { href: string; label: string; icon: React.ElementType }[] }[] = [
+const NAV_SECTIONS: { title: string; items: { href: string; label: string; icon: string }[] }[] = [
   {
     title: 'Hosting',
     items: [
-      { href: ROUTES.dashboard, label: 'Overview', icon: LayoutDashboard },
-      { href: ROUTES.dashboardListings, label: 'Listings', icon: Home },
-      { href: ROUTES.dashboardInquiries, label: 'Inquiries', icon: MessageSquare },
-      { href: ROUTES.dashboardCalendar, label: 'Calendar', icon: CalendarDays },
+      { href: ROUTES.dashboard, label: 'Overview', icon: 'line-md:account' },
+      { href: ROUTES.dashboardListings, label: 'Listings', icon: 'line-md:home' },
+      { href: ROUTES.dashboardInquiries, label: 'Inquiries', icon: 'line-md:bell' },
+      { href: ROUTES.dashboardCalendar, label: 'Calendar', icon: 'line-md:calendar' },
     ],
   },
   {
     title: 'Insights',
     items: [
-      { href: ROUTES.dashboardFeedback, label: 'Feedback', icon: Star },
-      { href: ROUTES.dashboardDemand, label: 'Demand', icon: TrendingUp },
+      { href: ROUTES.dashboardFeedback, label: 'Feedback', icon: 'line-md:star' },
+      { href: ROUTES.dashboardDemand, label: 'Demand', icon: 'line-md:search' },
     ],
   },
 ];
@@ -134,7 +121,7 @@ export default function DashboardLayout({
         </header>
 
         <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-24 text-center">
-          <UserCircle className="mb-5 h-14 w-14 text-[#800020]" />
+          <Icon icon="line-md:account" className="mb-5 h-14 w-14 text-[#800020]" />
           <h1 className="font-brand text-5xl leading-none text-[#2b000a]">
             Sign in to continue
           </h1>
@@ -164,7 +151,7 @@ export default function DashboardLayout({
             {section.title}
           </p>
           <div className="space-y-0.5">
-            {section.items.map(({ href, label, icon: Icon }) => {
+            {section.items.map(({ href, label, icon }) => {
               const active = isActive(href);
               return (
                 <Link
@@ -177,7 +164,7 @@ export default function DashboardLayout({
                       : 'text-[#5d4f54] hover:bg-[#faf4f6] hover:text-[#2b000a]'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${active ? '' : 'text-[#a08b92]'}`} />
+                  <Icon icon={icon} className={`h-4 w-4 ${active ? '' : 'text-[#a08b92]'}`} />
                   {label}
                 </Link>
               );
@@ -195,7 +182,7 @@ export default function DashboardLayout({
             onClick={onNavigate}
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#800020] hover:bg-[#faf4f6]"
           >
-            <ShieldCheck className="h-4 w-4" /> Admin dashboard
+            <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
           </Link>
         </div>
       )}
@@ -209,10 +196,10 @@ export default function DashboardLayout({
         onClick={onNavigate}
         className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#5d4f54] hover:bg-[#faf4f6] hover:text-[#2b000a]"
       >
-        <Search className="h-4 w-4 text-[#a08b92]" /> Switch to traveler
+        <Icon icon="line-md:search" className="h-4 w-4 text-[#a08b92]" /> Switch to traveler
       </Link>
       <div className="mt-2 flex items-center gap-3 rounded-xl bg-[#faf4f6] px-3 py-2.5">
-        <UserCircle className="h-8 w-8 shrink-0 text-[#800020]" />
+        <Icon icon="line-md:account" className="h-8 w-8 shrink-0 text-[#800020]" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold text-[#2b000a]">{user?.email}</p>
           <button
@@ -220,7 +207,7 @@ export default function DashboardLayout({
             onClick={signOut}
             className="flex items-center gap-1 text-xs text-[#800020] hover:underline"
           >
-            <LogOut className="h-3 w-3" /> Sign out
+            <Icon icon="line-md:log-out" className="h-3 w-3" /> Sign out
           </button>
         </div>
       </div>
@@ -269,7 +256,7 @@ export default function DashboardLayout({
                 aria-expanded={menuOpen}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#2b000a] hover:bg-muted md:hidden"
               >
-                <Menu className="h-5 w-5" />
+                <Icon icon="line-md:menu" className="h-5 w-5" />
               </button>
               <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a] md:hidden">
                 Beddn
@@ -281,14 +268,14 @@ export default function DashboardLayout({
                 href={ROUTES.newListing}
                 className="hidden items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-[#600018] sm:inline-flex"
               >
-                <Plus className="h-4 w-4" /> List your place
+                <Icon icon="line-md:plus" className="h-4 w-4" /> New listing
               </Link>
               {isAdmin && (
                 <Link
                   href={ROUTES.adminHome}
                   className="hidden items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-2 text-sm font-semibold text-[#800020] hover:bg-[#f1e1e7] sm:inline-flex"
                 >
-                  <ShieldCheck className="h-4 w-4" /> Admin
+                  <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin
                 </Link>
               )}
 
@@ -301,7 +288,7 @@ export default function DashboardLayout({
                   aria-expanded={accountOpen}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#800020] hover:bg-muted"
                 >
-                  <UserCircle className="h-6 w-6" />
+                  <Icon icon="line-md:account" className="h-6 w-6" />
                 </button>
                 {accountOpen && (
                   <>
@@ -318,8 +305,8 @@ export default function DashboardLayout({
                       <Link href={ROUTES.dashboard} className="block px-4 py-2.5 text-sm hover:bg-muted">
                         Dashboard
                       </Link>
-                      <Link href={ROUTES.newListing} className="block px-4 py-2.5 text-sm hover:bg-muted sm:hidden">
-                        List your place
+                      <Link href={isHost || isAdmin ? ROUTES.dashboardListings : ROUTES.newListing} className="block px-4 py-2.5 text-sm hover:bg-muted sm:hidden">
+                        {isHost || isAdmin ? 'Listings' : 'List your place'}
                       </Link>
                       <Link href={ROUTES.search} className="block px-4 py-2.5 text-sm hover:bg-muted md:hidden">
                         Traveler
@@ -329,7 +316,7 @@ export default function DashboardLayout({
                         onClick={signOut}
                         className="flex w-full items-center gap-2 border-t px-4 py-2.5 text-left text-sm text-[#800020] hover:bg-muted"
                       >
-                        <LogOut className="h-4 w-4" /> Sign out
+                        <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
                       </button>
                     </div>
                   </>

@@ -15,9 +15,7 @@ import {
   Bath,
   CalendarDays,
   Car,
-  Check,
   BadgeCheck,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -69,21 +67,29 @@ function primaryImage(listing: Listing) {
 
 function AmenityItem({ label }: { label: string }) {
   // `label` is the stored amenity string: a catalog slug for new listings, or a
-  // human label for legacy ones.
+  // human label for legacy ones. Icons are neutral line icons (no check ticks).
   const mdiIcon = AMENITY_ICON_MAP[label];
   const display = AMENITY_LABEL[label] ?? label;
   if (mdiIcon) {
     return (
-      <div className="flex items-center gap-3 text-sm text-[#241f21]">
-        <AmenityIcon icon={mdiIcon} width={18} height={18} className="text-[#800020]" />
+      <div className="flex items-center gap-3.5 py-1 text-[15px] text-[#241f21]">
+        <AmenityIcon icon={mdiIcon} width={22} height={22} className="text-[#2b000a]" />
         <span>{display}</span>
       </div>
     );
   }
-  const Icon = AMENITY_ICON[label.toLowerCase()] || Check;
+  const Icon = AMENITY_ICON[label.toLowerCase()];
   return (
-    <div className="flex items-center gap-3 text-sm text-[#241f21]">
-      <Icon className="h-4 w-4 text-[#800020]" />
+    <div className="flex items-center gap-3.5 py-1 text-[15px] text-[#241f21]">
+      {Icon ? (
+        <Icon className="h-[22px] w-[22px] text-[#2b000a]" />
+      ) : (
+        // Neutral marker for amenities without a known icon — avoids the
+        // "cheap" checkmark look.
+        <span className="flex h-[22px] w-[22px] items-center justify-center">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#2b000a]" />
+        </span>
+      )}
       <span>{display}</span>
     </div>
   );
@@ -93,17 +99,19 @@ export function PropertyContent({
   listing,
   reviews,
   blockedDateStrings,
+  isOwnListing = false,
 }: {
   listing: Listing;
   reviews: Review[];
   blockedDateStrings: string[];
+  isOwnListing?: boolean;
 }) {
   const searchParams = useSearchParams();
   const supabase = useMemo(() => createClient(), []);
   const [user, setUser] = useState<User | null>(null);
   const [inquiryOpen, setInquiryOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [amenitiesOpen, setAmenitiesOpen] = useState(false);
 
   function openLightbox(index: number) {
     setLightboxIndex(index);
@@ -155,9 +163,15 @@ export function PropertyContent({
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0;
 
-  const visibleAmenities = showAllAmenities
-    ? listing.amenities
-    : listing.amenities.slice(0, 8);
+  // A combined "what this place offers" list: real amenities first, then a few
+  // useful stay facts — all rendered with neutral line icons (no ticks).
+  const stayFacts = [
+    listing.minimum_hours ? `${listing.minimum_hours}+ hour minimum` : null,
+    listing.total_units && listing.total_units > 1 ? `${listing.total_units} rooms / units` : null,
+    "Exact address after you inquire",
+  ].filter(Boolean) as string[];
+  const allOfferings = [...listing.amenities, ...stayFacts];
+  const visibleOfferings = allOfferings.slice(0, 8);
 
   const selectedDate = dateRange?.from;
   const blockedSet = useMemo(
@@ -168,12 +182,18 @@ export function PropertyContent({
   const isSelectedBlocked = selectedDateKey ? blockedSet.has(selectedDateKey) : false;
   const availableUnits = Math.max(0, Number(listing.available_units || listing.total_units || 1));
   const hasAvailability = Boolean(selectedDate && !isSelectedBlocked && availableUnits > 0);
-  const unitLabel =
-    selectedCategory === "experience"
-      ? `${availableUnits} seat${availableUnits === 1 ? "" : "s"} available`
-      : selectedCategory === "hourly"
-      ? `${availableUnits} hourly slot${availableUnits === 1 ? "" : "s"} available`
-      : `${availableUnits} room/unit${availableUnits === 1 ? "" : "s"} available`;
+  const priceOptions = [
+    listing.hourly_price
+      ? { label: "Hourly", suffix: "/hr", value: Number(listing.hourly_price) }
+      : null,
+    listing.overnight_price
+      ? { label: "Overnight", suffix: "/night", value: Number(listing.overnight_price) }
+      : null,
+    listing.experience_price
+      ? { label: "Experience", suffix: "/session", value: Number(listing.experience_price) }
+      : null,
+  ].filter(Boolean) as { label: string; suffix: string; value: number }[];
+  const primaryPrice = priceOptions[0];
 
   const formatDate = (date?: Date) =>
     date
@@ -227,7 +247,12 @@ export function PropertyContent({
     });
   }
 
+  function scrollToAvailability() {
+    document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function openInquiry() {
+    if (isOwnListing) return;
     setInquiryOpen(true);
   }
 
@@ -243,59 +268,63 @@ export function PropertyContent({
             Back to stays
           </Link>
         </div>
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="font-brand text-3xl tracking-tight text-[#2b000a] sm:text-4xl">
               {listing.title || listing.name}
             </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>{listing.area}, {listing.city}, {listing.country}</span>
+            {/* One compact meta line: location · type · rating, then small chips */}
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {listing.area}, {listing.city}, {listing.country}
+              </span>
               {listing.property_type && PROPERTY_TYPE_LABEL[listing.property_type] && (
                 <>
-                  <span>·</span>
+                  <span aria-hidden>·</span>
                   <span>{PROPERTY_TYPE_LABEL[listing.property_type]}</span>
                 </>
               )}
               {reviews.length > 0 && (
                 <>
-                  <span>·</span>
-                  <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                  <span>{avgRating.toFixed(1)} ({reviews.length})</span>
+                  <span aria-hidden>·</span>
+                  <span className="inline-flex items-center gap-1 text-[#2b000a]">
+                    <Star className="h-4 w-4 fill-[#800020] text-[#800020]" />
+                    {avgRating.toFixed(1)} ({reviews.length})
+                  </span>
                 </>
               )}
             </div>
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+              {categories.map((cat) => {
+                const Icon = cat === "hourly" ? Clock : cat === "overnight" ? Moon : Compass;
+                return (
+                  <span
+                    key={cat}
+                    className="inline-flex items-center gap-1 rounded-full bg-[#f5f1f2] px-2.5 py-1 text-xs font-medium capitalize text-[#6f6568]"
+                  >
+                    <Icon className="h-3.5 w-3.5" /> {cat}
+                  </span>
+                );
+              })}
+              {(listing.is_verified || listing.host?.is_verified) && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#f8eef2] px-2.5 py-1 text-xs font-semibold text-[#800020]">
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  {listing.is_verified ? "Beddn verified" : "Verified host"}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 rounded-full"
-              onClick={() => toggle(listing.id)}
-              aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
-            >
-              <Heart className={`h-4 w-4 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
-              {isSaved ? "Saved" : "Save"}
-            </Button>
-            {categories.map((cat) => {
-              const Icon = cat === "hourly" ? Clock : cat === "overnight" ? Moon : Compass;
-              return (
-                <Badge key={cat} variant="secondary" className="gap-1 rounded-full px-3 py-1">
-                  <Icon className="h-3.5 w-3.5" /> {cat}
-                </Badge>
-              );
-            })}
-            {listing.host?.is_verified && (
-              <Badge variant="outline" className="gap-1 rounded-full px-3 py-1">
-                <BadgeCheck className="h-3.5 w-3.5 text-[#800020]" /> Verified host
-              </Badge>
-            )}
-            {listing.is_verified && (
-              <Badge className="gap-1 rounded-full bg-[#f8eef2] px-3 py-1 text-[#800020] hover:bg-[#f8eef2]">
-                <BadgeCheck className="h-3.5 w-3.5" /> Beddn verified listing
-              </Badge>
-            )}
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-2 rounded-full"
+            onClick={() => toggle(listing.id)}
+            aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
+          >
+            <Heart className={`h-4 w-4 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
+            <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
+          </Button>
         </div>
 
         {/* Mobile: swipeable full-width carousel with counter */}
@@ -483,39 +512,26 @@ export function PropertyContent({
           <Separator />
 
           <section>
-            <h2 className="mb-4 text-xl font-bold">Property amenities</h2>
-            {listing.amenities.length > 0 ? (
+            <h2 className="mb-4 text-xl font-bold">What this place offers</h2>
+            {allOfferings.length > 0 ? (
               <>
-                <div className="grid gap-x-12 gap-y-4 sm:grid-cols-2">
-                  {visibleAmenities.map((amenity) => (
-                    <AmenityItem key={amenity} label={amenity} />
+                <div className="grid gap-x-12 gap-y-1.5 sm:grid-cols-2">
+                  {visibleOfferings.map((item, i) => (
+                    <AmenityItem key={`${item}-${i}`} label={item} />
                   ))}
                 </div>
-                {listing.amenities.length > 8 && (
+                {allOfferings.length > 8 && (
                   <button
-                    onClick={() => setShowAllAmenities((value) => !value)}
-                    className="mt-4 flex items-center gap-1 text-sm font-bold underline"
+                    onClick={() => setAmenitiesOpen(true)}
+                    className="mt-5 inline-flex items-center rounded-xl border border-[#181113] px-5 py-2.5 text-sm font-semibold hover:bg-neutral-50"
                   >
-                    {showAllAmenities ? "Show less" : "Show more"}
-                    <ChevronDown className="h-4 w-4" />
+                    Show all {allOfferings.length} amenities
                   </button>
                 )}
               </>
             ) : (
               <p className="text-sm text-muted-foreground">Amenities will be added soon.</p>
             )}
-          </section>
-
-          <section>
-            <h2 className="mb-4 text-xl font-bold">Room features</h2>
-            <div className="grid gap-x-12 gap-y-4 sm:grid-cols-2">
-              <AmenityItem label="Private booking code" />
-              <AmenityItem label="Booking updates in your account" />
-              <AmenityItem label="Exact address after confirmation" />
-              <AmenityItem label="Secure reserve fee" />
-              {listing.minimum_hours && <AmenityItem label={`${listing.minimum_hours}+ hour minimum`} />}
-              {listing.total_units && <AmenityItem label={`${listing.total_units} rooms / units`} />}
-            </div>
           </section>
 
           <section>
@@ -552,8 +568,29 @@ export function PropertyContent({
             <div className="mb-4 rounded-2xl border bg-[#fbf7f8] p-4">
               <h2 className="text-lg font-bold">Check availability</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Pick a booking type and date first. If there is availability, continue to reserve.
+                Pick the stay type, choose dates on the calendar, then tap Check Availability.
+                If it looks open, Beddn prepares a clean inquiry before WhatsApp.
               </p>
+              {isOwnListing && (
+                <p className="mt-3 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-[#800020]">
+                  This is your listing. Guests can check dates and send inquiries here; use your dashboard to edit availability.
+                </p>
+              )}
+              <ol className="mt-3 grid gap-2 sm:grid-cols-3">
+                {[
+                  ["1", "Pick a type & dates", "Choose hourly, overnight, or experience, then select your dates below."],
+                  ["2", "Check Availability", "The result appears under the calendar so you know the next step."],
+                  ["3", "Send Inquiry", "Guests log in once, then continue to WhatsApp with details prefilled."],
+                ].map(([n, title, body]) => (
+                  <li key={n} className="rounded-xl bg-white p-3">
+                    <span className="flex size-6 items-center justify-center rounded-full bg-[#800020] text-xs font-bold text-white">
+                      {n}
+                    </span>
+                    <p className="mt-2 text-sm font-semibold text-[#2b000a]">{title}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{body}</p>
+                  </li>
+                ))}
+              </ol>
               <div className="mt-4 flex flex-wrap gap-2">
                 {categories.map((cat) => (
                   <button
@@ -707,7 +744,14 @@ export function PropertyContent({
                       </p>
                     )}
                   </div>
-                  {availabilityChecked ? (
+                  {isOwnListing ? (
+                    <Link
+                      href={`/dashboard/listings/${listing.id}/edit`}
+                      className="inline-flex h-9 items-center justify-center rounded-full bg-[#800020] px-7 text-sm font-medium text-white hover:bg-[#600018]"
+                    >
+                      Manage listing
+                    </Link>
+                  ) : availabilityChecked ? (
                     <Button
                       onClick={openInquiry}
                       className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
@@ -777,50 +821,57 @@ export function PropertyContent({
 
         <aside className="lg:pt-1">
           <div className="sticky top-32 rounded-2xl border bg-white p-5 shadow-sm">
-            <div className="space-y-3">
-              {listing.hourly_price && (
-                <div className="flex justify-between text-sm">
-                  <span>Hourly</span>
-                  <span className="font-semibold">
-                    {priceCurrency(listing)} {Number(listing.hourly_price).toLocaleString()}/hr
-                  </span>
+            <div>
+              {primaryPrice && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    From
+                  </p>
+                  <p className="mt-1 text-2xl font-bold text-[#2b000a]">
+                    {priceCurrency(listing)} {primaryPrice.value.toLocaleString()}
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {primaryPrice.suffix}
+                    </span>
+                  </p>
                 </div>
               )}
-              {listing.overnight_price && (
-                <div className="flex justify-between text-sm">
-                  <span>Overnight</span>
-                  <span className="font-semibold">
-                    {priceCurrency(listing)} {Number(listing.overnight_price).toLocaleString()}/night
-                  </span>
-                </div>
-              )}
-              {listing.experience_price && (
-                <div className="flex justify-between text-sm">
-                  <span>Experience</span>
-                  <span className="font-semibold">
-                    {priceCurrency(listing)} {Number(listing.experience_price).toLocaleString()}/session
-                  </span>
+              {priceOptions.length > 1 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {priceOptions.map((option) => (
+                    <span
+                      key={option.label}
+                      className="rounded-full bg-[#f5f1f2] px-3 py-1 text-xs font-semibold text-[#5d4f54]"
+                    >
+                      {option.label}: {priceCurrency(listing)} {option.value.toLocaleString()}
+                    </span>
+                  ))}
                 </div>
               )}
               {listing.deposit_amount > 0 && (
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="mt-3 flex justify-between text-sm text-muted-foreground">
                   <span>Reserve fee</span>
                   <span>{priceCurrency(listing)} {Number(listing.deposit_amount).toLocaleString()}</span>
                 </div>
               )}
             </div>
-            <Button
-              onClick={() => {
-                document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                checkAvailability();
-              }}
-              className="mt-5 w-full rounded-full bg-[#800020] hover:bg-[#600018]"
-              size="lg"
-            >
-              Check availability
-            </Button>
+            {isOwnListing ? (
+              <Link
+                href={`/dashboard/listings/${listing.id}/edit`}
+                className="mt-5 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#800020] px-4 text-sm font-medium text-white hover:bg-[#600018]"
+              >
+                Manage listing
+              </Link>
+            ) : (
+              <Button
+                onClick={scrollToAvailability}
+                className="mt-5 w-full rounded-full bg-[#800020] hover:bg-[#600018]"
+                size="lg"
+              >
+                Check availability
+              </Button>
+            )}
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              Beddn sends a clean inquiry with your dates and guest details before WhatsApp.
+              Choose dates below first. Beddn then prepares a clean inquiry before WhatsApp.
             </p>
           </div>
         </aside>
@@ -832,12 +883,9 @@ export function PropertyContent({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-base font-bold">
-              {priceCurrency(listing)}{" "}
-              {Number(
-                listing.hourly_price ?? listing.overnight_price ?? listing.experience_price ?? 0
-              ).toLocaleString()}
+              {priceCurrency(listing)} {Number(primaryPrice?.value ?? 0).toLocaleString()}
               <span className="text-sm font-normal text-muted-foreground">
-                {listing.hourly_price ? "/hr" : listing.overnight_price ? "/night" : "/session"}
+                {primaryPrice?.suffix ?? ""}
               </span>
             </p>
             {reviews.length > 0 && (
@@ -847,31 +895,66 @@ export function PropertyContent({
               </p>
             )}
           </div>
-          <Button
-            onClick={() => {
-              document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
-              checkAvailability();
-            }}
-            className="h-11 shrink-0 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
-          >
-            Check Availability
-          </Button>
+          {isOwnListing ? (
+            <Link
+              href={`/dashboard/listings/${listing.id}/edit`}
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+            >
+              Manage
+            </Link>
+          ) : (
+            <Button
+              onClick={scrollToAvailability}
+              className="h-11 shrink-0 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
+            >
+              Check Availability
+            </Button>
+          )}
         </div>
       </div>
 
-      <InquiryFlow
-        listing={{
-          id: listing.id,
-          name: listing.name,
-          title: listing.title,
-          slug: listing.slug,
-          image: images[0]?.url ?? null,
-        }}
-        user={user}
-        draft={inquiryDraft}
-        open={inquiryOpen}
-        onOpenChange={setInquiryOpen}
-      />
+      {!isOwnListing && (
+        <InquiryFlow
+          listing={{
+            id: listing.id,
+            name: listing.name,
+            title: listing.title,
+            slug: listing.slug,
+            image: images[0]?.url ?? null,
+          }}
+          user={user}
+          draft={inquiryDraft}
+          open={inquiryOpen}
+          onOpenChange={setInquiryOpen}
+        />
+      )}
+
+      {/* All amenities overlay */}
+      {amenitiesOpen && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setAmenitiesOpen(false)} aria-hidden />
+          <div className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-3xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-brand text-2xl text-[#2b000a]">What this place offers</h2>
+              <button
+                type="button"
+                onClick={() => setAmenitiesOpen(false)}
+                aria-label="Close"
+                className="flex size-9 items-center justify-center rounded-full hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="divide-y">
+              {allOfferings.map((item, i) => (
+                <div key={`${item}-${i}`} className="py-1.5">
+                  <AmenityItem label={item} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

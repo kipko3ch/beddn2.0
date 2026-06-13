@@ -24,7 +24,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Home, LayoutDashboard, LogIn, LogOut, Menu, Search, ShieldCheck, UserCircle } from "lucide-react";
 import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
 import { useScrollUpVisibility } from "@/lib/use-scroll-up-visibility";
@@ -44,11 +43,13 @@ function getInitials(user: User | null) {
 }
 
 export function Header() {
-  const { user, isHost, isAdmin } = useUserRole();
+  const { user, isHost, isAdmin, loading } = useUserRole();
   const pathname = usePathname();
   const supabase = createClient();
   const bottomNavVisible = useScrollUpVisibility();
   const canHost = isHost || isAdmin;
+  const rolePending = Boolean(user && loading);
+  const showHostWorkspace = canHost || rolePending;
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -77,7 +78,7 @@ export function Header() {
                 </Button>
               </AuthDialog>
             )}
-            {user && !canHost && (
+            {user && !showHostWorkspace && (
               <Link href={ROUTES.newListing} className="hidden sm:block">
                 <Button variant="ghost" size="sm">
                   Become a host
@@ -98,40 +99,40 @@ export function Header() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem>
                     <Link href={ROUTES.saved} className="flex items-center gap-2 w-full">
-                      <Heart className="h-4 w-4" /> Saved trips
+                      <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
                     </Link>
                   </DropdownMenuItem>
-                  {canHost ? (
+                  {showHostWorkspace ? (
                     <>
                       <DropdownMenuItem>
                         <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                          <LayoutDashboard className="h-4 w-4" /> Host dashboard
+                          <Icon icon="line-md:account" className="h-4 w-4" /> Host dashboard
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Link href={ROUTES.search} className="flex items-center gap-2 w-full">
-                          <Search className="h-4 w-4" /> Switch to traveler
+                          <Icon icon="line-md:search" className="h-4 w-4" /> Switch to traveler
                         </Link>
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <DropdownMenuItem>
                       <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
-                        <Home className="h-4 w-4" /> Become a host
+                        <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
                       </Link>
                     </DropdownMenuItem>
                   )}
                   {isAdmin && (
                     <DropdownMenuItem>
                       <Link href={ROUTES.adminHome} className="flex items-center gap-2 w-full">
-                        <ShieldCheck className="h-4 w-4" /> Admin dashboard
+                        <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <span className="flex items-center gap-2">
-                      <LogOut className="h-4 w-4" /> Sign out
+                      <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
                     </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -156,7 +157,7 @@ export function Header() {
                   />
                 }
               >
-                <Menu className="h-5 w-5" />
+                <Icon icon="line-md:menu" className="h-5 w-5" />
                 <span className="sr-only">Open navigation</span>
               </SheetTrigger>
               <SheetContent side="left" className="w-[min(82vw,320px)] gap-0 bg-white p-0">
@@ -172,19 +173,19 @@ export function Header() {
                       <Link href={ROUTES.search} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                     }
                   >
-                    <Search className="h-4 w-4" /> Discover
+                    <Icon icon="line-md:search" className="h-4 w-4" /> Discover
                   </SheetClose>
                   <SheetClose
                     render={
                       <Link href={ROUTES.review} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                     }
                   >
-                    <Heart className="h-4 w-4" /> Review a stay
+                    <Icon icon="line-md:star" className="h-4 w-4" /> Review a stay
                   </SheetClose>
                   {!user && (
                     <AuthDialog>
                       <button className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm hover:bg-muted">
-                        <LogIn className="h-4 w-4" /> Login
+                        <Icon icon="line-md:log-in" className="h-4 w-4" /> Login
                       </button>
                     </AuthDialog>
                   )}
@@ -193,15 +194,15 @@ export function Header() {
                       <Link href={ROUTES.saved} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                     }
                   >
-                    <Heart className="h-4 w-4" /> Saved trips
+                    <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
                   </SheetClose>
-                  {!canHost ? (
+                  {!showHostWorkspace ? (
                     <SheetClose
                       render={
                         <Link href={ROUTES.newListing} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                       }
                     >
-                      <Home className="h-4 w-4" /> Become a host
+                      <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
                     </SheetClose>
                   ) : (
                     <SheetClose
@@ -209,16 +210,16 @@ export function Header() {
                         <Link href={ROUTES.dashboard} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                       }
                     >
-                      <LayoutDashboard className="h-4 w-4" /> Dashboard
+                      <Icon icon="line-md:account" className="h-4 w-4" /> Dashboard
                     </SheetClose>
                   )}
-                  {user && canHost && (
+                  {user && showHostWorkspace && (
                     <SheetClose
                       render={
                         <Link href={ROUTES.search} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                       }
                     >
-                      <Search className="h-4 w-4" /> Traveler view
+                      <Icon icon="line-md:search" className="h-4 w-4" /> Traveler view
                     </SheetClose>
                   )}
                   {isAdmin && (
@@ -227,7 +228,7 @@ export function Header() {
                         <Link href={ROUTES.adminHome} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
                       }
                     >
-                      <ShieldCheck className="h-4 w-4" /> Admin dashboard
+                      <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
                     </SheetClose>
                   )}
                   <SheetClose
@@ -265,40 +266,40 @@ export function Header() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem>
                     <Link href={ROUTES.saved} className="flex items-center gap-2 w-full">
-                      <Heart className="h-4 w-4" /> Saved trips
+                      <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
                     </Link>
                   </DropdownMenuItem>
-                  {canHost ? (
+                  {showHostWorkspace ? (
                     <>
                       <DropdownMenuItem>
                         <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                          <LayoutDashboard className="h-4 w-4" /> Host dashboard
+                          <Icon icon="line-md:account" className="h-4 w-4" /> Host dashboard
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Link href={ROUTES.search} className="flex items-center gap-2 w-full">
-                          <Search className="h-4 w-4" /> Switch to traveler
+                          <Icon icon="line-md:search" className="h-4 w-4" /> Switch to traveler
                         </Link>
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <DropdownMenuItem>
                       <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
-                        <Home className="h-4 w-4" /> Become a host
+                        <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
                       </Link>
                     </DropdownMenuItem>
                   )}
                   {isAdmin && (
                     <DropdownMenuItem>
                       <Link href={ROUTES.adminHome} className="flex items-center gap-2 w-full">
-                        <ShieldCheck className="h-4 w-4" /> Admin dashboard
+                        <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <span className="flex items-center gap-2">
-                      <LogOut className="h-4 w-4" /> Sign out
+                      <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
                     </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -306,7 +307,7 @@ export function Header() {
             ) : (
               <AuthDialog defaultHostIntent>
                 <button className="inline-flex size-9 items-center justify-center rounded-full text-[#181113]">
-                  <UserCircle className="h-5 w-5" />
+                  <Icon icon="line-md:account" className="h-5 w-5" />
                   <span className="sr-only">Become a host</span>
                 </button>
               </AuthDialog>
@@ -346,7 +347,7 @@ export function Header() {
             <Icon icon="line-md:heart" className="h-6 w-6" />
             Saved
           </Link>
-          {user && canHost ? (
+          {user && showHostWorkspace ? (
             <Link
               href={ROUTES.dashboard}
               className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${
