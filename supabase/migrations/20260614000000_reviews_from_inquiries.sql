@@ -15,3 +15,10 @@ create unique index if not exists reviews_listing_user_unique
 -- Track when we nudged the guest to review, so the reminder only fires once.
 alter table public.inquiries
   add column if not exists review_reminder_sent_at timestamptz;
+
+-- Richer review payload: quick highlight tags, a recommend flag, and a private
+-- note to Beddn (never shown publicly — the listing page only reads rating +
+-- comment).
+alter table public.reviews add column if not exists tags text[] not null default '{}';
+alter table public.reviews add column if not exists would_recommend boolean;
+alter table public.reviews add column if not exists private_note text;
