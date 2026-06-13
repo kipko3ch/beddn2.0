@@ -11,7 +11,20 @@ interface ReviewBody {
   listing?: string; // slug or id
   rating?: number;
   comment?: string | null;
+  tags?: string[];
+  wouldRecommend?: boolean | null;
+  privateNote?: string | null;
 }
+
+const ALLOWED_TAGS = new Set([
+  "clean",
+  "safe",
+  "good_host",
+  "accurate_photos",
+  "easy_check_in",
+  "good_value",
+  "good_location",
+]);
 
 function clampRating(value: unknown): number | null {
   const n = Number(value);
@@ -76,12 +89,19 @@ export async function POST(request: Request) {
     .is("booking_id", null)
     .maybeSingle();
 
+  const tags = Array.isArray(body.tags)
+    ? [...new Set(body.tags.filter((t) => ALLOWED_TAGS.has(t)))]
+    : [];
+
   const payload = {
     listing_id: listing.id,
     user_id: user.id,
     inquiry_id: inquiry.id,
     rating,
     comment: body.comment?.trim() || null,
+    tags,
+    would_recommend: typeof body.wouldRecommend === "boolean" ? body.wouldRecommend : null,
+    private_note: body.privateNote?.trim() || null,
   };
 
   const { error } = existing

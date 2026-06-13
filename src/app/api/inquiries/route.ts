@@ -104,7 +104,7 @@ export async function POST(request: Request) {
   // Listing must exist and be active; pull host + name for the WhatsApp link.
   const { data: listing } = await admin
     .from("listings")
-    .select("id, slug, name, title, host_id, is_active, host:hosts(id, phone)")
+    .select("id, slug, name, title, host_id, is_active, host:hosts(id, phone, user_id)")
     .eq("id", body.listingId)
     .maybeSingle();
 
@@ -112,7 +112,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Listing not available." }, { status: 404 });
   }
 
-  const host = (listing.host ?? null) as { id?: string; phone?: string } | null;
+  const host = (listing.host ?? null) as { id?: string; phone?: string; user_id?: string } | null;
+
+  // A host can't inquire on their own listing.
+  if (host?.user_id && host.user_id === user.id) {
+    return NextResponse.json(
+      { error: "This is your own listing — you can't send yourself an inquiry." },
+      { status: 400 }
+    );
+  }
   const availabilityStatus: AvailabilityStatus = VALID_AVAILABILITY.includes(
     body.availabilityStatus as AvailabilityStatus
   )
