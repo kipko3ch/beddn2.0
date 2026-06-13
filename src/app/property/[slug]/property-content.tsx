@@ -13,7 +13,6 @@ import type { AvailabilityStatus } from "@/lib/types";
 import {
   ArrowLeft,
   Bath,
-  CalendarDays,
   Car,
   BadgeCheck,
   ChevronLeft,
@@ -66,6 +65,64 @@ function priceCurrency(listing: Listing) {
 function primaryImage(listing: Listing) {
   return listing.listing_images?.[0]?.url || LOGO_SRC;
 }
+
+function startOfDay(date: Date) {
+  const next = new Date(date);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function defaultDateRange(): DateRange {
+  const from = addDays(startOfDay(new Date()), 6);
+  return { from, to: addDays(from, 2) };
+}
+
+function compactDate(date?: Date) {
+  return date
+    ? date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+}
+
+const PROPERTY_CALENDAR_CLASS_NAMES = {
+  root: "mx-auto w-full",
+  months: "relative flex w-full flex-col items-center gap-8 md:flex-row md:items-start md:justify-between md:gap-12",
+  month: "w-[calc(var(--cell-size)*7)] max-w-full",
+  month_caption: "mb-5 flex h-10 w-full items-center justify-center px-10",
+  caption_label: "text-lg font-bold text-[#202124] sm:text-xl",
+  nav: "absolute inset-x-0 top-0 flex w-full items-center justify-between",
+  button_previous: "size-10 rounded-full text-[#202124] hover:bg-[#f5f5f5] aria-disabled:text-[#d6d6d6]",
+  button_next: "size-10 rounded-full text-[#202124] hover:bg-[#f5f5f5] aria-disabled:text-[#d6d6d6]",
+  weekdays: "grid grid-cols-7",
+  weekday:
+    "flex h-10 items-center justify-center text-center text-sm font-semibold text-[#6d6d6d]",
+  week: "grid w-full grid-cols-7",
+  day: "relative h-(--cell-size) w-full p-0 text-center",
+  day_button:
+    "mx-auto size-(--cell-size) min-w-0 rounded-full text-base font-semibold text-[#202124] hover:bg-[#f5f5f5] data-[range-start=true]:bg-[#202124] data-[range-start=true]:text-white data-[range-end=true]:bg-[#202124] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#202124] data-[selected-single=true]:text-white data-[range-middle=true]:bg-transparent data-[range-middle=true]:text-[#202124]",
+  range_start:
+    "rounded-l-full bg-[#f4f4f4] after:absolute after:inset-y-0 after:right-0 after:w-1/2 after:bg-[#f4f4f4]",
+  range_middle: "rounded-none bg-[#f4f4f4]",
+  range_end:
+    "rounded-r-full bg-[#f4f4f4] after:absolute after:inset-y-0 after:left-0 after:w-1/2 after:bg-[#f4f4f4]",
+  today: "bg-transparent",
+  disabled: "text-[#adadad] opacity-100 line-through",
+  outside: "invisible",
+  hidden: "invisible",
+};
 
 function AmenityItem({ label }: { label: string }) {
   // `label` is the stored amenity string: a catalog slug for new listings, or a
@@ -122,11 +179,8 @@ export function PropertyContent({
   const [selectedCategory, setSelectedCategory] = useState<ListingCategory>(
     categories[0] || "overnight"
   );
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(2026, 4, 17),
-    to: new Date(2026, 4, 18),
-  });
-  const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 4, 1));
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => defaultDateRange());
+  const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(defaultDateRange().from!));
   const [startTime, setStartTime] = useState("10:00");
   const [durationHours, setDurationHours] = useState("2");
   const [guests, setGuests] = useState("1");
@@ -181,6 +235,11 @@ export function PropertyContent({
     () => blockedDateStrings.map((date) => new Date(date)),
     [blockedDateStrings]
   );
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const disabledCalendarDays = useMemo(
+    () => [{ before: today }, ...blockedDates],
+    [blockedDates, today]
+  );
 
   const avgRating =
     reviews.length > 0
@@ -218,15 +277,43 @@ export function PropertyContent({
       : null,
   ].filter(Boolean) as { label: string; suffix: string; value: number }[];
   const primaryPrice = priceOptions[0];
+  const dateSummary = useMemo(() => {
+    const place = listing.city || listing.area || "this stay";
+    if (!dateRange?.from) {
+      return {
+        title: `Select dates in ${place}`,
+        subtitle: "Choose your dates to check availability",
+      };
+    }
 
-  const formatDate = (date?: Date) =>
-    date
-      ? date.toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "long",
-          day: "numeric",
-        })
-      : "Select date";
+    if (selectedCategory === "overnight") {
+      const nights = dateRange.to
+        ? Math.max(
+            1,
+            Math.round((startOfDay(dateRange.to).getTime() - startOfDay(dateRange.from).getTime()) / 86400000)
+          )
+        : 1;
+      return {
+        title: `${nights} night${nights === 1 ? "" : "s"} in ${place}`,
+        subtitle: dateRange.to
+          ? `${compactDate(dateRange.from)} - ${compactDate(dateRange.to)}`
+          : `${compactDate(dateRange.from)} - Select check-out`,
+      };
+    }
+
+    if (selectedCategory === "hourly") {
+      const hours = Math.max(1, Number(durationHours) || 1);
+      return {
+        title: `${hours} hour${hours === 1 ? "" : "s"} in ${place}`,
+        subtitle: `${compactDate(dateRange.from)} at ${startTime}`,
+      };
+    }
+
+    return {
+      title: `Session in ${place}`,
+      subtitle: `${compactDate(dateRange.from)} at ${startTime}`,
+    };
+  }, [dateRange, durationHours, listing.area, listing.city, selectedCategory, startTime]);
 
   function inputDate(date?: Date) {
     if (!date) return "";
@@ -679,29 +766,17 @@ export function PropertyContent({
                 </div>
               )}
             </div>
-            <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-              <div className="flex flex-wrap items-center gap-2 border-b p-4 text-sm">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1.5 font-semibold text-[#800020]">
-                  <CalendarDays className="h-4 w-4" />
-                  {selectedCategory === "experience"
-                    ? "Session"
-                    : selectedCategory === "overnight"
-                    ? "Check-in"
-                    : "Date"}
-                  : {formatDate(dateRange?.from)}
-                </span>
-                {selectedCategory === "overnight" ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1.5 font-semibold text-[#800020]">
-                    <CalendarDays className="h-4 w-4" /> Check-out: {formatDate(dateRange?.to)}
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1.5 font-semibold text-[#800020]">
-                    <Clock className="h-4 w-4" /> {startTime}
-                  </span>
-                )}
+            <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+              <div className="px-5 pb-2 pt-6 sm:px-10 sm:pt-8">
+                <h2 className="text-2xl font-bold tracking-tight text-[#202124] sm:text-3xl">
+                  {dateSummary.title}
+                </h2>
+                <p className="mt-1 text-sm font-medium text-[#6d6d6d] sm:text-base">
+                  {dateSummary.subtitle}
+                </p>
               </div>
-              <div className="overflow-hidden p-2 sm:p-5">
-                <div className="flex justify-center">
+              <div className="px-4 py-4 sm:px-10 sm:pb-8 sm:pt-6">
+                <div className="md:hidden">
                   <Calendar
                     mode="range"
                     selected={dateRange}
@@ -709,23 +784,37 @@ export function PropertyContent({
                     month={calendarMonth}
                     onMonthChange={setCalendarMonth}
                     numberOfMonths={1}
-                    disabled={blockedDates}
-                    className="mx-auto w-full max-w-[360px] [--cell-radius:0.5rem] [--cell-size:clamp(2.1rem,12vw,2.6rem)] sm:[--cell-size:2.45rem]"
-                    classNames={{
-                      root: "mx-auto w-full max-w-[360px]",
-                      months: "flex flex-col gap-4",
-                      month: "w-full",
-                      caption_label: "text-sm font-bold text-[#2b000a] sm:text-lg",
-                      weekday: "flex h-(--cell-size) items-center justify-center text-center text-xs font-medium text-neutral-800 sm:text-sm",
-                      button_previous: "text-[#800020] hover:bg-[#f8eef2]",
-                      button_next: "text-[#800020] hover:bg-[#f8eef2]",
-                      day_button:
-                        "data-[range-start=true]:bg-[#800020] data-[range-start=true]:text-white data-[range-end=true]:bg-[#800020] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#800020] data-[selected-single=true]:text-white data-[range-middle=true]:bg-[#f7e8ee] data-[range-middle=true]:text-[#2b000a]",
-                      range_start: "bg-transparent after:bg-[#f7e8ee]",
-                      range_middle: "bg-[#f7e8ee]",
-                      range_end: "bg-transparent after:bg-[#f7e8ee]",
-                    }}
+                    showOutsideDays={false}
+                    disabled={disabledCalendarDays}
+                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:clamp(2.45rem,12vw,3rem)]"
+                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
                   />
+                </div>
+                <div className="hidden md:block">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={handleSelectRange}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    numberOfMonths={2}
+                    showOutsideDays={false}
+                    disabled={disabledCalendarDays}
+                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:3.45rem]"
+                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
+                  />
+                </div>
+                <div className="mt-7 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDateRange(undefined);
+                      setAvailabilityChecked(false);
+                    }}
+                    className="rounded-full px-2 py-1 text-sm font-semibold text-[#202124] underline-offset-4 hover:underline"
+                  >
+                    Clear dates
+                  </button>
                 </div>
               </div>
               <div className="flex justify-end border-t p-4">
