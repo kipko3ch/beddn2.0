@@ -3,6 +3,8 @@ import { createHash } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildWhatsAppUrl, normalizeWhatsApp } from "@/lib/whatsapp";
+import { sendEmail } from "@/lib/email/server";
+import { inquiryReceivedEmail } from "@/lib/email/templates";
 import type { AvailabilityStatus } from "@/lib/types";
 
 // Lead capture. Login is required before any host contact is revealed; the
@@ -102,7 +104,7 @@ export async function POST(request: Request) {
   // Listing must exist and be active; pull host + name for the WhatsApp link.
   const { data: listing } = await admin
     .from("listings")
-    .select("id, name, title, host_id, is_active, host:hosts(id, phone)")
+    .select("id, slug, name, title, host_id, is_active, host:hosts(id, phone)")
     .eq("id", body.listingId)
     .maybeSingle();
 
@@ -194,6 +196,15 @@ export async function POST(request: Request) {
         guests: body.guestsCount,
       })
     : null;
+
+  // Email the guest a confirmation that primes the review (fire-and-forget;
+  // no-ops to a log row when ZeptoMail isn't configured). Uses their auth email.
+  if (user.email) {
+    const origin = new URL(request.url).origin;
+    const reviewUrl = `${origin}/review?listing=${listing.slug}`;
+    const { subject, html } = inquiryReceivedEmail({ guestName, listingName, reviewUrl, whatsappUrl });
+    void sendEmail({ to: user.email, subject, html, eventType: "inquiry_received" });
+  }
 
   return NextResponse.json({ inquiryId: inserted.id, whatsappUrl });
 }

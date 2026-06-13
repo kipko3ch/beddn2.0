@@ -7,13 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { BeddnLoader } from "@/components/beddn-loader";
-import { Plus, Pencil, Eye } from "lucide-react";
+import { Plus, Pencil, Eye, Link2, Check } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
 export default function ListingsPage() {
   const supabase = createClient();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  async function copyReviewLink(slug: string, id: string) {
+    const url = `${window.location.origin}/review?listing=${slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId((c) => (c === id ? null : c)), 2000);
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -59,7 +71,7 @@ export default function ListingsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Listings</h1>
+        <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
         <Link href="/dashboard/listings/new">
           <Button className="bg-[#800020] hover:bg-[#600018] gap-1">
             <Plus className="h-4 w-4" /> New listing
@@ -108,6 +120,22 @@ export default function ListingsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => copyReviewLink(listing.slug, listing.id)}
+                  title="Copy a link guests can use to review this stay"
+                >
+                  {copiedId === listing.id ? (
+                    <Check className="h-4 w-4 text-[#128c4b]" />
+                  ) : (
+                    <Link2 className="h-4 w-4" />
+                  )}
+                  <span className="hidden text-xs font-medium sm:inline">
+                    {copiedId === listing.id ? "Copied" : "Review link"}
+                  </span>
+                </Button>
                 <a
                   href={`/property/${listing.slug}${listing.is_active ? "" : "?preview=1"}`}
                   target="_blank"

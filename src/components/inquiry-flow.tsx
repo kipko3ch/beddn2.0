@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle, ShieldCheck, X } from "lucide-react";
+import { CalendarDays, Clock, Lock, ShieldCheck, Sparkles, Star, Users, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { AuthDialog } from "@/components/auth-dialog";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +22,7 @@ export interface InquiryDraft {
 }
 
 interface InquiryFlowProps {
-  listing: { id: string; name: string; title?: string | null; slug: string };
+  listing: { id: string; name: string; title?: string | null; slug: string; image?: string | null };
   user: User | null;
   draft: InquiryDraft;
   open: boolean;
@@ -33,9 +34,10 @@ const STATE_PREFIX = "beddn_inquiry_";
 type FormDraft = { guestName: string; guestWhatsapp: string; message: string };
 
 /**
- * Login-gated inquiry flow. Because AuthDialog redirects for OAuth/OTP, the
- * guest's typed details are saved to sessionStorage and the inquiry sheet is
- * re-opened on return (the property page reads ?inquiry=1).
+ * Full-screen, Beddn-styled inquiry flow. AuthDialog redirects for OAuth/OTP,
+ * so the typed draft is saved to sessionStorage and the sheet re-opens on
+ * return (the property page reads ?inquiry=1). The WhatsApp hand-off is part of
+ * the same flow and is tied to the created inquiry id.
  */
 export function InquiryFlow({ listing, user, draft, open, onOpenChange }: InquiryFlowProps) {
   const storageKey = `${STATE_PREFIX}${listing.id}`;
@@ -46,6 +48,7 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
+  const [inquiryId, setInquiryId] = useState<string | null>(null);
 
   const listingName = listing.title || listing.name;
 
@@ -64,13 +67,21 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
     }
   }, [storageKey]);
 
-  // Prefill name from the signed-in profile if still empty.
   useEffect(() => {
     if (user) {
       const fullName = (user.user_metadata?.full_name as string | undefined) ?? "";
       if (fullName) setGuestName((v) => v || fullName);
     }
   }, [user]);
+
+  // Lock body scroll while the full-screen overlay is open.
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   // Analytics: distinguish "had to log in" from "started filling the form".
   useEffect(() => {
@@ -79,31 +90,35 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
     else track("LOGIN_REQUIRED_FOR_CONTACT", { listingId: listing.id });
   }, [open, user, listing.id]);
 
-  const draftSummary = useMemo(() => {
-    const parts: string[] = [];
+  const summary = useMemo(() => {
+    const out: { icon: React.ElementType; label: string }[] = [];
     if (draft.checkIn) {
-      parts.push(
-        draft.category === "overnight" && draft.checkOut
-          ? `${draft.checkIn} → ${draft.checkOut}`
-          : draft.checkIn
-      );
+      out.push({
+        icon: CalendarDays,
+        label:
+          draft.category === "overnight" && draft.checkOut
+            ? `${draft.checkIn} → ${draft.checkOut}`
+            : draft.checkIn,
+      });
     }
-    if (draft.category === "hourly" && draft.hourlySlot) parts.push(draft.hourlySlot);
-    parts.push(`${draft.guests} guest${draft.guests === 1 ? "" : "s"}`);
-    return parts.join(" · ");
+    if (draft.category === "hourly" && draft.hourlySlot) {
+      out.push({ icon: Clock, label: draft.hourlySlot });
+    }
+    out.push({
+      icon: Users,
+      label: `${draft.guests} guest${draft.guests === 1 ? "" : "s"}`,
+    });
+    return out;
   }, [draft]);
 
   function persistDraft() {
     try {
-      const payload: FormDraft = { guestName, guestWhatsapp, message };
-      sessionStorage.setItem(storageKey, JSON.stringify(payload));
+      sessionStorage.setItem(storageKey, JSON.stringify({ guestName, guestWhatsapp, message }));
     } catch {
       /* ignore */
     }
   }
 
-  // Save the typed details and flag the URL so we can re-open after the
-  // login redirect returns to this same listing.
   function beforeLoginRedirect() {
     persistDraft();
     try {
@@ -151,184 +166,226 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
             return null;
           }
         })(),
-        company, // honeypot
+        company,
       }),
     });
     setSubmitting(false);
 
     const json = (await res.json().catch(() => ({}))) as {
       whatsappUrl?: string | null;
+      inquiryId?: string;
       error?: string;
     };
     if (!res.ok) {
-      if (res.status === 401) {
-        setError("Please log in to contact this host.");
-      } else {
-        setError(json.error || "Could not send your inquiry. Please try again.");
-      }
+      setError(
+        res.status === 401
+          ? "Please log in to contact this host."
+          : json.error || "Could not send your inquiry. Please try again."
+      );
       return;
     }
 
-    track("INQUIRY_SUBMITTED", { listingId: listing.id });
+    track("INQUIRY_SUBMITTED", { listingId: listing.id, metadata: { inquiry_id: json.inquiryId } });
     try {
       sessionStorage.removeItem(storageKey);
     } catch {
       /* ignore */
     }
+    setInquiryId(json.inquiryId ?? null);
     setWhatsappUrl(json.whatsappUrl ?? null);
   }
 
   function continueOnWhatsApp() {
-    track("WHATSAPP_CLICK", { listingId: listing.id });
+    // Tie the WhatsApp click to the created lead so the hand-off is measurable.
+    track("WHATSAPP_CLICK", { listingId: listing.id, metadata: { inquiry_id: inquiryId } });
     if (whatsappUrl) window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   }
 
   if (!open) return null;
 
+  const submitted = whatsappUrl !== null || inquiryId !== null;
+
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center">
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={() => onOpenChange(false)}
-        aria-hidden
-      />
-      <div className="relative z-10 w-full max-w-lg rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-3xl sm:p-6">
+    <div className="fixed inset-0 z-[80] flex flex-col bg-white">
+      {/* Branded header */}
+      <header className="flex items-center justify-between border-b px-4 py-3 sm:px-6">
+        <span className="font-brand text-2xl leading-none text-[#2b000a]">Beddn</span>
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="Close"
-          className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full hover:bg-muted"
+          className="flex size-9 items-center justify-center rounded-full hover:bg-muted"
         >
           <X className="h-5 w-5" />
         </button>
+      </header>
 
-        {/* Success: inquiry saved, hand off to WhatsApp. */}
-        {whatsappUrl !== null ? (
-          <div className="pt-6 text-center">
-            <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-[#f0faf4] text-[#1a7f46]">
-              <ShieldCheck className="h-7 w-7" />
-            </span>
-            <h2 className="text-xl font-bold text-[#2b000a]">Your inquiry has been prepared</h2>
-            <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Continue to WhatsApp to confirm directly with the host. Your dates and details are
-              already in the message.
-            </p>
-            <Button
-              onClick={continueOnWhatsApp}
-              className="mt-6 h-12 w-full rounded-full bg-[#25D366] text-base font-bold text-white hover:bg-[#1fb959]"
-            >
-              <MessageCircle className="mr-2 h-5 w-5" /> Continue on WhatsApp
-            </Button>
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="mt-3 text-sm font-semibold text-muted-foreground underline"
-            >
-              Done
-            </button>
-          </div>
-        ) : !user ? (
-          /* Login gate. */
-          <div className="pt-6">
-            <h2 className="text-xl font-bold text-[#2b000a]">Log in to Contact Host</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Log in to contact this host. This helps Beddn reduce spam and send cleaner inquiries
-              with your dates and guest details.
-            </p>
-            {draftSummary && (
-              <p className="mt-3 rounded-xl bg-[#fbf7f8] px-4 py-3 text-sm font-semibold text-[#2b000a]">
-                {listingName} · {draftSummary}
-              </p>
-            )}
-            <AuthDialog>
-              <button
-                type="button"
-                onClick={beforeLoginRedirect}
-                className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-[#800020] text-base font-bold text-white hover:bg-[#600018]"
-              >
-                Log in to Contact Host
-              </button>
-            </AuthDialog>
-            <p className="mt-4 text-center text-xs text-muted-foreground">
-              Beddn helps you find verified stays and send structured inquiries. Payments, price
-              negotiation, and final arrangements are handled directly with the host for now.
-            </p>
-          </div>
-        ) : (
-          /* Inquiry form. */
-          <form onSubmit={submit} className="pt-6">
-            <h2 className="text-xl font-bold text-[#2b000a]">Send Inquiry</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Beddn sends the host a clean inquiry with your dates, guest count, and contact details
-              before you continue to WhatsApp.
-            </p>
-            {draftSummary && (
-              <p className="mt-3 rounded-xl bg-[#fbf7f8] px-4 py-3 text-sm font-semibold text-[#2b000a]">
-                {listingName} · {draftSummary}
-              </p>
-            )}
-
-            <div className="mt-4 space-y-3">
-              <div>
-                <Label htmlFor="inq-name">Full name</Label>
-                <Input
-                  id="inq-name"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="Your name"
-                  className="mt-1 h-11"
-                  required
-                />
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto grid max-w-5xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:py-10">
+          {/* Left: context / value props */}
+          <aside className="order-2 lg:order-1">
+            <div className="overflow-hidden rounded-3xl border bg-[#fbf7f8]">
+              {listing.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={listing.image} alt="" className="h-40 w-full object-cover sm:h-48" />
+              )}
+              <div className="p-5">
+                <h2 className="font-brand text-2xl text-[#2b000a]">{listingName}</h2>
+                <ul className="mt-3 space-y-2">
+                  {summary.map(({ icon: Icon, label }) => (
+                    <li key={label} className="flex items-center gap-2 text-sm text-[#2b000a]">
+                      <Icon className="h-4 w-4 text-[#800020]" />
+                      <span className="font-medium">{label}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div>
-                <Label htmlFor="inq-whatsapp">WhatsApp number</Label>
-                <Input
-                  id="inq-whatsapp"
-                  type="tel"
-                  value={guestWhatsapp}
-                  onChange={(e) => setGuestWhatsapp(e.target.value)}
-                  placeholder="+254..."
-                  className="mt-1 h-11"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="inq-message">Message to host (optional)</Label>
-                <Textarea
-                  id="inq-message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={3}
-                  placeholder="Anything the host should know."
-                  className="mt-1"
-                />
-              </div>
-              {/* Honeypot — hidden from humans, catches bots. */}
-              <input
-                type="text"
-                tabIndex={-1}
-                autoComplete="off"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="hidden"
-                aria-hidden
-              />
             </div>
 
-            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+            <div className="mt-4 space-y-3 rounded-3xl border p-5 text-sm">
+              {[
+                { icon: ShieldCheck, title: "Cleaner, spam-free inquiries", body: "Beddn shares your dates and guest details so the host can reply faster." },
+                { icon: Sparkles, title: "Stay instructions when you need them", body: "After you inquire, the host's group links and arrival notes unlock on the listing." },
+                { icon: Star, title: "Remember to review later", body: "After your stay, leave a quick review to help other guests and keep Beddn trusted." },
+              ].map(({ icon: Icon, title, body }) => (
+                <div key={title} className="flex gap-3">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#f8eef2] text-[#800020]">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-[#2b000a]">{title}</p>
+                    <p className="text-muted-foreground">{body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
 
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="mt-5 h-12 w-full rounded-full bg-[#800020] text-base font-bold hover:bg-[#600018]"
-            >
-              {submitting ? "Sending…" : "Send Inquiry"}
-            </Button>
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              Payments and final arrangements are handled directly with the host on WhatsApp.
-            </p>
-          </form>
-        )}
+          {/* Right: the actionable step */}
+          <div className="order-1 lg:order-2">
+            {submitted ? (
+              <div className="rounded-3xl border p-6 text-center sm:p-8">
+                <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-[#e9f9f0] text-[#128c4b]">
+                  <ShieldCheck className="h-7 w-7" />
+                </span>
+                <h1 className="font-brand text-3xl text-[#2b000a]">Inquiry prepared</h1>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                  Continue to WhatsApp to confirm directly with the host — your dates and details are
+                  already in the message. Payments and final arrangements happen with the host.
+                </p>
+                <Button
+                  onClick={continueOnWhatsApp}
+                  disabled={!whatsappUrl}
+                  className="mt-6 h-12 w-full rounded-full bg-[#25D366] text-base font-bold text-white hover:bg-[#1fb959]"
+                >
+                  <WhatsAppIcon className="mr-2 h-5 w-5" /> Continue on WhatsApp
+                </Button>
+                <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-[#fbf7f8] px-4 py-3 text-xs text-[#800020]">
+                  <Star className="h-4 w-4" />
+                  After your stay, come back to leave a review.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                  className="mt-3 text-sm font-semibold text-muted-foreground underline"
+                >
+                  Done
+                </button>
+              </div>
+            ) : !user ? (
+              <div className="rounded-3xl border p-6 sm:p-8">
+                <span className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-[#f8eef2] text-[#800020]">
+                  <Lock className="h-5 w-5" />
+                </span>
+                <h1 className="font-brand text-3xl text-[#2b000a]">Log in to Contact Host</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Log in to contact this host. This helps Beddn reduce spam and send cleaner inquiries
+                  with your dates and guest details.
+                </p>
+                <AuthDialog>
+                  <button
+                    type="button"
+                    onClick={beforeLoginRedirect}
+                    className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-[#800020] text-base font-bold text-white hover:bg-[#600018]"
+                  >
+                    Log in to Contact Host
+                  </button>
+                </AuthDialog>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Beddn helps you find verified stays and send structured inquiries. Payments, price
+                  negotiation, and final arrangements are handled directly with the host for now.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={submit} className="rounded-3xl border p-6 sm:p-8">
+                <h1 className="font-brand text-3xl text-[#2b000a]">Send Inquiry</h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Beddn sends the host a clean inquiry with your dates, guest count, and contact
+                  details before you continue to WhatsApp.
+                </p>
+
+                <div className="mt-5 space-y-4">
+                  <div>
+                    <Label htmlFor="inq-name">Full name</Label>
+                    <Input
+                      id="inq-name"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      placeholder="Your name"
+                      className="mt-1 h-12 rounded-xl"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="inq-whatsapp">WhatsApp number</Label>
+                    <Input
+                      id="inq-whatsapp"
+                      type="tel"
+                      value={guestWhatsapp}
+                      onChange={(e) => setGuestWhatsapp(e.target.value)}
+                      placeholder="+254..."
+                      className="mt-1 h-12 rounded-xl"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="inq-message">Message to host (optional)</Label>
+                    <Textarea
+                      id="inq-message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      rows={3}
+                      placeholder="Anything the host should know."
+                      className="mt-1 rounded-xl"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="hidden"
+                    aria-hidden
+                  />
+                </div>
+
+                {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="mt-5 h-12 w-full rounded-full bg-[#800020] text-base font-bold hover:bg-[#600018]"
+                >
+                  {submitting ? "Sending…" : "Send Inquiry"}
+                </Button>
+                <p className="mt-3 text-center text-xs text-muted-foreground">
+                  Payments and final arrangements are handled directly with the host on WhatsApp.
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

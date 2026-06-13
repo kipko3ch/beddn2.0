@@ -141,7 +141,7 @@ export default function CalendarPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Calendar</h1>
+        <h1 className="font-brand text-3xl text-[#2b000a]">Calendar</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Block rooms, hourly slots, or experience sessions and review upcoming bookings.
         </p>

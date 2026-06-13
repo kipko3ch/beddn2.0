@@ -104,7 +104,7 @@ export default function AdminDestinationsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Popular destinations</h1>
+        <h1 className="font-brand text-3xl text-[#2b000a]">Popular destinations</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           These tiles show on the home page. Add a city image and the search it should open.
         </p>

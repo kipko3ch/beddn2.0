@@ -371,7 +371,14 @@ export function SearchPill({
               {range?.from ? dateText : copy.whenEmpty}
             </span>
           </PopoverTrigger>
-          <PopoverContent align="center" className="w-auto rounded-3xl p-4">
+          <PopoverContent
+            align="center"
+            side="bottom"
+            sideOffset={14}
+            collisionPadding={12}
+            collisionAvoidance={{ side: "none", align: "shift" }}
+            className="max-h-[min(72vh,560px)] w-auto overflow-y-auto rounded-3xl p-4"
+          >
             {calendarPicker(2)}
             {range?.from && (
               <button

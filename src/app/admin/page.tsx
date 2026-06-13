@@ -88,7 +88,7 @@ export default function AdminOverviewPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Admin overview</h1>
+        <h1 className="font-brand text-3xl text-[#2b000a]">Admin overview</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Manage users, verify hosts and listings, and monitor payments, disputes, withdrawals, feedback, and demand.
         </p>
@@ -120,7 +120,7 @@ export default function AdminOverviewPage() {
                   />
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="font-brand text-3xl text-[#2b000a]">{stat.value}</p>
                 </CardContent>
               </Card>
             </Link>

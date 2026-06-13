@@ -82,7 +82,7 @@ export default function AdminUsersPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Users</h1>
+          <h1 className="font-brand text-3xl text-[#2b000a]">Users</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Suspend or restore accounts, send a fresh sign-in link, and manage admin access.
           </p>

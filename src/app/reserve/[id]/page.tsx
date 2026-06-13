@@ -374,7 +374,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">
             Reserve your spot
           </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+          <h1 className="mt-1 font-brand text-3xl tracking-tight text-[#2b000a] sm:text-4xl">
             {listing.title || listing.name}
           </h1>
 

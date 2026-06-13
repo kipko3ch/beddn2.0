@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BeddnLoader } from "@/components/beddn-loader";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle } from "lucide-react";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import type { Inquiry, InquiryStatus } from "@/lib/types";
 
 type InquiryRow = Inquiry & { listing?: { name?: string; title?: string; city?: string } | null };
@@ -103,7 +103,7 @@ export default function HostInquiriesPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#1fb959]"
                 >
-                  <MessageCircle className="h-4 w-4" /> WhatsApp
+                  <WhatsAppIcon className="h-4 w-4" /> WhatsApp
                 </a>
               </div>
 

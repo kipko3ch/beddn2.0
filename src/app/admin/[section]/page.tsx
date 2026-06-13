@@ -111,7 +111,7 @@ export default function AdminSectionPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="font-brand text-3xl text-[#2b000a]">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Review the latest 100 records and manage verification, payouts, and manual actions.
           </p>

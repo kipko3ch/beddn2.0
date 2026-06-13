@@ -860,7 +860,13 @@ export function PropertyContent({
       </div>
 
       <InquiryFlow
-        listing={{ id: listing.id, name: listing.name, title: listing.title, slug: listing.slug }}
+        listing={{
+          id: listing.id,
+          name: listing.name,
+          title: listing.title,
+          slug: listing.slug,
+          image: images[0]?.url ?? null,
+        }}
         user={user}
         draft={inquiryDraft}
         open={inquiryOpen}
