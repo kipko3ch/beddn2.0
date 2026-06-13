@@ -35,7 +35,7 @@ export async function GET(request: Request) {
           .eq("id", userId)
           .maybeSingle();
         if (profile?.is_admin) {
-          return NextResponse.redirect(`${baseUrl}/dashboard`);
+          return NextResponse.redirect(`${baseUrl}/host`);
         }
       }
       return NextResponse.redirect(`${baseUrl}${next}`);

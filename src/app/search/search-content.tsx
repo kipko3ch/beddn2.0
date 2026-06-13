@@ -371,7 +371,8 @@ export function SearchContent() {
               className={`rounded-xl transition-shadow ${
                 // Highlight only where the side map exists — on touch screens a
                 // tap fires hover and would leave a stray ring on the card.
-                highlightedId === listing.id ? "lg:ring-2 lg:ring-[#800020] lg:ring-offset-2" : ""
+                // Subtle elevation instead of a burgundy ring/border.
+                highlightedId === listing.id ? "lg:shadow-[0_6px_24px_rgba(24,17,19,0.12)]" : ""
               }`}
             >
               <ListingCard
@@ -420,7 +421,7 @@ export function SearchContent() {
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Button
-              onClick={() => router.push("/dashboard/listings/new")}
+              onClick={() => router.push("/host/listings/new")}
               className="h-11 w-full rounded-full bg-[#800020] px-6 font-semibold hover:bg-[#600018] sm:w-auto"
             >
               List your place

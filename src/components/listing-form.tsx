@@ -1078,7 +1078,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       return;
     }
 
-    router.push("/dashboard/listings");
+    router.push("/host/listings");
     router.refresh();
   }
 

@@ -23,8 +23,10 @@ import {
   Heart,
   MapPin,
   Moon,
+  Share,
   ShowerHead,
   Star,
+  Check,
   Utensils,
   UserCircle,
   Wifi,
@@ -131,6 +133,28 @@ export function PropertyContent({
   const [availabilityChecked, setAvailabilityChecked] = useState(false);
   const { savedIds, toggle } = useSavedListings();
   const isSaved = savedIds.has(listing.id);
+  const [shared, setShared] = useState(false);
+
+  async function shareProperty() {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const title = listing.title || listing.name;
+    // Native share sheet on mobile; clipboard copy as the desktop fallback.
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title, text: `Check out ${title} on Beddn`, url });
+        return;
+      } catch {
+        /* user dismissed — fall through to copy */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }
 
   // Load the signed-in user (browsing is open; contact reveal needs login).
   useEffect(() => {
@@ -315,16 +339,28 @@ export function PropertyContent({
               )}
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 gap-2 rounded-full"
-            onClick={() => toggle(listing.id)}
-            aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
-          >
-            <Heart className={`h-4 w-4 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
-            <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 rounded-full"
+              onClick={shareProperty}
+              aria-label="Share this listing"
+            >
+              {shared ? <Check className="h-4 w-4 text-[#1a7f46]" /> : <Share className="h-4 w-4" />}
+              <span className="hidden sm:inline">{shared ? "Link copied" : "Share"}</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 rounded-full"
+              onClick={() => toggle(listing.id)}
+              aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
+            >
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
+              <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
+            </Button>
+          </div>
         </div>
 
         {/* Mobile: swipeable full-width carousel with counter */}
@@ -472,24 +508,36 @@ export function PropertyContent({
 
           <section>
             <h2 className="mb-4 text-xl font-bold">Meet your host</h2>
-            <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
-                <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[#f8eef2] text-[#800020]">
-                  <UserCircle className="h-8 w-8" />
-                </span>
-                <div>
-                  <p className="font-bold text-[#181113]">
-                    Hosted by {listing.host?.name || "a Beddn host"}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Host details and exact directions unlock after your booking is confirmed.
-                  </p>
+            <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f8eef2] text-[#800020]">
+                    {listing.host?.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={listing.host.avatar_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <UserCircle className="h-8 w-8" />
+                    )}
+                  </span>
+                  <div>
+                    <p className="font-bold text-[#181113]">
+                      Hosted by {listing.host?.name || "a Beddn host"}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Host details and exact directions unlock after your booking is confirmed.
+                    </p>
+                  </div>
                 </div>
+                {listing.host?.is_verified && (
+                  <Badge className="w-fit gap-1 rounded-full bg-[#f8eef2] px-3 py-1 text-[#800020] hover:bg-[#f8eef2]">
+                    <BadgeCheck className="h-3.5 w-3.5" /> Verified host
+                  </Badge>
+                )}
               </div>
-              {listing.host?.is_verified && (
-                <Badge className="w-fit gap-1 rounded-full bg-[#f8eef2] px-3 py-1 text-[#800020] hover:bg-[#f8eef2]">
-                  <BadgeCheck className="h-3.5 w-3.5" /> Verified host
-                </Badge>
+              {listing.host?.bio && (
+                <p className="whitespace-pre-line text-sm leading-relaxed text-[#181113]">
+                  {listing.host.bio}
+                </p>
               )}
             </div>
           </section>
@@ -505,6 +553,7 @@ export function PropertyContent({
                 center={[listing.longitude, listing.latitude]}
                 zoom={13}
                 approximate
+                interactive={false}
               />
             </div>
           </section>
@@ -576,21 +625,6 @@ export function PropertyContent({
                   This is your listing. Guests can check dates and send inquiries here; use your dashboard to edit availability.
                 </p>
               )}
-              <ol className="mt-3 grid gap-2 sm:grid-cols-3">
-                {[
-                  ["1", "Pick a type & dates", "Choose hourly, overnight, or experience, then select your dates below."],
-                  ["2", "Check Availability", "The result appears under the calendar so you know the next step."],
-                  ["3", "Send Inquiry", "Guests log in once, then continue to WhatsApp with details prefilled."],
-                ].map(([n, title, body]) => (
-                  <li key={n} className="rounded-xl bg-white p-3">
-                    <span className="flex size-6 items-center justify-center rounded-full bg-[#800020] text-xs font-bold text-white">
-                      {n}
-                    </span>
-                    <p className="mt-2 text-sm font-semibold text-[#2b000a]">{title}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{body}</p>
-                  </li>
-                ))}
-              </ol>
               <div className="mt-4 flex flex-wrap gap-2">
                 {categories.map((cat) => (
                   <button
@@ -645,38 +679,29 @@ export function PropertyContent({
                 </div>
               )}
             </div>
-            <div className="mb-3 grid gap-3 sm:grid-cols-2">
-              <div className="flex items-center gap-3 rounded-full border border-neutral-300 bg-white px-4 py-3 sm:px-5">
-                <CalendarDays className="h-5 w-5 text-[#800020]" />
-                <div>
-                  <p className="text-sm">
-                    {selectedCategory === "experience" ? "Session date" : "Check In"}
-                  </p>
-                  <p className="font-bold">{formatDate(dateRange?.from)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-full border-2 border-[#800020] bg-white px-4 py-3 sm:px-5">
-                <CalendarDays className="h-5 w-5 text-[#800020]" />
-                <div>
-                  <p className="text-sm">
-                    {selectedCategory === "overnight" ? "Check Out" : "Time"}
-                  </p>
-                  <p className="font-bold">
-                    {selectedCategory === "overnight" ? formatDate(dateRange?.to) : startTime}
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-              <div className="flex items-center gap-3 border-b p-5">
-                <CalendarDays className="h-5 w-5 text-[#800020]" />
-                <h2 className="text-lg font-bold">
-                  Select dates to find the best prices for your trip
-                </h2>
+              <div className="flex flex-wrap items-center gap-2 border-b p-4 text-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1.5 font-semibold text-[#800020]">
+                  <CalendarDays className="h-4 w-4" />
+                  {selectedCategory === "experience"
+                    ? "Session"
+                    : selectedCategory === "overnight"
+                    ? "Check-in"
+                    : "Date"}
+                  : {formatDate(dateRange?.from)}
+                </span>
+                {selectedCategory === "overnight" ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1.5 font-semibold text-[#800020]">
+                    <CalendarDays className="h-4 w-4" /> Check-out: {formatDate(dateRange?.to)}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1.5 font-semibold text-[#800020]">
+                    <Clock className="h-4 w-4" /> {startTime}
+                  </span>
+                )}
               </div>
               <div className="overflow-hidden p-2 sm:p-5">
-                <div className="mx-auto grid max-w-[760px] gap-6 lg:grid-cols-2 lg:items-start">
+                <div className="flex justify-center">
                   <Calendar
                     mode="range"
                     selected={dateRange}
@@ -685,41 +710,15 @@ export function PropertyContent({
                     onMonthChange={setCalendarMonth}
                     numberOfMonths={1}
                     disabled={blockedDates}
-                    className="mx-auto w-full max-w-full [--cell-radius:0.5rem] [--cell-size:clamp(1.85rem,11.5vw,2.25rem)] sm:[--cell-size:2.45rem]"
+                    className="mx-auto w-full max-w-[360px] [--cell-radius:0.5rem] [--cell-size:clamp(2.1rem,12vw,2.6rem)] sm:[--cell-size:2.45rem]"
                     classNames={{
-                      root: "w-full max-w-full sm:max-w-[340px]",
+                      root: "mx-auto w-full max-w-[360px]",
                       months: "flex flex-col gap-4",
                       month: "w-full",
                       caption_label: "text-sm font-bold text-[#2b000a] sm:text-lg",
                       weekday: "flex h-(--cell-size) items-center justify-center text-center text-xs font-medium text-neutral-800 sm:text-sm",
                       button_previous: "text-[#800020] hover:bg-[#f8eef2]",
                       button_next: "text-[#800020] hover:bg-[#f8eef2]",
-                      day_button:
-                        "data-[range-start=true]:bg-[#800020] data-[range-start=true]:text-white data-[range-end=true]:bg-[#800020] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#800020] data-[selected-single=true]:text-white data-[range-middle=true]:bg-[#f7e8ee] data-[range-middle=true]:text-[#2b000a]",
-                      range_start: "bg-transparent after:bg-[#f7e8ee]",
-                      range_middle: "bg-[#f7e8ee]",
-                      range_end: "bg-transparent after:bg-[#f7e8ee]",
-                    }}
-                  />
-                  <Calendar
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={handleSelectRange}
-                    month={new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1)}
-                    onMonthChange={(month) =>
-                      setCalendarMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
-                    }
-                    numberOfMonths={1}
-                    disabled={blockedDates}
-                    className="mx-auto hidden w-full [--cell-radius:0.5rem] [--cell-size:2.45rem] lg:block"
-                    classNames={{
-                      root: "w-full max-w-[340px]",
-                      months: "flex flex-col gap-4",
-                      month: "w-full",
-                      caption_label: "text-lg font-bold text-[#2b000a]",
-                      weekday: "flex h-(--cell-size) items-center justify-center text-center text-neutral-800 font-medium",
-                      button_previous: "hidden",
-                      button_next: "hidden",
                       day_button:
                         "data-[range-start=true]:bg-[#800020] data-[range-start=true]:text-white data-[range-end=true]:bg-[#800020] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#800020] data-[selected-single=true]:text-white data-[range-middle=true]:bg-[#f7e8ee] data-[range-middle=true]:text-[#2b000a]",
                       range_start: "bg-transparent after:bg-[#f7e8ee]",
@@ -746,7 +745,7 @@ export function PropertyContent({
                   </div>
                   {isOwnListing ? (
                     <Link
-                      href={`/dashboard/listings/${listing.id}/edit`}
+                      href={`/host/listings/${listing.id}/edit`}
                       className="inline-flex h-9 items-center justify-center rounded-full bg-[#800020] px-7 text-sm font-medium text-white hover:bg-[#600018]"
                     >
                       Manage listing
@@ -856,7 +855,7 @@ export function PropertyContent({
             </div>
             {isOwnListing ? (
               <Link
-                href={`/dashboard/listings/${listing.id}/edit`}
+                href={`/host/listings/${listing.id}/edit`}
                 className="mt-5 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#800020] px-4 text-sm font-medium text-white hover:bg-[#600018]"
               >
                 Manage listing
@@ -897,7 +896,7 @@ export function PropertyContent({
           </div>
           {isOwnListing ? (
             <Link
-              href={`/dashboard/listings/${listing.id}/edit`}
+              href={`/host/listings/${listing.id}/edit`}
               className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
             >
               Manage

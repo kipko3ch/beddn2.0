@@ -72,7 +72,7 @@ export default function ListingsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
-        <Link href="/dashboard/listings/new">
+        <Link href="/host/listings/new">
           <Button className="bg-[#800020] hover:bg-[#600018] gap-1">
             <Icon icon="line-md:plus" className="h-4 w-4" /> New listing
           </Button>
@@ -148,7 +148,7 @@ export default function ListingsPage() {
                     </span>
                   </Button>
                 </a>
-                <Link href={`/dashboard/listings/${listing.id}/edit`}>
+                <Link href={`/host/listings/${listing.id}/edit`}>
                   <Button variant="ghost" size="sm" className="gap-1">
                     <Icon icon="line-md:briefcase" className="h-4 w-4" />
                     {listing.listing_status === "draft" && (

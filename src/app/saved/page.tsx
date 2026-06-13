@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/header";
-import { ListingCard } from "@/components/listing-card";
+import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
 import { EmptyState } from "@/components/empty-state";
 import { AuthDialog } from "@/components/auth-dialog";
 import { Button } from "@/components/ui/button";
@@ -57,8 +57,15 @@ export default function SavedTripsPage() {
   return (
     <>
       <Header />
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="font-brand text-3xl mb-6 text-[#2b000a]">Saved trips</h1>
+      <main className="mx-auto max-w-7xl px-4 py-8 pb-24 sm:px-6 md:pb-12">
+        <div className="mb-6">
+          <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">Saved trips</h1>
+          {!loggedOut && !loading && listings.length > 0 && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {listings.length} saved {listings.length === 1 ? "place" : "places"}
+            </p>
+          )}
+        </div>
         {loggedOut ? (
           <EmptyState
             image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029376/empty-saved_clsjni.png"
@@ -71,14 +78,25 @@ export default function SavedTripsPage() {
               </Button>
             </AuthDialog>
           </EmptyState>
-        ) : loading ? null : listings.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        ) : loading ? (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ListingCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : listings.length > 0 ? (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
             {listings.map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
                 isSaved
                 onToggleSave={() => removeSaved(listing.id)}
+                priceMode={
+                  (listing.categories || listing.category || []).includes("overnight")
+                    ? "overnight"
+                    : "hourly"
+                }
               />
             ))}
           </div>
