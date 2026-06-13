@@ -18,12 +18,10 @@ import {
 import {
   LayoutDashboard,
   Home,
-  CalendarCheck,
-  CreditCard,
   TrendingUp,
   CalendarDays,
-  Wallet,
   MessageSquare,
+  Star,
   ShieldCheck,
   Search,
   UserCircle,
@@ -38,21 +36,14 @@ const NAV_SECTIONS: { title: string; items: { href: string; label: string; icon:
     items: [
       { href: ROUTES.dashboard, label: 'Overview', icon: LayoutDashboard },
       { href: ROUTES.dashboardListings, label: 'Listings', icon: Home },
-      { href: ROUTES.dashboardBookings, label: 'Bookings', icon: CalendarCheck },
+      { href: ROUTES.dashboardInquiries, label: 'Inquiries', icon: MessageSquare },
       { href: ROUTES.dashboardCalendar, label: 'Calendar', icon: CalendarDays },
-    ],
-  },
-  {
-    title: 'Money',
-    items: [
-      { href: ROUTES.dashboardWithdrawals, label: 'Withdrawals', icon: Wallet },
-      { href: ROUTES.dashboardPayments, label: 'Payments', icon: CreditCard },
     ],
   },
   {
     title: 'Insights',
     items: [
-      { href: ROUTES.dashboardFeedback, label: 'Feedback', icon: MessageSquare },
+      { href: ROUTES.dashboardFeedback, label: 'Feedback', icon: Star },
       { href: ROUTES.dashboardDemand, label: 'Demand', icon: TrendingUp },
     ],
   },

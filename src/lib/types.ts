@@ -176,6 +176,103 @@ export interface Review {
   profile?: Profile;
 }
 
+export type AvailabilityStatus = "AVAILABLE" | "UNAVAILABLE" | "NEEDS_CONFIRMATION";
+export type InquiryStatus = "NEW" | "CONTACTED" | "BOOKED" | "NOT_BOOKED" | "SPAM";
+
+export interface Inquiry {
+  id: string;
+  listing_id: string;
+  host_id: string | null;
+  guest_user_id: string | null;
+  guest_name: string;
+  guest_whatsapp: string;
+  category: string | null;
+  check_in: string | null;
+  check_out: string | null;
+  hourly_slot: string | null;
+  guests_count: number;
+  message: string | null;
+  availability_status: AvailabilityStatus;
+  source: string;
+  status: InquiryStatus;
+  session_id: string | null;
+  ip_hash: string | null;
+  user_agent: string | null;
+  utm_source: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  listing?: Listing;
+}
+
+export type InstructionType =
+  | "CHECK_IN"
+  | "HOUSE_RULE"
+  | "ARRIVAL"
+  | "PARKING"
+  | "WIFI"
+  | "SECURITY"
+  | "LOCAL_TIP"
+  | "GROUP_LINK"
+  | "WEBSITE_LINK"
+  | "ACTIVITY"
+  | "NOTE"
+  | "OTHER";
+
+export type InstructionVisibility =
+  | "PUBLIC"
+  | "AFTER_LOGIN"
+  | "AFTER_INQUIRY"
+  | "PRIVATE_TO_CONFIRMED";
+
+export interface ListingInstruction {
+  id: string;
+  listing_id: string;
+  title: string;
+  description: string | null;
+  type: InstructionType;
+  url: string | null;
+  visibility: InstructionVisibility;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Instruction as returned to a guest: content is null when locked. */
+export interface GuestInstruction {
+  id: string;
+  title: string;
+  type: InstructionType;
+  visibility: InstructionVisibility;
+  locked: boolean;
+  description: string | null;
+  url: string | null;
+}
+
+export type ListingEventType =
+  | "LISTING_VIEW"
+  | "CALENDAR_DATE_SELECTED"
+  | "AVAILABILITY_CHECKED"
+  | "INQUIRY_STARTED"
+  | "LOGIN_REQUIRED_FOR_CONTACT"
+  | "INQUIRY_SUBMITTED"
+  | "WHATSAPP_CLICK"
+  | "EXPERIENCE_LINK_CLICK"
+  | "GROUP_LINK_CLICK";
+
+export interface ListingEvent {
+  id: string;
+  listing_id: string | null;
+  user_id: string | null;
+  event_type: ListingEventType;
+  session_id: string | null;
+  ip_hash: string | null;
+  user_agent: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
 export interface SearchDemand {
   id: string;
   query: string | null;

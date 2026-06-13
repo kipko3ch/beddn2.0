@@ -18,8 +18,11 @@ interface AdminActionBody {
     | "unsuspend_user"
     | "send_signin_link"
     | "make_admin"
-    | "remove_admin";
+    | "remove_admin"
+    | "flag_image"
+    | "unflag_image";
   id: string;
+  reason?: string;
 }
 
 // Far-future ban duration used to "suspend" an account until lifted.
@@ -106,6 +109,15 @@ export async function POST(request: Request) {
     const { error } = await admin
       .from("withdrawals")
       .update({ status: nextStatus })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "flag_image" || body.action === "unflag_image") {
+    const flagged = body.action === "flag_image";
+    const { error } = await admin
+      .from("listing_images")
+      .update({ flagged, flag_reason: flagged ? body.reason || "Flagged by admin" : null })
       .eq("id", body.id);
     errorMessage = error?.message || null;
   }

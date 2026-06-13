@@ -15,7 +15,9 @@ import {
   CalendarDays,
   CheckCircle2,
   CreditCard,
+  Eye,
   Home,
+  MessageCircle,
   MessageSquare,
   Plus,
   ShieldCheck,
@@ -39,8 +41,8 @@ type HostStatus = {
 
 const QUICK_ACTIONS = [
   { label: "Create listing", description: "Add a new place or experience", href: ROUTES.newListing, icon: Plus },
-  { label: "Bookings", description: "Accept or review requests", href: ROUTES.dashboardBookings, icon: CalendarCheck },
-  { label: "Calendar", description: "Block dates and sync iCal", href: ROUTES.dashboardCalendar, icon: CalendarDays },
+  { label: "Inquiries", description: "See and reply to leads", href: ROUTES.dashboardInquiries, icon: MessageCircle },
+  { label: "Calendar", description: "Block dates and see demand", href: ROUTES.dashboardCalendar, icon: CalendarDays },
   { label: "Feedback", description: "See what guests said", href: ROUTES.dashboardFeedback, icon: MessageSquare },
 ];
 
@@ -76,7 +78,7 @@ export default function DashboardPage() {
   const [host, setHost] = useState<HostStatus>(null);
   const [userEmail, setUserEmail] = useState("");
   const [stats, setStats] = useState<Stat[]>([]);
-  const [money, setMoney] = useState<{ held: number; withdrawable: number } | null>(null);
+  const [pendingNew, setPendingNew] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -170,36 +172,30 @@ export default function DashboardPage() {
           listing.is_active || listing.listing_status === "active"
       ).length;
 
-      const [
-        requests,
-        confirmed,
-        completed,
-        heldBalance,
-        withdrawableBalance,
-      ] = await Promise.all([
+      // Demand proof: views, availability checks, inquiries, WhatsApp clicks.
+      const [totalInquiries, newInquiries, eventRowsRes] = await Promise.all([
+        supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("host_id", hostData.id),
+        supabase
+          .from("inquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("host_id", hostData.id)
+          .eq("status", "NEW"),
         listingIds.length
-          ? supabase.from("bookings").select("id", { count: "exact", head: true }).in("listing_id", listingIds).eq("status", "paid_pending_host")
-          : Promise.resolve({ count: 0 }),
-        listingIds.length
-          ? supabase.from("bookings").select("id", { count: "exact", head: true }).in("listing_id", listingIds).eq("status", "confirmed")
-          : Promise.resolve({ count: 0 }),
-        listingIds.length
-          ? supabase.from("bookings").select("id", { count: "exact", head: true }).in("listing_id", listingIds).eq("status", "completed")
-          : Promise.resolve({ count: 0 }),
-        supabase.from("host_balances").select("amount").eq("host_id", hostData.id).eq("status", "held"),
-        supabase.from("host_balances").select("amount").eq("host_id", hostData.id).eq("status", "withdrawable"),
+          ? supabase.from("listing_events").select("event_type").in("listing_id", listingIds).limit(5000)
+          : Promise.resolve({ data: [] as { event_type: string }[] }),
       ]);
 
-      const held = (heldBalance.data ?? []).reduce((sum: number, row: { amount: number }) => sum + Number(row.amount || 0), 0);
-      const withdrawable = (withdrawableBalance.data ?? []).reduce((sum: number, row: { amount: number }) => sum + Number(row.amount || 0), 0);
+      const events = (eventRowsRes.data ?? []) as { event_type: string }[];
+      const countEvent = (type: string) => events.filter((e) => e.event_type === type).length;
 
-      setMoney({ held, withdrawable });
+      setPendingNew(newInquiries.count ?? 0);
       setStats([
-        { label: "Total listings", value: listingIds.length, icon: Home, href: ROUTES.dashboardListings },
+        { label: "Listing views", value: countEvent("LISTING_VIEW"), icon: Eye, href: ROUTES.dashboardListings },
+        { label: "Availability checks", value: countEvent("AVAILABILITY_CHECKED"), icon: CalendarCheck, href: ROUTES.dashboardCalendar },
+        { label: "Inquiries", value: totalInquiries.count ?? 0, icon: MessageCircle, href: ROUTES.dashboardInquiries, tone: "brand" },
+        { label: "New inquiries", value: newInquiries.count ?? 0, icon: MessageSquare, href: ROUTES.dashboardInquiries, tone: "warning" },
+        { label: "WhatsApp clicks", value: countEvent("WHATSAPP_CLICK"), icon: MessageCircle, href: ROUTES.dashboardInquiries },
         { label: "Active listings", value: activeListings, icon: CheckCircle2, href: ROUTES.dashboardListings, tone: "brand" },
-        { label: "New paid requests", value: requests.count ?? 0, icon: CalendarCheck, href: ROUTES.dashboardBookings, tone: "warning" },
-        { label: "Confirmed bookings", value: confirmed.count ?? 0, icon: CheckCircle2, href: ROUTES.dashboardBookings, tone: "brand" },
-        { label: "Completed stays", value: completed.count ?? 0, icon: ShieldCheck, href: ROUTES.dashboardBookings },
       ]);
       setLoading(false);
     }
@@ -215,9 +211,6 @@ export default function DashboardPage() {
     : "Guest account";
 
   const greetingName = host?.name?.split(" ")[0] || userEmail.split("@")[0] || "there";
-  const pendingRequests = Number(
-    stats.find((stat) => stat.label === "New paid requests")?.value ?? 0
-  );
 
   if (loading) {
     return <BeddnLoader label="Loading your dashboard…" />;
@@ -277,16 +270,16 @@ export default function DashboardPage() {
       </div>
 
       {/* Needs attention */}
-      {!isAdmin && pendingRequests > 0 && (
+      {!isAdmin && pendingNew > 0 && (
         <Link
-          href={ROUTES.dashboardBookings}
+          href={ROUTES.dashboardInquiries}
           className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors hover:bg-amber-100/60"
         >
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
             <AlertTriangle className="h-4 w-4" />
           </span>
           <p className="text-sm font-semibold text-amber-900">
-            {pendingRequests} paid booking request{pendingRequests === 1 ? "" : "s"} waiting for your response
+            {pendingNew} new inquiry{pendingNew === 1 ? "" : "s"} waiting for your response
           </p>
           <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
         </Link>
@@ -309,24 +302,27 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Earnings + quick actions (hosts only) */}
-      {!isAdmin && money && (
+      {/* Demand intro + quick actions (hosts only) */}
+      {!isAdmin && host && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           <div className="flex flex-col justify-between rounded-3xl bg-gradient-to-br from-[#800020] to-[#4a0013] p-6 text-white shadow-md">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-white/70">
-                Withdrawable balance
+                Beddn demand
               </p>
-              <p className="mt-2 font-brand text-4xl">KES {money.withdrawable.toLocaleString()}</p>
+              <p className="mt-2 font-brand text-2xl leading-snug">
+                Organized leads, not random WhatsApp messages.
+              </p>
               <p className="mt-3 text-sm text-white/80">
-                KES {money.held.toLocaleString()} held until stays complete
+                Beddn tracks your views, availability checks, inquiries, and WhatsApp clicks so you
+                can see which listings and dates get demand.
               </p>
             </div>
             <Link
-              href={ROUTES.dashboardWithdrawals}
+              href={ROUTES.dashboardInquiries}
               className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-[#800020] transition-colors hover:bg-white/90"
             >
-              <Wallet className="h-4 w-4" /> Withdraw funds
+              <MessageCircle className="h-4 w-4" /> View inquiries
             </Link>
           </div>
 

@@ -1,9 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+import { InquiryFlow, type InquiryDraft } from "@/components/inquiry-flow";
+import { StayInstructions } from "@/components/stay-instructions";
+import { track } from "@/lib/track";
+import type { AvailabilityStatus } from "@/lib/types";
 import {
   ArrowLeft,
   Bath,
@@ -92,7 +98,10 @@ export function PropertyContent({
   reviews: Review[];
   blockedDateStrings: string[];
 }) {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const supabase = useMemo(() => createClient(), []);
+  const [user, setUser] = useState<User | null>(null);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
 
@@ -114,6 +123,23 @@ export function PropertyContent({
   const [availabilityChecked, setAvailabilityChecked] = useState(false);
   const { savedIds, toggle } = useSavedListings();
   const isSaved = savedIds.has(listing.id);
+
+  // Load the signed-in user (browsing is open; contact reveal needs login).
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+  }, [supabase]);
+
+  // Count the listing view once on mount (analytics / demand proof).
+  useEffect(() => {
+    track("LISTING_VIEW", { listingId: listing.id });
+  }, [listing.id]);
+
+  // Re-open the inquiry sheet after a login redirect returns to this listing.
+  useEffect(() => {
+    if (searchParams.get("inquiry") === "1") {
+      setInquiryOpen(true);
+    }
+  }, [searchParams]);
 
   const images = listing.listing_images?.length ? listing.listing_images : [
     { id: "fallback", listing_id: listing.id, url: primaryImage(listing), position: 0 },
@@ -166,25 +192,43 @@ export function PropertyContent({
     return `${year}-${month}-${day}`;
   }
 
-  function reserveUrl() {
-    const params = new URLSearchParams({
-      category: selectedCategory,
-      checkIn: inputDate(dateRange?.from),
-      guests,
-    });
-    if (selectedCategory === "overnight") {
-      params.set("checkOut", inputDate(dateRange?.to));
-    } else {
-      params.set("startTime", startTime);
+  // Availability outcome saved with the inquiry and used to pick guest copy.
+  const availabilityStatus: AvailabilityStatus = !selectedDate
+    ? "NEEDS_CONFIRMATION"
+    : isSelectedBlocked || availableUnits <= 0
+    ? "UNAVAILABLE"
+    : "AVAILABLE";
+
+  const inquiryDraft: InquiryDraft = {
+    category: selectedCategory,
+    checkIn: inputDate(dateRange?.from),
+    checkOut: inputDate(dateRange?.to),
+    hourlySlot: selectedCategory === "hourly" ? `${startTime} · ${durationHours}h` : startTime,
+    guests: Number(guests) || 1,
+    availabilityStatus,
+  };
+
+  function handleSelectRange(range: DateRange | undefined) {
+    setDateRange(range);
+    setAvailabilityChecked(false);
+    if (range?.from) {
+      track("CALENDAR_DATE_SELECTED", {
+        listingId: listing.id,
+        metadata: { checkIn: inputDate(range.from), category: selectedCategory },
+      });
     }
-    if (selectedCategory === "hourly") {
-      params.set("duration", durationHours);
-    }
-    return `/reserve/${listing.id}?${params.toString()}`;
   }
 
   function checkAvailability() {
     setAvailabilityChecked(true);
+    track("AVAILABILITY_CHECKED", {
+      listingId: listing.id,
+      metadata: { category: selectedCategory, status: availabilityStatus },
+    });
+  }
+
+  function openInquiry() {
+    setInquiryOpen(true);
   }
 
   return (
@@ -500,6 +544,10 @@ export function PropertyContent({
 
           <Separator />
 
+          <StayInstructions listingId={listing.id} />
+
+          <Separator />
+
           <section id="deals" className="max-w-4xl">
             <div className="mb-4 rounded-2xl border bg-[#fbf7f8] p-4">
               <h2 className="text-lg font-bold">Check availability</h2>
@@ -595,7 +643,7 @@ export function PropertyContent({
                   <Calendar
                     mode="range"
                     selected={dateRange}
-                    onSelect={setDateRange}
+                    onSelect={handleSelectRange}
                     month={calendarMonth}
                     onMonthChange={setCalendarMonth}
                     numberOfMonths={1}
@@ -619,7 +667,7 @@ export function PropertyContent({
                   <Calendar
                     mode="range"
                     selected={dateRange}
-                    onSelect={setDateRange}
+                    onSelect={handleSelectRange}
                     month={new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1)}
                     onMonthChange={(month) =>
                       setCalendarMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
@@ -648,30 +696,30 @@ export function PropertyContent({
                 <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     {availabilityChecked ? (
-                      <p className={`text-sm font-bold ${hasAvailability ? "text-[#800020]" : "text-red-700"}`}>
+                      <p className={`text-sm font-bold ${hasAvailability ? "text-[#1a7f46]" : "text-amber-700"}`}>
                         {hasAvailability
-                          ? `Available: ${unitLabel}`
-                          : "Not available for this date. Try another day or time."}
+                          ? "Looks available. Send an inquiry to confirm with the host."
+                          : "These dates may not be available. Try another date or ask the host."}
                       </p>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Check availability before reserving.
+                        Check availability, then send an inquiry to the host.
                       </p>
                     )}
                   </div>
-                  {availabilityChecked && hasAvailability ? (
+                  {availabilityChecked ? (
                     <Button
-                      onClick={() => router.push(reserveUrl())}
+                      onClick={openInquiry}
                       className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
                     >
-                      Continue to reserve
+                      {hasAvailability ? "Send Inquiry" : "Ask Host Anyway"}
                     </Button>
                   ) : (
                     <Button
                       onClick={checkAvailability}
                       className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
                     >
-                      Show availability
+                      Check Availability
                     </Button>
                   )}
                 </div>
@@ -772,7 +820,7 @@ export function PropertyContent({
               Check availability
             </Button>
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              You pay the reserve fee first. Host details unlock after confirmation.
+              Beddn sends a clean inquiry with your dates and guest details before WhatsApp.
             </p>
           </div>
         </aside>
@@ -806,10 +854,18 @@ export function PropertyContent({
             }}
             className="h-11 shrink-0 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
           >
-            Check availability
+            Check Availability
           </Button>
         </div>
       </div>
+
+      <InquiryFlow
+        listing={{ id: listing.id, name: listing.name, title: listing.title, slug: listing.slug }}
+        user={user}
+        draft={inquiryDraft}
+        open={inquiryOpen}
+        onOpenChange={setInquiryOpen}
+      />
     </main>
   );
 }

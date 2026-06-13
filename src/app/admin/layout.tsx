@@ -20,10 +20,16 @@ import {
   Loader2,
   Bell,
   MapPin,
+  MessageCircle,
+  Activity,
+  BarChart3,
 } from "lucide-react";
 
 const ADMIN_NAV = [
   { href: ROUTES.adminHome, label: "Overview", icon: LayoutDashboard },
+  { href: ROUTES.adminAnalytics, label: "Analytics", icon: BarChart3 },
+  { href: ROUTES.adminInquiries, label: "Inquiries", icon: MessageCircle },
+  { href: ROUTES.adminEvents, label: "Events", icon: Activity },
   { href: ROUTES.adminUsers, label: "Users", icon: Users },
   { href: ROUTES.adminListings, label: "Listings", icon: Home },
   { href: ROUTES.adminHosts, label: "Hosts", icon: UserCircle },
