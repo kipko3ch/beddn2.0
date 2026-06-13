@@ -5,32 +5,9 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Listing } from "@/lib/types";
 
-// Google-Maps-like look: real aerial/satellite imagery (Esri World Imagery)
-// with a labels-only overlay (CARTO) for street and place names on top.
-const MAP_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  sources: {
-    satellite: {
-      type: "raster",
-      tiles: [
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      ],
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics",
-    },
-    labels: {
-      type: "raster",
-      tiles: ["https://basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png"],
-      tileSize: 256,
-      attribution: "&copy; CARTO",
-    },
-  },
-  layers: [
-    { id: "satellite", type: "raster", source: "satellite" },
-    { id: "labels", type: "raster", source: "labels" },
-  ],
-};
+// Google-Maps-default look: CARTO "voyager" vector style — colored roads,
+// green parks, blue water, and POI labels (close to maps.google.com default).
+const MAP_STYLE = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 
 interface MapProps {
   listings: Listing[];
