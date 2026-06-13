@@ -20,6 +20,8 @@ const SECTION_TABLE: Record<string, string> = {
   feedback: "feedback",
   demand: "search_demand",
   notifications: "notification_logs",
+  inquiries: "inquiries",
+  events: "listing_events",
 };
 
 function label(value: unknown) {
@@ -38,6 +40,8 @@ const SECTION_COLUMNS: Record<string, string[]> = {
   feedback: ["rating", "issue_reported", "issue_type", "comment", "created_at"],
   demand: ["query", "category", "results_count", "created_at"],
   notifications: ["event_type", "recipient", "message", "status", "created_at"],
+  inquiries: ["guest_name", "guest_whatsapp", "category", "check_in", "guests_count", "availability_status", "status", "source", "created_at"],
+  events: ["event_type", "listing_id", "session_id", "created_at"],
 };
 
 const SECTION_TITLE: Record<string, string> = {
@@ -50,6 +54,8 @@ const SECTION_TITLE: Record<string, string> = {
   feedback: "Feedback",
   demand: "Search demand",
   notifications: "Notifications",
+  inquiries: "Inquiries",
+  events: "Analytics events",
 };
 
 export default function AdminSectionPage() {

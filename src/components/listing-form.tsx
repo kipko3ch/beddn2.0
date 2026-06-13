@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ElementType } from "react";
 import { useRouter } from "next/navigation";
 import { uploadListingImage } from "@/lib/upload-image";
+import { InstructionsManager } from "@/components/instructions-manager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -820,6 +821,10 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
         <p className="text-xs text-muted-foreground">
           Photos are compressed to about 250&nbsp;KB in your browser before upload.
         </p>
+        <p className="rounded-lg bg-[#fbf7f8] px-3 py-2 text-xs text-[#800020]">
+          Do not add phone numbers or payment details to listing photos. Guests should use Check
+          Availability so your inquiries are organized and tracked.
+        </p>
         {uploading && <p className="text-xs font-medium text-[#800020]">Uploading…</p>}
         {uploadError && <p className="text-xs font-medium text-red-600">{uploadError}</p>}
 
@@ -856,6 +861,17 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
       </div>
     ),
   });
+
+  // Instructions live on the listing row, so they can only be managed once the
+  // listing exists (edit flow). New listings get this step after first save.
+  if (listing?.id) {
+    steps.push({
+      title: "Stay instructions",
+      subtitle: "Add check-in info, house rules, group links, and experience details with visibility controls.",
+      valid: true,
+      content: <InstructionsManager listingId={listing.id} />,
+    });
+  }
 
   if (isAdmin) {
     steps.push({

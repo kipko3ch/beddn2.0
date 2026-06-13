@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { CalendarDays, Clock, TicketCheck, RefreshCw } from "lucide-react";
-import type { Booking, Listing } from "@/lib/types";
+import { CalendarDays, Clock, TicketCheck, RefreshCw, TrendingUp } from "lucide-react";
+import type { Booking, Inquiry, Listing } from "@/lib/types";
 
 interface AvailabilitySlot {
   id: string;
@@ -24,6 +24,7 @@ interface AvailabilitySlot {
 export default function CalendarPage() {
   const supabase = useMemo(() => createClient(), []);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [listingId, setListingId] = useState("");
@@ -81,7 +82,38 @@ export default function CalendarPage() {
     setSlots((slotsRes.data as AvailabilitySlot[]) ?? []);
     setListings((listingsRes.data as Listing[]) ?? []);
     setListingId((listingsRes.data?.[0]?.id as string | undefined) ?? "");
+
+    // Demand layer: guest inquiries (the lead/inquiry pivot replaces paid
+    // bookings as the primary signal). Service-role API scopes to this host.
+    try {
+      const res = await fetch("/api/inquiries");
+      const json: { inquiries?: Inquiry[] } = res.ok ? await res.json() : {};
+      setInquiries(json.inquiries ?? []);
+    } catch {
+      setInquiries([]);
+    }
   }
+
+  // Aggregate demand by requested check-in date (most-requested first).
+  const demandByDate = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const inq of inquiries) {
+      if (inq.check_in) map.set(inq.check_in, (map.get(inq.check_in) ?? 0) + 1);
+    }
+    return [...map.entries()]
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [inquiries]);
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const upcomingRequests = useMemo(
+    () =>
+      inquiries
+        .filter((inq) => inq.check_in && inq.check_in >= todayKey)
+        .sort((a, b) => (a.check_in ?? "").localeCompare(b.check_in ?? ""))
+        .slice(0, 12),
+    [inquiries, todayKey]
+  );
 
   useEffect(() => {
     load();
@@ -249,6 +281,76 @@ export default function CalendarPage() {
             {syncResult && <p className="mt-2 text-xs font-medium text-[#800020]">{syncResult}</p>}
           </div>
         </div>
+      </section>
+
+      {/* Demand calendar — organized inquiry demand, not random messages. */}
+      <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
+        <div className="mb-1 flex items-center gap-2">
+          <TrendingUp className="h-5 w-5 text-[#800020]" />
+          <h2 className="font-bold">Demand calendar</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Dates guests have asked about through Beddn. Use this to see where demand is forming.
+        </p>
+        {inquiries.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No inquiry demand yet. As guests check availability and send inquiries, requested dates
+            appear here.
+          </p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#a08b92]">
+                Most requested dates
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {demandByDate.slice(0, 10).map(({ date, count }) => (
+                  <span
+                    key={date}
+                    className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm"
+                    style={{
+                      borderColor: "#e3d3d9",
+                      background: count > 1 ? "#f8eef2" : "#fff",
+                    }}
+                  >
+                    <span className="font-semibold text-[#2b000a]">{date}</span>
+                    <span className="rounded-full bg-[#800020] px-1.5 text-xs font-bold text-white">
+                      {count}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#a08b92]">
+                Upcoming requested stays
+              </p>
+              <div className="divide-y rounded-xl border">
+                {upcomingRequests.length === 0 ? (
+                  <p className="p-3 text-sm text-muted-foreground">No upcoming requested dates.</p>
+                ) : (
+                  upcomingRequests.map((inq) => (
+                    <div key={inq.id} className="flex items-center justify-between gap-3 p-3 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-medium text-[#2b000a]">{inq.guest_name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {inq.check_in}
+                          {inq.check_out ? ` → ${inq.check_out}` : ""} · {inq.guests_count} guest
+                          {inq.guests_count === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <Badge
+                        className="shrink-0 rounded-full bg-[#f5f1f2] text-[11px] text-[#6f6568] hover:bg-[#f5f1f2]"
+                      >
+                        {inq.availability_status.replace(/_/g, " ").toLowerCase()}
+                      </Badge>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
