@@ -37,13 +37,26 @@ function datesLabel(row: InquiryRow): string {
 export default function HostInquiriesPage() {
   const [rows, setRows] = useState<InquiryRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/inquiries");
-    const json: { inquiries?: InquiryRow[] } = res.ok ? await res.json() : {};
-    setRows(json.inquiries ?? []);
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/inquiries");
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(j.error || `Couldn't load inquiries (${res.status}).`);
+      }
+      const json = (await res.json()) as { inquiries?: InquiryRow[] };
+      setRows(json.inquiries ?? []);
+    } catch (e) {
+      // Never leave the page stuck on the loading skeleton — surface the error.
+      setError(e instanceof Error ? e.message : "Couldn't load inquiries.");
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -79,6 +92,17 @@ export default function HostInquiriesPage() {
 
       {loading ? (
         <DashboardListSkeleton rows={5} />
+      ) : error ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="text-sm font-semibold text-red-700">{error}</p>
+          <button
+            type="button"
+            onClick={load}
+            className="mt-3 inline-flex h-9 items-center rounded-full bg-[#800020] px-5 text-sm font-semibold text-white hover:bg-[#600018]"
+          >
+            Try again
+          </button>
+        </div>
       ) : rows.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-bookings_e7n8sb.png"
