@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, X } from "lucide-react";
@@ -39,11 +39,18 @@ export function AuthDialog({
   }
 
   async function continueWithGoogle() {
+    setError("");
     setWorking(true);
-    await supabase.auth.signInWithOAuth({
+    // On success the browser redirects away; if it errors (or the redirect
+    // never happens) re-enable the button so it isn't stuck disabled.
+    const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: callbackUrl() },
     });
+    if (authError) {
+      setError(authError.message);
+      setWorking(false);
+    }
   }
 
   async function continueWithEmail(event: React.FormEvent) {
@@ -67,7 +74,10 @@ export function AuthDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<span>{children}</span>} />
+      {/* Render the caller's button as the trigger itself. Wrapping it in a
+          <span> previously broke Base UI's native-button semantics, which made
+          the login dialog fail to open on some clicks. */}
+      <DialogTrigger render={children as ReactElement} />
       <DialogContent className="max-w-[min(100vw-1.5rem,560px)] gap-0 rounded-none p-0 sm:rounded-2xl" showCloseButton={false}>
         <button
           onClick={() => setOpen(false)}

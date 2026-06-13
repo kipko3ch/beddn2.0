@@ -42,22 +42,37 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as ReviewBody;
+  if (!body.listing) {
+    return NextResponse.json(
+      { error: "We couldn't tell which stay you're reviewing. Open the review link from your inquiry." },
+      { status: 400 }
+    );
+  }
   const rating = clampRating(body.rating);
-  if (!body.listing || !rating) {
+  if (!rating) {
     return NextResponse.json({ error: "Add a rating to continue." }, { status: 400 });
   }
 
   const admin = createAdminClient();
 
-  // Resolve the listing by slug or id.
+  // Resolve the listing by slug or id, including the host so we can stop a host
+  // from reviewing their own place.
   const byId = /^[0-9a-f-]{36}$/i.test(body.listing);
   const { data: listing } = await admin
     .from("listings")
-    .select("id")
+    .select("id, host:hosts(user_id)")
     .eq(byId ? "id" : "slug", body.listing)
     .maybeSingle();
   if (!listing) {
     return NextResponse.json({ error: "Listing not found." }, { status: 404 });
+  }
+
+  const host = (listing.host ?? null) as { user_id?: string } | null;
+  if (host?.user_id && host.user_id === user.id) {
+    return NextResponse.json(
+      { error: "This is your own listing — hosts can't review their own place." },
+      { status: 403 }
+    );
   }
 
   // Trust gate (not revealed): the reviewer must have inquired on this listing.

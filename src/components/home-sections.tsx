@@ -19,8 +19,12 @@ interface CitySection {
   listings: Listing[];
 }
 
-/** Horizontal scroller with desktop chevron buttons. */
-function Rail({ children }: { children: React.ReactNode }) {
+/**
+ * Horizontal scroller. The scroll controls live together at the top-right of
+ * the section (next to the heading) rather than overlapping the first/last
+ * card. Pass the section heading via `heading`.
+ */
+function Rail({ heading, children }: { heading: React.ReactNode; children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
 
   function scroll(direction: -1 | 1) {
@@ -28,29 +32,34 @@ function Rail({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="group/rail relative">
+    <div>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        {heading}
+        <div className="hidden shrink-0 items-center gap-2 md:flex">
+          <button
+            type="button"
+            aria-label="Scroll back"
+            onClick={() => scroll(-1)}
+            className="flex size-9 items-center justify-center rounded-full border bg-white shadow-sm transition-shadow hover:shadow-md"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Scroll forward"
+            onClick={() => scroll(1)}
+            className="flex size-9 items-center justify-center rounded-full border bg-white shadow-sm transition-shadow hover:shadow-md"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
       <div
         ref={ref}
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </div>
-      <button
-        type="button"
-        aria-label="Scroll back"
-        onClick={() => scroll(-1)}
-        className="absolute -left-4 top-[38%] z-10 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-md transition-opacity hover:shadow-lg md:flex md:opacity-0 md:group-hover/rail:opacity-100"
-      >
-        <ChevronLeft className="h-5 w-5" />
-      </button>
-      <button
-        type="button"
-        aria-label="Scroll forward"
-        onClick={() => scroll(1)}
-        className="absolute -right-4 top-[38%] z-10 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-md transition-opacity hover:shadow-lg md:flex md:opacity-0 md:group-hover/rail:opacity-100"
-      >
-        <ChevronRight className="h-5 w-5" />
-      </button>
     </div>
   );
 }
@@ -72,16 +81,16 @@ export function PopularDestinations() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#2b000a] sm:text-2xl">Popular destinations</h2>
-        <Link
-          href="/search"
-          className="flex items-center gap-1 text-sm font-semibold text-[#800020] hover:underline"
-        >
-          See all <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-      <Rail>
+      <Rail
+        heading={
+          <Link href="/search" className="group flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[#2b000a] sm:text-2xl">Popular destinations</h2>
+            <span className="flex size-7 items-center justify-center rounded-full bg-[#f5eef1] transition-transform group-hover:translate-x-0.5">
+              <ArrowRight className="h-4 w-4 text-[#2b000a]" />
+            </span>
+          </Link>
+        }
+      >
         {!loaded
           ? Array.from({ length: 6 }).map((_, i) => (
               <div
@@ -187,20 +196,21 @@ export function CityRails({
       ) : (
         sections.map((section) => (
           <section key={section.city} className="pt-10">
-            <div className="mb-4 flex items-center justify-between">
-              <Link
-                href={`/search?q=${encodeURIComponent(section.city)}`}
-                className="group flex items-center gap-2"
-              >
-                <h2 className="text-xl font-bold text-[#2b000a] sm:text-2xl">
-                  Stay in {section.city}
-                </h2>
-                <span className="flex size-7 items-center justify-center rounded-full bg-[#f5eef1] transition-transform group-hover:translate-x-0.5">
-                  <ArrowRight className="h-4 w-4 text-[#2b000a]" />
-                </span>
-              </Link>
-            </div>
-            <Rail>
+            <Rail
+              heading={
+                <Link
+                  href={`/search?q=${encodeURIComponent(section.city)}`}
+                  className="group flex items-center gap-2"
+                >
+                  <h2 className="text-xl font-bold text-[#2b000a] sm:text-2xl">
+                    Stay in {section.city}
+                  </h2>
+                  <span className="flex size-7 items-center justify-center rounded-full bg-[#f5eef1] transition-transform group-hover:translate-x-0.5">
+                    <ArrowRight className="h-4 w-4 text-[#2b000a]" />
+                  </span>
+                </Link>
+              }
+            >
               {section.listings.map((listing) => (
                 <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
                   <ListingCard

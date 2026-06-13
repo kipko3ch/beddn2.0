@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Heart, Star } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Listing } from "@/lib/types";
 
@@ -36,9 +35,8 @@ export function ListingCard({
   /** Which rate to feature on the card. Falls back to whatever exists. */
   priceMode?: "hourly" | "overnight";
 }) {
-  const [imageIndex, setImageIndex] = useState(0);
-  const images = listing.listing_images?.length ? listing.listing_images : [];
-  const image = images[imageIndex]?.url;
+  // Single thumbnail only — for more images the guest opens the property page.
+  const image = listing.listing_images?.[0]?.url;
 
   // Show the requested rate when the listing has it, otherwise fall back.
   let price = 0;
@@ -64,13 +62,6 @@ export function ListingCard({
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
-  function moveImage(event: React.MouseEvent<HTMLButtonElement>, direction: -1 | 1) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (images.length < 2) return;
-    setImageIndex((current) => (current + direction + images.length) % images.length);
-  }
-
   return (
     <Link
       href={`/property/${listing.slug}`}
@@ -92,35 +83,6 @@ export function ListingCard({
           <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
             No image
           </div>
-        )}
-
-        {images.length > 1 && (
-          <>
-            <button
-              aria-label="Previous image"
-              className="absolute left-3 top-1/2 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:flex group-hover:opacity-100 focus:flex focus:opacity-100"
-              onClick={(event) => moveImage(event, -1)}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              aria-label="Next image"
-              className="absolute right-3 top-1/2 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:flex group-hover:opacity-100 focus:flex focus:opacity-100"
-              onClick={(event) => moveImage(event, 1)}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-            <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
-              {images.slice(0, 6).map((item, index) => (
-                <span
-                  key={item.id}
-                  className={`size-1.5 rounded-full ${
-                    index === imageIndex ? "bg-white" : "bg-white/55"
-                  }`}
-                />
-              ))}
-            </div>
-          </>
         )}
 
         {onToggleSave && (

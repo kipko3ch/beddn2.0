@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactElement } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -40,6 +41,106 @@ function getInitials(user: User | null) {
     .slice(0, 2)
     .map((part: string) => part[0]?.toUpperCase())
     .join("");
+}
+
+/**
+ * The full navigation menu, shown as a slide-out sheet. Used by both the mobile
+ * hamburger (left) and the desktop hamburger (right). Primary links sit at the
+ * top; Terms/Privacy and Sign out are pinned to the bottom.
+ */
+function NavSheet({
+  user,
+  showHostWorkspace,
+  isAdmin,
+  onSignOut,
+  side,
+  children,
+}: {
+  user: User | null;
+  showHostWorkspace: boolean;
+  isAdmin: boolean;
+  onSignOut: () => void;
+  side: "left" | "right";
+  children: ReactElement;
+}) {
+  const item = "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted";
+  return (
+    <Sheet>
+      <SheetTrigger render={children} />
+      <SheetContent side={side} className="flex w-[min(82vw,320px)] flex-col gap-0 bg-white p-0">
+        <SheetHeader className="border-b p-5">
+          <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
+            Beddn
+          </SheetTitle>
+          <SheetDescription className="sr-only">Navigate Beddn</SheetDescription>
+        </SheetHeader>
+
+        <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+          <SheetClose render={<Link href={ROUTES.search} className={item} />}>
+            <Icon icon="line-md:search" className="h-4 w-4" /> Discover
+          </SheetClose>
+          <SheetClose render={<Link href={ROUTES.review} className={item} />}>
+            <Icon icon="line-md:star" className="h-4 w-4" /> Review a stay
+          </SheetClose>
+          <SheetClose render={<Link href={ROUTES.saved} className={item} />}>
+            <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
+          </SheetClose>
+
+          {!user && (
+            <AuthDialog>
+              <button className={`${item} w-full text-left`}>
+                <Icon icon="line-md:log-in" className="h-4 w-4" /> Login or sign up
+              </button>
+            </AuthDialog>
+          )}
+
+          {showHostWorkspace ? (
+            <>
+              <SheetClose render={<Link href={ROUTES.dashboard} className={item} />}>
+                <Icon icon="line-md:account" className="h-4 w-4" /> Host dashboard
+              </SheetClose>
+              <SheetClose render={<Link href={ROUTES.dashboardProfile} className={item} />}>
+                <Icon icon="line-md:account" className="h-4 w-4" /> Host profile
+              </SheetClose>
+              <SheetClose render={<Link href={ROUTES.search} className={item} />}>
+                <Icon icon="line-md:search" className="h-4 w-4" /> Switch to traveler
+              </SheetClose>
+            </>
+          ) : user ? (
+            <SheetClose render={<Link href={ROUTES.newListing} className={item} />}>
+              <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
+            </SheetClose>
+          ) : (
+            <AuthDialog defaultHostIntent>
+              <button className={`${item} w-full text-left`}>
+                <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
+              </button>
+            </AuthDialog>
+          )}
+
+          {isAdmin && (
+            <SheetClose render={<Link href={ROUTES.adminHome} className={item} />}>
+              <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
+            </SheetClose>
+          )}
+        </nav>
+
+        <div className="mt-auto space-y-1 border-t p-4">
+          <SheetClose render={<Link href={ROUTES.terms} className={`${item} text-muted-foreground`} />}>
+            Terms
+          </SheetClose>
+          <SheetClose render={<Link href={ROUTES.privacy} className={`${item} text-muted-foreground`} />}>
+            Privacy
+          </SheetClose>
+          {user && (
+            <button onClick={onSignOut} className={`${item} w-full text-left text-[#800020]`}>
+              <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
+            </button>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
 }
 
 export function Header() {
@@ -144,110 +245,43 @@ export function Header() {
                 </Button>
               </AuthDialog>
             )}
+
+            {/* Full menu (Terms, Privacy, host/traveler, sign out) — some of
+                these aren't in the avatar dropdown. */}
+            <NavSheet
+              user={user}
+              showHostWorkspace={showHostWorkspace}
+              isAdmin={isAdmin}
+              onSignOut={handleSignOut}
+              side="right"
+            >
+              <button
+                type="button"
+                aria-label="Open menu"
+                className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
+              >
+                <Icon icon="line-md:menu" className="h-5 w-5" />
+              </button>
+            </NavSheet>
           </div>
         </div>
         <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-center px-4 md:hidden">
           <div className="absolute left-4">
-            <Sheet>
-              <SheetTrigger
-                render={
-                  <button
-                    type="button"
-                    className="inline-flex size-9 items-center justify-center rounded-full text-[#181113] outline-none focus-visible:ring-2 focus-visible:ring-[#800020]"
-                  />
-                }
+            <NavSheet
+              user={user}
+              showHostWorkspace={showHostWorkspace}
+              isAdmin={isAdmin}
+              onSignOut={handleSignOut}
+              side="left"
+            >
+              <button
+                type="button"
+                aria-label="Open navigation"
+                className="inline-flex size-9 items-center justify-center rounded-full text-[#181113] outline-none focus-visible:ring-2 focus-visible:ring-[#800020]"
               >
                 <Icon icon="line-md:menu" className="h-5 w-5" />
-                <span className="sr-only">Open navigation</span>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[min(82vw,320px)] gap-0 bg-white p-0">
-                <SheetHeader className="border-b p-5">
-                  <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
-                    Beddn
-                  </SheetTitle>
-                  <SheetDescription>Navigate Beddn</SheetDescription>
-                </SheetHeader>
-                <nav className="grid gap-2 p-4">
-                  <SheetClose
-                    render={
-                      <Link href={ROUTES.search} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                    }
-                  >
-                    <Icon icon="line-md:search" className="h-4 w-4" /> Discover
-                  </SheetClose>
-                  <SheetClose
-                    render={
-                      <Link href={ROUTES.review} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                    }
-                  >
-                    <Icon icon="line-md:star" className="h-4 w-4" /> Review a stay
-                  </SheetClose>
-                  {!user && (
-                    <AuthDialog>
-                      <button className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm hover:bg-muted">
-                        <Icon icon="line-md:log-in" className="h-4 w-4" /> Login
-                      </button>
-                    </AuthDialog>
-                  )}
-                  <SheetClose
-                    render={
-                      <Link href={ROUTES.saved} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                    }
-                  >
-                    <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
-                  </SheetClose>
-                  {!showHostWorkspace ? (
-                    <SheetClose
-                      render={
-                        <Link href={ROUTES.newListing} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                      }
-                    >
-                      <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
-                    </SheetClose>
-                  ) : (
-                    <SheetClose
-                      render={
-                        <Link href={ROUTES.dashboard} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                      }
-                    >
-                      <Icon icon="line-md:account" className="h-4 w-4" /> Dashboard
-                    </SheetClose>
-                  )}
-                  {user && showHostWorkspace && (
-                    <SheetClose
-                      render={
-                        <Link href={ROUTES.search} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                      }
-                    >
-                      <Icon icon="line-md:search" className="h-4 w-4" /> Traveler view
-                    </SheetClose>
-                  )}
-                  {isAdmin && (
-                    <SheetClose
-                      render={
-                        <Link href={ROUTES.adminHome} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                      }
-                    >
-                      <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
-                    </SheetClose>
-                  )}
-                  <SheetClose
-                    render={
-                      <Link href={ROUTES.terms} className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                    }
-                  >
-                    Terms
-                  </SheetClose>
-                  <SheetClose
-                    render={
-                      <Link href={ROUTES.privacy} className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" />
-                    }
-                  >
-                    Privacy
-                  </SheetClose>
-                </nav>
-              </SheetContent>
-            </Sheet>
+              </button>
+            </NavSheet>
           </div>
           <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
             Beddn

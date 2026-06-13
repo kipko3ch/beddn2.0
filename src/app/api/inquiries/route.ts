@@ -304,3 +304,48 @@ export async function PATCH(request: Request) {
   }
   return NextResponse.json({ ok: true });
 }
+
+// Host/admin: delete an inquiry (clean up spam or stale leads).
+export async function DELETE(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "Missing inquiry id." }, { status: 400 });
+  }
+
+  const admin = createAdminClient();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  // Hosts may only delete inquiries on their own listings.
+  let hostId: string | null = null;
+  if (!profile?.is_admin) {
+    const { data: host } = await admin
+      .from("hosts")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!host) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    hostId = host.id;
+  }
+
+  let del = admin.from("inquiries").delete().eq("id", id);
+  if (hostId) del = del.eq("host_id", hostId);
+
+  const { error } = await del;
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}

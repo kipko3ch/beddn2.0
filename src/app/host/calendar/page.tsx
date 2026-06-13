@@ -31,6 +31,7 @@ export default function CalendarPage() {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
+  const [units, setUnits] = useState("");
 
   const [importUrl, setImportUrl] = useState("");
   const [syncing, setSyncing] = useState(false);
@@ -39,6 +40,7 @@ export default function CalendarPage() {
 
   const selectedListing = listings.find((listing) => listing.id === listingId);
   const isExperience = Boolean(selectedListing?.categories?.includes("experience"));
+  const totalUnits = selectedListing?.total_units ?? 1;
   const exportUrl =
     typeof window !== "undefined" && listingId
       ? `${window.location.origin}/api/ical/${listingId}`
@@ -128,6 +130,7 @@ export default function CalendarPage() {
         listingId,
         startDatetime: `${date}T${startTime}:00`,
         endDatetime: `${date}T${endTime}:00`,
+        units: units ? Math.max(1, parseInt(units, 10)) : totalUnits,
       }),
     });
 
@@ -188,7 +191,7 @@ export default function CalendarPage() {
             {isExperience ? "Block an experience session" : "Block a stay slot"}
           </h2>
         </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-5 md:items-end">
+        <div className={`grid grid-cols-1 gap-3 md:items-end ${totalUnits > 1 ? "md:grid-cols-6" : "md:grid-cols-5"}`}>
           <div>
             <Label>Listing</Label>
             <select
@@ -203,6 +206,20 @@ export default function CalendarPage() {
               ))}
             </select>
           </div>
+          {totalUnits > 1 && (
+            <div>
+              <Label>Units to block</Label>
+              <Input
+                type="number"
+                min={1}
+                max={totalUnits}
+                value={units}
+                placeholder={String(totalUnits)}
+                onChange={(e) => setUnits(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">of {totalUnits} total</p>
+            </div>
+          )}
           <div>
             <Label>{isExperience ? "Session date" : "Date"}</Label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />

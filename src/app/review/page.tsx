@@ -43,6 +43,9 @@ function ReviewInner() {
 
   const [user, setUser] = useState<User | null>(null);
   const [listingName, setListingName] = useState("");
+  const [myStays, setMyStays] = useState<{ slug: string; name: string }[]>([]);
+  const [chosenSlug, setChosenSlug] = useState("");
+  const activeListing = listingParam || chosenSlug;
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
@@ -57,15 +60,40 @@ function ReviewInner() {
   }, [supabase]);
 
   useEffect(() => {
-    if (!listingParam) return;
-    fetch(`/api/public/listings?q=${encodeURIComponent(listingParam)}&limit=1`)
+    if (!activeListing) return;
+    fetch(`/api/public/listings?q=${encodeURIComponent(activeListing)}&limit=1`)
       .then((r) => (r.ok ? r.json() : null))
       .then((j: { listings?: { name?: string; title?: string; slug?: string }[] } | null) => {
-        const match = j?.listings?.find((l) => l.slug === listingParam) ?? j?.listings?.[0];
+        const match = j?.listings?.find((l) => l.slug === activeListing) ?? j?.listings?.[0];
         if (match) setListingName(match.title || match.name || "");
       })
       .catch(() => {});
-  }, [listingParam]);
+  }, [activeListing]);
+
+  // Reached /review without a listing (e.g. the header "Review" link)? Offer the
+  // guest the stays they can review — the listings they've inquired about.
+  useEffect(() => {
+    if (!user || listingParam) return;
+    supabase
+      .from("inquiries")
+      .select("listing:listings(slug, title, name, host:hosts(user_id))")
+      .eq("guest_user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const seen = new Set<string>();
+        const stays: { slug: string; name: string }[] = [];
+        for (const row of (data ?? []) as {
+          listing?: { slug?: string; title?: string; name?: string; host?: { user_id?: string } | null } | null;
+        }[]) {
+          const l = row.listing;
+          // Skip the guest's own listings — hosts can't review their own place.
+          if (!l?.slug || seen.has(l.slug) || l.host?.user_id === user.id) continue;
+          seen.add(l.slug);
+          stays.push({ slug: l.slug, name: l.title || l.name || "Your stay" });
+        }
+        setMyStays(stays);
+      });
+  }, [user, listingParam, supabase]);
 
   function toggleTag(value: string) {
     setTags((cur) => (cur.includes(value) ? cur.filter((t) => t !== value) : [...cur, value]));
@@ -73,6 +101,10 @@ function ReviewInner() {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (!activeListing) {
+      setStatus({ type: "error", message: "Pick which stay you're reviewing first." });
+      return;
+    }
     if (!rating) {
       setStatus({ type: "error", message: "Tap a star to rate your stay." });
       return;
@@ -83,7 +115,7 @@ function ReviewInner() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        listing: listingParam,
+        listing: activeListing,
         rating,
         tags,
         comment,
@@ -101,7 +133,7 @@ function ReviewInner() {
   }
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-8 sm:px-6 lg:py-12">
+    <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:py-12">
       <div className="mb-5">
         <h1 className="font-brand text-4xl text-[#2b000a]">How was your stay?</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
@@ -135,6 +167,35 @@ function ReviewInner() {
               Log in to continue
             </button>
           </AuthDialog>
+        </div>
+      ) : !activeListing ? (
+        <div className="rounded-3xl border bg-white p-8 shadow-sm">
+          <h2 className="font-brand text-2xl text-[#2b000a]">Which stay are you reviewing?</h2>
+          {myStays.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              You don&apos;t have any stays to review yet. After you inquire about a place on Beddn,
+              it&apos;ll show up here so you can leave a review.
+            </p>
+          ) : (
+            <>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Pick the place you stayed at to leave your review.
+              </p>
+              <div className="mt-4 space-y-2">
+                {myStays.map((stay) => (
+                  <button
+                    key={stay.slug}
+                    type="button"
+                    onClick={() => setChosenSlug(stay.slug)}
+                    className="flex w-full items-center justify-between rounded-2xl border border-[#e3d3d9] bg-white px-4 py-3 text-left text-sm font-semibold text-[#2b000a] hover:border-[#800020] hover:bg-[#fbf0f3]"
+                  >
+                    {stay.name}
+                    <Star className="h-4 w-4 text-[#800020]" />
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-6">

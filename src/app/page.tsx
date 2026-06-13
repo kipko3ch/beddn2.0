@@ -82,6 +82,7 @@ export default function LandingPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { user, isHost, isAdmin } = useUserRole();
@@ -166,7 +167,7 @@ export default function LandingPage() {
   return (
     <div className={styles.container}>
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
-        <Sheet>
+        <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger
             render={
               <button type="button" className={styles.mobileMenuButton} aria-label="Open navigation" />
@@ -174,47 +175,57 @@ export default function LandingPage() {
           >
             <Menu size={20} />
           </SheetTrigger>
-          <SheetContent side="left" className="w-[min(82vw,320px)] gap-0 bg-white p-0">
+          <SheetContent side="left" className="flex w-[min(82vw,320px)] flex-col gap-0 bg-white p-0">
             <SheetHeader className="border-b p-5">
               <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
                 Beddn
               </SheetTitle>
-              <SheetDescription>Navigate Beddn</SheetDescription>
+              <SheetDescription className="sr-only">Navigate Beddn</SheetDescription>
             </SheetHeader>
-            <nav className="grid gap-2 p-4">
-              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.search}>
+            <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.search}>
                 Discover
               </a>
-              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.review}>
+              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.review}>
                 Review a stay
+              </a>
+              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.saved}>
+                Saved trips
               </a>
               {!user && (
                 <AuthDialog defaultHostIntent>
-                  <button className="flex items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-3 text-sm font-bold text-white hover:bg-[#600018]">
+                  <button className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-3 text-sm font-bold text-white hover:bg-[#600018]">
                     <Home className="h-4 w-4" /> Become a host
                   </button>
                 </AuthDialog>
               )}
-              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.saved}>
-                Saved trips
-              </a>
               {user && canHost && (
-                <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.dashboard}>
+                <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.dashboard}>
                   Host dashboard
                 </a>
               )}
               {isAdmin && (
-                <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.adminListings}>
+                <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.adminListings}>
                   Admin dashboard
                 </a>
               )}
-              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.terms}>
+            </nav>
+            <div className="mt-auto space-y-1 border-t p-4">
+              <a className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground hover:bg-muted" href={ROUTES.terms}>
                 Terms
               </a>
-              <a className="rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.privacy}>
+              <a className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground hover:bg-muted" href={ROUTES.privacy}>
                 Privacy
               </a>
-            </nav>
+              {user && (
+                <button
+                  onClick={handleSignOut}
+                  className="block w-full rounded-2xl px-4 py-3 text-left text-sm text-[#800020] hover:bg-muted"
+                >
+                  Sign out
+                </button>
+              )}
+            </div>
           </SheetContent>
         </Sheet>
 
@@ -294,6 +305,14 @@ export default function LandingPage() {
               <button className={styles.signInBtn}>Become a host</button>
             </AuthDialog>
           )}
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setNavOpen(true)}
+            className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
+          >
+            <Menu size={18} />
+          </button>
         </nav>
 
         <div className={styles.mobileProfileSlot}>
@@ -505,7 +524,7 @@ export default function LandingPage() {
             </p>
             <div className={styles.emptyActions}>
               <button
-                onClick={() => router.push('/dashboard/listings/new')}
+                onClick={() => router.push('/host/listings/new')}
                 className={styles.searchBtn}
               >
                 List your place

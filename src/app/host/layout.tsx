@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { ROUTES } from '@/lib/routes';
-import { AuthDialog } from '@/components/auth-dialog';
-import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
@@ -25,6 +23,7 @@ const NAV_SECTIONS: { title: string; items: { href: string; label: string; icon:
       { href: ROUTES.dashboardListings, label: 'Listings', icon: 'line-md:home' },
       { href: ROUTES.dashboardInquiries, label: 'Inquiries', icon: 'line-md:bell' },
       { href: ROUTES.dashboardCalendar, label: 'Calendar', icon: 'line-md:calendar' },
+      { href: ROUTES.dashboardProfile, label: 'Profile', icon: 'line-md:account' },
     ],
   },
   {
@@ -82,6 +81,7 @@ export default function DashboardLayout({
     ROUTES.dashboardCalendar,
     ROUTES.dashboardWithdrawals,
     ROUTES.dashboardFeedback,
+    ROUTES.dashboardProfile,
   ]);
   function navVisible(href: string) {
     if (adminOnly.has(href)) return isAdmin;
@@ -105,6 +105,12 @@ export default function DashboardLayout({
     return pathname?.startsWith(href) ?? false;
   }
 
+  // The dedicated host login page renders its own full-screen UI without the
+  // dashboard chrome or auth gate.
+  if (pathname === ROUTES.hostLogin) {
+    return <>{children}</>;
+  }
+
   if (!loading && !user) {
     return (
       <div className="min-h-screen bg-white font-sans text-[#181113]">
@@ -123,17 +129,15 @@ export default function DashboardLayout({
         <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-24 text-center">
           <Icon icon="line-md:account" className="mb-5 h-14 w-14 text-[#800020]" />
           <h1 className="font-brand text-5xl leading-none text-[#2b000a]">
-            Sign in to continue
+            Host sign in
           </h1>
           <p className="mt-4 max-w-lg text-base text-muted-foreground">
-            Login or sign up once to save trips, create a host profile, list a property, and manage bookings.
+            Sign in to your Beddn host account to manage listings, inquiries, your calendar, and bookings.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <AuthDialog defaultHostIntent={pathname === ROUTES.newListing}>
-              <Button className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]">
-                Login or sign up
-              </Button>
-            </AuthDialog>
+            <Link href={ROUTES.hostLogin} className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]">
+              Go to host login
+            </Link>
             <Link href={ROUTES.search} className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-muted">
               Explore first
             </Link>

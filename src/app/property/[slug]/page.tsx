@@ -23,7 +23,7 @@ export default async function PropertyPage({
   const { data: listingData } = await admin
     .from("listings")
     .select(
-      "*, listing_images(*), host:hosts(user_id, name, is_verified), reviews(*, profile:profiles(full_name)), blocked_dates(date)"
+      "*, listing_images(*), host:hosts(user_id, name, bio, avatar_url, is_verified), reviews(*, profile:profiles(full_name)), blocked_dates(date)"
     )
     .eq("slug", slug)
     .order("created_at", { ascending: false, referencedTable: "reviews" })

@@ -6,6 +6,8 @@ interface BlockBody {
   listingId: string;
   startDatetime: string;
   endDatetime: string;
+  // How many units to mark unavailable. Defaults to the whole listing.
+  units?: number;
 }
 
 export async function POST(request: Request) {
@@ -38,15 +40,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
+  const totalUnits = listing.total_units || 1;
+  // Block the requested number of units (default: the whole listing). Clamp to
+  // the listing's capacity so available_units never goes negative.
+  const blockedUnits = Math.min(
+    totalUnits,
+    Math.max(1, Math.round(Number(body.units) || totalUnits))
+  );
+  const availableUnits = totalUnits - blockedUnits;
+
   const { error } = await admin.from("availability_slots").upsert(
     {
       listing_id: body.listingId,
       start_datetime: body.startDatetime,
       end_datetime: body.endDatetime,
-      total_units: listing.total_units || 1,
-      booked_units: listing.total_units || 1,
-      available_units: 0,
-      status: "blocked",
+      total_units: totalUnits,
+      booked_units: blockedUnits,
+      available_units: availableUnits,
+      status: availableUnits > 0 ? "limited" : "blocked",
     },
     { onConflict: "listing_id,start_datetime,end_datetime" }
   );

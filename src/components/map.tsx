@@ -5,6 +5,33 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Listing } from "@/lib/types";
 
+// Google-Maps-like look: real aerial/satellite imagery (Esri World Imagery)
+// with a labels-only overlay (CARTO) for street and place names on top.
+const MAP_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {
+    satellite: {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics",
+    },
+    labels: {
+      type: "raster",
+      tiles: ["https://basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution: "&copy; CARTO",
+    },
+  },
+  layers: [
+    { id: "satellite", type: "raster", source: "satellite" },
+    { id: "labels", type: "raster", source: "labels" },
+  ],
+};
+
 interface MapProps {
   listings: Listing[];
   center?: [number, number];
@@ -14,6 +41,8 @@ interface MapProps {
   className?: string;
   approximate?: boolean;
   priceMode?: "hourly" | "overnight" | "experience";
+  /** When false the map is a static image: no pan/zoom/rotate and no controls. */
+  interactive?: boolean;
 }
 
 export function Map({
@@ -25,6 +54,7 @@ export function Map({
   className = "w-full h-full",
   approximate = false,
   priceMode = "hourly",
+  interactive = true,
 }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -35,12 +65,27 @@ export function Map({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      style: MAP_STYLE,
       center,
       zoom,
+      interactive,
+      // Imagery requires attribution — keep it but compact (Google does too).
+      attributionControl: { compact: true },
     });
 
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
+    if (interactive) {
+      map.addControl(new maplibregl.NavigationControl(), "top-right");
+    } else {
+      // Static map: lock every interaction so it can't be panned or jittered.
+      map.dragPan.disable();
+      map.scrollZoom.disable();
+      map.boxZoom.disable();
+      map.dragRotate.disable();
+      map.keyboard.disable();
+      map.doubleClickZoom.disable();
+      map.touchZoomRotate.disable();
+      map.touchPitch?.disable();
+    }
     mapRef.current = map;
 
     return () => map.remove();
@@ -49,8 +94,10 @@ export function Map({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.easeTo({ center, zoom, duration: 450 });
-  }, [center, zoom]);
+    // Animate only when interactive; a static map jumps straight to position.
+    if (interactive) map.easeTo({ center, zoom, duration: 450 });
+    else map.jumpTo({ center, zoom });
+  }, [center, zoom, interactive]);
 
   useEffect(() => {
     const map = mapRef.current;

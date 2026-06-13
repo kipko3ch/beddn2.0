@@ -6,6 +6,11 @@ const BRAND = "#800020";
 const INK = "#2b000a";
 const MUTED = "#6f6568";
 
+// Absolute URL for the logo — email clients can't load relative paths. Falls
+// back to the production domain when NEXT_PUBLIC_SITE_URL isn't set.
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://beddn.com").replace(/\/$/, "");
+const LOGO_URL = `${SITE_URL}/images/logo.png`;
+
 function shell(opts: { title: string; bodyHtml: string; preheader?: string }): string {
   return `<!doctype html>
 <html lang="en">
@@ -19,9 +24,9 @@ function shell(opts: { title: string; bodyHtml: string; preheader?: string }): s
 ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${opts.preheader}</div>` : ""}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f1f2;padding:24px 12px;">
   <tr><td align="center">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #efe3e7;">
-      <tr><td style="padding:22px 28px;border-bottom:1px solid #f2e7eb;">
-        <span style="font-family:Georgia,serif;font-size:26px;font-weight:bold;color:${INK};letter-spacing:-0.5px;">Beddn</span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;overflow:hidden;border:1px solid #efe3e7;">
+      <tr><td style="padding:20px 28px;border-bottom:1px solid #f2e7eb;">
+        <img src="${LOGO_URL}" alt="Beddn" height="30" style="display:block;height:30px;width:auto;border:0;outline:none;text-decoration:none;">
       </td></tr>
       <tr><td style="padding:28px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:${INK};">
         ${opts.bodyHtml}
@@ -59,7 +64,7 @@ export function inquiryReceivedEmail(input: InquiryEmailInput): { subject: strin
         You inquired about <strong style="color:${INK};">${input.listingName}</strong>. Continue the conversation with the host on WhatsApp to confirm your dates and details.
       </p>
       ${input.whatsappUrl ? `<p style="margin:0 0 20px;">${button(input.whatsappUrl, "Continue on WhatsApp")}</p>` : ""}
-      <div style="background:#fbf7f8;border-radius:14px;padding:16px 18px;margin:8px 0 4px;">
+      <div style="background:#fbf7f8;border-left:3px solid ${BRAND};padding:16px 18px;margin:8px 0 4px;">
         <p style="margin:0 0 6px;font-size:15px;font-weight:bold;color:${INK};">Did you book? Don't forget to review ⭐</p>
         <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:${MUTED};">
           After your stay, a quick review helps other guests and keeps Beddn trustworthy.

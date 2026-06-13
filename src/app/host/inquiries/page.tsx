@@ -5,6 +5,7 @@ import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
+import { Trash2 } from "lucide-react";
 import type { Inquiry, InquiryStatus } from "@/lib/types";
 
 type InquiryRow = Inquiry & { listing?: { name?: string; title?: string; city?: string } | null };
@@ -58,6 +59,14 @@ export default function HostInquiriesPage() {
     });
   }
 
+  async function remove(id: string) {
+    if (!confirm("Delete this inquiry? This can't be undone.")) return;
+    const prev = rows;
+    setRows((cur) => cur.filter((r) => r.id !== id));
+    const res = await fetch(`/api/inquiries?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (!res.ok) setRows(prev); // restore on failure
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -97,14 +106,24 @@ export default function HostInquiriesPage() {
                     {row.listing?.city ? ` · ${row.listing.city}` : ""}
                   </p>
                 </div>
-                <a
-                  href={`https://wa.me/${row.guest_whatsapp.replace(/[^\d]/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#1fb959]"
-                >
-                  <WhatsAppIcon className="h-4 w-4" /> WhatsApp
-                </a>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`https://wa.me/${row.guest_whatsapp.replace(/[^\d]/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#1fb959]"
+                  >
+                    <WhatsAppIcon className="h-4 w-4" /> WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => remove(row.id)}
+                    aria-label="Delete inquiry"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#e3d3d9] text-[#6f6568] hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
@@ -149,6 +168,13 @@ export default function HostInquiriesPage() {
                   </button>
                 ))}
               </div>
+
+              {row.status === "BOOKED" && (
+                <p className="mt-3 rounded-xl border-l-[3px] border-emerald-500 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                  Booked — once the stay is done, come back and update this inquiry (mark it
+                  completed or update your calendar units) so your availability stays accurate.
+                </p>
+              )}
             </div>
           ))}
         </div>

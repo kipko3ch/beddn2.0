@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
+  // The host dashboard now lives under /host. Keep old /dashboard links and
+  // bookmarks working.
+  async redirects() {
+    return [
+      { source: "/dashboard", destination: "/host", permanent: true },
+      { source: "/dashboard/:path*", destination: "/host/:path*", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
