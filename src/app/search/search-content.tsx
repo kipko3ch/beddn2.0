@@ -368,12 +368,7 @@ export function SearchContent() {
             <div
               key={listing.id}
               id={`listing-${listing.id}`}
-              className={`rounded-xl transition-shadow ${
-                // Highlight only where the side map exists — on touch screens a
-                // tap fires hover and would leave a stray ring on the card.
-                // Subtle elevation instead of a burgundy ring/border.
-                highlightedId === listing.id ? "lg:shadow-[0_6px_24px_rgba(24,17,19,0.12)]" : ""
-              }`}
+              className="rounded-xl"
             >
               <ListingCard
                 listing={listing}
