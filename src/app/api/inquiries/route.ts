@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { buildWhatsAppUrl, normalizeWhatsApp } from "@/lib/whatsapp";
 import { sendEmail } from "@/lib/email/server";
 import { inquiryReceivedEmail } from "@/lib/email/templates";
+import { publicBaseUrl } from "@/lib/site-url";
 import type { AvailabilityStatus } from "@/lib/types";
 
 // Lead capture. Login is required before any host contact is revealed; the
@@ -208,8 +209,7 @@ export async function POST(request: Request) {
   // Email the guest a confirmation that primes the review (fire-and-forget;
   // no-ops to a log row when ZeptoMail isn't configured). Uses their auth email.
   if (user.email) {
-    const origin = new URL(request.url).origin;
-    const reviewUrl = `${origin}/review?listing=${listing.slug}`;
+    const reviewUrl = `${publicBaseUrl(request)}/review?listing=${listing.slug}`;
     const { subject, html } = inquiryReceivedEmail({ guestName, listingName, reviewUrl, whatsappUrl });
     void sendEmail({ to: user.email, subject, html, eventType: "inquiry_received" });
   }
