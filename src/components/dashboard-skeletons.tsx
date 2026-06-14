@@ -30,6 +30,44 @@ export function DashboardOverviewSkeleton() {
   );
 }
 
+export function DashboardTableSkeleton({ rows = 8 }: { rows?: number }) {
+  return (
+    <div className="overflow-hidden rounded-lg border" role="status" aria-label="Loading records">
+      <div className="border-b bg-muted/40 p-3">
+        <Pulse className="h-5 w-40" />
+      </div>
+      <div className="divide-y">
+        {Array.from({ length: rows }).map((_, index) => (
+          <div key={index} className="flex items-center gap-4 p-3">
+            <Pulse className="h-4 w-1/4" />
+            <Pulse className="h-4 w-1/5 bg-[#f4edef]" />
+            <Pulse className="hidden h-4 w-1/6 sm:block" />
+            <Pulse className="ml-auto h-8 w-20 rounded-full" />
+          </div>
+        ))}
+      </div>
+      <span className="sr-only">Loading...</span>
+    </div>
+  );
+}
+
+export function DashboardStatsSkeleton() {
+  return (
+    <div className="space-y-8" role="status" aria-label="Loading analytics">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Pulse key={index} className="h-28 rounded-2xl bg-white" />
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Pulse className="h-64 rounded-2xl bg-white" />
+        <Pulse className="h-64 rounded-2xl bg-white" />
+      </div>
+      <span className="sr-only">Loading...</span>
+    </div>
+  );
+}
+
 export function DashboardListSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="space-y-3" role="status" aria-label="Loading content">

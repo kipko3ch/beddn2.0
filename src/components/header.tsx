@@ -4,7 +4,7 @@ import type { ReactElement } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useUserRole } from "@/lib/hooks";
+import { useAvatarUrl, useUserRole } from "@/lib/hooks";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { AuthDialog } from "@/components/auth-dialog";
@@ -28,10 +28,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
 import { useScrollUpVisibility } from "@/lib/use-scroll-up-visibility";
-
-function getAvatarUrl(user: User | null) {
-  return user?.user_metadata?.avatar_url || user?.user_metadata?.picture || "";
-}
 
 function getInitials(user: User | null) {
   const name = user?.user_metadata?.full_name || user?.email || "Beddn";
@@ -145,6 +141,7 @@ function NavSheet({
 
 export function Header() {
   const { user, isHost, isAdmin, loading } = useUserRole();
+  const avatarUrl = useAvatarUrl(user);
   const pathname = usePathname();
   const supabase = createClient();
   const bottomNavVisible = useScrollUpVisibility();
@@ -191,7 +188,7 @@ export function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2">
                   <Avatar className="size-9 cursor-pointer">
-                    <AvatarImage src={getAvatarUrl(user)} alt={user.email ?? "Profile"} />
+                    <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
                     <AvatarFallback className="bg-[#f8eef2] font-semibold text-[#800020]">
                       {getInitials(user)}
                     </AvatarFallback>
@@ -291,7 +288,7 @@ export function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2">
                   <Avatar className="size-9 cursor-pointer">
-                    <AvatarImage src={getAvatarUrl(user)} alt={user.email ?? "Profile"} />
+                    <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
                     <AvatarFallback className="bg-[#f8eef2] text-xs font-medium text-[#800020]">
                       {getInitials(user)}
                     </AvatarFallback>

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/server";
 import { reviewReminderEmail } from "@/lib/email/templates";
+import { publicBaseUrl } from "@/lib/site-url";
 
 // Sends a one-time "did you book? remember to review" nudge for inquiries that
 // are a few days old and have no review yet. Trigger from a scheduled job with
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
     .order("created_at", { ascending: true })
     .limit(BATCH);
 
-  const origin = new URL(request.url).origin;
+  const origin = publicBaseUrl(request);
   let sent = 0;
 
   for (const inq of inquiries ?? []) {

@@ -20,7 +20,7 @@ import styles from './landing.module.css';
 import { createClient } from '@/lib/supabase/client';
 import { useSavedListings, useUserRole } from '@/lib/hooks';
 import { ListingCard, ListingCardSkeleton } from '@/components/listing-card';
-import { PopularDestinations, CityRails } from '@/components/home-sections';
+import { PopularDestinations, CityRails, FeaturedRail } from '@/components/home-sections';
 import { SearchPill, type SearchPillValues } from '@/components/search-pill';
 import { AuthDialog } from '@/components/auth-dialog';
 import {
@@ -419,6 +419,18 @@ export default function LandingPage() {
 
       {!search && <PopularDestinations />}
 
+      {!search && (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <FeaturedRail
+            placement="homepage_featured"
+            heading="Featured stays"
+            savedIds={savedIds}
+            onToggleSave={toggle}
+            priceMode={priceMode}
+          />
+        </div>
+      )}
+
       {/* Listings grid */}
       <section id="home-results" className={styles.listingsSection}>
         {search && (
@@ -527,10 +539,7 @@ export default function LandingPage() {
                 onClick={() => router.push('/host/listings/new')}
                 className={styles.searchBtn}
               >
-                List your place
-              </button>
-              <button className={styles.secondaryBtn}>
-                Notify me when available
+                Be the first to list your place
               </button>
             </div>
           </div>

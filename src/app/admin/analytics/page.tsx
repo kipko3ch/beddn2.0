@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BeddnLoader } from "@/components/beddn-loader";
+import { DashboardStatsSkeleton } from "@/components/dashboard-skeletons";
 import {
   Activity,
   CalendarCheck,
@@ -44,7 +44,7 @@ export default function AdminAnalyticsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <BeddnLoader label="Loading analytics…" />;
+  if (loading) return <DashboardStatsSkeleton />;
   if (!data) return <p className="text-sm text-muted-foreground">Could not load analytics.</p>;
 
   return (

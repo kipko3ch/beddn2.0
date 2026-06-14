@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -7,10 +6,20 @@ interface AdminActionBody {
   action:
     | "verify_host"
     | "verify_listing"
+    | "unverify_listing"
+    | "approve_listing"
     | "reject_listing"
     | "pause_listing"
+    | "resume_listing"
+    | "archive_listing"
+    | "restore_listing"
     | "enable_auto_accept"
     | "disable_auto_accept"
+    | "feature_listing"
+    | "cancel_feature"
+    | "extend_feature"
+    | "mark_feature_paid"
+    | "mark_feature_complimentary"
     | "approve_withdrawal"
     | "mark_withdrawal_paid"
     | "reject_withdrawal"
@@ -23,7 +32,33 @@ interface AdminActionBody {
     | "unflag_image";
   id: string;
   reason?: string;
+  // Featured placement fields (feature_listing / extend_feature).
+  feature?: {
+    placement_type?: string;
+    city?: string | null;
+    category?: string | null;
+    start_date?: string;
+    end_date?: string;
+    payment_status?: string;
+    amount?: number;
+    currency?: string;
+    priority?: number;
+  };
 }
+
+// Max concurrent (active/scheduled, not-yet-expired) placements per surface.
+const FEATURED_SLOT_LIMITS: Record<string, number> = {
+  homepage_featured: 8,
+  city_featured: 6,
+  category_featured: 6,
+};
+
+const PLACEMENT_TYPES = new Set([
+  "homepage_featured",
+  "city_featured",
+  "category_featured",
+  "search_boost",
+]);
 
 // Far-future ban duration used to "suspend" an account until lifted.
 const SUSPEND_DURATION = "876000h";
@@ -54,36 +89,30 @@ export async function POST(request: Request) {
     errorMessage = error?.message || null;
   }
 
-  if (body.action === "verify_listing") {
-    const { error } = await admin
-      .from("listings")
-      .update({ is_verified: true, verification_status: "verified", listing_status: "active", is_active: true })
-      .eq("id", body.id);
-    errorMessage = error?.message || null;
-  }
-
-  if (body.action === "reject_listing") {
+  // --- Verified trust badge (separate from the lifecycle status) ---
+  if (body.action === "verify_listing" || body.action === "unverify_listing") {
+    const verified = body.action === "verify_listing";
     const { error } = await admin
       .from("listings")
       .update({
-        is_verified: false,
-        verification_status: "rejected",
+        is_verified: verified,
+        verification_status: verified ? "verified" : "pending",
       })
       .eq("id", body.id);
     errorMessage = error?.message || null;
   }
 
-  if (body.action === "pause_listing") {
-    const { error } = await admin
-      .from("listings")
-      .update({
-        is_verified: false,
-        verification_status: "pending",
-        listing_status: "paused",
-        is_active: false,
-        booking_mode: "manual_accept",
-      })
-      .eq("id", body.id);
+  // --- Lifecycle transitions (listing_status drives public visibility) ---
+  const lifecycle: Record<string, { listing_status: string; rejection_reason?: string | null }> = {
+    approve_listing: { listing_status: "active", rejection_reason: null },
+    reject_listing: { listing_status: "rejected", rejection_reason: body.reason || null },
+    pause_listing: { listing_status: "paused" },
+    resume_listing: { listing_status: "active" },
+    archive_listing: { listing_status: "archived" },
+    restore_listing: { listing_status: "paused" },
+  };
+  if (lifecycle[body.action]) {
+    const { error } = await admin.from("listings").update(lifecycle[body.action]).eq("id", body.id);
     errorMessage = error?.message || null;
   }
 
@@ -91,6 +120,100 @@ export async function POST(request: Request) {
     const { error } = await admin
       .from("listings")
       .update({ booking_mode: body.action === "enable_auto_accept" ? "auto_accept" : "manual_accept" })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  // --- Featured placements ---
+  if (body.action === "feature_listing") {
+    const f = body.feature || {};
+    const placement = f.placement_type || "";
+    const start = f.start_date ? new Date(f.start_date) : null;
+    const end = f.end_date ? new Date(f.end_date) : null;
+
+    if (!PLACEMENT_TYPES.has(placement)) {
+      return NextResponse.json({ error: "Pick a valid placement type." }, { status: 400 });
+    }
+    if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return NextResponse.json({ error: "Provide valid start and end dates." }, { status: 400 });
+    }
+    if (end <= start) {
+      return NextResponse.json({ error: "End date must be after the start date." }, { status: 400 });
+    }
+
+    // Enforce slot limits against currently live (active/scheduled, not expired)
+    // placements on the same surface.
+    const limit = FEATURED_SLOT_LIMITS[placement];
+    if (limit) {
+      let countQuery = admin
+        .from("featured_listings")
+        .select("id", { count: "exact", head: true })
+        .eq("placement_type", placement)
+        .in("status", ["active", "scheduled"])
+        .gte("end_date", new Date().toISOString());
+      if (placement === "city_featured" && f.city) countQuery = countQuery.eq("city", f.city);
+      if (placement === "category_featured" && f.category) countQuery = countQuery.eq("category", f.category);
+      const { count } = await countQuery;
+      if ((count ?? 0) >= limit) {
+        const where =
+          placement === "city_featured"
+            ? ` in ${f.city}`
+            : placement === "category_featured"
+            ? ` for ${f.category}`
+            : "";
+        return NextResponse.json(
+          { error: `Slot limit reached: max ${limit} featured listings${where}.` },
+          { status: 400 }
+        );
+      }
+    }
+
+    const now = new Date();
+    const status = start <= now && end >= now ? "active" : "scheduled";
+    const { error } = await admin.from("featured_listings").insert({
+      listing_id: body.id,
+      placement_type: placement,
+      city: f.city || null,
+      category: f.category || null,
+      start_date: start.toISOString(),
+      end_date: end.toISOString(),
+      status,
+      payment_status: f.payment_status || "unpaid",
+      amount: f.amount ?? 0,
+      currency: f.currency || "KES",
+      priority: f.priority ?? 0,
+      created_by: data.user.id,
+    });
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "cancel_feature") {
+    const { error } = await admin
+      .from("featured_listings")
+      .update({ status: "cancelled" })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "extend_feature") {
+    const end = body.feature?.end_date ? new Date(body.feature.end_date) : null;
+    if (!end || Number.isNaN(end.getTime())) {
+      return NextResponse.json({ error: "Provide a valid new end date." }, { status: 400 });
+    }
+    // Re-activate if the extension brings it back into range.
+    const status = end >= new Date() ? "active" : "expired";
+    const { error } = await admin
+      .from("featured_listings")
+      .update({ end_date: end.toISOString(), status })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "mark_feature_paid" || body.action === "mark_feature_complimentary") {
+    const payment_status = body.action === "mark_feature_paid" ? "paid" : "complimentary";
+    const { error } = await admin
+      .from("featured_listings")
+      .update({ payment_status })
       .eq("id", body.id);
     errorMessage = error?.message || null;
   }
@@ -178,18 +301,17 @@ export async function POST(request: Request) {
           process.env.NEXT_PUBLIC_SITE_URL ||
           (forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin)
         ).replace(/\/$/, "");
-        const anon = createSupabaseClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        const { error } = await anon.auth.signInWithOtp({
-          email: target.email,
-          options: {
-            shouldCreateUser: false,
-            emailRedirectTo: `${baseUrl}/api/auth/callback`,
-          },
+        // Deliver through the same ZeptoMail-backed magic-link route the login
+        // flow uses (Supabase's built-in email isn't configured here).
+        const response = await fetch(`${baseUrl}/api/auth/magic-link`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: target.email }),
         });
-        errorMessage = error?.message || null;
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => ({}))) as { error?: string };
+          errorMessage = payload.error || "Could not send the sign-in link.";
+        }
       }
     }
   }

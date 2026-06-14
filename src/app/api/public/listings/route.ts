@@ -62,8 +62,36 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  let listings = (data ?? []) as { id: string }[];
+
+  // Search boost: any active search_boost placement on a listing already in the
+  // result set floats it to the top by priority. We only reorder (never inject
+  // or duplicate), so boosted listings still appear once and mixed naturally.
+  if (listings.length > 0) {
+    const nowIso = new Date().toISOString();
+    const { data: boosts } = await admin
+      .from("featured_listings")
+      .select("listing_id, priority")
+      .eq("placement_type", "search_boost")
+      .in("status", ["active", "scheduled"])
+      .lte("start_date", nowIso)
+      .gte("end_date", nowIso)
+      .in("listing_id", listings.map((l) => l.id));
+
+    if (boosts && boosts.length > 0) {
+      const priorityById = new Map<string, number>();
+      for (const b of boosts as { listing_id: string; priority: number }[]) {
+        if (!priorityById.has(b.listing_id)) priorityById.set(b.listing_id, b.priority);
+      }
+      const boosted = listings.filter((l) => priorityById.has(l.id));
+      const rest = listings.filter((l) => !priorityById.has(l.id));
+      boosted.sort((a, b) => (priorityById.get(b.id) ?? 0) - (priorityById.get(a.id) ?? 0));
+      listings = [...boosted, ...rest];
+    }
+  }
+
   return NextResponse.json(
-    { listings: data ?? [] },
+    { listings },
     // Edge/proxy caching keeps repeat browses fast and off the database.
     { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" } }
   );

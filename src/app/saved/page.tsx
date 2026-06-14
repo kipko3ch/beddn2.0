@@ -267,7 +267,7 @@ export default function SavedTripsPage() {
                 onClick={() => setFilter(value as SavedFilter)}
                 className={`rounded-full px-3 py-2 transition-colors ${
                   filter === value
-                    ? "bg-[#ff5a66] text-white"
+                    ? "bg-[#800020] text-white"
                     : "text-[#202124] hover:bg-[#f5f1f2]"
                 }`}
               >

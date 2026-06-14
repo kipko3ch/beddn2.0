@@ -47,8 +47,15 @@ async function sendViaZeptoMail(input: SendEmailInput) {
   return data;
 }
 
-export async function sendEmail(input: SendEmailInput): Promise<void> {
-  if (!input.to || !input.to.includes("@")) return; // no usable address
+export interface SendEmailResult {
+  status: "sent" | "logged" | "failed";
+  error?: string;
+}
+
+export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
+  if (!input.to || !input.to.includes("@")) {
+    return { status: "failed", error: "No usable email address" };
+  }
 
   const supabase = createAdminClient();
   const configured = Boolean(process.env.ZEPTOMAIL_TOKEN);
@@ -82,4 +89,6 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       raw_response: raw,
     })
     .then(() => undefined, () => undefined);
+
+  return { status: status as SendEmailResult["status"], error: errorMessage ?? undefined };
 }

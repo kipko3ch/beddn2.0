@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { BeddnLoader } from "@/components/beddn-loader";
+import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
 import { uploadListingImage } from "@/lib/upload-image";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 
@@ -162,7 +162,7 @@ export default function AdminDestinationsPage() {
       </form>
 
       {loading ? (
-        <BeddnLoader label="Loading destinations…" />
+        <DashboardListSkeleton rows={4} />
       ) : destinations.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-admin_ypowli.png"

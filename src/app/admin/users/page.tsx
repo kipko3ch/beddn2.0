@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { ROUTES } from "@/lib/routes";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import { DashboardTableSkeleton } from "@/components/dashboard-skeletons";
 
 type UserRow = {
   id: string;
@@ -102,9 +103,7 @@ export default function AdminUsersPage() {
       />
 
       {loading ? (
-        <div className="flex items-center gap-2 py-10 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" /> Loading users…
-        </div>
+        <DashboardTableSkeleton />
       ) : filtered.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-admin_ypowli.png"

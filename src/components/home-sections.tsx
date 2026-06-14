@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
 import type { Listing } from "@/lib/types";
 
@@ -61,6 +61,68 @@ function Rail({ heading, children }: { heading: React.ReactNode; children: React
         {children}
       </div>
     </div>
+  );
+}
+
+/**
+ * A horizontal rail of featured listings for one placement surface
+ * (homepage / city / category). Fetches live placements and renders nothing
+ * when there are none, so it can be dropped anywhere safely.
+ */
+export function FeaturedRail({
+  placement,
+  city,
+  category,
+  heading,
+  savedIds,
+  onToggleSave,
+  priceMode = "hourly",
+}: {
+  placement: "homepage_featured" | "city_featured" | "category_featured";
+  city?: string;
+  category?: string;
+  heading: string;
+  savedIds: Set<string>;
+  onToggleSave: (id: string) => void;
+  priceMode?: "hourly" | "overnight";
+}) {
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams({ placement });
+    if (city) params.set("city", city);
+    if (category) params.set("category", category);
+    fetch(`/api/public/featured?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : { listings: [] }))
+      .then((json: { listings?: Listing[] }) => setListings(json.listings ?? []))
+      .catch(() => setListings([]))
+      .finally(() => setLoaded(true));
+  }, [placement, city, category]);
+
+  if (!loaded || listings.length === 0) return null;
+
+  return (
+    <section className="pt-10">
+      <Rail
+        heading={
+          <h2 className="flex items-center gap-2 text-xl font-bold text-[#2b000a] sm:text-2xl">
+            <Star className="h-5 w-5 fill-[#800020] text-[#800020]" /> {heading}
+          </h2>
+        }
+      >
+        {listings.map((listing) => (
+          <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+            <ListingCard
+              listing={listing}
+              isSaved={savedIds.has(listing.id)}
+              onToggleSave={() => onToggleSave(listing.id)}
+              priceMode={priceMode}
+            />
+          </div>
+        ))}
+      </Rail>
+    </section>
   );
 }
 

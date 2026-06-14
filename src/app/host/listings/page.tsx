@@ -10,6 +10,24 @@ import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
 import { Icon } from "@/components/icon";
 import type { Listing } from "@/lib/types";
 
+const STATUS_TEXT: Record<string, string> = {
+  draft: "Draft",
+  pending_review: "Pending review",
+  active: "Active",
+  paused: "Paused",
+  rejected: "Rejected",
+  archived: "Archived",
+};
+
+const STATUS_BADGE: Record<string, string> = {
+  draft: "bg-amber-100 text-amber-800 hover:bg-amber-100",
+  pending_review: "bg-amber-100 text-amber-800 hover:bg-amber-100",
+  active: "bg-green-100 text-green-800 hover:bg-green-100",
+  paused: "bg-slate-200 text-slate-700 hover:bg-slate-200",
+  rejected: "bg-red-100 text-red-800 hover:bg-red-100",
+  archived: "bg-zinc-200 text-zinc-600 hover:bg-zinc-200",
+};
+
 export default function ListingsPage() {
   const supabase = createClient();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -98,19 +116,10 @@ export default function ListingsPage() {
                 <p className="text-sm text-muted-foreground">
                   {listing.area}, {listing.city}
                 </p>
-                <div className="flex gap-1 mt-1">
-                  {listing.listing_status === "draft" ? (
-                    <Badge className="text-xs bg-amber-100 text-amber-800 hover:bg-amber-100">
-                      Draft
-                    </Badge>
-                  ) : (
-                    <Badge
-                      variant={listing.is_active ? "default" : "secondary"}
-                      className="text-xs"
-                    >
-                      {listing.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  )}
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <Badge className={`text-xs ${STATUS_BADGE[listing.listing_status ?? (listing.is_active ? "active" : "draft")] ?? "bg-muted text-muted-foreground"}`}>
+                    {STATUS_TEXT[listing.listing_status ?? (listing.is_active ? "active" : "draft")] ?? listing.listing_status}
+                  </Badge>
                   <Badge
                     variant={listing.is_verified ? "default" : "outline"}
                     className="text-xs"

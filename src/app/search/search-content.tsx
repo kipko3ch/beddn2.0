@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
+import { FeaturedRail } from "@/components/home-sections";
 import { Map } from "@/components/map";
 import { SearchPill, type SearchPillValues } from "@/components/search-pill";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -304,6 +305,16 @@ export function SearchContent() {
 
   const resultsContent = (
     <>
+      {q && (
+        <FeaturedRail
+          placement="city_featured"
+          city={q}
+          heading={`Featured in ${q}`}
+          savedIds={savedIds}
+          onToggleSave={toggle}
+          priceMode={priceMode}
+        />
+      )}
       <div className="mb-5">
         <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
           {isExperienceSearch
@@ -414,15 +425,12 @@ export function SearchContent() {
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
             Be the first verified host in this area and get early visibility as demand grows.
           </p>
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-6 flex justify-center">
             <Button
               onClick={() => router.push("/host/listings/new")}
               className="h-11 w-full rounded-full bg-[#800020] px-6 font-semibold hover:bg-[#600018] sm:w-auto"
             >
-              List your place
-            </Button>
-            <Button variant="outline" className="h-11 w-full rounded-full px-6 font-semibold sm:w-auto">
-              Notify me when available
+              Be the first to list your place
             </Button>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { BeddnLoader } from "@/components/beddn-loader";
+import { DashboardTableSkeleton } from "@/components/dashboard-skeletons";
 
 type Row = Record<string, unknown> & { id: string };
 
@@ -126,7 +126,7 @@ export default function AdminSectionPage() {
         )}
       </div>
       {loading ? (
-        <BeddnLoader label={`Loading ${title.toLowerCase()}…`} />
+        <DashboardTableSkeleton />
       ) : rows.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-admin_ypowli.png"
@@ -161,25 +161,6 @@ export default function AdminSectionPage() {
                         <Button size="sm" variant="outline" onClick={() => action("verify_host", row.id)}>
                           Verify
                         </Button>
-                      )}
-                      {section === "listings" && (
-                        <>
-                          <Button size="sm" variant="outline" onClick={() => action("verify_listing", row.id)}>
-                            Verify badge
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => action("reject_listing", row.id)}>
-                            Reject
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => action("pause_listing", row.id)}>
-                            Pause
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => action("enable_auto_accept", row.id)}>
-                            Auto accept
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => action("disable_auto_accept", row.id)}>
-                            Manual
-                          </Button>
-                        </>
                       )}
                       {section === "withdrawals" && (
                         <>

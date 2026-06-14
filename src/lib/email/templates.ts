@@ -76,6 +76,30 @@ export function inquiryReceivedEmail(input: InquiryEmailInput): { subject: strin
   return { subject: `Your Beddn inquiry for ${input.listingName}`, html };
 }
 
+export interface MagicLinkInput {
+  url: string;
+}
+
+/** Passwordless sign-in link, delivered via Beddn's own (ZeptoMail) pipeline
+ * instead of Supabase's built-in email so it actually reaches the inbox. */
+export function magicLinkEmail(input: MagicLinkInput): { subject: string; html: string } {
+  const html = shell({
+    title: "Your Beddn sign-in link",
+    preheader: "Tap to sign in to Beddn — this link expires shortly.",
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Sign in to Beddn</h1>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Tap the button below to finish signing in. Open it on the same device you started from. For your security, this link expires shortly and can only be used once.
+      </p>
+      <p style="margin:0 0 20px;">${button(input.url, "Sign in to Beddn")}</p>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
+        If you didn't request this, you can safely ignore this email.
+      </p>
+    `,
+  });
+  return { subject: "Your Beddn sign-in link", html };
+}
+
 export interface ReviewReminderInput {
   guestName: string;
   listingName: string;

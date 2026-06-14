@@ -23,6 +23,7 @@ import {
   MessageCircle,
   Activity,
   BarChart3,
+  Star,
 } from "lucide-react";
 
 const ADMIN_NAV = [
@@ -32,6 +33,7 @@ const ADMIN_NAV = [
   { href: ROUTES.adminEvents, label: "Events", icon: Activity },
   { href: ROUTES.adminUsers, label: "Users", icon: Users },
   { href: ROUTES.adminListings, label: "Listings", icon: Home },
+  { href: ROUTES.adminFeatured, label: "Featured", icon: Star },
   { href: ROUTES.adminHosts, label: "Hosts", icon: UserCircle },
   { href: ROUTES.adminBookings, label: "Bookings", icon: CalendarCheck },
   { href: ROUTES.adminPayments, label: "Payments", icon: CreditCard },

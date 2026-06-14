@@ -32,7 +32,6 @@ const HOST_FIELDS = [
   "check_out_time",
   "amenities",
   "house_rules",
-  "is_active",
   "listing_status",
 ] as const;
 
@@ -194,6 +193,12 @@ export async function POST(request: Request) {
     updated_at: new Date().toISOString(),
   };
 
+  // Hosts can't publish themselves live — anything but a draft enters review.
+  // (is_active is derived from listing_status by a DB trigger.)
+  if (!isAdmin) {
+    row.listing_status = row.listing_status === "draft" ? "draft" : "pending_review";
+  }
+
   const { data: listing, error } = await admin
     .from("listings")
     .insert(row)
@@ -240,7 +245,7 @@ export async function PATCH(request: Request) {
 
   const { data: existing } = await admin
     .from("listings")
-    .select("id, host_id")
+    .select("id, host_id, listing_status")
     .eq("id", body.listingId)
     .maybeSingle();
 
@@ -256,6 +261,19 @@ export async function PATCH(request: Request) {
     ...(isAdmin ? pick(body.payload, ADMIN_FIELDS) : {}),
     updated_at: new Date().toISOString(),
   };
+
+  // Hosts can't flip their own visibility. Keep an already-live listing live on
+  // edit; otherwise a non-draft save enters review. Admins control status via
+  // the admin dashboard, not this field.
+  if (!isAdmin && "listing_status" in row) {
+    if (row.listing_status === "draft") {
+      row.listing_status = "draft";
+    } else if (existing.listing_status === "active") {
+      row.listing_status = "active";
+    } else {
+      row.listing_status = "pending_review";
+    }
+  }
 
   const { error } = await admin
     .from("listings")

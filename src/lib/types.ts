@@ -1,7 +1,22 @@
 export type ListingCategory = "hourly" | "overnight" | "experience";
 export type BookingMode = "manual_accept" | "auto_accept";
 export type VerificationStatus = "pending" | "verified" | "rejected";
-export type ListingStatus = "draft" | "active" | "paused";
+export type ListingStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "paused"
+  | "rejected"
+  | "archived";
+
+export type FeaturedPlacementType =
+  | "homepage_featured"
+  | "city_featured"
+  | "category_featured"
+  | "search_boost";
+
+export type FeaturedStatus = "active" | "scheduled" | "expired" | "cancelled";
+export type FeaturedPaymentStatus = "unpaid" | "paid" | "complimentary" | "refunded";
 export type BookingStatus =
   | "draft"
   | "pending_payment"
@@ -71,6 +86,7 @@ export interface Listing {
   booking_mode?: BookingMode;
   verification_status?: VerificationStatus;
   listing_status?: ListingStatus;
+  rejection_reason?: string | null;
   platform_fee_type?: "fixed" | "percentage";
   platform_fee_value?: number;
   check_in_time?: string | null;
@@ -94,6 +110,26 @@ export interface ListingImage {
   listing_id: string;
   url: string;
   position: number;
+}
+
+export interface FeaturedListing {
+  id: string;
+  listing_id: string;
+  placement_type: FeaturedPlacementType;
+  city: string | null;
+  category: string | null;
+  start_date: string;
+  end_date: string;
+  status: FeaturedStatus;
+  payment_status: FeaturedPaymentStatus;
+  amount: number;
+  currency: string;
+  priority: number;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  listing?: Listing | null;
 }
 
 export interface AvailabilityRule {
