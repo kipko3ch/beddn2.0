@@ -34,6 +34,56 @@ export function useUser() {
 }
 
 /**
+ * Resolves the avatar to show for a user. Google sign-in puts a photo on
+ * user_metadata (picture/avatar_url); the email magic link doesn't. So when we
+ * have a metadata photo we show it and persist it to the profile, and when we
+ * don't (magic-link sign-in) we fall back to the photo saved from a previous
+ * Google sign-in.
+ */
+export function useAvatarUrl(user: User | null) {
+  const supabase = useMemo(() => createClient(), []);
+  const [avatarUrl, setAvatarUrl] = useState("");
+
+  useEffect(() => {
+    if (!user) {
+      setAvatarUrl("");
+      return;
+    }
+
+    const metaAvatar =
+      (user.user_metadata?.avatar_url as string | undefined) ||
+      (user.user_metadata?.picture as string | undefined) ||
+      "";
+
+    let mounted = true;
+    if (metaAvatar) {
+      setAvatarUrl(metaAvatar);
+      // Remember it so a later magic-link sign-in can reuse the same photo.
+      supabase
+        .from("profiles")
+        .update({ avatar_url: metaAvatar })
+        .eq("id", user.id)
+        .then(() => undefined, () => undefined);
+    } else {
+      supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (mounted) setAvatarUrl((data?.avatar_url as string | null) || "");
+        });
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [supabase, user]);
+
+  return avatarUrl;
+}
+
+/**
  * Resolves the signed-in user's role: whether they have a host profile and
  * whether they're an admin. Used to decide header CTAs ("Become a host" vs
  * "Dashboard") and menu contents.

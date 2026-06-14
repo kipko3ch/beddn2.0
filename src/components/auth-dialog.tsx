@@ -43,6 +43,13 @@ export function AuthDialog({
     return `${publicBaseUrl()}/api/auth/callback?next=${encodeURIComponent(next || ROUTES.home)}`;
   }
 
+  function magicLinkNext() {
+    const next = defaultHostIntent
+      ? ROUTES.newListing
+      : `${window.location.pathname}${window.location.search}`;
+    return next || ROUTES.home;
+  }
+
   async function continueWithGoogle() {
     setError("");
     setWorking(true);
@@ -66,16 +73,23 @@ export function AuthDialog({
     }
     setError("");
     setWorking(true);
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email: normalizedEmail,
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: callbackUrl(),
-      },
-    });
+    let failed = "";
+    try {
+      const response = await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, next: magicLinkNext() }),
+      });
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { error?: string };
+        failed = data.error || "Could not send the magic link. Please try again.";
+      }
+    } catch {
+      failed = "Could not send the magic link. Please try again.";
+    }
     setWorking(false);
-    if (authError) {
-      setError(authError.message);
+    if (failed) {
+      setError(failed);
       return;
     }
     setSentEmail(normalizedEmail);
