@@ -539,10 +539,7 @@ export default function LandingPage() {
                 onClick={() => router.push('/host/listings/new')}
                 className={styles.searchBtn}
               >
-                List your place
-              </button>
-              <button className={styles.secondaryBtn}>
-                Notify me when available
+                Be the first to list your place
               </button>
             </div>
           </div>

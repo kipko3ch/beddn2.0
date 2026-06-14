@@ -425,15 +425,12 @@ export function SearchContent() {
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
             Be the first verified host in this area and get early visibility as demand grows.
           </p>
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-6 flex justify-center">
             <Button
               onClick={() => router.push("/host/listings/new")}
               className="h-11 w-full rounded-full bg-[#800020] px-6 font-semibold hover:bg-[#600018] sm:w-auto"
             >
-              List your place
-            </Button>
-            <Button variant="outline" className="h-11 w-full rounded-full px-6 font-semibold sm:w-auto">
-              Notify me when available
+              Be the first to list your place
             </Button>
           </div>
         </div>
