@@ -36,6 +36,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   full_name text,
+  avatar_url text,
   phone text,
   is_admin boolean not null default false,
   suspended boolean not null default false,
@@ -79,7 +80,9 @@ create table if not exists public.listings (
   available_units integer not null default 1 check (available_units >= 0),
   booking_mode public.booking_mode not null default 'manual_accept',
   verification_status public.verification_status not null default 'pending',
-  listing_status public.listing_status not null default 'draft',
+  listing_status text not null default 'draft'
+    check (listing_status in ('draft', 'pending_review', 'active', 'paused', 'rejected', 'archived')),
+  rejection_reason text,
   platform_fee_type text not null default 'fixed' check (platform_fee_type in ('fixed', 'percentage')),
   platform_fee_value numeric(10,2) not null default 0,
   check_in_time time,
@@ -104,7 +107,22 @@ alter table public.listings add column if not exists total_units integer not nul
 alter table public.listings add column if not exists available_units integer not null default 1 check (available_units >= 0);
 alter table public.listings add column if not exists booking_mode public.booking_mode not null default 'manual_accept';
 alter table public.listings add column if not exists verification_status public.verification_status not null default 'pending';
-alter table public.listings add column if not exists listing_status public.listing_status not null default 'draft';
+alter table public.listings add column if not exists listing_status text not null default 'draft';
+alter table public.listings add column if not exists rejection_reason text;
+-- Drop policies that reference listing_status before changing its type
+-- (Postgres blocks the ALTER otherwise); they're recreated in the RLS section.
+drop policy if exists "Active verified listings are public" on public.listings;
+drop policy if exists "Active listings are public" on public.listings;
+do $$ begin
+  alter table public.listings alter column listing_status drop default;
+  alter table public.listings alter column listing_status type text using listing_status::text;
+  alter table public.listings alter column listing_status set default 'draft';
+exception when others then null;
+end $$;
+alter table public.listings drop constraint if exists listings_listing_status_check;
+alter table public.listings
+  add constraint listings_listing_status_check
+  check (listing_status in ('draft', 'pending_review', 'active', 'paused', 'rejected', 'archived'));
 alter table public.listings add column if not exists platform_fee_type text not null default 'fixed' check (platform_fee_type in ('fixed', 'percentage'));
 alter table public.listings add column if not exists platform_fee_value numeric(10,2) not null default 0;
 alter table public.listings add column if not exists check_in_time time;
@@ -357,7 +375,12 @@ set
   title = coalesce(title, name),
   category = case when category = '{}' then categories else category end,
   verification_status = case when is_verified then 'verified'::public.verification_status else verification_status end,
-  listing_status = case when is_active then 'active'::public.listing_status else listing_status end,
+  listing_status = case
+    when listing_status = 'active' or is_active = true then 'active'
+    when verification_status = 'rejected' then 'rejected'
+    when listing_status = 'draft' then 'draft'
+    else 'pending_review'
+  end,
   available_units = greatest(available_units, 1)
 where true;
 
@@ -464,10 +487,7 @@ create policy "Admins can manage hosts" on public.hosts
 drop policy if exists "Active verified listings are public" on public.listings;
 drop policy if exists "Active listings are public" on public.listings;
 create policy "Active listings are public" on public.listings
-  for select using (
-    is_active = true
-    or listing_status = 'active'
-  );
+  for select using (listing_status = 'active');
 
 drop policy if exists "Hosts can view own listings" on public.listings;
 create policy "Hosts can view own listings" on public.listings
@@ -689,16 +709,18 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, full_name)
+  insert into public.profiles (id, email, full_name, avatar_url)
   values (
     new.id,
     new.email,
-    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name')
+    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
+    coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture')
   )
   on conflict (id) do update
   set
     email = excluded.email,
-    full_name = coalesce(public.profiles.full_name, excluded.full_name);
+    full_name = coalesce(public.profiles.full_name, excluded.full_name),
+    avatar_url = coalesce(public.profiles.avatar_url, excluded.avatar_url);
 
   return new;
 end;
@@ -873,5 +895,79 @@ begin
   return result;
 end;
 $$;
+
+-- Listing visibility is derived from the lifecycle status.
+create or replace function public.sync_listing_is_active()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.is_active := (new.listing_status = 'active');
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists sync_listing_is_active on public.listings;
+create trigger sync_listing_is_active
+  before insert or update on public.listings
+  for each row execute function public.sync_listing_is_active();
+
+update public.listings set is_active = (listing_status = 'active') where true;
+
+-- Featured listings (manual or paid placements).
+create table if not exists public.featured_listings (
+  id uuid primary key default uuid_generate_v4(),
+  listing_id uuid not null references public.listings(id) on delete cascade,
+  placement_type text not null
+    check (placement_type in ('homepage_featured', 'city_featured', 'category_featured', 'search_boost')),
+  city text,
+  category text,
+  start_date timestamptz not null,
+  end_date timestamptz not null,
+  status text not null default 'scheduled'
+    check (status in ('active', 'scheduled', 'expired', 'cancelled')),
+  payment_status text not null default 'unpaid'
+    check (payment_status in ('unpaid', 'paid', 'complimentary', 'refunded')),
+  amount numeric(10,2) not null default 0,
+  currency text not null default 'KES',
+  priority integer not null default 0,
+  created_by uuid references public.profiles(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_featured_placement_window
+  on public.featured_listings (placement_type, status, start_date, end_date);
+create index if not exists idx_featured_listing on public.featured_listings (listing_id);
+
+create or replace function public.touch_featured_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists touch_featured_updated_at on public.featured_listings;
+create trigger touch_featured_updated_at
+  before update on public.featured_listings
+  for each row execute function public.touch_featured_updated_at();
+
+alter table public.featured_listings enable row level security;
+
+drop policy if exists "Featured placements are publicly readable" on public.featured_listings;
+create policy "Featured placements are publicly readable" on public.featured_listings
+  for select using (status in ('active', 'scheduled'));
+
+drop policy if exists "Admins can manage featured placements" on public.featured_listings;
+create policy "Admins can manage featured placements" on public.featured_listings
+  for all using (
+    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  ) with check (
+    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  );
 
 commit;

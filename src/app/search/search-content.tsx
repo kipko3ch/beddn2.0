@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
+import { FeaturedRail } from "@/components/home-sections";
 import { Map } from "@/components/map";
 import { SearchPill, type SearchPillValues } from "@/components/search-pill";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -304,6 +305,16 @@ export function SearchContent() {
 
   const resultsContent = (
     <>
+      {q && (
+        <FeaturedRail
+          placement="city_featured"
+          city={q}
+          heading={`Featured in ${q}`}
+          savedIds={savedIds}
+          onToggleSave={toggle}
+          priceMode={priceMode}
+        />
+      )}
       <div className="mb-5">
         <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
           {isExperienceSearch
