@@ -10,6 +10,8 @@ const MUTED = "#6f6568";
 // back to the production domain when NEXT_PUBLIC_SITE_URL isn't set.
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://beddn.com").replace(/\/$/, "");
 const LOGO_URL = `${SITE_URL}/images/logo.png`;
+// Light-on-dark variant shown in dark-mode clients.
+const LOGO_DARK_URL = `${SITE_URL}/images/logo-new.png`;
 
 function shell(opts: { title: string; bodyHtml: string; preheader?: string }): string {
   return `<!doctype html>
@@ -17,8 +19,21 @@ function shell(opts: { title: string; bodyHtml: string; preheader?: string }): s
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>${opts.title}</title>
+<style>
+  /* Swap to the light-on-dark logo in dark mode. Supported by Apple Mail,
+     iOS Mail and Outlook mobile; Gmail strips this and keeps the light logo
+     (it preserves our background colors, so that stays readable). */
+  @media (prefers-color-scheme: dark) {
+    .logo-light { display: none !important; }
+    .logo-dark { display: inline-block !important; }
+  }
+  /* Outlook.com / Outlook app prefix overridden styles with [data-ogsc]. */
+  [data-ogsc] .logo-light { display: none !important; }
+  [data-ogsc] .logo-dark { display: inline-block !important; }
+</style>
 </head>
 <body style="margin:0;padding:0;background:#f5f1f2;font-family:Georgia,'Times New Roman',serif;">
 ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${opts.preheader}</div>` : ""}
@@ -26,7 +41,10 @@ ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacit
   <tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;overflow:hidden;border:1px solid #efe3e7;">
       <tr><td style="padding:20px 28px;border-bottom:1px solid #f2e7eb;">
-        <img src="${LOGO_URL}" alt="Beddn" height="30" style="display:block;height:30px;width:auto;border:0;outline:none;text-decoration:none;">
+        <img class="logo-light" src="${LOGO_URL}" alt="Beddn" height="30" style="display:block;height:30px;width:auto;border:0;outline:none;text-decoration:none;">
+        <!--[if !mso]><!-->
+        <img class="logo-dark" src="${LOGO_DARK_URL}" alt="Beddn" height="30" style="display:none;height:30px;width:auto;border:0;outline:none;text-decoration:none;">
+        <!--<![endif]-->
       </td></tr>
       <tr><td style="padding:28px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:${INK};">
         ${opts.bodyHtml}

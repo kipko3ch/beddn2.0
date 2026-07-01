@@ -102,9 +102,11 @@ interface ListingFormProps {
   listing?: Listing;
   hostId?: string;
   isAdmin?: boolean;
+  // Pre-select a booking type when starting fresh (e.g. "Add experience").
+  initialCategory?: ListingCategory;
 }
 
-export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
+export function ListingForm({ listing, hostId, isAdmin, initialCategory }: ListingFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -144,7 +146,7 @@ export function ListingForm({ listing, hostId, isAdmin }: ListingFormProps) {
   );
   const [dateSlots, setDateSlots] = useState<DateSlot[]>([]);
   const [categories, setCategories] = useState<ListingCategory[]>(
-    (listing?.categories as ListingCategory[]) ?? []
+    (listing?.categories as ListingCategory[]) ?? (initialCategory ? [initialCategory] : [])
   );
   const [hourlyPrice, setHourlyPrice] = useState(listing?.hourly_price?.toString() ?? "");
   const [overnightPrice, setOvernightPrice] = useState(
