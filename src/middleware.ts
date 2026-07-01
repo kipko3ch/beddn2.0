@@ -59,9 +59,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Run on all pages except Next internals, static assets, and API routes
-  // (API handlers build their own Supabase client and check auth themselves).
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|ttf|otf|woff|woff2)$).*)",
-  ],
+  // Only the gated areas need the session refresh + guard. Public pages stay
+  // fast (no extra auth round-trip); the browser client keeps their session
+  // fresh on its own.
+  matcher: ["/host/:path*", "/admin/:path*"],
 };
