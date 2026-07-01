@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ListingForm } from "@/components/listing-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import type { ListingCategory } from "@/lib/types";
 
 export default function NewListingPage() {
   const supabase = createClient();
@@ -18,6 +19,13 @@ export default function NewListingPage() {
   const [hostPhone, setHostPhone] = useState("");
   const [creatingHost, setCreatingHost] = useState(false);
   const [step, setStep] = useState(0);
+  const [initialCategory, setInitialCategory] = useState<ListingCategory | undefined>(undefined);
+
+  // "Add experience" deep-links here with ?type=experience — start on that path.
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get("type");
+    if (type === "experience") setInitialCategory("experience");
+  }, []);
 
   useEffect(() => {
     async function init() {
@@ -179,7 +187,8 @@ export default function NewListingPage() {
               />
               <h1 className="text-2xl font-bold">Review &amp; continue</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Listing is instant. Admin verification only controls host and property badges.
+                You can set up your listings now. Our team reviews new hosts before listings go live —
+                usually within a day.
               </p>
               <dl className="mt-5 divide-y rounded-xl border">
                 <div className="flex items-center justify-between gap-3 p-4 text-sm">
@@ -225,5 +234,5 @@ export default function NewListingPage() {
     );
   }
 
-  return <ListingForm hostId={hostId!} isAdmin={isAdmin} />;
+  return <ListingForm hostId={hostId!} isAdmin={isAdmin} initialCategory={initialCategory} />;
 }

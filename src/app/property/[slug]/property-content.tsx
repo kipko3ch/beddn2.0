@@ -158,11 +158,13 @@ export function PropertyContent({
   listing,
   reviews,
   blockedDateStrings,
+  priceByDate = {},
   isOwnListing = false,
 }: {
   listing: Listing;
   reviews: Review[];
   blockedDateStrings: string[];
+  priceByDate?: Record<string, number>;
   isOwnListing?: boolean;
 }) {
   const searchParams = useSearchParams();
@@ -338,6 +340,24 @@ export function PropertyContent({
     guests: Number(guests) || 1,
     availabilityStatus,
   };
+
+  // Nightly total across the selected overnight range, honoring per-date price
+  // overrides and falling back to the base price for unset dates.
+  const overnightEstimate = useMemo(() => {
+    if (selectedCategory !== "overnight" || !dateRange?.from || !dateRange?.to) return null;
+    const base = Number(listing.overnight_price || 0);
+    if (!base && Object.keys(priceByDate).length === 0) return null;
+    let total = 0;
+    let nights = 0;
+    const cursor = startOfDay(dateRange.from);
+    const end = startOfDay(dateRange.to);
+    while (cursor < end) {
+      total += priceByDate[inputDate(cursor)] ?? base;
+      nights += 1;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return nights > 0 ? { total, nights } : null;
+  }, [selectedCategory, dateRange, listing.overnight_price, priceByDate]);
 
   // Deep link into the request-to-book flow, pre-filled with the chosen dates.
   const reserveHref =
@@ -963,6 +983,21 @@ export function PropertyContent({
                 <div className="mt-3 flex justify-between text-sm text-muted-foreground">
                   <span>Reserve fee</span>
                   <span>{priceCurrency(listing)} {Number(listing.deposit_amount).toLocaleString()}</span>
+                </div>
+              )}
+              {overnightEstimate && (
+                <div className="mt-3 rounded-xl bg-[#fbf7f8] p-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {overnightEstimate.nights} night{overnightEstimate.nights === 1 ? "" : "s"}
+                    </span>
+                    <span className="font-bold text-[#2b000a]">
+                      {priceCurrency(listing)} {overnightEstimate.total.toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Prices can vary by date · pay the host on arrival.
+                  </p>
                 </div>
               )}
             </div>
