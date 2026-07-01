@@ -60,8 +60,25 @@ export default async function PropertyPage({
   }
 
   const reviews = (listingData.reviews as Review[]) ?? [];
-  const blockedDateStrings = ((listingData.blocked_dates as { date: string }[]) ?? []).map(
-    (item) => item.date
+
+  // Blocked dates come from two places: the legacy blocked_dates table and the
+  // per-date room/rate calendar (a day is unavailable when the host blocked it
+  // or a confirmed booking used up every unit).
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: calDays } = await admin
+    .from("listing_calendar_days")
+    .select("date, is_blocked, units_open")
+    .eq("listing_id", listingData.id)
+    .gte("date", today);
+  const calBlocked = ((calDays as { date: string; is_blocked: boolean; units_open: number | null }[]) ?? [])
+    .filter((d) => d.is_blocked || (d.units_open != null && d.units_open <= 0))
+    .map((d) => d.date);
+
+  const blockedDateStrings = Array.from(
+    new Set([
+      ...(((listingData.blocked_dates as { date: string }[]) ?? []).map((item) => item.date)),
+      ...calBlocked,
+    ])
   );
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();

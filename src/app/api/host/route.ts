@@ -111,8 +111,16 @@ export async function POST(request: Request) {
 
   const { data: host, error } = await admin
     .from("hosts")
-    .insert({ user_id: auth.user.id, name, phone, is_verified: false })
-    .select("id, name, phone, is_verified")
+    .insert({
+      user_id: auth.user.id,
+      name,
+      phone,
+      is_verified: false,
+      // New hosts must be approved by an admin before they can publish.
+      status: "pending",
+      applied_at: new Date().toISOString(),
+    })
+    .select("id, name, phone, is_verified, status")
     .single();
 
   if (error || !host) {

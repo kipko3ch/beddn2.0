@@ -19,6 +19,7 @@ export type FeaturedStatus = "active" | "scheduled" | "expired" | "cancelled";
 export type FeaturedPaymentStatus = "unpaid" | "paid" | "complimentary" | "refunded";
 export type BookingStatus =
   | "draft"
+  | "requested"
   | "pending_payment"
   | "payment_failed"
   | "paid_pending_host"

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { Icon } from "@/components/icon";
+import { RoomRateCalendar } from "@/components/host/room-rate-calendar";
 import type { Booking, Inquiry, Listing } from "@/lib/types";
 
 interface AvailabilitySlot {
@@ -146,9 +147,36 @@ export default function CalendarPage() {
       <div className="mb-6">
         <h1 className="font-brand text-3xl text-[#2b000a]">Calendar</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Block rooms, hourly slots, or experience sessions and review upcoming bookings.
+          Manage rooms and rates by date, block slots, and review upcoming bookings.
         </p>
       </div>
+
+      {/* Rooms & rates — per-date management for the selected listing */}
+      {listings.length > 0 && listingId && (
+        <div className="mb-6">
+          <div className="mb-3 max-w-sm">
+            <Label>Listing</Label>
+            <select
+              className="mt-1 h-10 w-full rounded-md border px-3"
+              value={listingId}
+              onChange={(e) => setListingId(e.target.value)}
+            >
+              {listings.map((listing) => (
+                <option key={listing.id} value={listing.id}>
+                  {listing.title || listing.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <RoomRateCalendar
+            key={listingId}
+            listingId={listingId}
+            totalUnits={selectedListing?.total_units ?? 1}
+            basePrice={selectedListing?.overnight_price ?? null}
+            currency={selectedListing?.currency ?? "KES"}
+          />
+        </div>
+      )}
 
       <section className="mb-6 rounded-2xl border bg-[#fff8fa] p-4 shadow-sm">
         <h2 className="text-base font-bold text-[#181113]">Keep your availability easy to book</h2>

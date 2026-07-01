@@ -75,21 +75,34 @@ export async function POST(request: Request) {
     );
   }
 
-  // Trust gate (not revealed): the reviewer must have inquired on this listing.
-  const { data: inquiry } = await admin
-    .from("inquiries")
-    .select("id")
-    .eq("listing_id", listing.id)
-    .eq("guest_user_id", user.id)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  // Trust gate (not revealed): a completed booking is the strongest proof of a
+  // real stay; an inquiry is accepted as a lighter fallback. One of the two is
+  // required so reviews stay trustworthy.
+  const [{ data: completedBooking }, { data: inquiry }] = await Promise.all([
+    admin
+      .from("bookings")
+      .select("id")
+      .eq("listing_id", listing.id)
+      .eq("user_id", user.id)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    admin
+      .from("inquiries")
+      .select("id")
+      .eq("listing_id", listing.id)
+      .eq("guest_user_id", user.id)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-  if (!inquiry) {
+  if (!completedBooking && !inquiry) {
     return NextResponse.json(
       {
         error:
-          "We couldn't verify a recent stay for this listing yet. Reviews open after you've connected with the host through Beddn.",
+          "We couldn't verify a recent stay for this listing yet. Reviews open after you've stayed or connected with the host through Beddn.",
       },
       { status: 403 }
     );
@@ -101,7 +114,8 @@ export async function POST(request: Request) {
     .select("id")
     .eq("listing_id", listing.id)
     .eq("user_id", user.id)
-    .is("booking_id", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   const tags = Array.isArray(body.tags)
@@ -111,7 +125,8 @@ export async function POST(request: Request) {
   const payload = {
     listing_id: listing.id,
     user_id: user.id,
-    inquiry_id: inquiry.id,
+    ...(inquiry?.id ? { inquiry_id: inquiry.id } : {}),
+    ...(completedBooking?.id ? { booking_id: completedBooking.id } : {}),
     rating,
     comment: body.comment?.trim() || null,
     tags,

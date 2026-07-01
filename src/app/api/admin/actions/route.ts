@@ -5,6 +5,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 interface AdminActionBody {
   action:
     | "verify_host"
+    | "approve_host"
+    | "reject_host"
+    | "suspend_host"
+    | "unsuspend_host"
     | "verify_listing"
     | "unverify_listing"
     | "approve_listing"
@@ -29,7 +33,8 @@ interface AdminActionBody {
     | "make_admin"
     | "remove_admin"
     | "flag_image"
-    | "unflag_image";
+    | "unflag_image"
+    | "set_feature_status";
   id: string;
   reason?: string;
   // Featured placement fields (feature_listing / extend_feature).
@@ -86,6 +91,34 @@ export async function POST(request: Request) {
 
   if (body.action === "verify_host") {
     const { error } = await admin.from("hosts").update({ is_verified: true }).eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  // --- Host approval lifecycle (governs whether a host can operate) ---
+  if (body.action === "approve_host") {
+    const { error } = await admin
+      .from("hosts")
+      .update({
+        status: "approved",
+        approved_at: new Date().toISOString(),
+        approved_by: data.user.id,
+        rejection_reason: null,
+      })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+  if (body.action === "reject_host") {
+    const { error } = await admin
+      .from("hosts")
+      .update({ status: "rejected", rejection_reason: body.reason || null })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+  if (body.action === "suspend_host" || body.action === "unsuspend_host") {
+    const { error } = await admin
+      .from("hosts")
+      .update({ status: body.action === "suspend_host" ? "suspended" : "approved" })
+      .eq("id", body.id);
     errorMessage = error?.message || null;
   }
 
@@ -232,6 +265,19 @@ export async function POST(request: Request) {
     const { error } = await admin
       .from("withdrawals")
       .update({ status: nextStatus })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "set_feature_status") {
+    const allowed = new Set(["new", "planned", "shipped", "declined"]);
+    const status = allowed.has(body.reason ?? "") ? body.reason : null;
+    if (!status) {
+      return NextResponse.json({ error: "Invalid feature status." }, { status: 400 });
+    }
+    const { error } = await admin
+      .from("feature_requests")
+      .update({ status })
       .eq("id", body.id);
     errorMessage = error?.message || null;
   }

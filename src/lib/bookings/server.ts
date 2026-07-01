@@ -56,6 +56,60 @@ function bookingCode(booking: Pick<DbBooking, "booking_token" | "token">) {
   return booking.booking_token || booking.token || "BEDDN";
 }
 
+// When an overnight booking is confirmed, decrement the per-night inventory in
+// listing_calendar_days so those dates can't be double-booked and guests see an
+// accurate "rooms left" count. Hourly/experience slots are handled separately
+// by reserve_booking_slot / availability_slots.
+async function blockCalendarForBooking(
+  supabase: ReturnType<typeof createAdminClient>,
+  booking: DbBooking,
+  listing: DbListing
+) {
+  if (booking.category !== "overnight") return;
+  const start = booking.start_datetime ? new Date(booking.start_datetime) : null;
+  const end = booking.end_datetime ? new Date(booking.end_datetime) : null;
+  if (!start || Number.isNaN(start.getTime())) return;
+
+  const totalUnits = Math.max(1, Number(listing.total_units ?? 1));
+  const reserved = Math.max(1, Number(booking.units_reserved ?? 1));
+  const listingId = booking.listing_id;
+
+  const days: string[] = [];
+  const cursor = new Date(start);
+  cursor.setHours(0, 0, 0, 0);
+  const endDay = end && !Number.isNaN(end.getTime()) ? new Date(end) : null;
+  if (endDay) endDay.setHours(0, 0, 0, 0);
+  if (endDay && endDay > cursor) {
+    while (cursor < endDay) {
+      days.push(cursor.toISOString().slice(0, 10));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  } else {
+    days.push(cursor.toISOString().slice(0, 10));
+  }
+
+  for (const date of days) {
+    const { data: existing } = await supabase
+      .from("listing_calendar_days")
+      .select("units_open")
+      .eq("listing_id", listingId)
+      .eq("date", date)
+      .maybeSingle();
+    const current = existing?.units_open ?? totalUnits;
+    const nextOpen = Math.max(0, Number(current) - reserved);
+    await supabase.from("listing_calendar_days").upsert(
+      {
+        listing_id: listingId,
+        date,
+        units_open: nextOpen,
+        is_blocked: nextOpen <= 0,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "listing_id,date" }
+    );
+  }
+}
+
 async function getBundle(bookingId: string) {
   const supabase = createAdminClient();
   const { data: booking, error: bookingError } = await supabase
@@ -259,8 +313,12 @@ export async function confirmBooking(bookingId: string, acceptedBy: string) {
     .update({
       status: "confirmed",
       host_accepted_at: acceptedBy === "system" ? null : now,
+      host_confirmed_at: acceptedBy === "system" ? null : now,
     })
     .eq("id", bookingId);
+
+  // Lock the calendar so these dates can't be taken again.
+  await blockCalendarForBooking(supabase, booking, listing);
 
   await supabase.from("host_balances").upsert(
     {

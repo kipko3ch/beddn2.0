@@ -339,6 +339,15 @@ export function PropertyContent({
     availabilityStatus,
   };
 
+  // Deep link into the request-to-book flow, pre-filled with the chosen dates.
+  const reserveHref =
+    `/reserve/${listing.id}?category=${selectedCategory}` +
+    `&checkIn=${inputDate(dateRange?.from)}` +
+    (selectedCategory === "overnight" && dateRange?.to ? `&checkOut=${inputDate(dateRange.to)}` : "") +
+    (selectedCategory !== "overnight" ? `&startTime=${encodeURIComponent(startTime)}` : "") +
+    (selectedCategory === "hourly" ? `&duration=${durationHours}` : "") +
+    `&guests=${guests}`;
+
   function handleSelectRange(range: DateRange | undefined) {
     setDateRange(range);
     setAvailabilityChecked(false);
@@ -840,12 +849,27 @@ export function PropertyContent({
                       Manage listing
                     </Link>
                   ) : availabilityChecked ? (
-                    <Button
-                      onClick={openInquiry}
-                      className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
-                    >
-                      {hasAvailability ? "Send Inquiry" : "Ask Host Anyway"}
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {hasAvailability && (
+                        <Link
+                          href={reserveHref}
+                          className="inline-flex h-9 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+                        >
+                          Request to book
+                        </Link>
+                      )}
+                      <Button
+                        onClick={openInquiry}
+                        variant={hasAvailability ? "outline" : "default"}
+                        className={
+                          hasAvailability
+                            ? "rounded-full px-6"
+                            : "rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                        }
+                      >
+                        {hasAvailability ? "Message host" : "Ask Host Anyway"}
+                      </Button>
+                    </div>
                   ) : (
                     <Button
                       onClick={checkAvailability}

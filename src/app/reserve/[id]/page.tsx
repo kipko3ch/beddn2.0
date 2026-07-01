@@ -21,7 +21,6 @@ import {
   ArrowLeft,
   CalendarDays,
   ChevronLeft,
-  CreditCard,
   HandCoins,
   Mail,
   MapPin,
@@ -111,6 +110,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [submitting, setSubmitting] = useState(false);
   const [isOwnListing, setIsOwnListing] = useState(false);
   const [step, setStep] = useState(0);
+  const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -253,7 +253,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       : "";
     const hostNote = [note, negotiationNote].filter(Boolean).join("\n\n") || null;
 
-    const response = await fetch("/api/payments/initialize", {
+    const response = await fetch("/api/bookings/request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -273,17 +273,19 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     });
 
     const result = (await response.json()) as {
-      authorizationUrl?: string;
+      ok?: boolean;
+      bookingToken?: string;
       error?: string;
     };
 
-    if (!response.ok || !result.authorizationUrl) {
-      alert(result.error || "Could not start checkout. Please try again.");
+    if (!response.ok || !result.ok) {
+      alert(result.error || "Could not send your request. Please try again.");
       setSubmitting(false);
       return;
     }
 
-    window.location.href = result.authorizationUrl;
+    setSubmittedCode(result.bookingToken || "sent");
+    setSubmitting(false);
   }
 
   if (loading) {
@@ -334,6 +336,43 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     );
   }
 
+  if (submittedCode) {
+    return (
+      <>
+        <CheckoutHeader backHref={`/property/${listing.slug}`} />
+        <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
+          <TicketCheck className="mb-5 h-14 w-14 text-[#128c4b]" />
+          <h1 className="font-brand text-3xl text-[#2b000a]">Request sent to the host</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Your booking request for{" "}
+            <span className="font-semibold text-[#181113]">{listing.title || listing.name}</span> is
+            with the host. You&apos;ll get a message once they confirm — then the exact address and
+            contact unlock.
+          </p>
+          {submittedCode !== "sent" && (
+            <p className="mt-4 rounded-full bg-[#fbf7f8] px-4 py-2 text-sm font-semibold text-[#800020]">
+              Ref: {submittedCode}
+            </p>
+          )}
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href={`/property/${listing.slug}`}
+              className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-muted"
+            >
+              Back to listing
+            </Link>
+            <Link
+              href="/search"
+              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+            >
+              Explore more stays
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   const total = computeTotal();
   const availableCategories = listing.categories;
   const reviews = listing.reviews ?? [];
@@ -341,7 +380,6 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
   const isExperience = category === "experience";
-  const payNow = Number(listing.deposit_amount || total);
 
   const stepOneValid = Boolean(
     checkIn &&
@@ -662,8 +700,8 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               <section className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
                 <h2 className="text-xl font-bold tracking-tight">Review your request</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Pay the reserve fee to send your request. Track everything from your Beddn
-                  account — host contact and exact address unlock after confirmation.
+                  Send your request to the host. Track everything from your Beddn account — the host
+                  contact and exact address unlock after the host confirms.
                 </p>
 
                 <dl className="mt-5 divide-y rounded-xl border text-sm">
@@ -772,17 +810,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   <span>Estimated stay total</span>
                   <span className="font-semibold">{money(total)}</span>
                 </div>
-                {listing.deposit_amount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span>Reserve fee due now</span>
-                    <span className="font-semibold">{money(Number(listing.deposit_amount))}</span>
-                  </div>
-                )}
                 <Separator />
                 <div className="flex justify-between text-base font-bold">
-                  <span>Pay now</span>
-                  <span>{money(payNow)}</span>
+                  <span>Pay the host on arrival</span>
+                  <span>{money(total)}</span>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  No payment now — you arrange payment with the host after they confirm your request.
+                </p>
               </div>
             </div>
           </aside>
@@ -810,8 +845,8 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             </Link>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground">Pay now</p>
-            <p className="truncate font-bold">{money(payNow)}</p>
+            <p className="text-xs text-muted-foreground">Pay on arrival</p>
+            <p className="truncate font-bold">{money(total)}</p>
           </div>
           {step < lastStep ? (
             <Button
@@ -829,8 +864,8 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               disabled={submitting || isOwnListing || !stepOneValid || !stepTwoValid}
               className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
             >
-              <CreditCard className="mr-1 h-4 w-4" />
-              {submitting ? "Opening checkout…" : "Pay reserve fee"}
+              <TicketCheck className="mr-1 h-4 w-4" />
+              {submitting ? "Sending…" : "Send booking request"}
             </Button>
           )}
         </div>

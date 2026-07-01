@@ -36,6 +36,7 @@ export default function BookingsPage() {
   }, []);
 
   const statusColor: Record<string, string> = {
+    requested: "bg-amber-100 text-amber-800",
     pending_payment: "bg-yellow-100 text-yellow-800",
     paid_pending_host: "bg-amber-100 text-amber-800",
     confirmed: "bg-rose-100 text-[#800020]",
@@ -44,6 +45,8 @@ export default function BookingsPage() {
     rejected: "bg-red-100 text-red-800",
     disputed: "bg-purple-100 text-purple-800",
   };
+
+  const needsAction = (status: string) => status === "requested" || status === "paid_pending_host";
 
   async function bookingAction(id: string, action: "accept" | "reject" | "complete") {
     setWorkingId(id);
@@ -101,14 +104,15 @@ export default function BookingsPage() {
                 <Badge className={statusColor[booking.status] ?? ""}>
                   {booking.status.replaceAll("_", " ")}
                 </Badge>
-                {booking.status === "paid_pending_host" && (
+                {needsAction(booking.status) && (
                   <>
                     <Button
                       size="sm"
+                      className="bg-[#128c4b] hover:bg-[#0f7a41]"
                       onClick={() => bookingAction(booking.id, "accept")}
                       disabled={workingId === booking.id}
                     >
-                      Accept
+                      Confirm
                     </Button>
                     <Button
                       size="sm"
@@ -116,7 +120,7 @@ export default function BookingsPage() {
                       onClick={() => bookingAction(booking.id, "reject")}
                       disabled={workingId === booking.id}
                     >
-                      Reject
+                      Decline
                     </Button>
                   </>
                 )}
