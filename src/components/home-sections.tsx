@@ -100,7 +100,10 @@ export function FeaturedRail({
       .finally(() => setLoaded(true));
   }, [placement, city, category]);
 
-  if (loaded && listings.length === 0) return null;
+  // Nothing renders until the fetch resolves — a skeleton here would flash a
+  // heading and placeholder cards that then vanish entirely on an empty
+  // result, which is worse than a brief silent gap.
+  if (!loaded || listings.length === 0) return null;
 
   return (
     <section className="pt-10">
@@ -111,13 +114,7 @@ export function FeaturedRail({
           </h2>
         }
       >
-        {!loaded
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-[170px] shrink-0 sm:w-[210px]">
-                <ListingCardSkeleton />
-              </div>
-            ))
-          : listings.map((listing) => (
+        {listings.map((listing) => (
               <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
                 <ListingCard
                   listing={listing}

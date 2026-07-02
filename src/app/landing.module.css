@@ -149,19 +149,17 @@
 
 .tab:hover {
   color: #2b000a;
-  background: color-mix(in srgb, var(--color-cream) 55%, white);
-  border-color: color-mix(in srgb, var(--color-crimson) 25%, transparent);
 }
 
-/* Active state gets a soft crimson-to-burgundy wash instead of a flat text
-   colour swap — pulls more pink into a page that otherwise leans hard on
-   plain burgundy. */
+/* Active state is shown by colour + weight only, no filled pill — the 3D
+   icons stay on a transparent background so they read as independent
+   objects rather than sitting inside a badge. */
 .tab.active {
-  color: #fff;
+  color: var(--color-crimson);
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-crimson) 0%, #800020 100%);
+  background: none;
   border-color: transparent;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-crimson) 35%, transparent);
+  box-shadow: none;
 }
 
 .tab.active:hover {
