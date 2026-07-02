@@ -152,7 +152,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       return Number(listing.overnight_price) * nights;
     }
     if (category === "experience" && listing.experience_price) {
-      return Number(listing.experience_price);
+      return Number(listing.experience_price) * Math.max(1, parseInt(guests) || 1);
     }
     return 0;
   }
@@ -267,6 +267,8 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const detailHref = isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`;
 
   // Booking is for registered users only — browsing stays open to everyone.
+  // Rather than a dedicated "sign in" page, the signup modal opens straight
+  // away over the listing preview so there's no dead-end screen to bounce off.
   if (!user) {
     return (
       <>
@@ -282,7 +284,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             . It takes less than a minute.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <AuthDialog>
+            <AuthDialog defaultOpen>
               <Button className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]">
                 Login or sign up
               </Button>

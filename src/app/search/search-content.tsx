@@ -333,10 +333,10 @@ export function SearchContent() {
             : listings.length > 0
             ? isExperienceSearch
               ? `${listings.length} verified experience${listings.length === 1 ? "" : "s"}`
-              : `${listings.length} verified place${listings.length === 1 ? "" : "s"}`
+              : `${listings.length} verified listing${listings.length === 1 ? "" : "s"}`
             : isExperienceSearch
             ? "No hosted trips here yet"
-            : "No verified places here yet"}
+            : "No verified listings here yet"}
         </h1>
       </div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -421,7 +421,7 @@ export function SearchContent() {
             className="mx-auto mb-4 h-auto w-[200px]"
             aria-hidden
           />
-          <p className="text-2xl font-bold">No verified places here yet.</p>
+          <p className="text-2xl font-bold">No verified listings here yet.</p>
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
             Be the first verified host in this area and get early visibility as demand grows.
           </p>

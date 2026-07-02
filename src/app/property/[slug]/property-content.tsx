@@ -15,6 +15,7 @@ import {
   Bath,
   Car,
   BadgeCheck,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -37,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/empty-state";
 import { Calendar } from "@/components/ui/calendar";
+import { AuthDialog } from "@/components/auth-dialog";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
 import { useCurrency } from "@/components/currency-provider";
@@ -137,6 +139,36 @@ function AmenityItem({ label }: { label: string }) {
       )}
       <span>{display}</span>
     </div>
+  );
+}
+
+// Reserving requires a signed-in account. Logged-out guests get the signup
+// modal right where they clicked — no bounce through a dead-end "sign in"
+// page — and land on /reserve once they're actually authenticated.
+function RequestToBookButton({
+  user,
+  href,
+  className,
+  children,
+}: {
+  user: User | null;
+  href: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  if (user) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <AuthDialog>
+      <button type="button" className={className}>
+        {children}
+      </button>
+    </AuthDialog>
   );
 }
 
@@ -433,12 +465,15 @@ export function PropertyContent({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {!isOwnListing && hasAvailability && (
-              <Link
-                href={reserveHref}
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
                 className="hidden h-9 items-center justify-center rounded-full bg-[#800020] px-5 text-sm font-bold text-white hover:bg-merlot sm:inline-flex"
               >
                 Request to book
-              </Link>
+              </button>
             )}
             <Button
               variant="outline"
@@ -600,8 +635,8 @@ export function PropertyContent({
           on desktop and only the gallery's height on mobile. No separate
           "Check Availability" tap: dates come pre-selected, so the action is
           ready the moment this renders. */}
-      <section id="deals" className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border bg-white shadow-sm">
+      <section id="deals" className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8 scroll-mt-20">
+        <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
           <div className="border-b bg-cream/40 p-4 sm:p-5">
             <h2 className="text-lg font-bold">Check availability</h2>
             {isOwnListing && (
@@ -716,12 +751,13 @@ export function PropertyContent({
                 ) : (
                   <div className="flex flex-col gap-2">
                     {hasAvailability && (
-                      <Link
+                      <RequestToBookButton
+                        user={user}
                         href={reserveHref}
                         className="flex w-full h-11 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot transition shadow-sm"
                       >
                         Request to book
-                      </Link>
+                      </RequestToBookButton>
                     )}
                     <Button
                       onClick={openInquiry}
@@ -743,39 +779,22 @@ export function PropertyContent({
             <div className="border-t pt-6 lg:border-t-0 lg:pt-0 lg:border-l lg:pl-8 flex flex-col items-center">
               <div className="mb-4 text-center">
                 <h3 className="text-lg font-bold text-[#202124] flex items-center gap-1.5 justify-center">
-                  <Calendar className="h-5 w-5 text-[#800020]" />
+                  <CalendarDays className="h-5 w-5 text-[#800020]" />
                   {dateSummary.title}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{dateSummary.subtitle}</p>
               </div>
-              <div className="w-full">
-                <div className="md:hidden">
-                  <Calendar
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={handleSelectRange}
-                    month={calendarMonth}
-                    onMonthChange={setCalendarMonth}
-                    numberOfMonths={1}
-                    showOutsideDays={false}
-                    disabled={disabledCalendarDays}
-                    className="mx-auto bg-transparent p-0 [--cell-radius:999px]"
-                  />
-                </div>
-                <div className="hidden md:block">
-                  <Calendar
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={handleSelectRange}
-                    month={calendarMonth}
-                    onMonthChange={setCalendarMonth}
-                    numberOfMonths={1}
-                    showOutsideDays={false}
-                    disabled={disabledCalendarDays}
-                    className="mx-auto bg-transparent p-0 [--cell-radius:999px]"
-                  />
-                </div>
-              </div>
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={handleSelectRange}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                numberOfMonths={1}
+                showOutsideDays={false}
+                disabled={disabledCalendarDays}
+                className="mx-auto bg-transparent p-0 [--cell-radius:999px]"
+              />
               <div className="mt-4 w-full flex justify-end">
                 <button
                   type="button"
@@ -1030,12 +1049,13 @@ export function PropertyContent({
               </Link>
             ) : hasAvailability ? (
               <div className="mt-5 space-y-2">
-                <Link
+                <RequestToBookButton
+                  user={user}
                   href={reserveHref}
                   className="flex h-11 w-full items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot"
                 >
                   Request to book
-                </Link>
+                </RequestToBookButton>
                 <Button onClick={openInquiry} variant="outline" className="w-full rounded-full">
                   Message host
                 </Button>
@@ -1082,12 +1102,13 @@ export function PropertyContent({
               Manage
             </Link>
           ) : hasAvailability ? (
-            <Link
+            <RequestToBookButton
+              user={user}
               href={reserveHref}
               className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
             >
               Request to book
-            </Link>
+            </RequestToBookButton>
           ) : (
             <Button
               onClick={openInquiry}

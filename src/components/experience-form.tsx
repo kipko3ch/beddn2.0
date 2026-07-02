@@ -288,7 +288,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Guided Nairobi Street Food Crawl"
-          className="mt-2 h-12 text-base border-[#FCDCD3] focus:border-[#8A1C32]"
+          className="mt-2 h-12 text-base border-cream focus:border-[#800020]"
         />
       </div>
     ),
@@ -308,7 +308,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             value={experienceSearch}
             onChange={(e) => setExperienceSearch(e.target.value)}
             placeholder="Search activities (e.g. food, safari, photography)"
-            className="pl-9 border-[#FCDCD3] focus:border-[#8A1C32]"
+            className="pl-9 border-cream focus:border-[#800020]"
           />
         </div>
         <div className="space-y-4 max-h-[45vh] overflow-y-auto pr-1">
@@ -335,15 +335,15 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                         onClick={() => toggleExperienceType(it.value)}
                         className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition ${
                           selected
-                            ? "border-[#8A1C32] bg-[#FFEBE5] font-medium text-[#2B0A11]"
-                            : "border-[#FCDCD3] bg-white hover:border-[#FE6E96]"
+                            ? "border-[#800020] bg-cream font-medium text-[#2b000a]"
+                            : "border-cream bg-white hover:border-[#e8547b]"
                         }`}
                       >
                         <AmenityIcon
                           icon={it.icon}
                           width={20}
                           height={20}
-                          className={selected ? "text-[#8A1C32]" : "text-muted-foreground"}
+                          className={selected ? "text-[#800020]" : "text-muted-foreground"}
                         />
                         <span className="min-w-0 flex-1 truncate">{it.label}</span>
                       </button>
@@ -368,7 +368,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
         <div>
           <Label>Duration Value</Label>
           <Select value={durationValue} onValueChange={(val) => setDurationValue(val || "3")}>
-            <SelectTrigger className="border-[#FCDCD3] mt-2 h-12 text-base">
+            <SelectTrigger className="border-cream mt-2 h-12 text-base">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -383,7 +383,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
         <div>
           <Label>Duration Unit</Label>
           <Select value={durationUnit} onValueChange={(val) => setDurationUnit(val || "hours")}>
-            <SelectTrigger className="border-[#FCDCD3] mt-2 h-12 text-base">
+            <SelectTrigger className="border-cream mt-2 h-12 text-base">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -411,7 +411,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             min="1"
             value={experienceGroupSize}
             onChange={(e) => setExperienceGroupSize(e.target.value)}
-            className="mt-2 h-12 text-base border-[#FCDCD3] focus:border-[#8A1C32]"
+            className="mt-2 h-12 text-base border-cream focus:border-[#800020]"
           />
         </div>
         <div>
@@ -422,7 +422,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             onChange={(e) => setExperienceRequirements(e.target.value)}
             rows={4}
             placeholder="e.g. Minimum age 18+. Moderate walking is required. Bring rain jackets."
-            className="mt-2 border-[#FCDCD3] focus:border-[#8A1C32]"
+            className="mt-2 border-cream focus:border-[#800020]"
           />
         </div>
       </div>
@@ -453,11 +453,11 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs text-muted-foreground">Country</Label>
-            <Input value={country} onChange={(e) => setCountry(e.target.value)} className="border-[#FCDCD3]" />
+            <Input value={country} onChange={(e) => setCountry(e.target.value)} className="border-cream" />
           </div>
           <div>
             <Label className="text-xs text-muted-foreground">City</Label>
-            <Input value={city} onChange={(e) => setCity(e.target.value)} className="border-[#FCDCD3]" />
+            <Input value={city} onChange={(e) => setCity(e.target.value)} className="border-cream" />
           </div>
         </div>
         <div>
@@ -468,7 +468,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             onChange={(e) => setExperienceMeetingPoint(e.target.value)}
             rows={3}
             placeholder="e.g. Meet in front of the main entrance fountain next to the security desk."
-            className="border-[#FCDCD3] focus:border-[#8A1C32]"
+            className="border-cream focus:border-[#800020]"
           />
         </div>
       </div>
@@ -482,11 +482,11 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
     valid: imageList.length >= 1,
     content: (
       <div className="space-y-4">
-        <div className="rounded-2xl border-2 border-dashed border-[#FCDCD3] bg-[#FFEBE5]/20 p-8 text-center">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#FFEBE5] text-[#8A1C32]">
+        <div className="rounded-2xl border-2 border-dashed border-cream bg-cream/20 p-8 text-center">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-cream text-[#800020]">
             <Compass className="h-6 w-6" />
           </div>
-          <p className="mt-3 text-sm font-semibold text-[#2B0A11]">Upload photos from your device</p>
+          <p className="mt-3 text-sm font-semibold text-[#2b000a]">Upload photos from your device</p>
           <p className="mt-1 text-xs text-muted-foreground">PNG, JPG, JPEG up to 10MB each</p>
           <input
             type="file"
@@ -501,7 +501,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             type="button"
             disabled={uploading}
             onClick={() => document.getElementById("experience-photo-upload")?.click()}
-            className="mt-4 rounded-full bg-[#8A1C32] hover:bg-[#4E1424]"
+            className="mt-4 rounded-full bg-[#800020] hover:bg-merlot"
           >
             {uploading ? "Uploading..." : "Select Files"}
           </Button>
@@ -511,7 +511,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
         {imageList.length > 0 && (
           <div className="grid grid-cols-3 gap-3">
             {imageList.map((url, i) => (
-              <div key={url} className="group relative aspect-video overflow-hidden rounded-xl border border-[#FCDCD3]">
+              <div key={url} className="group relative aspect-video overflow-hidden rounded-xl border border-cream">
                 <img src={url} alt="" className="h-full w-full object-cover" />
                 <button
                   type="button"
@@ -538,7 +538,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
         <div>
           <Label>Currency</Label>
           <Select value={currency} onValueChange={(value) => value && setCurrency(value)}>
-            <SelectTrigger className="border-[#FCDCD3]">
+            <SelectTrigger className="border-cream">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -562,11 +562,11 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               step="0.01"
               value={experiencePrice}
               onChange={(e) => setExperiencePrice(e.target.value)}
-              className="pl-14 h-12 text-base border-[#FCDCD3] focus:border-[#8A1C32]"
+              className="pl-14 h-12 text-base border-cream focus:border-[#800020]"
             />
           </div>
           {usdHint(experiencePrice) && (
-            <p className="mt-1 text-xs text-muted-foreground font-medium text-[#8A1C32]">
+            <p className="mt-1 text-xs text-muted-foreground font-medium text-[#800020]">
               {usdHint(experiencePrice)}
             </p>
           )}
@@ -589,7 +589,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
           onChange={(e) => setDescription(e.target.value)}
           rows={7}
           placeholder="E.g. We will start the experience by gathering at the meeting point. From there, we will take a guided walking tour..."
-          className="border-[#FCDCD3] focus:border-[#8A1C32]"
+          className="border-cream focus:border-[#800020]"
         />
         <p className="text-xs text-muted-foreground leading-normal">
           Keep it friendly, write about unique perspectives or access they'll get.
@@ -613,7 +613,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             onChange={(e) => setHouseRules(e.target.value)}
             rows={5}
             placeholder="e.g. Please bring sunscreen, a water bottle, and a camera. No pets are allowed on this trail."
-            className="border-[#FCDCD3] focus:border-[#8A1C32]"
+            className="border-cream focus:border-[#800020]"
           />
         </div>
       </div>
@@ -628,7 +628,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
     content: (
       <div className="space-y-5">
         <div>
-          <Label className="text-sm font-bold text-[#2B0A11] block mb-2">Usual days of operation</Label>
+          <Label className="text-sm font-bold text-[#2b000a] block mb-2">Usual days of operation</Label>
           <div className="grid grid-cols-7 gap-1.5">
             {WEEK_DAYS.map((day) => {
               const selected = availableDays.includes(day.value);
@@ -639,8 +639,8 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                   onClick={() => toggleAvailableDay(day.value)}
                   className={`h-10 rounded-xl border text-xs font-bold transition ${
                     selected
-                      ? "border-[#8A1C32] bg-[#8A1C32] text-white"
-                      : "border-[#FCDCD3] bg-white text-[#4E1424] hover:border-[#FE6E96]"
+                      ? "border-[#800020] bg-[#800020] text-white"
+                      : "border-cream bg-white text-merlot hover:border-[#e8547b]"
                   }`}
                 >
                   {day.label}
@@ -650,10 +650,10 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-[#FFEBE5]/30 p-4 border-[#FCDCD3]">
+        <div className="rounded-2xl border bg-cream/30 p-4 border-cream">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold text-[#2B0A11]">Date-specific sessions</p>
+              <p className="text-sm font-bold text-[#2b000a]">Date-specific sessions</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Define exact session times for specific tour dates.
               </p>
@@ -662,7 +662,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               type="button"
               variant="outline"
               onClick={addDateSlot}
-              className="h-10 rounded-full bg-white border-[#FCDCD3] text-[#8A1C32]"
+              className="h-10 rounded-full bg-white border-cream text-[#800020]"
             >
               <Plus className="mr-1 h-4 w-4" /> Add Date
             </Button>
@@ -670,19 +670,19 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
 
           <div className="mt-4 space-y-3">
             {dateSlots.length === 0 ? (
-              <p className="rounded-xl border border-dashed bg-white px-4 py-5 text-center text-xs text-muted-foreground border-[#FCDCD3]">
+              <p className="rounded-xl border border-dashed bg-white px-4 py-5 text-center text-xs text-muted-foreground border-cream">
                 No date-specific sessions scheduled. Standard weekly schedule applies.
               </p>
             ) : (
               dateSlots.map((slot) => (
-                <div key={slot.id} className="grid gap-3 rounded-xl bg-white p-3 sm:grid-cols-[1.2fr_1fr_1fr_0.9fr_auto] sm:items-end border border-[#FCDCD3]">
+                <div key={slot.id} className="grid gap-3 rounded-xl bg-white p-3 sm:grid-cols-[1.2fr_1fr_1fr_0.9fr_auto] sm:items-end border border-cream">
                   <div>
                     <Label className="text-xs">Date</Label>
                     <Input
                       type="date"
                       value={slot.date}
                       onChange={(event) => updateDateSlot(slot.id, { date: event.target.value })}
-                      className="border-[#FCDCD3]"
+                      className="border-cream"
                     />
                   </div>
                   <div>
@@ -691,7 +691,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                       value={slot.startTime}
                       onValueChange={(val) => updateDateSlot(slot.id, { startTime: val || "10:00" })}
                     >
-                      <SelectTrigger className="border-[#FCDCD3] h-10 mt-1">
+                      <SelectTrigger className="border-cream h-10 mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -707,7 +707,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                       value={slot.endTime}
                       onValueChange={(val) => updateDateSlot(slot.id, { endTime: val || "12:00" })}
                     >
-                      <SelectTrigger className="border-[#FCDCD3] h-10 mt-1">
+                      <SelectTrigger className="border-cream h-10 mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -726,7 +726,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                       onChange={(event) =>
                         updateDateSlot(slot.id, { availableUnits: event.target.value })
                       }
-                      className="border-[#FCDCD3]"
+                      className="border-cream"
                     />
                   </div>
                   <Button
@@ -773,7 +773,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
       {/* Progress */}
       <div className="mb-6">
         <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="uppercase tracking-wide text-[#8A1C32] flex items-center gap-1">
+          <span className="uppercase tracking-wide text-[#800020] flex items-center gap-1">
             <Compass className="h-3.5 w-3.5" />
             {listing ? "Edit Experience" : "New Experience Listing"}
           </span>
@@ -793,7 +793,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                 disabled={i > step}
                 onClick={() => i < step && setStep(i)}
                 className={`h-1.5 flex-1 overflow-hidden rounded-full transition-colors ${
-                  done || isCurrent ? "bg-[#8A1C32]" : "bg-[#FCDCD3]"
+                  done || isCurrent ? "bg-[#800020]" : "bg-cream"
                 } ${i < step ? "cursor-pointer" : "cursor-default"}`}
               />
             );
@@ -803,13 +803,13 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
 
       {/* Main step container */}
       <div className="flex flex-1 items-center py-4 sm:min-h-[50vh]">
-        <div className="w-full rounded-2xl border bg-white p-5 shadow-sm sm:p-8 border-[#FCDCD3]">
-          <h2 className="text-2xl font-bold text-[#2B0A11] flex items-center gap-2">
-            {step === 0 && <Compass className="h-6 w-6 text-[#8A1C32]" />}
-            {step === 2 && <Clock className="h-6 w-6 text-[#8A1C32]" />}
-            {step === 3 && <Users className="h-6 w-6 text-[#8A1C32]" />}
-            {step === 4 && <MapPin className="h-6 w-6 text-[#8A1C32]" />}
-            {step === 6 && <DollarSign className="h-6 w-6 text-[#8A1C32]" />}
+        <div className="w-full rounded-2xl border bg-white p-5 shadow-sm sm:p-8 border-cream">
+          <h2 className="text-2xl font-bold text-[#2b000a] flex items-center gap-2">
+            {step === 0 && <Compass className="h-6 w-6 text-[#800020]" />}
+            {step === 2 && <Clock className="h-6 w-6 text-[#800020]" />}
+            {step === 3 && <Users className="h-6 w-6 text-[#800020]" />}
+            {step === 4 && <MapPin className="h-6 w-6 text-[#800020]" />}
+            {step === 6 && <DollarSign className="h-6 w-6 text-[#800020]" />}
             {current.title}
           </h2>
           {current.subtitle && (
@@ -827,7 +827,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               type="button"
               variant="outline"
               onClick={back}
-              className="h-11 rounded-full px-5 border-[#FCDCD3] text-[#4E1424] hover:bg-[#FFEBE5]/30"
+              className="h-11 rounded-full px-5 border-cream text-merlot hover:bg-cream/30"
             >
               <ChevronLeft className="mr-1 h-4 w-4" /> Back
             </Button>
@@ -837,7 +837,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               type="button"
               onClick={next}
               disabled={!current.valid}
-              className="h-11 flex-1 rounded-full bg-[#8A1C32] font-bold hover:bg-[#4E1424] text-white disabled:opacity-50"
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot text-white disabled:opacity-50"
             >
               {current.valid ? "Continue" : "Complete this step"}
             </Button>
@@ -846,7 +846,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               type="button"
               onClick={() => submitListing(false)}
               disabled={submitting || savingDraft}
-              className="h-11 flex-1 rounded-full bg-[#8A1C32] font-bold hover:bg-[#4E1424] text-white disabled:opacity-50"
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot text-white disabled:opacity-50"
             >
               {submitting ? "Going live…" : listing ? "Save & go live" : "Go live"}
             </Button>
@@ -856,7 +856,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             variant="outline"
             onClick={() => submitListing(true)}
             disabled={savingDraft || submitting || name.trim().length < 2}
-            className="h-11 shrink-0 rounded-full px-4 border-[#FCDCD3] text-[#4E1424] hover:bg-[#FFEBE5]/30"
+            className="h-11 shrink-0 rounded-full px-4 border-cream text-merlot hover:bg-cream/30"
           >
             {savingDraft ? "Saving…" : "Save draft"}
           </Button>

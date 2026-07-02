@@ -19,12 +19,22 @@ import { ROUTES } from "@/lib/routes";
 export function AuthDialog({
   children,
   defaultHostIntent = false,
+  defaultOpen = false,
+  open: openProp,
+  onOpenChange,
 }: {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   defaultHostIntent?: boolean;
+  /** Start open without needing a trigger click (e.g. auto-prompt login). */
+  defaultOpen?: boolean;
+  /** Controlled open state — omit to let the dialog manage its own state. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const supabase = createClient();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [showEmail, setShowEmail] = useState(false);
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState("");
@@ -105,8 +115,9 @@ export function AuthDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       {/* Render the caller's button as the trigger itself. Wrapping it in a
           <span> previously broke Base UI's native-button semantics, which made
-          the login dialog fail to open on some clicks. */}
-      <DialogTrigger render={children as ReactElement} />
+          the login dialog fail to open on some clicks. Omit entirely for
+          controlled/auto-open usage with no trigger element. */}
+      {children && <DialogTrigger render={children as ReactElement} />}
       <DialogContent className="max-w-[min(100vw-1.5rem,560px)] gap-0 rounded-none p-0 sm:rounded-2xl" showCloseButton={false}>
         <button
           onClick={() => setOpen(false)}
