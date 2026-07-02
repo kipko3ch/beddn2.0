@@ -48,12 +48,6 @@ const CATEGORY_OPTIONS: {
     description: "Homes, rooms, or suites guests can book for the night.",
     icon: Moon,
   },
-  {
-    value: "experience",
-    label: "Experience",
-    description: "Trips, classes, sessions, tours, and other bookable activities.",
-    icon: Compass,
-  },
 ];
 
 const CATEGORY_LABEL: Record<ListingCategory, string> = {
@@ -157,6 +151,24 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const [categories, setCategories] = useState<ListingCategory[]>(
     (listing?.categories as ListingCategory[]) ?? (initialCategory ? [initialCategory] : [])
   );
+  const [alsoOvernight, setAlsoOvernight] = useState(
+    listing?.categories?.includes("hourly") && listing?.categories?.includes("overnight")
+  );
+
+  function handleSelectCategory(cat: "hourly" | "overnight") {
+    if (cat === "hourly") {
+      setCategories(alsoOvernight ? ["hourly", "overnight"] : ["hourly"]);
+    } else {
+      setCategories(["overnight"]);
+    }
+  }
+
+  function handleSetAlsoOvernight(val: boolean) {
+    setAlsoOvernight(val);
+    if (categories.includes("hourly")) {
+      setCategories(val ? ["hourly", "overnight"] : ["hourly"]);
+    }
+  }
   const [hourlyPrice, setHourlyPrice] = useState(listing?.hourly_price?.toString() ?? "");
   const [overnightPrice, setOvernightPrice] = useState(
     listing?.overnight_price?.toString() ?? ""
@@ -296,38 +308,75 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   steps.push({
     title: "How can guests book it?",
-    subtitle: "Pick one or more. You can be booked by the hour, the night, or as an experience.",
+    subtitle: "Pick the booking type for your property.",
     valid: categories.length > 0,
     content: (
-      <div className="grid gap-3 sm:grid-cols-3">
-        {CATEGORY_OPTIONS.map(({ value, label, description, icon: Icon }) => {
-          const selected = categories.includes(value);
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => toggleCategory(value)}
-              className={`min-h-36 rounded-2xl border p-4 text-left transition ${
-                selected
-                  ? "border-[#800020] bg-[#fbf7f8] shadow-sm"
-                  : "border-border bg-white hover:border-[#d7a9b7]"
-              }`}
-              aria-pressed={selected}
-            >
-              <span
-                className={`mb-3 inline-flex size-9 items-center justify-center rounded-full ${
-                  selected ? "bg-[#800020] text-white" : "bg-muted text-[#2b000a]"
+      <div className="space-y-6">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {CATEGORY_OPTIONS.map(({ value, label, description, icon: Icon }) => {
+            const selected = value === "hourly" ? categories.includes("hourly") : (categories.includes("overnight") && !categories.includes("hourly"));
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => handleSelectCategory(value as "hourly" | "overnight")}
+                className={`min-h-36 rounded-2xl border p-4 text-left transition ${
+                  selected
+                    ? "border-[#800020] bg-[#fbf7f8] shadow-sm"
+                    : "border-border bg-white hover:border-[#d7a9b7]"
+                }`}
+                aria-pressed={selected}
+              >
+                <span
+                  className={`mb-3 inline-flex size-9 items-center justify-center rounded-full ${
+                    selected ? "bg-[#800020] text-white" : "bg-muted text-[#2b000a]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="block text-sm font-bold text-[#181113]">{label}</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {description}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {categories.includes("hourly") && (
+          <div className="mt-6 rounded-2xl border bg-beige/10 p-5 space-y-3 animate-fade-in" style={{ backgroundColor: "#FFEBE5", borderColor: "#FCDCD3" }}>
+            <p className="text-sm font-bold text-[#2B0A11]">
+              Is this property also available for overnight stays?
+            </p>
+            <p className="text-xs text-muted-foreground leading-normal">
+              If yes, guests can book the property either by the hour or for full overnight stays. You will be able to configure both pricing models.
+            </p>
+            <div className="flex gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => handleSetAlsoOvernight(true)}
+                className={`h-11 flex-1 rounded-full text-sm font-bold border transition ${
+                  alsoOvernight
+                    ? "bg-[#8A1C32] text-white border-transparent"
+                    : "bg-white text-[#4E1424] border-[#FCDCD3] hover:bg-zinc-50"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-              </span>
-              <span className="block text-sm font-bold text-[#181113]">{label}</span>
-              <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                {description}
-              </span>
-            </button>
-          );
-        })}
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetAlsoOvernight(false)}
+                className={`h-11 flex-1 rounded-full text-sm font-bold border transition ${
+                  !alsoOvernight
+                    ? "bg-[#8A1C32] text-white border-transparent"
+                    : "bg-white text-[#4E1424] border-[#FCDCD3] hover:bg-zinc-50"
+                }`}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     ),
   });

@@ -25,10 +25,36 @@ export default function BookingsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        setLoading(false);
+        return;
+      }
+
+      const [{ data: profile }, { data: hostData }] = await Promise.all([
+        supabase.from("profiles").select("is_admin").eq("id", userData.user.id).maybeSingle(),
+        supabase.from("hosts").select("id").eq("user_id", userData.user.id).maybeSingle(),
+      ]);
+
+      const isAdmin = profile?.is_admin ?? false;
+      const hostId = hostData?.id;
+
+      if (!isAdmin && !hostId) {
+        setBookings([]);
+        setLoading(false);
+        return;
+      }
+
+      let query = supabase
         .from("bookings")
         .select("*, listing:listings(name, title, slug)")
         .order("created_at", { ascending: false });
+
+      if (!isAdmin) {
+        query = query.eq("host_id", hostId);
+      }
+
+      const { data } = await query;
       setBookings((data as BookingWithListing[]) ?? []);
       setLoading(false);
     }
