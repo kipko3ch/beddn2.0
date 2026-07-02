@@ -79,7 +79,13 @@ export default function NewListingPage() {
       // listing wizard — they're pending approval and should see that
       // clearly before they're asked to build a listing. Coming back to
       // "New listing" from the dashboard afterward still goes straight in.
+      // The host layout gate is a server component reading fresh DB state
+      // (the host row this POST just created) — router.refresh() forces
+      // Next to re-render it instead of serving a stale cached tree, which
+      // is what previously left new hosts staring at the dashboard with no
+      // "pending" screen until a manual reload.
       router.push(ROUTES.dashboard);
+      router.refresh();
     } else {
       alert("Failed to create host profile: " + (json.error ?? ""));
     }
@@ -121,14 +127,14 @@ export default function NewListingPage() {
       <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center pt-4 sm:pt-8">
         <div className="mb-6">
           <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-            <span className="uppercase tracking-wide text-[#800020]">Host setup</span>
+            <span className="uppercase tracking-wide text-cranberry">Host setup</span>
             <span>
               Step {step + 1} of {steps.length}
             </span>
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#f1e6ea]">
             <div
-              className="h-full rounded-full bg-[#800020] transition-all duration-300"
+              className="h-full rounded-full bg-crimson transition-all duration-300"
               style={{ width: `${((step + 1) / steps.length) * 100}%` }}
             />
           </div>
@@ -221,7 +227,7 @@ export default function NewListingPage() {
                 type="button"
                 onClick={next}
                 disabled={!canNext}
-                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
               >
                 Continue
               </Button>
@@ -230,7 +236,7 @@ export default function NewListingPage() {
                 type="button"
                 onClick={() => createHost()}
                 disabled={creatingHost}
-                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
               >
                 {creatingHost ? "Creating..." : "Create host profile"}
               </Button>

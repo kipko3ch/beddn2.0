@@ -31,7 +31,7 @@ interface LocationPickerProps {
 }
 
 const selectClass =
-  "h-11 w-full rounded-md border border-input bg-white px-3 text-sm shadow-sm transition focus:border-[#800020] focus:outline-none focus:ring-2 focus:ring-[#800020]/20 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60";
+  "h-11 w-full rounded-md border border-input bg-white px-3 text-sm shadow-sm transition focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60";
 
 export function LocationPicker({
   latitude,
@@ -319,7 +319,7 @@ export function LocationPicker({
         {/* Option 1: GPS */}
         <div className="flex flex-col rounded-xl border p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-[#181113]">
-            <span className="flex size-7 items-center justify-center rounded-full bg-[#f0d9e0] text-[#800020]">
+            <span className="flex size-7 items-center justify-center rounded-full bg-[#f0d9e0] text-crimson">
               <Crosshair className="h-4 w-4" />
             </span>
             At the place right now?
@@ -331,7 +331,7 @@ export function LocationPicker({
             type="button"
             onClick={useMyLocation}
             disabled={locating}
-            className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-[#600018] disabled:opacity-60"
+            className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-merlot disabled:opacity-60"
           >
             <MapPin className="h-4 w-4" />
             {locating ? "Locating…" : "Use my location"}
@@ -342,7 +342,7 @@ export function LocationPicker({
         {/* Option 2: Landmark search */}
         <div className="flex flex-col rounded-xl border p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-[#181113]">
-            <span className="flex size-7 items-center justify-center rounded-full bg-[#f0d9e0] text-[#800020]">
+            <span className="flex size-7 items-center justify-center rounded-full bg-[#f0d9e0] text-crimson">
               <Search className="h-4 w-4" />
             </span>
             Search a landmark nearby
@@ -370,7 +370,7 @@ export function LocationPicker({
               type="button"
               onClick={searchGeocode}
               disabled={geoLoading}
-              className="shrink-0 rounded-md bg-[#800020] px-4 text-sm font-semibold text-white hover:bg-[#600018] disabled:opacity-60"
+              className="shrink-0 rounded-md bg-cranberry px-4 text-sm font-semibold text-white hover:bg-merlot disabled:opacity-60"
             >
               {geoLoading ? "…" : "Find"}
             </button>
@@ -383,7 +383,7 @@ export function LocationPicker({
       <div className="space-y-2">
         <div ref={containerRef} className="h-72 w-full overflow-hidden rounded-xl border" />
         <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#800020]" />
+          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-crimson" />
           <span>
             Drag the red pin to your exact gate or building — or tap the map to move it.
             This is what guests use to navigate, so accuracy here matters more than the

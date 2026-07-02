@@ -77,7 +77,7 @@ export default function AdminHostsPage() {
             <p className="font-semibold text-[#2b000a]">{host.name || "Unnamed host"}</p>
             <Badge className={`text-xs capitalize ${STATUS_BADGE[status] ?? "bg-muted"}`}>{status}</Badge>
             {host.is_verified && (
-              <Badge className="gap-1 bg-[#f8eef2] text-xs text-[#800020] hover:bg-[#f8eef2]">
+              <Badge className="gap-1 bg-cream/60 text-xs text-crimson hover:bg-cream/60">
                 <BadgeCheck className="h-3 w-3" /> Verified
               </Badge>
             )}

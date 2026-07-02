@@ -115,7 +115,7 @@ export default function AdminOverviewPage() {
                   </CardTitle>
                   <stat.icon
                     className={`h-4 w-4 ${
-                      stat.tone === "warning" ? "text-[#800020]" : "text-muted-foreground"
+                      stat.tone === "warning" ? "text-crimson" : "text-muted-foreground"
                     }`}
                   />
                 </CardHeader>

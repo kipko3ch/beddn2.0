@@ -65,7 +65,7 @@ export default function BookingsPage() {
     requested: "bg-amber-100 text-amber-800",
     pending_payment: "bg-yellow-100 text-yellow-800",
     paid_pending_host: "bg-amber-100 text-amber-800",
-    confirmed: "bg-rose-100 text-[#800020]",
+    confirmed: "bg-rose-100 text-crimson",
     completed: "bg-blue-100 text-blue-800",
     cancelled: "bg-red-100 text-red-800",
     rejected: "bg-red-100 text-red-800",

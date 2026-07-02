@@ -60,7 +60,7 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {TOTAL_CARDS.map(({ key, label, icon: Icon }) => (
           <div key={key} className="rounded-2xl border bg-white p-4">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-[#f8eef2] text-[#800020]">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-cream/60 text-crimson">
               <Icon className="h-4 w-4" />
             </span>
             <p className="mt-3 text-2xl font-bold text-[#2b000a]">

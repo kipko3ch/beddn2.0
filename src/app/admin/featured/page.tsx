@@ -103,7 +103,7 @@ export default function AdminFeaturedPage() {
           </p>
         </div>
         <Link href={ROUTES.adminListings}>
-          <Button className="rounded-full bg-[#800020] hover:bg-[#600018]">Feature a listing</Button>
+          <Button className="rounded-full bg-[#800020] hover:bg-merlot">Feature a listing</Button>
         </Link>
       </div>
 

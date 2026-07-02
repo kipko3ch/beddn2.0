@@ -179,7 +179,7 @@ export function AuthDialog({
                   type="button"
                   onClick={sendMagicLink}
                   disabled={working}
-                  className="font-bold text-[#800020] underline-offset-4 hover:underline disabled:opacity-60"
+                  className="font-bold text-crimson underline-offset-4 hover:underline disabled:opacity-60"
                 >
                   {working ? "Sending..." : "Send magic link again"}
                 </button>
@@ -201,7 +201,7 @@ export function AuthDialog({
                 <Button
                   type="submit"
                   disabled={working}
-                  className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+                  className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-merlot"
                 >
                   {working ? "Sending..." : "Send magic link"}
                 </Button>

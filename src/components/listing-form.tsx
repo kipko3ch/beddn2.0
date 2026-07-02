@@ -322,14 +322,14 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                 onClick={() => handleSelectCategory(value as "hourly" | "overnight")}
                 className={`min-h-36 rounded-2xl border p-4 text-left transition ${
                   selected
-                    ? "border-[#800020] bg-[#fbf7f8] shadow-sm"
+                    ? "border-crimson bg-[#fbf7f8] shadow-sm"
                     : "border-border bg-white hover:border-[#d7a9b7]"
                 }`}
                 aria-pressed={selected}
               >
                 <span
                   className={`mb-3 inline-flex size-9 items-center justify-center rounded-full ${
-                    selected ? "bg-[#800020] text-white" : "bg-muted text-[#2b000a]"
+                    selected ? "bg-crimson text-white" : "bg-muted text-[#2b000a]"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -407,7 +407,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                 aria-pressed={selected}
                 className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${
                   selected
-                    ? "border-[#800020] bg-[#fbf7f8] font-medium text-[#2b000a]"
+                    ? "border-crimson bg-[#fbf7f8] font-medium text-[#2b000a]"
                     : "border-border bg-white hover:border-[#d7a9b7]"
                 }`}
               >
@@ -415,7 +415,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   icon={p.icon}
                   width={22}
                   height={22}
-                  className={selected ? "text-[#800020]" : "text-muted-foreground"}
+                  className={selected ? "text-crimson" : "text-muted-foreground"}
                 />
                 <span className="min-w-0 flex-1 truncate">{p.label}</span>
               </button>
@@ -450,7 +450,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             />
           </div>
           {experienceTypes.length > 0 && (
-            <p className="text-xs font-medium text-[#800020]">
+            <p className="text-xs font-medium text-cranberry">
               {experienceTypes.length} selected
             </p>
           )}
@@ -479,7 +479,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                           aria-pressed={selected}
                           className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${
                             selected
-                              ? "border-[#800020] bg-[#fbf7f8] font-medium text-[#2b000a]"
+                              ? "border-crimson bg-[#fbf7f8] font-medium text-[#2b000a]"
                               : "border-border bg-white hover:border-[#d7a9b7]"
                           }`}
                         >
@@ -487,7 +487,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                             icon={it.icon}
                             width={22}
                             height={22}
-                            className={selected ? "text-[#800020]" : "text-muted-foreground"}
+                            className={selected ? "text-crimson" : "text-muted-foreground"}
                           />
                           <span className="min-w-0 flex-1 truncate">{it.label}</span>
                         </button>
@@ -596,7 +596,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
         {categories.includes("hourly") && (
           <div>
             <Label htmlFor="minimumHours">
-              Minimum hours bookable <span className="text-[#800020]">*</span>
+              Minimum hours bookable <span className="text-crimson">*</span>
             </Label>
             <Input
               id="minimumHours"
@@ -641,7 +641,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       <div className="space-y-5">
         <div>
           <div className="mb-2 flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-[#800020]" />
+            <CalendarDays className="h-4 w-4 text-crimson" />
             <p className="text-sm font-bold text-[#181113]">Usual open days</p>
           </div>
           <div className="grid grid-cols-7 gap-1.5">
@@ -889,16 +889,16 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             handleImageFiles(e.target.files);
             e.target.value = "";
           }}
-          className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-[#800020] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-[#600018] disabled:opacity-60"
+          className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-cranberry file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-merlot disabled:opacity-60"
         />
         <p className="text-xs text-muted-foreground">
           Photos are compressed to about 250&nbsp;KB in your browser before upload.
         </p>
-        <p className="rounded-lg bg-[#fbf7f8] px-3 py-2 text-xs text-[#800020]">
+        <p className="rounded-lg bg-[#fbf7f8] px-3 py-2 text-xs text-cranberry">
           Do not add phone numbers or payment details to listing photos. Guests should use Check
           Availability so your inquiries are organized and tracked.
         </p>
-        {uploading && <p className="text-xs font-medium text-[#800020]">Uploading…</p>}
+        {uploading && <p className="text-xs font-medium text-crimson">Uploading…</p>}
         {uploadError && <p className="text-xs font-medium text-red-600">{uploadError}</p>}
 
         {imageList.length > 0 ? (
@@ -919,7 +919,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   <X className="h-3.5 w-3.5" />
                 </button>
                 {i === 0 && (
-                  <span className="absolute bottom-1 left-1 rounded bg-[#800020] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  <span className="absolute bottom-1 left-1 rounded bg-crimson px-1.5 py-0.5 text-[10px] font-semibold text-white">
                     Cover
                   </span>
                 )}
@@ -1164,7 +1164,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       {/* Progress */}
       <div className="mb-6">
         <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="uppercase tracking-wide text-[#800020]">
+          <span className="uppercase tracking-wide text-cranberry">
             {listing ? "Edit listing" : "New listing"}
           </span>
           <span className="text-muted-foreground">
@@ -1224,7 +1224,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               type="button"
               onClick={next}
               disabled={!current.valid}
-              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
             >
               {current.valid ? "Continue" : "Complete this step"}
             </Button>
@@ -1233,7 +1233,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               type="button"
               onClick={() => submitListing(false)}
               disabled={submitting || savingDraft}
-              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
             >
               {submitting ? "Going live…" : listing ? "Save & go live" : "Go live"}
             </Button>

@@ -70,7 +70,7 @@ export function ListingCard({
   return (
     <Link
       href={detailHref}
-      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
+      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2"
       onMouseEnter={() => onHover?.(listing.id)}
       onMouseLeave={() => onHover?.(null)}
     >

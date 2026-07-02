@@ -48,7 +48,7 @@ function CheckoutHeader({ backHref }: { backHref?: string }) {
         {backHref && (
           <Link
             href={backHref}
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#800020] hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-bold text-crimson hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to listing
@@ -274,7 +274,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       <>
         <CheckoutHeader backHref={detailHref} />
         <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-          <UserCircle className="mb-5 h-14 w-14 text-[#800020]" />
+          <UserCircle className="mb-5 h-14 w-14 text-crimson" />
           <h1 className="text-2xl font-bold">Sign in to reserve</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             Create a free account or log in to book{" "}
@@ -285,7 +285,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <AuthDialog defaultOpen>
-              <Button className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]">
+              <Button className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-merlot">
                 Login or sign up
               </Button>
             </AuthDialog>
@@ -315,7 +315,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             contact unlock.
           </p>
           {submittedCode !== "sent" && (
-            <p className="mt-4 rounded-full bg-[#fbf7f8] px-4 py-2 text-sm font-semibold text-[#800020]">
+            <p className="mt-4 rounded-full bg-[#fbf7f8] px-4 py-2 text-sm font-semibold text-crimson">
               Ref: {submittedCode}
             </p>
           )}
@@ -328,7 +328,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             </Link>
             <Link
               href="/search"
-              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
             >
               Explore more stays
             </Link>
@@ -374,7 +374,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       <CheckoutHeader backHref={detailHref} />
       <main className="bg-[#fffdfd] px-4 pb-32 pt-6 text-[#181113] sm:px-6 lg:px-8 lg:pb-12">
         <div className="mx-auto mb-6 max-w-6xl">
-          <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">
+          <p className="text-sm font-bold uppercase tracking-wide text-cranberry">
             Reserve your spot
           </p>
           <h1 className="mt-1 font-brand text-3xl tracking-tight text-[#2b000a] sm:text-4xl">
@@ -398,7 +398,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 />
                 <span
                   className={`text-xs font-semibold ${
-                    i === step ? "text-[#800020]" : "text-muted-foreground"
+                    i === step ? "text-crimson" : "text-muted-foreground"
                   }`}
                 >
                   {s.title}
@@ -411,7 +411,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-5">
             {isOwnListing && (
-              <div className="rounded-2xl border border-[#800020] bg-[#fbf7f8] p-5 text-sm text-muted-foreground">
+              <div className="rounded-2xl border border-cranberry bg-[#fbf7f8] p-5 text-sm text-muted-foreground">
                 <p className="font-bold text-[#181113]">You are the host for this listing</p>
                 <p className="mt-1">
                   Hosts cannot reserve their own homes or experiences. Use the dashboard to
@@ -459,7 +459,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       type="date"
                       value={checkIn}
                       onChange={(e) => setCheckIn(e.target.value)}
-                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                      className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                       required
                     />
                   </div>
@@ -471,7 +471,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         type="date"
                         value={checkOut}
                         onChange={(e) => setCheckOut(e.target.value)}
-                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                         required
                       />
                     </div>
@@ -484,7 +484,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         type="time"
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
-                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                         required
                       />
                     </div>
@@ -499,7 +499,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         max="24"
                         value={duration}
                         onChange={(e) => setDuration(e.target.value)}
-                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                         required
                       />
                       {(listing.minimum_hours ?? 1) > 1 && (
@@ -519,7 +519,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         min="1"
                         value={guests}
                         onChange={(e) => setGuests(e.target.value)}
-                        className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
+                        className="h-11 border-neutral-400 pl-10 focus-visible:border-crimson"
                         required
                       />
                     </div>
@@ -534,7 +534,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         max={listing.total_units ?? 1}
                         value={units}
                         onChange={(e) => setUnits(e.target.value)}
-                        className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                        className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                         required
                       />
                     </div>
@@ -547,20 +547,20 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       onChange={(e) => setNote(e.target.value)}
                       rows={3}
                       placeholder="Arrival notes, special requests, or anything the host should know."
-                      className="mt-1 border-neutral-400 focus-visible:border-[#800020]"
+                      className="mt-1 border-neutral-400 focus-visible:border-crimson"
                     />
                   </div>
                   <div className="sm:col-span-2 rounded-2xl border bg-[#fbf7f8] p-4">
                     <label className="flex items-start gap-3">
                       <input
                         type="checkbox"
-                        className="mt-1 size-4 accent-[#800020]"
+                        className="mt-1 size-4 accent-crimson"
                         checked={wantsNegotiation}
                         onChange={(event) => setWantsNegotiation(event.target.checked)}
                       />
                       <span>
                         <span className="flex items-center gap-2 font-bold">
-                          <HandCoins className="h-4 w-4 text-[#800020]" />
+                          <HandCoins className="h-4 w-4 text-crimson" />
                           Ask for a better price
                         </span>
                         <span className="mt-1 block text-sm text-muted-foreground">
@@ -579,7 +579,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                             value={offerAmount}
                             onChange={(event) => setOfferAmount(event.target.value)}
                             placeholder={`${listing.currency || "KES"} amount`}
-                            className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                            className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                           />
                         </div>
                         <div>
@@ -589,7 +589,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                             value={negotiationMessage}
                             onChange={(event) => setNegotiationMessage(event.target.value)}
                             placeholder="Example: staying 5 nights, can we agree a better rate?"
-                            className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                            className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                           />
                         </div>
                       </div>
@@ -614,7 +614,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       id="firstName"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                      className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                       required
                     />
                   </div>
@@ -624,7 +624,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       id="lastName"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="mt-1 h-11 border-neutral-400 focus-visible:border-[#800020]"
+                      className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                       required
                     />
                   </div>
@@ -638,7 +638,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+254..."
-                        className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
+                        className="h-11 border-neutral-400 pl-10 focus-visible:border-crimson"
                         required
                       />
                     </div>
@@ -653,7 +653,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="For your payment receipt"
-                        className="h-11 border-neutral-400 pl-10 focus-visible:border-[#800020]"
+                        className="h-11 border-neutral-400 pl-10 focus-visible:border-crimson"
                       />
                     </div>
                   </div>
@@ -718,7 +718,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       {reviews.length > 0 ? (
                         <>
                           <span>{avgRating.toFixed(1)}</span>
-                          <Star className="h-4 w-4 fill-[#800020] text-[#800020]" />
+                          <Star className="h-4 w-4 fill-crimson text-crimson" />
                           <span className="text-muted-foreground">({reviews.length})</span>
                         </>
                       ) : (
@@ -745,14 +745,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
                 <div className="space-y-4 text-sm">
                   <div className="flex gap-3">
-                    <TicketCheck className="mt-0.5 h-4 w-4 text-[#800020]" />
+                    <TicketCheck className="mt-0.5 h-4 w-4 text-crimson" />
                     <div>
                       <p className="font-medium">{bookingTypeLabel()}</p>
                       <p className="capitalize text-muted-foreground">{category}</p>
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <CalendarDays className="mt-0.5 h-4 w-4 text-[#800020]" />
+                    <CalendarDays className="mt-0.5 h-4 w-4 text-crimson" />
                     <div>
                       <p className="font-medium">{bookingDateLabel()}</p>
                       <p className="text-muted-foreground">
@@ -762,7 +762,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <ShieldCheck className="mt-0.5 h-4 w-4 text-[#800020]" />
+                    <ShieldCheck className="mt-0.5 h-4 w-4 text-crimson" />
                     <p className="text-muted-foreground">
                       Host contact and exact address unlock only after confirmation.
                     </p>
@@ -818,7 +818,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               type="button"
               onClick={next}
               disabled={!steps[step].valid}
-              className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
+              className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-merlot"
             >
               Continue
             </Button>
@@ -827,7 +827,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               type="button"
               onClick={pay}
               disabled={submitting || isOwnListing || !stepOneValid || !stepTwoValid}
-              className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
+              className="h-11 rounded-full bg-[#800020] px-6 font-bold hover:bg-merlot"
             >
               <TicketCheck className="mr-1 h-4 w-4" />
               {submitting ? "Sending…" : "Send booking request"}

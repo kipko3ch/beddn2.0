@@ -235,7 +235,7 @@ export function ExperienceContent({
       <div className="mb-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#800020] hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-bold text-crimson hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to experiences
@@ -246,7 +246,7 @@ export function ExperienceContent({
       <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-[#800020] text-white hover:bg-merlot flex items-center gap-1.5 py-1 px-4 rounded-full font-bold text-xs uppercase tracking-wide">
+            <Badge className="bg-crimson text-white hover:bg-merlot flex items-center gap-1.5 py-1 px-4 rounded-full font-bold text-xs uppercase tracking-wide">
               <Compass className="h-3.5 w-3.5" /> Experience
             </Badge>
             {listing.experience_types?.slice(0, 3).map((type) => (
@@ -259,7 +259,7 @@ export function ExperienceContent({
             {listing.title || listing.name}
           </h1>
           <p className="flex items-center gap-2 text-sm font-semibold text-zinc-500">
-            <MapPin className="h-4 w-4 text-[#800020]" />
+            <MapPin className="h-4 w-4 text-crimson" />
             {listing.area}, {listing.city}, {listing.country}
           </p>
         </div>
@@ -278,7 +278,7 @@ export function ExperienceContent({
             onClick={() => toggle(listing.id)}
             className="rounded-full border-cream text-merlot hover:bg-cream h-11 px-6 font-semibold"
           >
-            <Heart className={`mr-2 h-4 w-4 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
+            <Heart className={`mr-2 h-4 w-4 ${isSaved ? "fill-crimson text-crimson" : ""}`} />
             {isSaved ? "Saved" : "Save"}
           </Button>
         </div>
@@ -311,29 +311,29 @@ export function ExperienceContent({
         <div className="space-y-12">
           {/* Highlights Row */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-2xl border border-cream bg-cream/20 p-5 text-center transition hover:bg-cream/30">
-              <Clock className="mx-auto h-7 w-7 text-[#800020] mb-1.5" />
+            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+              <Clock className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Duration</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5">
                 {listing.experience_duration || "3 hours"}
               </p>
             </div>
-            <div className="rounded-2xl border border-cream bg-cream/20 p-5 text-center transition hover:bg-cream/30">
-              <Users className="mx-auto h-7 w-7 text-[#800020] mb-1.5" />
+            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+              <Users className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Group size</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5">
                 Up to {listing.experience_group_size || 10} guests
               </p>
             </div>
-            <div className="rounded-2xl border border-cream bg-cream/20 p-5 text-center transition hover:bg-cream/30">
-              <Compass className="mx-auto h-7 w-7 text-[#800020] mb-1.5" />
+            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+              <Compass className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Activity</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5 truncate capitalize">
                 {listing.experience_types?.[0] || "Guided tour"}
               </p>
             </div>
-            <div className="rounded-2xl border border-cream bg-cream/20 p-5 text-center transition hover:bg-cream/30">
-              <Star className="mx-auto h-7 w-7 text-[#800020] mb-1.5" />
+            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+              <Star className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Rating</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5">
                 {reviews.length > 0 ? avgRating.toFixed(1) : "New"}
@@ -356,7 +356,7 @@ export function ExperienceContent({
             <>
               <Separator className="bg-cream/60" />
               <div className="rounded-2xl border border-cream bg-cream/20 p-6 space-y-3">
-                <h3 className="text-sm font-bold text-[#800020] flex items-center gap-2 uppercase tracking-wide">
+                <h3 className="text-sm font-bold text-cranberry flex items-center gap-2 uppercase tracking-wide">
                   <AlertCircle className="h-5 w-5" /> Guest Requirements
                 </h3>
                 <p className="text-sm text-merlot leading-relaxed whitespace-pre-line font-semibold text-[15px]">
@@ -385,7 +385,7 @@ export function ExperienceContent({
           <div className="space-y-4">
             <h2 className="text-2xl font-extrabold text-[#2b000a]">Where we will meet</h2>
             <p className="text-sm font-semibold text-zinc-600">
-              Meeting point: <span className="text-[#800020]">{listing.experience_meeting_point || "Shared upon booking"}</span>
+              Meeting point: <span className="text-crimson">{listing.experience_meeting_point || "Shared upon booking"}</span>
             </p>
             <div className="h-[320px] overflow-hidden rounded-3xl border border-cream shadow-inner mt-4">
               <Map
@@ -411,16 +411,16 @@ export function ExperienceContent({
                   className="object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-cream text-2xl font-bold text-[#800020]">
+                <div className="flex h-full w-full items-center justify-center bg-cream text-2xl font-bold text-crimson">
                   {listing.host?.name?.charAt(0) || "?"}
                 </div>
               )}
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-[#800020] uppercase tracking-wider flex items-center gap-1">
+              <p className="text-xs font-semibold text-cranberry uppercase tracking-wider flex items-center gap-1">
                 Your Host & Guide
                 {listing.host?.is_verified && (
-                  <BadgeCheck className="h-4 w-4 text-[#800020]" />
+                  <BadgeCheck className="h-4 w-4 text-crimson" />
                 )}
               </p>
               <h4 className="text-lg font-extrabold text-[#2b000a]">
@@ -480,7 +480,7 @@ export function ExperienceContent({
               </label>
               {slotsForSelectedDate.length > 0 ? (
                 <Select value={selectedSlotId} onValueChange={(val) => setSelectedSlotId(val || "")}>
-                  <SelectTrigger className="border-cream rounded-xl h-12 bg-zinc-50 font-semibold text-[#2b000a] focus:ring-1 focus:ring-[#800020]">
+                  <SelectTrigger className="border-cream rounded-xl h-12 bg-zinc-50 font-semibold text-[#2b000a] focus:ring-1 focus:ring-crimson">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -498,7 +498,7 @@ export function ExperienceContent({
                 </Select>
               ) : (
                 <Select value={selectedStandardTime} onValueChange={(val) => setSelectedStandardTime(val || "")}>
-                  <SelectTrigger className="border-cream rounded-xl h-12 bg-zinc-50 font-semibold text-[#2b000a] focus:ring-1 focus:ring-[#800020]">
+                  <SelectTrigger className="border-cream rounded-xl h-12 bg-zinc-50 font-semibold text-[#2b000a] focus:ring-1 focus:ring-crimson">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -518,7 +518,7 @@ export function ExperienceContent({
                 Tickets / Seats
               </label>
               <Select value={guests} onValueChange={(val) => setGuests(val || "1")}>
-                <SelectTrigger className="border-cream rounded-xl h-12 bg-zinc-50 font-semibold text-[#2b000a] focus:ring-1 focus:ring-[#800020]">
+                <SelectTrigger className="border-cream rounded-xl h-12 bg-zinc-50 font-semibold text-[#2b000a] focus:ring-1 focus:ring-crimson">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

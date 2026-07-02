@@ -288,7 +288,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Guided Nairobi Street Food Crawl"
-          className="mt-2 h-12 text-base border-cream focus:border-[#800020]"
+          className="mt-2 h-12 text-base border-cream focus:border-crimson"
         />
       </div>
     ),
@@ -308,7 +308,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             value={experienceSearch}
             onChange={(e) => setExperienceSearch(e.target.value)}
             placeholder="Search activities (e.g. food, safari, photography)"
-            className="pl-9 border-cream focus:border-[#800020]"
+            className="pl-9 border-cream focus:border-crimson"
           />
         </div>
         <div className="space-y-4 max-h-[45vh] overflow-y-auto pr-1">
@@ -336,7 +336,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                         className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition ${
                           selected
                             ? "border-[#800020] bg-cream font-medium text-[#2b000a]"
-                            : "border-cream bg-white hover:border-[#e8547b]"
+                            : "border-cream bg-white hover:border-crimson"
                         }`}
                       >
                         <AmenityIcon
@@ -411,7 +411,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             min="1"
             value={experienceGroupSize}
             onChange={(e) => setExperienceGroupSize(e.target.value)}
-            className="mt-2 h-12 text-base border-cream focus:border-[#800020]"
+            className="mt-2 h-12 text-base border-cream focus:border-crimson"
           />
         </div>
         <div>
@@ -422,7 +422,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             onChange={(e) => setExperienceRequirements(e.target.value)}
             rows={4}
             placeholder="e.g. Minimum age 18+. Moderate walking is required. Bring rain jackets."
-            className="mt-2 border-cream focus:border-[#800020]"
+            className="mt-2 border-cream focus:border-crimson"
           />
         </div>
       </div>
@@ -468,7 +468,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             onChange={(e) => setExperienceMeetingPoint(e.target.value)}
             rows={3}
             placeholder="e.g. Meet in front of the main entrance fountain next to the security desk."
-            className="border-cream focus:border-[#800020]"
+            className="border-cream focus:border-crimson"
           />
         </div>
       </div>
@@ -483,7 +483,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
     content: (
       <div className="space-y-4">
         <div className="rounded-2xl border-2 border-dashed border-cream bg-cream/20 p-8 text-center">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-cream text-[#800020]">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-cream text-crimson">
             <Compass className="h-6 w-6" />
           </div>
           <p className="mt-3 text-sm font-semibold text-[#2b000a]">Upload photos from your device</p>
@@ -501,7 +501,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             type="button"
             disabled={uploading}
             onClick={() => document.getElementById("experience-photo-upload")?.click()}
-            className="mt-4 rounded-full bg-[#800020] hover:bg-merlot"
+            className="mt-4 rounded-full bg-cranberry hover:bg-merlot"
           >
             {uploading ? "Uploading..." : "Select Files"}
           </Button>
@@ -562,11 +562,11 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               step="0.01"
               value={experiencePrice}
               onChange={(e) => setExperiencePrice(e.target.value)}
-              className="pl-14 h-12 text-base border-cream focus:border-[#800020]"
+              className="pl-14 h-12 text-base border-cream focus:border-crimson"
             />
           </div>
           {usdHint(experiencePrice) && (
-            <p className="mt-1 text-xs text-muted-foreground font-medium text-[#800020]">
+            <p className="mt-1 text-xs text-muted-foreground font-medium text-cranberry">
               {usdHint(experiencePrice)}
             </p>
           )}
@@ -589,7 +589,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
           onChange={(e) => setDescription(e.target.value)}
           rows={7}
           placeholder="E.g. We will start the experience by gathering at the meeting point. From there, we will take a guided walking tour..."
-          className="border-cream focus:border-[#800020]"
+          className="border-cream focus:border-crimson"
         />
         <p className="text-xs text-muted-foreground leading-normal">
           Keep it friendly, write about unique perspectives or access they'll get.
@@ -613,7 +613,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
             onChange={(e) => setHouseRules(e.target.value)}
             rows={5}
             placeholder="e.g. Please bring sunscreen, a water bottle, and a camera. No pets are allowed on this trail."
-            className="border-cream focus:border-[#800020]"
+            className="border-cream focus:border-crimson"
           />
         </div>
       </div>
@@ -640,7 +640,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                   className={`h-10 rounded-xl border text-xs font-bold transition ${
                     selected
                       ? "border-[#800020] bg-[#800020] text-white"
-                      : "border-cream bg-white text-merlot hover:border-[#e8547b]"
+                      : "border-cream bg-white text-merlot hover:border-crimson"
                   }`}
                 >
                   {day.label}
@@ -662,7 +662,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               type="button"
               variant="outline"
               onClick={addDateSlot}
-              className="h-10 rounded-full bg-white border-cream text-[#800020]"
+              className="h-10 rounded-full bg-white border-cream text-crimson"
             >
               <Plus className="mr-1 h-4 w-4" /> Add Date
             </Button>
@@ -773,7 +773,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
       {/* Progress */}
       <div className="mb-6">
         <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="uppercase tracking-wide text-[#800020] flex items-center gap-1">
+          <span className="uppercase tracking-wide text-cranberry flex items-center gap-1">
             <Compass className="h-3.5 w-3.5" />
             {listing ? "Edit Experience" : "New Experience Listing"}
           </span>
@@ -805,11 +805,11 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
       <div className="flex flex-1 items-center py-4 sm:min-h-[50vh]">
         <div className="w-full rounded-2xl border bg-white p-5 shadow-sm sm:p-8 border-cream">
           <h2 className="text-2xl font-bold text-[#2b000a] flex items-center gap-2">
-            {step === 0 && <Compass className="h-6 w-6 text-[#800020]" />}
-            {step === 2 && <Clock className="h-6 w-6 text-[#800020]" />}
-            {step === 3 && <Users className="h-6 w-6 text-[#800020]" />}
-            {step === 4 && <MapPin className="h-6 w-6 text-[#800020]" />}
-            {step === 6 && <DollarSign className="h-6 w-6 text-[#800020]" />}
+            {step === 0 && <Compass className="h-6 w-6 text-crimson" />}
+            {step === 2 && <Clock className="h-6 w-6 text-crimson" />}
+            {step === 3 && <Users className="h-6 w-6 text-crimson" />}
+            {step === 4 && <MapPin className="h-6 w-6 text-crimson" />}
+            {step === 6 && <DollarSign className="h-6 w-6 text-crimson" />}
             {current.title}
           </h2>
           {current.subtitle && (

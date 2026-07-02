@@ -81,7 +81,7 @@ export default function AdminCurrencyPage() {
             manual average yourself.
           </p>
         </div>
-        <Button onClick={refresh} disabled={refreshing} className="gap-2 rounded-full bg-[#800020] hover:bg-[#600018]">
+        <Button onClick={refresh} disabled={refreshing} className="gap-2 rounded-full bg-[#800020] hover:bg-merlot">
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
           {refreshing ? "Refreshing…" : "Refresh live rates"}
         </Button>

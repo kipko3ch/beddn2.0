@@ -1,7 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendAdminSms, sendSms } from "@/lib/notifications/server";
+import { sendEmail } from "@/lib/email/server";
+import { bookingConfirmedEmail, bookingRejectedEmail } from "@/lib/email/templates";
 import { listingTitle } from "@/lib/bookings/shared";
 import type { BookingStatus, Listing, ListingCategory } from "@/lib/types";
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://beddn.com").replace(/\/$/, "");
 
 interface DbHost {
   id: string;
@@ -349,6 +353,20 @@ export async function confirmBooking(bookingId: string, acceptedBy: string) {
       message: `Beddn booking ${code} for ${title} is confirmed. Guest: ${booking.guest_name}, ${booking.guest_phone}.`,
     }),
     sendAdminSms(`Beddn booking confirmed: ${title} (${code}).`, bookingId),
+    ...(booking.guest_email
+      ? [
+          sendEmail({
+            to: booking.guest_email,
+            eventType: "booking_confirmed",
+            ...bookingConfirmedEmail({
+              guestName: booking.guest_name,
+              listingName: title,
+              bookingCode: code,
+              bookingUrl: `${SITE_URL}/booking/${code}`,
+            }),
+          }),
+        ]
+      : []),
   ]);
 
   return { booking: { ...booking, status: "confirmed" as BookingStatus }, status: "confirmed" };
@@ -373,6 +391,19 @@ export async function rejectBooking(bookingId: string) {
       `Host rejected booking ${bookingCode(booking)} for ${listingTitle(listing)}. Manual resolution needed.`,
       bookingId
     ),
+    ...(booking.guest_email
+      ? [
+          sendEmail({
+            to: booking.guest_email,
+            eventType: "booking_rejected",
+            ...bookingRejectedEmail({
+              guestName: booking.guest_name,
+              listingName: listingTitle(listing),
+              bookingCode: bookingCode(booking),
+            }),
+          }),
+        ]
+      : []),
   ]);
 
   return { booking: { ...booking, status: "rejected" as BookingStatus }, status: "rejected" };

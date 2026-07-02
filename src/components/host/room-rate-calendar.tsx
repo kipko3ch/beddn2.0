@@ -125,7 +125,7 @@ export function RoomRateCalendar({
     <section className="rounded-2xl border bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icon icon="line-md:calendar" className="h-5 w-5 text-[#800020]" />
+          <Icon icon="line-md:calendar" className="h-5 w-5 text-crimson" />
           <h2 className="font-bold">Rooms &amp; rates</h2>
         </div>
         <div className="flex items-center gap-1">
@@ -181,7 +181,7 @@ export function RoomRateCalendar({
                   ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                   : open <= 0
                   ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-[#eadfe3] bg-white hover:border-[#800020]"
+                  : "border-[#eadfe3] bg-white hover:border-crimson"
               } ${selected === date ? "ring-2 ring-[#800020]" : ""}`}
             >
               <span className="font-bold">{dayNum}</span>
@@ -227,7 +227,7 @@ export function RoomRateCalendar({
           <label className="mb-3 flex items-center gap-2 text-sm font-medium">
             <input
               type="checkbox"
-              className="size-4 accent-[#800020]"
+              className="size-4 accent-crimson"
               checked={blocked}
               onChange={(e) => setBlocked(e.target.checked)}
             />
@@ -282,7 +282,7 @@ export function RoomRateCalendar({
             <Button
               onClick={save}
               disabled={saving}
-              className="rounded-full bg-[#800020] hover:bg-[#600018]"
+              className="rounded-full bg-[#800020] hover:bg-merlot"
             >
               {saving ? "Saving…" : "Save"}
             </Button>

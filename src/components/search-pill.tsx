@@ -429,7 +429,7 @@ export function SearchPill({
           <button
             type="submit"
             aria-label="Search"
-            className="my-1.5 flex size-12 shrink-0 items-center justify-center rounded-full bg-[#800020] text-white transition-colors hover:bg-[#600018]"
+            className="my-1.5 flex size-12 shrink-0 items-center justify-center rounded-full bg-[#800020] text-white transition-colors hover:bg-merlot"
           >
             <Search className="h-5 w-5" />
           </button>

@@ -122,7 +122,7 @@ export default function HostRequestsPage() {
         <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">Requests</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Confirm or decline booking requests. Confirming locks the dates on your{" "}
-          <Link href={ROUTES.dashboardCalendar} className="font-semibold text-[#800020] underline-offset-2 hover:underline">
+          <Link href={ROUTES.dashboardCalendar} className="font-semibold text-crimson underline-offset-2 hover:underline">
             calendar
           </Link>{" "}
           and shares your contact with the guest.

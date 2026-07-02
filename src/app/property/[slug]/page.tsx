@@ -118,7 +118,7 @@ export default async function PropertyPage({
     <>
       <Header />
       {isPreview && !listingData.is_active && (
-        <div className="bg-[#800020] px-4 py-2 text-center text-sm font-medium text-white">
+        <div className="bg-cranberry px-4 py-2 text-center text-sm font-medium text-white">
           Preview — this is how your listing will look. It is not live to guests yet.
         </div>
       )}

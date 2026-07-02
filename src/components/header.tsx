@@ -54,11 +54,11 @@ function MenuTrigger({
         ref={ref}
         type="button"
         aria-label="Open menu"
-        className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
+        className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2"
       >
         <Avatar className="size-9 cursor-pointer">
           <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
-          <AvatarFallback className="bg-[#f8eef2] font-semibold text-[#800020]">
+          <AvatarFallback className="bg-cream/60 font-semibold text-crimson">
             {getInitials(user)}
           </AvatarFallback>
         </Avatar>
@@ -71,7 +71,7 @@ function MenuTrigger({
       ref={ref}
       type="button"
       aria-label="Open menu"
-      className="inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
+      className="inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-crimson"
     >
       <Icon icon="line-md:menu" className="h-5 w-5" />
     </button>
@@ -169,7 +169,7 @@ function NavSheet({
             Privacy
           </SheetClose>
           {user && (
-            <button onClick={onSignOut} className={`${item} w-full text-left text-[#800020]`}>
+            <button onClick={onSignOut} className={`${item} w-full text-left text-cranberry`}>
               <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
             </button>
           )}
@@ -202,10 +202,10 @@ export function Header() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <Link href={ROUTES.search} className="px-3 text-sm font-medium text-[#2b000a] hover:text-[#800020]">
+            <Link href={ROUTES.search} className="px-3 text-sm font-medium text-[#2b000a] hover:text-crimson">
               Discover
             </Link>
-            <Link href={ROUTES.review} className="px-3 text-sm font-medium text-[#2b000a] hover:text-[#800020]">
+            <Link href={ROUTES.review} className="px-3 text-sm font-medium text-[#2b000a] hover:text-crimson">
               Review
             </Link>
             {!user && (

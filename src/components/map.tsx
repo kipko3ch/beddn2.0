@@ -94,12 +94,12 @@ export function Map({
         // instead of an exact pin — the precise spot unlocks after booking.
         el.style.cssText = `
           width: 110px; height: 110px; border-radius: 50%;
-          background: rgba(128,0,32,0.18); border: 2px solid rgba(128,0,32,0.45);
+          background: rgba(232,84,123,0.18); border: 2px solid rgba(232,84,123,0.45);
           display: flex; align-items: center; justify-content: center;
         `;
         const dot = document.createElement("div");
         dot.style.cssText =
-          "width: 14px; height: 14px; border-radius: 50%; background: #800020; border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);";
+          "width: 14px; height: 14px; border-radius: 50%; background: #e8547b; border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);";
         el.appendChild(dot);
       } else {
         const price =

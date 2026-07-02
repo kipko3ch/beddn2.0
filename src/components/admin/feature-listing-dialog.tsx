@@ -41,7 +41,7 @@ function isoDate(offsetDays: number) {
 }
 
 const fieldClass =
-  "h-11 w-full rounded-lg border border-input bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#800020]";
+  "h-11 w-full rounded-lg border border-input bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-crimson";
 
 /**
  * Admin modal for featuring a listing. Posts a feature_listing action; the API
@@ -202,7 +202,7 @@ export function FeatureListingDialog({
           <Button
             onClick={save}
             disabled={working}
-            className="rounded-full bg-[#800020] hover:bg-[#600018]"
+            className="rounded-full bg-[#800020] hover:bg-merlot"
           >
             {working ? "Saving…" : "Save placement"}
           </Button>

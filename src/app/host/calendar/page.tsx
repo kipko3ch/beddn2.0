@@ -246,9 +246,9 @@ export default function CalendarPage() {
       <form onSubmit={blockSlot} className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           {isExperience ? (
-            <Icon icon="line-md:star" className="h-5 w-5 text-[#800020]" />
+            <Icon icon="line-md:star" className="h-5 w-5 text-crimson" />
           ) : (
-            <Icon icon="line-md:calendar" className="h-5 w-5 text-[#800020]" />
+            <Icon icon="line-md:calendar" className="h-5 w-5 text-crimson" />
           )}
           <h2 className="font-bold">
             {isExperience ? "Block an experience session" : "Block a stay slot"}
@@ -295,7 +295,7 @@ export default function CalendarPage() {
             <Label>{isExperience ? "Session end" : "End"}</Label>
             <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
           </div>
-          <Button type="submit" className="bg-[#800020] hover:bg-[#600018]">
+          <Button type="submit" className="bg-[#800020] hover:bg-merlot">
             {isExperience ? "Block session" : "Block slot"}
           </Button>
         </div>
@@ -304,7 +304,7 @@ export default function CalendarPage() {
       {/* iCal sync with other platforms */}
       <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-1 flex items-center gap-2">
-          <Icon icon="line-md:loading-twotone-loop" className="h-5 w-5 text-[#800020]" />
+          <Icon icon="line-md:loading-twotone-loop" className="h-5 w-5 text-crimson" />
           <h2 className="font-bold">Sync with Airbnb, Booking.com & others (iCal)</h2>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
@@ -353,12 +353,12 @@ export default function CalendarPage() {
                 type="button"
                 disabled={!listingId || !importUrl.trim() || syncing}
                 onClick={runImport}
-                className="bg-[#800020] hover:bg-[#600018]"
+                className="bg-[#800020] hover:bg-merlot"
               >
                 {syncing ? "Syncing…" : "Sync now"}
               </Button>
             </div>
-            {syncResult && <p className="mt-2 text-xs font-medium text-[#800020]">{syncResult}</p>}
+            {syncResult && <p className="mt-2 text-xs font-medium text-cranberry">{syncResult}</p>}
           </div>
         </div>
       </section>
@@ -366,7 +366,7 @@ export default function CalendarPage() {
       {/* Demand calendar — organized inquiry demand, not random messages. */}
       <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-1 flex items-center gap-2">
-          <Icon icon="line-md:search" className="h-5 w-5 text-[#800020]" />
+          <Icon icon="line-md:search" className="h-5 w-5 text-crimson" />
           <h2 className="font-bold">Demand calendar</h2>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
@@ -394,7 +394,7 @@ export default function CalendarPage() {
                     }}
                   >
                     <span className="font-semibold text-[#2b000a]">{date}</span>
-                    <span className="rounded-full bg-[#800020] px-1.5 text-xs font-bold text-white">
+                    <span className="rounded-full bg-crimson px-1.5 text-xs font-bold text-white">
                       {count}
                     </span>
                   </span>
@@ -454,7 +454,7 @@ export default function CalendarPage() {
                     <Badge variant="secondary" className="rounded-full capitalize">
                       {booking.category}
                     </Badge>
-                    <Badge className="rounded-full bg-[#f8eef2] text-[#800020] hover:bg-[#f8eef2]">
+                    <Badge className="rounded-full bg-[#f8eef2] text-crimson hover:bg-[#f8eef2]">
                       {booking.status.replaceAll("_", " ")}
                     </Badge>
                   </div>

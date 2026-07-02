@@ -130,7 +130,7 @@ export default function HostProfilePage() {
               <Image src={avatarUrl} alt="" fill sizes="80px" className="object-cover" />
             ) : (
               <span className="flex h-full w-full items-center justify-center">
-                <Icon icon="line-md:account" className="h-9 w-9 text-[#800020]" />
+                <Icon icon="line-md:account" className="h-9 w-9 text-crimson" />
               </span>
             )}
           </div>
@@ -155,7 +155,7 @@ export default function HostProfilePage() {
               <button
                 type="button"
                 onClick={() => setAvatarUrl(null)}
-                className="ml-3 text-sm text-muted-foreground underline hover:text-[#800020]"
+                className="ml-3 text-sm text-muted-foreground underline hover:text-crimson"
               >
                 Remove
               </button>
@@ -221,7 +221,7 @@ export default function HostProfilePage() {
         <Button
           type="submit"
           disabled={saving || uploading}
-          className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+          className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-merlot"
         >
           {saving ? "Saving…" : "Save profile"}
         </Button>
@@ -229,7 +229,7 @@ export default function HostProfilePage() {
 
       <div className="mt-6 rounded-2xl border bg-white p-5 shadow-sm sm:p-6">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f8eef2] text-[#800020]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f8eef2] text-crimson">
             <Icon icon="line-md:lock" className="h-5 w-5" />
           </span>
           <div>
@@ -270,7 +270,7 @@ export default function HostProfilePage() {
               <Button
                 type="submit"
                 disabled={pinBusy || currentPin.length !== 4}
-                className="rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+                className="rounded-full bg-[#800020] font-bold hover:bg-merlot"
               >
                 {pinBusy ? "Checking…" : "Reset PIN"}
               </Button>

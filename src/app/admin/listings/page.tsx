@@ -183,7 +183,7 @@ export default function AdminListingsPage() {
                         {isPublic ? "Visible to public" : "Hidden from public"}
                       </span>
                       {listing.is_verified && (
-                        <span className="rounded-full bg-[#f8eef2] px-2.5 py-0.5 text-xs font-semibold text-[#800020]">
+                        <span className="rounded-full bg-cream/60 px-2.5 py-0.5 text-xs font-semibold text-crimson">
                           Verified badge
                         </span>
                       )}
@@ -234,7 +234,7 @@ export default function AdminListingsPage() {
 
                     {status === "paused" && (
                       <>
-                        <Button size="sm" className="bg-[#800020] hover:bg-[#600018]" disabled={busy} onClick={() => act("resume_listing", listing.id)}>
+                        <Button size="sm" className="bg-[#800020] hover:bg-merlot" disabled={busy} onClick={() => act("resume_listing", listing.id)}>
                           Resume listing
                         </Button>
                         <EditButton id={listing.id} />
@@ -247,7 +247,7 @@ export default function AdminListingsPage() {
 
                     {(status === "pending_review" || status === "draft") && (
                       <>
-                        <Button size="sm" className="bg-[#800020] hover:bg-[#600018]" disabled={busy} onClick={() => act("approve_listing", listing.id)}>
+                        <Button size="sm" className="bg-[#800020] hover:bg-merlot" disabled={busy} onClick={() => act("approve_listing", listing.id)}>
                           Approve
                         </Button>
                         <RejectButton onReject={(reason) => act("reject_listing", listing.id, reason)} disabled={busy} />
@@ -257,7 +257,7 @@ export default function AdminListingsPage() {
 
                     {status === "rejected" && (
                       <>
-                        <Button size="sm" className="bg-[#800020] hover:bg-[#600018]" disabled={busy} onClick={() => act("approve_listing", listing.id)}>
+                        <Button size="sm" className="bg-[#800020] hover:bg-merlot" disabled={busy} onClick={() => act("approve_listing", listing.id)}>
                           Approve
                         </Button>
                         <RejectButton
@@ -273,7 +273,7 @@ export default function AdminListingsPage() {
                     )}
 
                     {status === "archived" && (
-                      <Button size="sm" className="bg-[#800020] hover:bg-[#600018]" disabled={busy} onClick={() => act("restore_listing", listing.id)}>
+                      <Button size="sm" className="bg-[#800020] hover:bg-merlot" disabled={busy} onClick={() => act("restore_listing", listing.id)}>
                         Restore
                       </Button>
                     )}

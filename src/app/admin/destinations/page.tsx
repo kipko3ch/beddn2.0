@@ -126,7 +126,7 @@ export default function AdminDestinationsPage() {
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
-            className="relative flex h-24 w-full items-center justify-center overflow-hidden rounded-xl border border-dashed bg-muted/40 text-muted-foreground hover:border-[#800020]"
+            className="relative flex h-24 w-full items-center justify-center overflow-hidden rounded-xl border border-dashed bg-muted/40 text-muted-foreground hover:border-crimson"
           >
             {uploading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -154,7 +154,7 @@ export default function AdminDestinationsPage() {
         <Button
           type="submit"
           disabled={saving || uploading}
-          className="h-10 rounded-full bg-[#800020] px-6 font-semibold hover:bg-[#600018]"
+          className="h-10 rounded-full bg-[#800020] px-6 font-semibold hover:bg-merlot"
         >
           {saving ? "Saving…" : "Add"}
         </Button>

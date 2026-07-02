@@ -131,7 +131,7 @@ export default function AdminUserDetailPage() {
           {profile.phone && <p className="text-sm text-muted-foreground">{profile.phone}</p>}
           <div className="mt-2 flex flex-wrap gap-1">
             {profile.is_admin && (
-              <Badge className="rounded-full bg-[#800020] hover:bg-[#800020]">
+              <Badge className="rounded-full bg-crimson hover:bg-crimson">
                 <ShieldCheck className="mr-1 h-3 w-3" /> Admin
               </Badge>
             )}
@@ -196,7 +196,7 @@ export default function AdminUserDetailPage() {
                     </span>
                     <span className="flex gap-1">
                       {l.is_active && <Badge variant="secondary" className="rounded-full">Active</Badge>}
-                      {l.is_verified && <Badge className="rounded-full bg-[#800020] hover:bg-[#800020]">Verified</Badge>}
+                      {l.is_verified && <Badge className="rounded-full bg-crimson hover:bg-crimson">Verified</Badge>}
                     </span>
                   </li>
                 ))}

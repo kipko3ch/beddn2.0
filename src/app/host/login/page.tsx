@@ -114,7 +114,7 @@ export default function HostLoginPage() {
       </header>
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12">
-        <span className="mb-6 inline-flex w-fit rounded-full bg-[#f8eef2] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#800020]">
+        <span className="mb-6 inline-flex w-fit rounded-full bg-[#f8eef2] px-3 py-1 text-xs font-bold uppercase tracking-widest text-crimson">
           Host
         </span>
         <h1 className="font-brand text-4xl leading-tight text-[#2b000a]">Welcome back, host.</h1>
@@ -156,7 +156,7 @@ export default function HostLoginPage() {
                 type="button"
                 onClick={sendMagicLink}
                 disabled={working}
-                className="font-bold text-[#800020] underline-offset-4 hover:underline disabled:opacity-60"
+                className="font-bold text-crimson underline-offset-4 hover:underline disabled:opacity-60"
               >
                 {working ? "Sending..." : "Send magic link again"}
               </button>
@@ -178,7 +178,7 @@ export default function HostLoginPage() {
               <Button
                 type="submit"
                 disabled={working}
-                className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-[#600018]"
+                className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-merlot"
               >
                 {working ? "Sending..." : "Send magic link"}
               </Button>

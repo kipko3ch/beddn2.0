@@ -136,7 +136,7 @@ export function HostShell({
           <Link
             href={ROUTES.adminHome}
             onClick={onNavigate}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#800020] hover:bg-[#faf4f6]"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-cranberry hover:bg-[#faf4f6]"
           >
             <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
           </Link>
@@ -155,13 +155,13 @@ export function HostShell({
         <Icon icon="line-md:search" className="h-4 w-4 text-[#a08b92]" /> Switch to traveler
       </Link>
       <div className="mt-2 flex items-center gap-3 rounded-xl bg-[#faf4f6] px-3 py-2.5">
-        <Icon icon="line-md:account" className="h-8 w-8 shrink-0 text-[#800020]" />
+        <Icon icon="line-md:account" className="h-8 w-8 shrink-0 text-crimson" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold text-[#2b000a]">{email}</p>
           <button
             type="button"
             onClick={signOut}
-            className="flex items-center gap-1 text-xs text-[#800020] hover:underline"
+            className="flex items-center gap-1 text-xs text-crimson hover:underline"
           >
             <Icon icon="line-md:log-out" className="h-3 w-3" /> Sign out
           </button>
@@ -178,7 +178,7 @@ export function HostShell({
           <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
             Beddn
           </Link>
-          <span className="rounded-full bg-[#f8eef2] px-2 py-0.5 text-[11px] font-bold text-[#800020]">
+          <span className="rounded-full bg-[#f8eef2] px-2 py-0.5 text-[11px] font-bold text-crimson">
             Host
           </span>
         </div>
@@ -222,14 +222,14 @@ export function HostShell({
             <div className="flex items-center gap-2">
               <Link
                 href={ROUTES.newListing}
-                className="hidden items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-[#600018] sm:inline-flex"
+                className="hidden items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-merlot sm:inline-flex"
               >
                 <Icon icon="line-md:plus" className="h-4 w-4" /> New listing
               </Link>
               {isAdmin && (
                 <Link
                   href={ROUTES.adminHome}
-                  className="hidden items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-2 text-sm font-semibold text-[#800020] hover:bg-[#f1e1e7] sm:inline-flex"
+                  className="hidden items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-2 text-sm font-semibold text-crimson hover:bg-[#f1e1e7] sm:inline-flex"
                 >
                   <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin
                 </Link>
@@ -242,7 +242,7 @@ export function HostShell({
                   onClick={() => setAccountOpen((o) => !o)}
                   aria-label="Account"
                   aria-expanded={accountOpen}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#800020] hover:bg-muted"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-crimson hover:bg-muted"
                 >
                   <Icon icon="line-md:account" className="h-6 w-6" />
                 </button>
@@ -270,7 +270,7 @@ export function HostShell({
                       <button
                         type="button"
                         onClick={signOut}
-                        className="flex w-full items-center gap-2 border-t px-4 py-2.5 text-left text-sm text-[#800020] hover:bg-muted"
+                        className="flex w-full items-center gap-2 border-t px-4 py-2.5 text-left text-sm text-crimson hover:bg-muted"
                       >
                         <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
                       </button>

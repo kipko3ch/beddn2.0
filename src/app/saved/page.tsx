@@ -91,7 +91,7 @@ function SavedTile({
     <article className="min-w-0">
       <Link
         href={detailHref}
-        className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
+        className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2"
       >
         <div className="relative aspect-[1.28/1] overflow-hidden rounded-lg bg-[#eee6e9] shadow-sm">
           {image ? (
@@ -121,7 +121,7 @@ function SavedTile({
                 event.stopPropagation();
                 onRemove();
               }}
-              className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-white text-[#800020] shadow-sm"
+              className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-white text-crimson shadow-sm"
               aria-label={`Remove ${listing.title || listing.name} from saved`}
             >
               <Icon icon="line-md:close" className="h-4 w-4" />
@@ -303,7 +303,7 @@ export default function SavedTripsPage() {
               Save places and experiences you like, then come back to them from this page.
             </p>
             <AuthDialog>
-              <Button className="mt-5 rounded-full bg-[#800020] px-6 hover:bg-[#600018]">
+              <Button className="mt-5 rounded-full bg-[#800020] px-6 hover:bg-merlot">
                 Sign in
               </Button>
             </AuthDialog>

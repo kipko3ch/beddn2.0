@@ -95,7 +95,7 @@ export default function AdminFeatureRequestsPage() {
                     variant={r.status === s ? "default" : "outline"}
                     disabled={busyId === r.id || r.status === s}
                     onClick={() => setStatus(r.id, s)}
-                    className={`rounded-full capitalize ${r.status === s ? "bg-[#800020] hover:bg-[#600018]" : ""}`}
+                    className={`rounded-full capitalize ${r.status === s ? "bg-[#800020] hover:bg-merlot" : ""}`}
                   >
                     {s}
                   </Button>

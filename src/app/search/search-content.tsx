@@ -78,7 +78,7 @@ function ChipSelect({
             }`}
           >
             {option.label}
-            {option.value === value && <Check className="h-4 w-4 text-[#800020]" />}
+            {option.value === value && <Check className="h-4 w-4 text-crimson" />}
           </button>
         ))}
       </PopoverContent>
@@ -316,7 +316,7 @@ export function SearchContent() {
         />
       )}
       <div className="mb-5">
-        <p className="text-sm font-semibold uppercase tracking-wide text-[#800020]">
+        <p className="text-sm font-semibold uppercase tracking-wide text-cranberry">
           {isExperienceSearch
             ? q
               ? `Experience ideas for ${q}`
@@ -356,7 +356,7 @@ export function SearchContent() {
                   onClick={() => setPriceMode(mode)}
                   aria-pressed={priceMode === mode}
                   className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                    priceMode === mode ? "bg-[#800020] text-white" : "text-muted-foreground"
+                    priceMode === mode ? "bg-crimson text-white" : "text-muted-foreground"
                   }`}
                 >
                   {mode === "hourly" ? "Hourly" : "Nightly"}
@@ -401,7 +401,7 @@ export function SearchContent() {
             className="mx-auto mb-4 h-auto w-[160px] sm:w-[180px]"
             aria-hidden
           />
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#800020]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-cranberry">
             Experiences are coming
           </p>
           <h2 className="mt-2 text-xl font-bold sm:text-2xl">
@@ -428,7 +428,7 @@ export function SearchContent() {
           <div className="mt-6 flex justify-center">
             <Button
               onClick={() => router.push("/host/listings/new")}
-              className="h-11 w-full rounded-full bg-[#800020] px-6 font-semibold hover:bg-[#600018] sm:w-auto"
+              className="h-11 w-full rounded-full bg-[#800020] px-6 font-semibold hover:bg-merlot sm:w-auto"
             >
               Be the first to list your place
             </Button>
@@ -469,7 +469,7 @@ export function SearchContent() {
           >
             <SlidersHorizontal className="h-4 w-4" />
             {activeFilterCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-[#800020] text-[10px] font-bold text-white">
+              <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-crimson text-[10px] font-bold text-white">
                 {activeFilterCount}
               </span>
             )}
@@ -573,7 +573,7 @@ export function SearchContent() {
                     }}
                     className={`rounded-full border px-4 py-2 text-sm font-semibold ${
                       category === option.value
-                        ? "border-[#800020] bg-[#800020] text-white"
+                        ? "border-crimson bg-crimson text-white"
                         : "border-[#e3d3d9] bg-white text-[#2b000a]"
                     }`}
                   >
@@ -596,7 +596,7 @@ export function SearchContent() {
                       }}
                       className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-semibold ${
                         propertyType === p.value
-                          ? "border-[#800020] bg-[#800020] text-white"
+                          ? "border-crimson bg-crimson text-white"
                           : "border-[#e3d3d9] bg-white text-[#2b000a]"
                       }`}
                     >

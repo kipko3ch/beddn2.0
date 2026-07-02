@@ -21,7 +21,7 @@ export function CurrencySwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
+        className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-crimson"
         aria-label="Choose display currency"
       >
         <Globe className="h-4 w-4" />

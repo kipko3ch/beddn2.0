@@ -76,7 +76,7 @@ export function AmenityPicker({ value, onChange }: AmenityPickerProps) {
                 <span className="text-sm font-semibold text-[#181113]">
                   {group.group}
                   {selectedInGroup > 0 && (
-                    <span className="ml-2 rounded-full bg-[#800020] px-2 py-0.5 text-xs font-medium text-white">
+                    <span className="ml-2 rounded-full bg-crimson px-2 py-0.5 text-xs font-medium text-white">
                       {selectedInGroup}
                     </span>
                   )}
@@ -110,10 +110,10 @@ export function AmenityPicker({ value, onChange }: AmenityPickerProps) {
                           icon={amenity.icon}
                           width={20}
                           height={20}
-                          className={isOn ? "text-[#800020]" : "text-muted-foreground"}
+                          className={isOn ? "text-crimson" : "text-muted-foreground"}
                         />
                         <span className="min-w-0 flex-1 truncate">{amenity.label}</span>
-                        {isOn && <Check className="h-4 w-4 shrink-0 text-[#800020]" />}
+                        {isOn && <Check className="h-4 w-4 shrink-0 text-crimson" />}
                       </button>
                     );
                   })}

@@ -192,7 +192,7 @@ export default function LandingPage() {
               </a>
               {!user && (
                 <AuthDialog defaultHostIntent>
-                  <button className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-3 text-sm font-bold text-white hover:bg-[#600018]">
+                  <button className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-3 text-sm font-bold text-white hover:bg-merlot">
                     <Home className="h-4 w-4" /> Become a host
                   </button>
                 </AuthDialog>
@@ -218,7 +218,7 @@ export default function LandingPage() {
               {user && (
                 <button
                   onClick={handleSignOut}
-                  className="block w-full rounded-2xl px-4 py-3 text-left text-sm text-[#800020] hover:bg-muted"
+                  className="block w-full rounded-2xl px-4 py-3 text-left text-sm text-crimson hover:bg-muted"
                 >
                   Sign out
                 </button>
@@ -255,7 +255,7 @@ export default function LandingPage() {
             type="button"
             aria-label="Open menu"
             onClick={() => setNavOpen(true)}
-            className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
+            className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-crimson"
           >
             {user ? (
               <Image

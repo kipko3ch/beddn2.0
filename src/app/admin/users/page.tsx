@@ -138,7 +138,7 @@ export default function AdminUsersPage() {
                     <td className="p-3">
                       <div className="flex flex-wrap gap-1">
                         {u.is_admin && (
-                          <Badge className="rounded-full bg-[#800020] hover:bg-[#800020]">
+                          <Badge className="rounded-full bg-crimson hover:bg-crimson">
                             <ShieldCheck className="mr-1 h-3 w-3" /> Admin
                           </Badge>
                         )}

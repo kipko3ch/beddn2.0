@@ -34,9 +34,9 @@ export function BeddnLoader({
     >
       <span className="font-brand text-6xl leading-none text-[#2b000a]">Beddn</span>
       <span className="flex gap-1.5" aria-hidden>
-        <span className="h-2 w-2 animate-bounce rounded-full bg-[#800020] [animation-delay:-0.3s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-[#800020] [animation-delay:-0.15s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-[#800020]" />
+        <span className="h-2 w-2 animate-bounce rounded-full bg-merlot [animation-delay:-0.3s]" />
+        <span className="h-2 w-2 animate-bounce rounded-full bg-cranberry [animation-delay:-0.15s]" />
+        <span className="h-2 w-2 animate-bounce rounded-full bg-crimson" />
       </span>
       {label && <span className="text-sm text-muted-foreground">{label}</span>}
       <span className="sr-only">Loading…</span>

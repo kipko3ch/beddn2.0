@@ -118,6 +118,99 @@ export function magicLinkEmail(input: MagicLinkInput): { subject: string; html: 
   return { subject: "Your Beddn sign-in link", html };
 }
 
+export interface HostApprovedInput {
+  hostName: string;
+  dashboardUrl: string;
+}
+
+/** Sent when the admin team approves a host application. */
+export function hostApprovedEmail(input: HostApprovedInput): { subject: string; html: string } {
+  const first = (input.hostName || "there").split(" ")[0];
+  const html = shell({
+    title: "You're approved to host on Beddn",
+    preheader: "Your host account is approved — you can publish listings now.",
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">You're approved, ${first} 🎉</h1>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Your Beddn host account has been reviewed and approved. You can now publish listings and start receiving booking requests.
+      </p>
+      <p style="margin:0;">${button(input.dashboardUrl, "Go to your dashboard")}</p>
+    `,
+  });
+  return { subject: "You're approved to host on Beddn", html };
+}
+
+export interface HostRejectedInput {
+  hostName: string;
+  reason?: string | null;
+}
+
+/** Sent when the admin team rejects a host application. */
+export function hostRejectedEmail(input: HostRejectedInput): { subject: string; html: string } {
+  const first = (input.hostName || "there").split(" ")[0];
+  const html = shell({
+    title: "Update on your Beddn host application",
+    preheader: "Your host application wasn't approved this time.",
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Hi ${first}, an update on your application</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Your Beddn host application wasn't approved this time.
+      </p>
+      ${input.reason ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${INK};"><strong>Reason:</strong> ${input.reason}</p>` : ""}
+      <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
+        If you think this was a mistake or want to reapply with more details, reply to this email and our team will help.
+      </p>
+    `,
+  });
+  return { subject: "Update on your Beddn host application", html };
+}
+
+export interface BookingStatusInput {
+  guestName: string;
+  listingName: string;
+  bookingCode: string;
+  bookingUrl?: string;
+}
+
+/** Sent when a host (or auto-accept) confirms a booking request. */
+export function bookingConfirmedEmail(input: BookingStatusInput): { subject: string; html: string } {
+  const first = (input.guestName || "there").split(" ")[0];
+  const html = shell({
+    title: "Your Beddn booking is confirmed",
+    preheader: `${input.listingName} is confirmed — ref ${input.bookingCode}.`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Hi ${first}, you're confirmed 🎉</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Your booking for <strong style="color:${INK};">${input.listingName}</strong> is confirmed. Ref: <strong style="color:${INK};">${input.bookingCode}</strong>.
+      </p>
+      ${input.bookingUrl ? `<p style="margin:0 0 20px;">${button(input.bookingUrl, "View your booking")}</p>` : ""}
+      <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
+        Address and host contact are now visible on your booking page.
+      </p>
+    `,
+  });
+  return { subject: `Confirmed: ${input.listingName} (${input.bookingCode})`, html };
+}
+
+/** Sent when a host rejects a booking request. */
+export function bookingRejectedEmail(input: BookingStatusInput): { subject: string; html: string } {
+  const first = (input.guestName || "there").split(" ")[0];
+  const html = shell({
+    title: "Update on your Beddn booking",
+    preheader: `${input.listingName} was declined by the host — ref ${input.bookingCode}.`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Hi ${first}, an update on your booking</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Your booking request for <strong style="color:${INK};">${input.listingName}</strong> (ref <strong style="color:${INK};">${input.bookingCode}</strong>) was declined by the host.
+      </p>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
+        Beddn's team will follow up about resolution or a refund. You can also browse other verified places in the meantime.
+      </p>
+    `,
+  });
+  return { subject: `Declined: ${input.listingName} (${input.bookingCode})`, html };
+}
+
 export interface ReviewReminderInput {
   guestName: string;
   listingName: string;

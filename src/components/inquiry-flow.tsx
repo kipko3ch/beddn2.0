@@ -234,7 +234,7 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
                 <ul className="mt-3 space-y-2">
                   {summary.map(({ icon: Icon, label }) => (
                     <li key={label} className="flex items-center gap-2 text-sm text-[#2b000a]">
-                      <Icon className="h-4 w-4 text-[#800020]" />
+                      <Icon className="h-4 w-4 text-crimson" />
                       <span className="font-medium">{label}</span>
                     </li>
                   ))}
@@ -249,7 +249,7 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
                 { icon: Star, title: "Remember to review later", body: "After your stay, leave a quick review to help other guests and keep Beddn trusted." },
               ].map(({ icon: Icon, title, body }) => (
                 <div key={title} className="flex gap-3">
-                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#f8eef2] text-[#800020]">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#f8eef2] text-crimson">
                     <Icon className="h-4 w-4" />
                   </span>
                   <div>
@@ -280,7 +280,7 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
                 >
                   <WhatsAppIcon className="mr-2 h-5 w-5" /> Continue on WhatsApp
                 </Button>
-                <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-[#fbf7f8] px-4 py-3 text-xs text-[#800020]">
+                <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-[#fbf7f8] px-4 py-3 text-xs text-crimson">
                   <Star className="h-4 w-4" />
                   After your stay, come back to leave a review.
                 </div>
@@ -294,7 +294,7 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
               </div>
             ) : !user ? (
               <div className="rounded-3xl border p-6 sm:p-8">
-                <span className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-[#f8eef2] text-[#800020]">
+                <span className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-[#f8eef2] text-crimson">
                   <Lock className="h-5 w-5" />
                 </span>
                 <h1 className="font-brand text-3xl text-[#2b000a]">Log in to Contact Host</h1>
@@ -306,7 +306,7 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
                   <button
                     type="button"
                     onClick={beforeLoginRedirect}
-                    className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-[#800020] text-base font-bold text-white hover:bg-[#600018]"
+                    className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-[#800020] text-base font-bold text-white hover:bg-merlot"
                   >
                     Log in to Contact Host
                   </button>
@@ -375,7 +375,7 @@ export function InquiryFlow({ listing, user, draft, open, onOpenChange }: Inquir
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="mt-5 h-12 w-full rounded-full bg-[#800020] text-base font-bold hover:bg-[#600018]"
+                  className="mt-5 h-12 w-full rounded-full bg-[#800020] text-base font-bold hover:bg-merlot"
                 >
                   {submitting ? "Sending…" : "Send Inquiry"}
                 </Button>

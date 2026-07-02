@@ -66,7 +66,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Link href={ROUTES.home} className="flex items-center font-brand text-2xl leading-none text-[#2b000a]">
               Beddn
             </Link>
-            <span className="hidden items-center gap-1 rounded-full bg-[#800020] px-2.5 py-1 text-xs font-semibold text-white sm:inline-flex">
+            <span className="hidden items-center gap-1 rounded-full bg-crimson px-2.5 py-1 text-xs font-semibold text-white sm:inline-flex">
               <ShieldCheck className="h-3.5 w-3.5" /> Admin
             </span>
           </div>
@@ -98,7 +98,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex min-h-0">
         <aside className="w-60 border-r bg-white hidden md:block">
           <nav className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4 space-y-1">
-            <div className="mb-2 flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[#800020]">
+            <div className="mb-2 flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-cranberry">
               <ShieldCheck className="h-4 w-4" /> Admin dashboard
             </div>
             {ADMIN_NAV.map(({ href, label, icon: Icon }) => (

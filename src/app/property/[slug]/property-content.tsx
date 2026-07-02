@@ -410,7 +410,7 @@ export function PropertyContent({
         <div className="mb-4">
           <Link
             href="/"
-            className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[#800020] hover:underline"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-crimson hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to stays
@@ -437,7 +437,7 @@ export function PropertyContent({
                 <>
                   <span aria-hidden>·</span>
                   <span className="inline-flex items-center gap-1 text-[#2b000a]">
-                    <Star className="h-4 w-4 fill-[#800020] text-[#800020]" />
+                    <Star className="h-4 w-4 fill-crimson text-crimson" />
                     {avgRating.toFixed(1)} ({reviews.length})
                   </span>
                 </>
@@ -456,7 +456,7 @@ export function PropertyContent({
                 );
               })}
               {(listing.is_verified || listing.host?.is_verified) && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-crimson/15 px-2.5 py-1 text-xs font-semibold text-[#800020]">
+                <span className="inline-flex items-center gap-1 rounded-full bg-crimson/15 px-2.5 py-1 text-xs font-semibold text-crimson">
                   <BadgeCheck className="h-3.5 w-3.5" />
                   {listing.is_verified ? "Beddn verified" : "Verified host"}
                 </span>
@@ -492,7 +492,7 @@ export function PropertyContent({
               onClick={() => toggle(listing.id)}
               aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
             >
-              <Heart className={`h-4 w-4 ${isSaved ? "fill-[#800020] text-[#800020]" : ""}`} />
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-crimson text-crimson" : ""}`} />
               <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
             </Button>
           </div>
@@ -640,7 +640,7 @@ export function PropertyContent({
           <div className="border-b bg-cream/40 p-4 sm:p-5">
             <h2 className="text-lg font-bold">Check availability</h2>
             {isOwnListing && (
-              <p className="mt-2 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-[#800020]">
+              <p className="mt-2 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-cranberry">
                 This is your listing. Guests can check dates and send inquiries here; use your dashboard to edit availability.
               </p>
             )}
@@ -779,7 +779,7 @@ export function PropertyContent({
             <div className="border-t pt-6 lg:border-t-0 lg:pt-0 lg:border-l lg:pl-8 flex flex-col items-center">
               <div className="mb-4 text-center">
                 <h3 className="text-lg font-bold text-[#202124] flex items-center gap-1.5 justify-center">
-                  <CalendarDays className="h-5 w-5 text-[#800020]" />
+                  <CalendarDays className="h-5 w-5 text-crimson" />
                   {dateSummary.title}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{dateSummary.subtitle}</p>
@@ -799,7 +799,7 @@ export function PropertyContent({
                 <button
                   type="button"
                   onClick={() => setDateRange(undefined)}
-                  className="text-xs font-semibold text-[#800020] hover:underline"
+                  className="text-xs font-semibold text-crimson hover:underline"
                 >
                   Clear dates
                 </button>
@@ -825,7 +825,7 @@ export function PropertyContent({
             <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
-                  <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream text-[#800020]">
+                  <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream text-crimson">
                     {listing.host?.avatar_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={listing.host.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -843,7 +843,7 @@ export function PropertyContent({
                   </div>
                 </div>
                 {listing.host?.is_verified && (
-                  <Badge className="w-fit gap-1 rounded-full bg-crimson/15 px-3 py-1 text-[#800020] hover:bg-crimson/15">
+                  <Badge className="w-fit gap-1 rounded-full bg-crimson/15 px-3 py-1 text-crimson hover:bg-crimson/15">
                     <BadgeCheck className="h-3.5 w-3.5" /> Verified host
                   </Badge>
                 )}
@@ -940,7 +940,7 @@ export function PropertyContent({
                           key={index}
                           className={`h-4 w-4 ${
                             index < Math.round(avgRating)
-                              ? "fill-[#800020] text-[#800020]"
+                              ? "fill-crimson text-crimson"
                               : "text-[#e3d3d9]"
                           }`}
                         />
@@ -961,7 +961,7 @@ export function PropertyContent({
                               key={index}
                               className={`h-3.5 w-3.5 ${
                                 index < review.rating
-                                  ? "fill-[#800020] text-[#800020]"
+                                  ? "fill-crimson text-crimson"
                                   : "text-[#e3d3d9]"
                               }`}
                             />
@@ -1089,7 +1089,7 @@ export function PropertyContent({
             </p>
             {reviews.length > 0 && (
               <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Star className="h-3 w-3 fill-[#800020] text-[#800020]" />
+                <Star className="h-3 w-3 fill-crimson text-crimson" />
                 {avgRating.toFixed(1)} ({reviews.length})
               </p>
             )}

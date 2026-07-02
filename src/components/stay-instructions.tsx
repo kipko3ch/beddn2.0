@@ -99,7 +99,7 @@ export function StayInstructions({ listingId }: { listingId: string }) {
                 <div className="flex items-start gap-3">
                   <span
                     className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl ${
-                      item.locked ? "bg-[#efe7ea] text-[#9b8a90]" : "bg-[#f8eef2] text-[#800020]"
+                      item.locked ? "bg-[#efe7ea] text-[#9b8a90]" : "bg-[#f8eef2] text-crimson"
                     }`}
                   >
                     {item.locked ? <Lock className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
@@ -126,7 +126,7 @@ export function StayInstructions({ listingId }: { listingId: string }) {
                             href={safeUrl}
                             {...EXTERNAL_LINK_ATTRS}
                             onClick={() => onLinkClick(item)}
-                            className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#800020] hover:underline"
+                            className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-crimson hover:underline"
                           >
                             {item.type === "GROUP_LINK" ? "Open group link" : "Open link"}
                             <ArrowUpRight className="h-3.5 w-3.5" />

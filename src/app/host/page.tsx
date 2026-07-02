@@ -40,7 +40,7 @@ function StatCard({ label, value, icon, href, tone }: Stat) {
         <span
           className={`flex size-10 items-center justify-center rounded-xl ${
             tone === "brand"
-              ? "bg-[#f8eef2] text-[#800020]"
+              ? "bg-[#f8eef2] text-crimson"
               : tone === "warning"
               ? "bg-amber-50 text-amber-700"
               : "bg-[#f5f1f2] text-[#6f6568]"
@@ -48,7 +48,7 @@ function StatCard({ label, value, icon, href, tone }: Stat) {
         >
           <Icon icon={icon} className="h-5 w-5" />
         </span>
-        <Icon icon="line-md:chevron-right" className="h-4 w-4 text-[#d8c8cd] transition-colors group-hover:text-[#800020]" />
+        <Icon icon="line-md:chevron-right" className="h-4 w-4 text-[#d8c8cd] transition-colors group-hover:text-crimson" />
       </div>
       <p className="mt-4 text-2xl font-bold text-[#2b000a]">{value}</p>
       <p className="mt-0.5 text-sm text-muted-foreground">{label}</p>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
       <div className="overflow-hidden rounded-3xl border bg-white">
         <div className="grid items-center gap-6 p-6 sm:grid-cols-[1fr_auto] sm:p-10">
           <div>
-            <Badge className="mb-4 rounded-full bg-[#f8eef2] text-[#800020] hover:bg-[#f8eef2]">
+            <Badge className="mb-4 rounded-full bg-[#f8eef2] text-crimson hover:bg-[#f8eef2]">
               {badge}
             </Badge>
             <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">Become a Beddn host</h1>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
             </p>
             <Link
               href={ROUTES.newListing}
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
             >
               Create host profile <Icon icon="line-md:chevron-right" className="h-4 w-4" />
             </Link>
@@ -239,7 +239,7 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Badge className="mb-2 rounded-full bg-[#f8eef2] text-[#800020] hover:bg-[#f8eef2]">
+          <Badge className="mb-2 rounded-full bg-[#f8eef2] text-crimson hover:bg-[#f8eef2]">
             {badge}
           </Badge>
           <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">
@@ -289,7 +289,7 @@ export default function DashboardPage() {
       {/* Demand intro + quick actions (hosts only) */}
       {!isAdmin && host && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <div className="flex flex-col justify-between rounded-3xl bg-gradient-to-br from-[#800020] to-[#4a0013] p-6 text-white shadow-md">
+          <div className="flex flex-col justify-between rounded-3xl bg-gradient-to-br from-[#800020] to-merlot p-6 text-white shadow-md">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-white/70">
                 Beddn demand
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                 href={href}
                 className="group flex flex-col justify-between rounded-2xl border bg-white p-4 transition-shadow hover:shadow-md"
               >
-                <span className="flex size-9 items-center justify-center rounded-xl bg-[#f8eef2] text-[#800020]">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-[#f8eef2] text-crimson">
                   <Icon icon={icon} className="h-4 w-4" />
                 </span>
                 <div className="mt-3">

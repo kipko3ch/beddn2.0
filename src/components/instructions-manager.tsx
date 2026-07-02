@@ -171,7 +171,7 @@ export function InstructionsManager({ listingId }: { listingId: string }) {
           type="button"
           onClick={add}
           disabled={saving}
-          className="mt-3 h-10 rounded-full bg-[#800020] px-5 font-semibold hover:bg-[#600018]"
+          className="mt-3 h-10 rounded-full bg-[#800020] px-5 font-semibold hover:bg-merlot"
         >
           <Plus className="mr-1 h-4 w-4" /> {saving ? "Saving…" : "Add instruction"}
         </Button>
@@ -195,14 +195,14 @@ export function InstructionsManager({ listingId }: { listingId: string }) {
                   <span className="ml-2 rounded-full bg-[#f5f1f2] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#6f6568]">
                     {item.type.replace(/_/g, " ")}
                   </span>
-                  <span className="ml-1 rounded-full bg-[#f8eef2] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#800020]">
+                  <span className="ml-1 rounded-full bg-[#f8eef2] px-2 py-0.5 text-[10px] font-semibold uppercase text-crimson">
                     {item.visibility.replace(/_/g, " ")}
                   </span>
                 </p>
                 {item.description && (
                   <p className="mt-1 truncate text-xs text-muted-foreground">{item.description}</p>
                 )}
-                {item.url && <p className="truncate text-xs text-[#800020]">{item.url}</p>}
+                {item.url && <p className="truncate text-xs text-cranberry">{item.url}</p>}
               </div>
               <button
                 type="button"

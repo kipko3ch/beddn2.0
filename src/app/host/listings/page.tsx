@@ -134,7 +134,7 @@ export default function ListingsPage() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
         <Link href={addHref}>
-          <Button className="gap-1 rounded-full bg-[#800020] hover:bg-[#600018]">
+          <Button className="gap-1 rounded-full bg-[#800020] hover:bg-merlot">
             <Icon icon="line-md:plus" className="h-4 w-4" /> {addLabel}
           </Button>
         </Link>
@@ -247,7 +247,7 @@ export default function ListingsPage() {
                         onClick={() => changeStatus(listing.id, key)}
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-100 ${
                           status === key
-                            ? "border-[#800020] bg-[#800020] text-white"
+                            ? "border-crimson bg-crimson text-white"
                             : "border-[#e3d3d9] bg-white text-[#2b000a] hover:bg-muted disabled:opacity-50"
                         }`}
                       >
@@ -260,7 +260,7 @@ export default function ListingsPage() {
                 {status === "draft" && (
                   <div className="mt-3 border-t pt-3">
                     <Link href={`/host/listings/${listing.id}/edit`}>
-                      <Button size="sm" className="rounded-full bg-[#800020] hover:bg-[#600018]">
+                      <Button size="sm" className="rounded-full bg-[#800020] hover:bg-merlot">
                         Continue setup
                       </Button>
                     </Link>

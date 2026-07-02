@@ -54,7 +54,7 @@ export function HostApprovalScreen({ status }: { status: string }) {
           <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
             Beddn
           </Link>
-          <span className="rounded-full bg-[#f8eef2] px-2.5 py-1 text-xs font-bold text-[#800020]">
+          <span className="rounded-full bg-[#f8eef2] px-2.5 py-1 text-xs font-bold text-crimson">
             Host
           </span>
         </div>
@@ -71,7 +71,7 @@ export function HostApprovalScreen({ status }: { status: string }) {
           {status === "pending" && (
             <Link
               href={ROUTES.dashboardProfile}
-              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
             >
               Complete your profile
             </Link>

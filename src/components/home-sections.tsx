@@ -107,7 +107,7 @@ export function FeaturedRail({
       <Rail
         heading={
           <h2 className="flex items-center gap-2 text-xl font-bold text-[#2b000a] sm:text-2xl">
-            <Star className="h-5 w-5 fill-[#800020] text-[#800020]" /> {heading}
+            <Star className="h-5 w-5 fill-crimson text-crimson" /> {heading}
           </h2>
         }
       >

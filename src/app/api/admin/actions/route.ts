@@ -1,6 +1,41 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email/server";
+import { hostApprovedEmail, hostRejectedEmail } from "@/lib/email/templates";
+import { ROUTES } from "@/lib/routes";
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://beddn.com").replace(/\/$/, "");
+
+// Host approval emails need the applicant's address and display name, which
+// live on the auth user, not the `hosts` row itself.
+async function notifyHostStatus(
+  admin: ReturnType<typeof createAdminClient>,
+  hostId: string,
+  status: "approved" | "rejected",
+  reason?: string | null
+) {
+  const { data: host } = await admin.from("hosts").select("user_id, name").eq("id", hostId).maybeSingle();
+  if (!host?.user_id) return;
+  const { data: userRes } = await admin.auth.admin.getUserById(host.user_id);
+  const email = userRes.user?.email;
+  if (!email) return;
+
+  const hostName = host.name || "there";
+  if (status === "approved") {
+    await sendEmail({
+      to: email,
+      eventType: "host_approved",
+      ...hostApprovedEmail({ hostName, dashboardUrl: `${SITE_URL}${ROUTES.dashboard}` }),
+    });
+  } else {
+    await sendEmail({
+      to: email,
+      eventType: "host_rejected",
+      ...hostRejectedEmail({ hostName, reason }),
+    });
+  }
+}
 
 interface AdminActionBody {
   action:
@@ -107,6 +142,9 @@ export async function POST(request: Request) {
       })
       .eq("id", body.id);
     errorMessage = error?.message || null;
+    if (!errorMessage) {
+      await notifyHostStatus(admin, body.id, "approved").catch(() => undefined);
+    }
   }
   if (body.action === "reject_host") {
     const { error } = await admin
@@ -114,6 +152,9 @@ export async function POST(request: Request) {
       .update({ status: "rejected", rejection_reason: body.reason || null })
       .eq("id", body.id);
     errorMessage = error?.message || null;
+    if (!errorMessage) {
+      await notifyHostStatus(admin, body.id, "rejected", body.reason).catch(() => undefined);
+    }
   }
   if (body.action === "suspend_host" || body.action === "unsuspend_host") {
     const { error } = await admin

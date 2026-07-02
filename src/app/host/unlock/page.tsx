@@ -168,14 +168,14 @@ function UnlockInner() {
           <Link href={ROUTES.home} className="font-brand text-3xl leading-none text-[#2b000a]">
             Beddn
           </Link>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#800020]">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1 text-xs font-bold uppercase tracking-widest text-crimson">
             <Lock className="h-3.5 w-3.5" /> Extranet
           </span>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center px-4 py-12 text-center">
-        <span className="mb-5 flex size-14 items-center justify-center rounded-full bg-[#f8eef2] text-[#800020]">
+        <span className="mb-5 flex size-14 items-center justify-center rounded-full bg-[#f8eef2] text-crimson">
           {stage === "locked" ? <Lock className="h-7 w-7" /> : <ShieldCheck className="h-7 w-7" />}
         </span>
         <h1 className="font-brand text-3xl leading-tight text-[#2b000a]">{title}</h1>
@@ -184,7 +184,7 @@ function UnlockInner() {
         {stage === "locked" ? (
           <div className="mt-8 space-y-4">
             {lockedUntil && (
-              <p className="text-sm font-semibold text-[#800020]">
+              <p className="text-sm font-semibold text-cranberry">
                 Try again after {new Date(lockedUntil).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.
               </p>
             )}

@@ -52,7 +52,7 @@ export default function PrivacyPage() {
     <>
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">Beddn legal</p>
+        <p className="text-sm font-bold uppercase tracking-wide text-cranberry">Beddn legal</p>
         <h1 className="mt-2 text-3xl font-bold">Privacy Policy</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: May 7, 2026</p>
         <div className="mt-8 space-y-7">

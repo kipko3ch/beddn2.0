@@ -119,7 +119,7 @@ export default function AdminSectionPage() {
         {!loading && (
           <div className="flex gap-2">
             <Badge variant="secondary" className="rounded-full">{rows.length} total</Badge>
-            <Badge className="rounded-full bg-[#f8eef2] text-[#800020] hover:bg-[#f8eef2]">
+            <Badge className="rounded-full bg-cream/60 text-crimson hover:bg-cream/60">
               {urgentCount} need review
             </Badge>
           </div>

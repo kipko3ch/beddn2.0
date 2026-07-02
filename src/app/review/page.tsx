@@ -152,7 +152,7 @@ function ReviewInner() {
           <p className="mt-2 text-sm text-muted-foreground">{status.message}</p>
           <Link
             href={ROUTES.home}
-            className="mt-6 inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+            className="mt-6 inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
           >
             Back to Beddn
           </Link>
@@ -165,7 +165,7 @@ function ReviewInner() {
             subtitle="Reviews are tied to your Beddn account so hosts and guests can trust them."
           >
             <AuthDialog>
-              <button className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]">
+              <button className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot">
                 Log in to continue
               </button>
             </AuthDialog>
@@ -191,10 +191,10 @@ function ReviewInner() {
                     key={stay.slug}
                     type="button"
                     onClick={() => setChosenSlug(stay.slug)}
-                    className="flex w-full items-center justify-between rounded-2xl border border-[#e3d3d9] bg-white px-4 py-3 text-left text-sm font-semibold text-[#2b000a] hover:border-[#800020] hover:bg-[#fbf0f3]"
+                    className="flex w-full items-center justify-between rounded-2xl border border-[#e3d3d9] bg-white px-4 py-3 text-left text-sm font-semibold text-[#2b000a] hover:border-crimson hover:bg-[#fbf0f3]"
                   >
                     {stay.name}
-                    <Star className="h-4 w-4 text-[#800020]" />
+                    <Star className="h-4 w-4 text-crimson" />
                   </button>
                 ))}
               </div>
@@ -218,7 +218,7 @@ function ReviewInner() {
                     aria-label={`${value} star${value === 1 ? "" : "s"}`}
                     className="transition-transform hover:scale-110"
                   >
-                    <Star className={`h-9 w-9 ${active ? "fill-[#800020] text-[#800020]" : "text-[#e3d3d9]"}`} />
+                    <Star className={`h-9 w-9 ${active ? "fill-crimson text-crimson" : "text-[#e3d3d9]"}`} />
                   </button>
                 );
               })}
@@ -237,13 +237,13 @@ function ReviewInner() {
                     type="button"
                     onClick={() => toggleTag(value)}
                     className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                      on ? "border-[#800020] bg-[#fbf0f3] text-[#800020]" : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                      on ? "border-crimson bg-[#fbf0f3] text-crimson" : "border-[#e3d3d9] bg-white text-[#2b000a]"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
                     {label}
                     {on && (
-                      <span className="flex size-4 items-center justify-center rounded-full bg-[#800020] text-white">
+                      <span className="flex size-4 items-center justify-center rounded-full bg-crimson text-white">
                         <Check className="h-3 w-3" />
                       </span>
                     )}
@@ -301,7 +301,7 @@ function ReviewInner() {
                 type="button"
                 onClick={() => setRecommend(true)}
                 className={`flex h-12 items-center justify-center gap-2 rounded-full border text-sm font-semibold ${
-                  recommend === true ? "border-[#800020] bg-[#800020] text-white" : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                  recommend === true ? "border-crimson bg-crimson text-white" : "border-[#e3d3d9] bg-white text-[#2b000a]"
                 }`}
               >
                 <ThumbsUp className="h-4 w-4" /> Yes
@@ -310,7 +310,7 @@ function ReviewInner() {
                 type="button"
                 onClick={() => setRecommend(false)}
                 className={`flex h-12 items-center justify-center gap-2 rounded-full border text-sm font-semibold ${
-                  recommend === false ? "border-[#800020] bg-[#800020] text-white" : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                  recommend === false ? "border-crimson bg-crimson text-white" : "border-[#e3d3d9] bg-white text-[#2b000a]"
                 }`}
               >
                 <ThumbsDown className="h-4 w-4" /> No
@@ -325,7 +325,7 @@ function ReviewInner() {
           <Button
             type="submit"
             disabled={submitting}
-            className="h-13 w-full rounded-full bg-[#800020] py-3.5 text-base font-bold hover:bg-[#600018]"
+            className="h-13 w-full rounded-full bg-[#800020] py-3.5 text-base font-bold hover:bg-merlot"
           >
             {submitting ? "Submitting…" : "Submit review"}
           </Button>
