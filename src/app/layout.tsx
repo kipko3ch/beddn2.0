@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { CurrencyProvider } from "@/components/currency-provider";
 
 const kualine = localFont({
   src: "../../gc-kualine-font/GC-Kualine-Demo-BF688b24f63a0c2.ttf",
@@ -37,7 +38,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <CurrencyProvider>{children}</CurrencyProvider>
       </body>
     </html>
   );

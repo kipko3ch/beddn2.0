@@ -5,12 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Search,
   Home,
-  Heart,
-  UserCircle,
   Menu,
-  ShieldCheck,
   Bus,
   Waves,
   Dumbbell
@@ -23,6 +19,7 @@ import { ListingCard, ListingCardSkeleton } from '@/components/listing-card';
 import { PopularDestinations, CityRails, FeaturedRail } from '@/components/home-sections';
 import { SearchPill, type SearchPillValues } from '@/components/search-pill';
 import { AuthDialog } from '@/components/auth-dialog';
+import { CurrencySwitcher } from '@/components/currency-switcher';
 import {
   Sheet,
   SheetContent,
@@ -31,15 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { ROUTES } from '@/lib/routes';
-import { useScrollUpVisibility } from '@/lib/use-scroll-up-visibility';
 import type { Listing } from '@/lib/types';
 
 const TAB_DATA = {
@@ -88,7 +77,6 @@ export default function LandingPage() {
   const { user, isHost, isAdmin } = useUserRole();
   const canHost = isHost || isAdmin;
   const { savedIds, toggle } = useSavedListings();
-  const bottomNavVisible = useScrollUpVisibility();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -170,10 +158,20 @@ export default function LandingPage() {
         <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger
             render={
-              <button type="button" className={styles.mobileMenuButton} aria-label="Open navigation" />
+              <button type="button" className={styles.mobileMenuButton} aria-label="Open menu" />
             }
           >
-            <Menu size={20} />
+            {user ? (
+              <Image
+                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                alt=""
+                width={32}
+                height={32}
+                style={{ borderRadius: '50%' }}
+              />
+            ) : (
+              <Menu size={20} />
+            )}
           </SheetTrigger>
           <SheetContent side="left" className="flex w-[min(82vw,320px)] flex-col gap-0 bg-white p-0">
             <SheetHeader className="border-b p-5">
@@ -241,143 +239,37 @@ export default function LandingPage() {
               <button className={styles.navItem}>Login</button>
             </AuthDialog>
           )}
-          {user ? (
-            <div className={styles.desktopAccount}>
-              {!canHost && (
-                <a href={ROUTES.newListing} className={styles.navItem}>Become a host</a>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <button type="button" aria-label="Open account" style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }} />
-                  }
-                >
-                  <Image
-                    src={user.user_metadata?.avatar_url || '/default-avatar.png'}
-                    alt="Profile"
-                    width={32}
-                    height={32}
-                    style={{ borderRadius: '50%' }}
-                  />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem>
-                    <a href={ROUTES.saved} className="flex w-full items-center gap-2">
-                      <Heart className="h-4 w-4" /> Saved trips
-                    </a>
-                  </DropdownMenuItem>
-                  {canHost ? (
-                    <>
-                      <DropdownMenuItem>
-                        <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
-                          <Home className="h-4 w-4" /> Host dashboard
-                        </a>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <a href={ROUTES.search} className="flex w-full items-center gap-2">
-                          <Search className="h-4 w-4" /> Switch to traveler
-                        </a>
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem>
-                      <a href={ROUTES.newListing} className="flex w-full items-center gap-2">
-                        <Home className="h-4 w-4" /> Become a host
-                      </a>
-                    </DropdownMenuItem>
-                  )}
-                  {isAdmin && (
-                    <DropdownMenuItem>
-                      <a href={ROUTES.adminListings} className="flex w-full items-center gap-2">
-                        <ShieldCheck className="h-4 w-4" /> Admin dashboard
-                      </a>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <span className="flex items-center gap-2">Sign out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          ) : (
+          {user && !canHost && (
+            <a href={ROUTES.newListing} className={styles.navItem}>Become a host</a>
+          )}
+          {!user && (
             <AuthDialog defaultHostIntent>
               <button className={styles.signInBtn}>Become a host</button>
             </AuthDialog>
           )}
+          <CurrencySwitcher />
+          {/* One control: the avatar itself when signed in, a hamburger when
+              signed out. Opens the same sheet as the mobile trigger above —
+              no separate account dropdown. */}
           <button
             type="button"
             aria-label="Open menu"
             onClick={() => setNavOpen(true)}
             className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
           >
-            <Menu size={18} />
+            {user ? (
+              <Image
+                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                alt=""
+                width={32}
+                height={32}
+                style={{ borderRadius: '50%' }}
+              />
+            ) : (
+              <Menu size={18} />
+            )}
           </button>
         </nav>
-
-        <div className={styles.mobileProfileSlot}>
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button type="button" className={styles.mobileProfileButton} aria-label="Open account" />
-                }
-              >
-                <Image
-                  src={user.user_metadata?.avatar_url || '/default-avatar.png'}
-                  alt=""
-                  width={32}
-                  height={32}
-                  style={{ borderRadius: '50%' }}
-                />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>
-                  <a href={ROUTES.saved} className="flex w-full items-center gap-2">
-                    <Heart className="h-4 w-4" /> Saved trips
-                  </a>
-                </DropdownMenuItem>
-                {canHost ? (
-                  <>
-                    <DropdownMenuItem>
-                      <a href={ROUTES.dashboard} className="flex w-full items-center gap-2">
-                        <Home className="h-4 w-4" /> Host dashboard
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <a href={ROUTES.search} className="flex w-full items-center gap-2">
-                        <Search className="h-4 w-4" /> Switch to traveler
-                      </a>
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem>
-                    <a href={ROUTES.newListing} className="flex w-full items-center gap-2">
-                      <Home className="h-4 w-4" /> Become a host
-                    </a>
-                  </DropdownMenuItem>
-                )}
-                {isAdmin && (
-                  <DropdownMenuItem>
-                    <a href={ROUTES.adminListings} className="flex w-full items-center gap-2">
-                      <ShieldCheck className="h-4 w-4" /> Admin dashboard
-                    </a>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <span className="flex items-center gap-2">Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <AuthDialog>
-              <button type="button" className={styles.mobileProfileButton} aria-label="Log in or sign up">
-                <UserCircle size={21} />
-              </button>
-            </AuthDialog>
-          )}
-        </div>
       </header>
 
       <main className={styles.main}>
@@ -559,11 +451,7 @@ export default function LandingPage() {
           <a href={ROUTES.review}>Review a stay</a>
         </div>
       </footer>
-      <nav
-        className={`${styles.mobileBottomNav} ${
-          bottomNavVisible ? styles.mobileBottomNavVisible : styles.mobileBottomNavHidden
-        }`}
-      >
+      <nav className={`${styles.mobileBottomNav} ${styles.mobileBottomNavVisible}`}>
         <button className={activeTab === 'All' ? styles.mobileBottomNavActive : ''} onClick={() => setActiveTab('All')}>
           <Icon icon="line-md:home" />
           <span>Home</span>

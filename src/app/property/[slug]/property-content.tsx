@@ -39,6 +39,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Calendar } from "@/components/ui/calendar";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
+import { useCurrency } from "@/components/currency-provider";
 import { LOGO_SRC } from "@/lib/assets";
 import type { Listing, Review } from "@/lib/types";
 import type { ListingCategory } from "@/lib/types";
@@ -186,8 +187,8 @@ export function PropertyContent({
   const [startTime, setStartTime] = useState("10:00");
   const [durationHours, setDurationHours] = useState("2");
   const [guests, setGuests] = useState("1");
-  const [availabilityChecked, setAvailabilityChecked] = useState(false);
   const { savedIds, toggle } = useSavedListings();
+  const { formatPrice } = useCurrency();
   const isSaved = savedIds.has(listing.id);
   const [shared, setShared] = useState(false);
 
@@ -370,25 +371,12 @@ export function PropertyContent({
 
   function handleSelectRange(range: DateRange | undefined) {
     setDateRange(range);
-    setAvailabilityChecked(false);
     if (range?.from) {
       track("CALENDAR_DATE_SELECTED", {
         listingId: listing.id,
         metadata: { checkIn: inputDate(range.from), category: selectedCategory },
       });
     }
-  }
-
-  function checkAvailability() {
-    setAvailabilityChecked(true);
-    track("AVAILABILITY_CHECKED", {
-      listingId: listing.id,
-      metadata: { category: selectedCategory, status: availabilityStatus },
-    });
-  }
-
-  function scrollToAvailability() {
-    document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function openInquiry() {
@@ -611,6 +599,159 @@ export function PropertyContent({
         )}
       </section>
 
+      {/* Booking card sits right under the photos — reachable with no scroll
+          on desktop and only the gallery's height on mobile. No separate
+          "Check Availability" tap: dates come pre-selected, so the action is
+          ready the moment this renders. */}
+      <section id="deals" className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border bg-white shadow-sm">
+          <div className="border-b bg-[#fbf7f8] p-4 sm:p-5">
+            <h2 className="text-lg font-bold">Check availability</h2>
+            {isOwnListing && (
+              <p className="mt-2 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-[#800020]">
+                This is your listing. Guests can check dates and send inquiries here; use your dashboard to edit availability.
+              </p>
+            )}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`rounded-full border px-4 py-2 text-sm font-bold capitalize ${
+                    selectedCategory === cat
+                      ? "border-[#800020] bg-[#800020] text-white"
+                      : "border-neutral-200 bg-white"
+                  }`}
+                >
+                  {cat === "experience" ? "Experience / class" : cat}
+                </button>
+              ))}
+            </div>
+            {(selectedCategory === "hourly" || selectedCategory === "experience") && (
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <label className="text-sm font-medium">
+                  Start time
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(event) => setStartTime(event.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border px-3"
+                  />
+                </label>
+                {selectedCategory === "hourly" && (
+                  <label className="text-sm font-medium">
+                    Hours
+                    <input
+                      type="number"
+                      min="1"
+                      value={durationHours}
+                      onChange={(event) => setDurationHours(event.target.value)}
+                      className="mt-1 h-10 w-full rounded-lg border px-3"
+                    />
+                  </label>
+                )}
+                <label className="text-sm font-medium">
+                  {selectedCategory === "experience" ? "Seats" : "Guests"}
+                  <input
+                    type="number"
+                    min="1"
+                    value={guests}
+                    onChange={(event) => setGuests(event.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border px-3"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
+          <div className="px-4 py-4 sm:px-10 sm:pb-8 sm:pt-6">
+            <div className="px-1 pb-2 sm:px-4">
+              <h3 className="text-xl font-bold tracking-tight text-[#202124] sm:text-2xl">
+                {dateSummary.title}
+              </h3>
+              <p className="mt-1 text-sm font-medium text-[#6d6d6d]">{dateSummary.subtitle}</p>
+            </div>
+            <div className="md:hidden">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={handleSelectRange}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                numberOfMonths={1}
+                showOutsideDays={false}
+                disabled={disabledCalendarDays}
+                className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:clamp(2.45rem,12vw,3rem)]"
+                classNames={PROPERTY_CALENDAR_CLASS_NAMES}
+              />
+            </div>
+            <div className="hidden md:block">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={handleSelectRange}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                numberOfMonths={2}
+                showOutsideDays={false}
+                disabled={disabledCalendarDays}
+                className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:3.45rem]"
+                classNames={PROPERTY_CALENDAR_CLASS_NAMES}
+              />
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setDateRange(undefined)}
+                className="rounded-full px-2 py-1 text-sm font-semibold text-[#202124] underline-offset-4 hover:underline"
+              >
+                Clear dates
+              </button>
+            </div>
+          </div>
+          <div className="border-t p-4 sm:p-5">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className={`text-sm font-bold ${hasAvailability ? "text-[#1a7f46]" : "text-amber-700"}`}>
+                {!selectedDate
+                  ? "Pick your dates above."
+                  : hasAvailability
+                  ? "Looks available — request to book or message the host."
+                  : "These dates may not be available. Try another date or ask the host."}
+              </p>
+              {isOwnListing ? (
+                <Link
+                  href={`/host/listings/${listing.id}/edit`}
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-7 text-sm font-medium text-white hover:bg-[#600018]"
+                >
+                  Manage listing
+                </Link>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  {hasAvailability && (
+                    <Link
+                      href={reserveHref}
+                      className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+                    >
+                      Request to book
+                    </Link>
+                  )}
+                  <Button
+                    onClick={openInquiry}
+                    variant={hasAvailability ? "outline" : "default"}
+                    className={
+                      hasAvailability
+                        ? "rounded-full px-6"
+                        : "rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                    }
+                  >
+                    {hasAvailability ? "Message host" : "Ask host anyway"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
         <div className="space-y-10">
           <section id="about">
@@ -729,216 +870,57 @@ export function PropertyContent({
 
           <Separator />
 
-          <section id="deals" className="max-w-4xl">
-            <div className="mb-4 rounded-2xl border bg-[#fbf7f8] p-4">
-              <h2 className="text-lg font-bold">Check availability</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Pick the stay type, choose dates on the calendar, then tap Check Availability.
-                If it looks open, Beddn prepares a clean inquiry before WhatsApp.
-              </p>
-              {isOwnListing && (
-                <p className="mt-3 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-[#800020]">
-                  This is your listing. Guests can check dates and send inquiries here; use your dashboard to edit availability.
-                </p>
-              )}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setSelectedCategory(cat);
-                      setAvailabilityChecked(false);
-                    }}
-                    className={`rounded-full border px-4 py-2 text-sm font-bold capitalize ${
-                      selectedCategory === cat
-                        ? "border-[#800020] bg-[#800020] text-white"
-                        : "border-neutral-200 bg-white"
-                    }`}
-                  >
-                    {cat === "experience" ? "Experience / class" : cat}
-                  </button>
-                ))}
-              </div>
-              {(selectedCategory === "hourly" || selectedCategory === "experience") && (
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <label className="text-sm font-medium">
-                    Start time
-                    <input
-                      type="time"
-                      value={startTime}
-                      onChange={(event) => setStartTime(event.target.value)}
-                      className="mt-1 h-10 w-full rounded-lg border px-3"
-                    />
-                  </label>
-                  {selectedCategory === "hourly" && (
-                    <label className="text-sm font-medium">
-                      Hours
-                      <input
-                        type="number"
-                        min="1"
-                        value={durationHours}
-                        onChange={(event) => setDurationHours(event.target.value)}
-                        className="mt-1 h-10 w-full rounded-lg border px-3"
-                      />
-                    </label>
-                  )}
-                  <label className="text-sm font-medium">
-                    {selectedCategory === "experience" ? "Seats" : "Guests"}
-                    <input
-                      type="number"
-                      min="1"
-                      value={guests}
-                      onChange={(event) => setGuests(event.target.value)}
-                      className="mt-1 h-10 w-full rounded-lg border px-3"
-                    />
-                  </label>
-                </div>
-              )}
-            </div>
-            <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-              <div className="px-5 pb-2 pt-6 sm:px-10 sm:pt-8">
-                <h2 className="text-2xl font-bold tracking-tight text-[#202124] sm:text-3xl">
-                  {dateSummary.title}
-                </h2>
-                <p className="mt-1 text-sm font-medium text-[#6d6d6d] sm:text-base">
-                  {dateSummary.subtitle}
-                </p>
-              </div>
-              <div className="px-4 py-4 sm:px-10 sm:pb-8 sm:pt-6">
-                <div className="md:hidden">
-                  <Calendar
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={handleSelectRange}
-                    month={calendarMonth}
-                    onMonthChange={setCalendarMonth}
-                    numberOfMonths={1}
-                    showOutsideDays={false}
-                    disabled={disabledCalendarDays}
-                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:clamp(2.45rem,12vw,3rem)]"
-                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
-                  />
-                </div>
-                <div className="hidden md:block">
-                  <Calendar
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={handleSelectRange}
-                    month={calendarMonth}
-                    onMonthChange={setCalendarMonth}
-                    numberOfMonths={2}
-                    showOutsideDays={false}
-                    disabled={disabledCalendarDays}
-                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:3.45rem]"
-                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
-                  />
-                </div>
-                <div className="mt-7 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDateRange(undefined);
-                      setAvailabilityChecked(false);
-                    }}
-                    className="rounded-full px-2 py-1 text-sm font-semibold text-[#202124] underline-offset-4 hover:underline"
-                  >
-                    Clear dates
-                  </button>
-                </div>
-              </div>
-              <div className="flex justify-end border-t p-4">
-                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    {availabilityChecked ? (
-                      <p className={`text-sm font-bold ${hasAvailability ? "text-[#1a7f46]" : "text-amber-700"}`}>
-                        {hasAvailability
-                          ? "Looks available. Send an inquiry to confirm with the host."
-                          : "These dates may not be available. Try another date or ask the host."}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Check availability, then send an inquiry to the host.
-                      </p>
-                    )}
-                  </div>
-                  {isOwnListing ? (
-                    <Link
-                      href={`/host/listings/${listing.id}/edit`}
-                      className="inline-flex h-9 items-center justify-center rounded-full bg-[#800020] px-7 text-sm font-medium text-white hover:bg-[#600018]"
-                    >
-                      Manage listing
-                    </Link>
-                  ) : availabilityChecked ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {hasAvailability && (
-                        <Link
-                          href={reserveHref}
-                          className="inline-flex h-9 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
-                        >
-                          Request to book
-                        </Link>
-                      )}
-                      <Button
-                        onClick={openInquiry}
-                        variant={hasAvailability ? "outline" : "default"}
-                        className={
-                          hasAvailability
-                            ? "rounded-full px-6"
-                            : "rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
-                        }
-                      >
-                        {hasAvailability ? "Message host" : "Ask Host Anyway"}
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={checkAvailability}
-                      className="rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
-                    >
-                      Check Availability
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </section>
-
           <section id="reviews">
-            <h2 className="mb-4 text-xl font-bold">
-              Reviews{" "}
-              {reviews.length > 0 && (
-                <span className="font-normal text-muted-foreground">
-                  · {avgRating.toFixed(1)} avg ({reviews.length})
-                </span>
-              )}
-            </h2>
+            <h2 className="mb-4 text-xl font-bold">Reviews</h2>
             {reviews.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {reviews.map((review) => (
-                  <div key={review.id} className="rounded-xl border p-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      <div className="flex">
-                        {Array.from({ length: 5 }).map((_, index) => (
-                          <Star
-                            key={index}
-                            className={`h-3.5 w-3.5 ${
-                              index < review.rating
-                                ? "fill-yellow-500 text-yellow-500"
-                                : "text-muted"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {(review as Review & { profile?: { full_name?: string | null } }).profile?.full_name ?? "Guest"}
-                      </span>
+              <>
+                <div className="mb-5 flex items-center gap-4 rounded-2xl border bg-[#fbf7f8] p-4">
+                  <p className="font-brand text-4xl text-[#2b000a]">{avgRating.toFixed(1)}</p>
+                  <div>
+                    <div className="flex">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <Star
+                          key={index}
+                          className={`h-4 w-4 ${
+                            index < Math.round(avgRating)
+                              ? "fill-[#800020] text-[#800020]"
+                              : "text-[#e3d3d9]"
+                          }`}
+                        />
+                      ))}
                     </div>
-                    {review.comment && (
-                      <p className="text-sm text-muted-foreground">{review.comment}</p>
-                    )}
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      {reviews.length} review{reviews.length === 1 ? "" : "s"}
+                    </p>
                   </div>
-                ))}
-              </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="rounded-xl border p-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <div className="flex">
+                          {Array.from({ length: 5 }).map((_, index) => (
+                            <Star
+                              key={index}
+                              className={`h-3.5 w-3.5 ${
+                                index < review.rating
+                                  ? "fill-[#800020] text-[#800020]"
+                                  : "text-[#e3d3d9]"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {(review as Review & { profile?: { full_name?: string | null } }).profile?.full_name ?? "Guest"}
+                        </span>
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-muted-foreground">{review.comment}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <EmptyState
                 image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029375/empty-reviews_t8xgis.png"
@@ -960,7 +942,7 @@ export function PropertyContent({
                     From
                   </p>
                   <p className="mt-1 text-2xl font-bold text-[#2b000a]">
-                    {priceCurrency(listing)} {primaryPrice.value.toLocaleString()}
+                    {formatPrice(primaryPrice.value, priceCurrency(listing))}
                     <span className="text-sm font-medium text-muted-foreground">
                       {primaryPrice.suffix}
                     </span>
@@ -974,7 +956,7 @@ export function PropertyContent({
                       key={option.label}
                       className="rounded-full bg-[#f5f1f2] px-3 py-1 text-xs font-semibold text-[#5d4f54]"
                     >
-                      {option.label}: {priceCurrency(listing)} {option.value.toLocaleString()}
+                      {option.label}: {formatPrice(option.value, priceCurrency(listing))}
                     </span>
                   ))}
                 </div>
@@ -982,7 +964,7 @@ export function PropertyContent({
               {listing.deposit_amount > 0 && (
                 <div className="mt-3 flex justify-between text-sm text-muted-foreground">
                   <span>Reserve fee</span>
-                  <span>{priceCurrency(listing)} {Number(listing.deposit_amount).toLocaleString()}</span>
+                  <span>{formatPrice(Number(listing.deposit_amount), priceCurrency(listing))}</span>
                 </div>
               )}
               {overnightEstimate && (
@@ -992,7 +974,7 @@ export function PropertyContent({
                       {overnightEstimate.nights} night{overnightEstimate.nights === 1 ? "" : "s"}
                     </span>
                     <span className="font-bold text-[#2b000a]">
-                      {priceCurrency(listing)} {overnightEstimate.total.toLocaleString()}
+                      {formatPrice(overnightEstimate.total, priceCurrency(listing))}
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -1008,17 +990,29 @@ export function PropertyContent({
               >
                 Manage listing
               </Link>
+            ) : hasAvailability ? (
+              <div className="mt-5 space-y-2">
+                <Link
+                  href={reserveHref}
+                  className="flex h-11 w-full items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-[#600018]"
+                >
+                  Request to book
+                </Link>
+                <Button onClick={openInquiry} variant="outline" className="w-full rounded-full">
+                  Message host
+                </Button>
+              </div>
             ) : (
               <Button
-                onClick={scrollToAvailability}
+                onClick={openInquiry}
                 className="mt-5 w-full rounded-full bg-[#800020] hover:bg-[#600018]"
                 size="lg"
               >
-                Check availability
+                Ask host anyway
               </Button>
             )}
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              Choose dates below first. Beddn then prepares a clean inquiry before WhatsApp.
+              {selectedDate ? `${compactDate(selectedDate)} · pay the host on arrival.` : "Choose dates below, then request to book."}
             </p>
           </div>
         </aside>
@@ -1030,7 +1024,7 @@ export function PropertyContent({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-base font-bold">
-              {priceCurrency(listing)} {Number(primaryPrice?.value ?? 0).toLocaleString()}
+              {formatPrice(Number(primaryPrice?.value ?? 0), priceCurrency(listing))}
               <span className="text-sm font-normal text-muted-foreground">
                 {primaryPrice?.suffix ?? ""}
               </span>
@@ -1049,12 +1043,19 @@ export function PropertyContent({
             >
               Manage
             </Link>
+          ) : hasAvailability ? (
+            <Link
+              href={reserveHref}
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+            >
+              Request to book
+            </Link>
           ) : (
             <Button
-              onClick={scrollToAvailability}
+              onClick={openInquiry}
               className="h-11 shrink-0 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
             >
-              Check Availability
+              Ask host
             </Button>
           )}
         </div>

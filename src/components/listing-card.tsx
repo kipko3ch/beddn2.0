@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useCurrency } from "@/components/currency-provider";
 import type { Listing } from "@/lib/types";
 
 export function ListingCardSkeleton() {
@@ -35,6 +36,7 @@ export function ListingCard({
   /** Which rate to feature on the card. Falls back to whatever exists. */
   priceMode?: "hourly" | "overnight";
 }) {
+  const { formatPrice } = useCurrency();
   // Single thumbnail only — for more images the guest opens the property page.
   const image = listing.listing_images?.[0]?.url;
 
@@ -126,7 +128,7 @@ export function ListingCard({
         </div>
         <p className="mt-2 text-sm">
           <span className="font-semibold">
-            {listing.currency || "KES"} {Number(price).toLocaleString()}
+            {formatPrice(price, listing.currency || "KES")}
           </span>
           <span className="text-muted-foreground">{priceLabel}</span>
         </p>

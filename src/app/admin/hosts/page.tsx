@@ -5,10 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
-import { BadgeCheck, Check, Loader2, Pause, Play, ShieldCheck, X } from "lucide-react";
+import { BadgeCheck, Check, KeyRound, Loader2, Pause, Play, ShieldCheck, X } from "lucide-react";
 
 type HostRow = {
   id: string;
+  user_id: string;
   name: string | null;
   phone: string | null;
   status: string | null;
@@ -34,7 +35,7 @@ export default function AdminHostsPage() {
   async function load() {
     const { data } = await supabase
       .from("hosts")
-      .select("id, name, phone, status, is_verified, national_id, applied_at, created_at")
+      .select("id, user_id, name, phone, status, is_verified, national_id, applied_at, created_at")
       .order("created_at", { ascending: false })
       .limit(300);
     setHosts((data as HostRow[]) ?? []);
@@ -46,12 +47,14 @@ export default function AdminHostsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function act(id: string, action: string, reason?: string) {
-    setBusyId(id);
+  async function act(host: HostRow, action: string, reason?: string) {
+    // The PIN lives on profiles (user_id), everything else on hosts (id).
+    const targetId = action === "reset_host_pin" ? host.user_id : host.id;
+    setBusyId(host.id);
     const res = await fetch("/api/admin/actions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, id, reason }),
+      body: JSON.stringify({ action, id: targetId, reason }),
     });
     setBusyId(null);
     if (!res.ok) {
@@ -92,7 +95,7 @@ export default function AdminHostsPage() {
               <Button
                 size="sm"
                 disabled={busy}
-                onClick={() => act(host.id, "approve_host")}
+                onClick={() => act(host, "approve_host")}
                 className="gap-1 rounded-full bg-[#128c4b] hover:bg-[#0f7a41]"
               >
                 <Check className="h-4 w-4" /> Approve
@@ -103,7 +106,7 @@ export default function AdminHostsPage() {
                 disabled={busy}
                 onClick={() => {
                   const reason = prompt("Reason for rejection (optional):") ?? undefined;
-                  act(host.id, "reject_host", reason);
+                  act(host, "reject_host", reason);
                 }}
                 className="gap-1 rounded-full"
               >
@@ -114,20 +117,32 @@ export default function AdminHostsPage() {
           {status === "approved" && (
             <>
               {!host.is_verified && (
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => act(host.id, "verify_host")} className="gap-1 rounded-full">
+                <Button size="sm" variant="outline" disabled={busy} onClick={() => act(host, "verify_host")} className="gap-1 rounded-full">
                   <ShieldCheck className="h-4 w-4" /> Give badge
                 </Button>
               )}
-              <Button size="sm" variant="outline" disabled={busy} onClick={() => act(host.id, "suspend_host")} className="gap-1 rounded-full">
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => act(host, "suspend_host")} className="gap-1 rounded-full">
                 <Pause className="h-4 w-4" /> Suspend
               </Button>
             </>
           )}
           {(status === "suspended" || status === "rejected") && (
-            <Button size="sm" disabled={busy} onClick={() => act(host.id, "approve_host")} className="gap-1 rounded-full bg-[#128c4b] hover:bg-[#0f7a41]">
+            <Button size="sm" disabled={busy} onClick={() => act(host, "approve_host")} className="gap-1 rounded-full bg-[#128c4b] hover:bg-[#0f7a41]">
               <Play className="h-4 w-4" /> Reinstate
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => {
+              if (!confirm(`Reset ${host.name || "this host"}'s Extranet PIN? They'll set a new one next time they open /host.`)) return;
+              act(host, "reset_host_pin");
+            }}
+            className="gap-1 rounded-full"
+          >
+            <KeyRound className="h-4 w-4" /> Reset PIN
+          </Button>
         </div>
       </div>
     );
