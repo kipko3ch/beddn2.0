@@ -285,7 +285,7 @@ export function ExperienceContent({
       </div>
 
       {/* Single Large, Elegant Hero Image */}
-      <div className="relative overflow-hidden rounded-[2rem] border border-cream bg-white shadow-sm mb-12 aspect-[21/9] w-full min-h-[350px] max-h-[550px]">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-[2rem] border border-cream bg-white shadow-sm mb-8 sm:mb-12 aspect-[4/3] w-full sm:aspect-[21/9] sm:min-h-[350px] sm:max-h-[550px]">
         <Image
           src={images[0]?.url}
           alt={listing.name}
@@ -310,29 +310,29 @@ export function ExperienceContent({
         {/* Left Column: Core Info & Highlights */}
         <div className="space-y-12">
           {/* Highlights Row */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+          <div className="grid grid-cols-2 divide-y divide-cream sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+            <div className="p-5 text-center">
               <Clock className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Duration</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5">
                 {listing.experience_duration || "3 hours"}
               </p>
             </div>
-            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+            <div className="p-5 text-center">
               <Users className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Group size</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5">
                 Up to {listing.experience_group_size || 10} guests
               </p>
             </div>
-            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+            <div className="p-5 text-center">
               <Compass className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Activity</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5 truncate capitalize">
                 {listing.experience_types?.[0] || "Guided tour"}
               </p>
             </div>
-            <div className="rounded-2xl bg-cream/30 p-5 text-center shadow-sm transition hover:bg-cream/40">
+            <div className="p-5 text-center">
               <Star className="mx-auto h-7 w-7 text-crimson mb-1.5" />
               <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">Rating</p>
               <p className="text-base font-extrabold text-[#2b000a] mt-0.5">

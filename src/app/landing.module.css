@@ -136,32 +136,36 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
+  padding: 7px 16px;
   font-size: 15px;
   font-weight: 500;
   color: #6f6568;
   cursor: pointer;
   background: none;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 999px;
-  transition: color 0.18s ease;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
 }
 
 .tab:hover {
   color: #2b000a;
+  background: color-mix(in srgb, var(--color-cream) 55%, white);
+  border-color: color-mix(in srgb, var(--color-crimson) 25%, transparent);
 }
 
-/* Active state is shown by colour + weight only — the 3D icons stay on a
-   transparent background so they read as independent objects. */
+/* Active state gets a soft crimson-to-burgundy wash instead of a flat text
+   colour swap — pulls more pink into a page that otherwise leans hard on
+   plain burgundy. */
 .tab.active {
-  color: #800020;
+  color: #fff;
   font-weight: 700;
-  background: none;
-  box-shadow: none;
+  background: linear-gradient(135deg, var(--color-crimson) 0%, #800020 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-crimson) 35%, transparent);
 }
 
 .tab.active:hover {
-  color: #800020;
+  color: #fff;
 }
 
 .tabIcon {

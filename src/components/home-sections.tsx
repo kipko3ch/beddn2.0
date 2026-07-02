@@ -100,7 +100,7 @@ export function FeaturedRail({
       .finally(() => setLoaded(true));
   }, [placement, city, category]);
 
-  if (!loaded || listings.length === 0) return null;
+  if (loaded && listings.length === 0) return null;
 
   return (
     <section className="pt-10">
@@ -111,16 +111,22 @@ export function FeaturedRail({
           </h2>
         }
       >
-        {listings.map((listing) => (
-          <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
-            <ListingCard
-              listing={listing}
-              isSaved={savedIds.has(listing.id)}
-              onToggleSave={() => onToggleSave(listing.id)}
-              priceMode={priceMode}
-            />
-          </div>
-        ))}
+        {!loaded
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="w-[170px] shrink-0 sm:w-[210px]">
+                <ListingCardSkeleton />
+              </div>
+            ))
+          : listings.map((listing) => (
+              <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                <ListingCard
+                  listing={listing}
+                  isSaved={savedIds.has(listing.id)}
+                  onToggleSave={() => onToggleSave(listing.id)}
+                  priceMode={priceMode}
+                />
+              </div>
+            ))}
       </Rail>
     </section>
   );

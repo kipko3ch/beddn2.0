@@ -345,7 +345,7 @@ export function SearchPill({
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setWhereOpen(true)}
               placeholder={copy.wherePlaceholder}
-              className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="w-full border-0 bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm"
             />
           </label>
           {whereOpen && (destinations.length > 0 || onNearby) && (
@@ -402,7 +402,7 @@ export function SearchPill({
                 type="time"
                 value={startTime}
                 onChange={(event) => setStartTime(event.target.value)}
-                className={`w-full border-0 bg-transparent text-sm outline-none ${
+                className={`w-full border-0 bg-transparent text-base outline-none md:text-sm ${
                   startTime ? "" : "text-muted-foreground"
                 }`}
               />
@@ -487,7 +487,7 @@ export function SearchPill({
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder={copy.wherePlaceholder}
-                      className="w-full border-0 bg-transparent text-sm outline-none"
+                      className="w-full border-0 bg-transparent text-base outline-none"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") submit();
                       }}
@@ -562,7 +562,7 @@ export function SearchPill({
                         type="time"
                         value={startTime}
                         onChange={(event) => setStartTime(event.target.value)}
-                        className="w-full border-0 bg-transparent text-sm outline-none"
+                        className="w-full border-0 bg-transparent text-base outline-none"
                       />
                     </label>
                     <div className="mt-4 flex justify-end">

@@ -152,6 +152,13 @@ export default function LandingPage() {
     { name: 'Experiences' },
   ];
 
+  // Each pill is a shortcut into its own filtered page — more effective than
+  // swapping an inline grid on the homepage under a changing heading.
+  function goToCategory(tab: TabType) {
+    const category = TAB_DATA[tab].category;
+    router.push(category === 'all' ? '/search' : `/category/${category}`);
+  }
+
   return (
     <div className={styles.container}>
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
@@ -280,7 +287,7 @@ export default function LandingPage() {
             <button
               key={tab.name}
               className={`${styles.tab} ${activeTab === tab.name ? styles.active : ''}`}
-              onClick={() => setActiveTab(tab.name)}
+              onClick={() => goToCategory(tab.name)}
             >
               <Image
                 src={TAB_ICONS[tab.name]}
