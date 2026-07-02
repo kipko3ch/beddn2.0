@@ -77,13 +77,13 @@ export default function AdminCurrencyPage() {
         <div>
           <h1 className="font-brand text-3xl text-[#2b000a]">Currency</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Rates guests see when they switch the currency display. Pull live rates from
-            Frankfurter, or set a manual average yourself.
+            Rates guests see when they switch the currency display. Pull live rates, or set a
+            manual average yourself.
           </p>
         </div>
         <Button onClick={refresh} disabled={refreshing} className="gap-2 rounded-full bg-[#800020] hover:bg-[#600018]">
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          {refreshing ? "Refreshing…" : "Refresh from Frankfurter"}
+          {refreshing ? "Refreshing…" : "Refresh live rates"}
         </Button>
       </div>
 
@@ -107,7 +107,7 @@ export default function AdminCurrencyPage() {
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-[#2b000a]">{currency}</p>
                     {row ? (
-                      <Badge className={`text-xs capitalize ${row.source === "frankfurter" ? "bg-green-100 text-green-800 hover:bg-green-100" : "bg-amber-100 text-amber-800 hover:bg-amber-100"}`}>
+                      <Badge className={`text-xs capitalize ${row.source === "live" ? "bg-green-100 text-green-800 hover:bg-green-100" : "bg-amber-100 text-amber-800 hover:bg-amber-100"}`}>
                         {row.source}
                       </Badge>
                     ) : (

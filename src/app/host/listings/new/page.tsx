@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ListingForm } from "@/components/listing-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 import type { ListingCategory } from "@/lib/types";
 
 export default function NewListingPage() {
   const supabase = createClient();
+  const router = useRouter();
   const [hostId, setHostId] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -71,8 +74,11 @@ export default function NewListingPage() {
     const json = await res.json().catch(() => ({}));
 
     if (res.ok && json.host) {
-      setHostId(json.host.id);
-      setNeedsHost(false);
+      // Land new hosts in the dashboard, not straight into the 13-step
+      // listing wizard — they're pending approval and should see that
+      // clearly before they're asked to build a listing. Coming back to
+      // "New listing" from the dashboard afterward still goes straight in.
+      router.push(ROUTES.dashboard);
     } else {
       alert("Failed to create host profile: " + (json.error ?? ""));
     }
@@ -111,7 +117,7 @@ export default function NewListingPage() {
     }
 
     return (
-      <div className="mx-auto max-w-lg">
+      <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center pt-4 sm:pt-8">
         <div className="mb-6">
           <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span className="uppercase tracking-wide text-[#800020]">Host setup</span>

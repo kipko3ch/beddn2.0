@@ -154,12 +154,12 @@ function UnlockInner() {
 
   const subtitle =
     stage === "create"
-      ? "Like your M-Pesa PIN — you'll enter this every time you open your host or admin dashboard, even when you're already signed in."
+      ? "Like your M-Pesa PIN — this locks your host and admin dashboard, even when you're already signed in. Once unlocked, it stays unlocked for 12 hours, then asks again (or sooner on a new browser or device)."
       : stage === "confirm"
       ? "Type it once more to confirm."
       : stage === "locked"
       ? "Too many wrong tries. Please wait before trying again."
-      : "Enter your 4-digit PIN to continue.";
+      : "Enter your 4-digit PIN to continue. This unlocks the dashboard for 12 hours.";
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#181113]">

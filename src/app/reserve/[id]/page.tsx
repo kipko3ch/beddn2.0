@@ -32,6 +32,7 @@ import {
   Users,
 } from "lucide-react";
 import { LOGO_SRC } from "@/lib/assets";
+import { ReserveSkeleton } from "@/components/reserve-skeleton";
 import type { User } from "@supabase/supabase-js";
 import type { Listing, ListingCategory, Review } from "@/lib/types";
 
@@ -55,47 +56,6 @@ function CheckoutHeader({ backHref }: { backHref?: string }) {
         )}
       </div>
     </header>
-  );
-}
-
-function ReserveLoading() {
-  return (
-    <>
-      <CheckoutHeader />
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6 space-y-3">
-          <div className="h-4 w-28 animate-pulse rounded-full bg-[#f1e6ea]" />
-          <div className="h-8 w-64 animate-pulse rounded-full bg-muted" />
-        </div>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="rounded-3xl border bg-white p-5 shadow-sm">
-            <div className="mb-5 h-6 w-44 animate-pulse rounded bg-muted" />
-            <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-                  <div className="h-11 animate-pulse rounded-xl bg-muted" />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-3xl border bg-white p-5 shadow-sm">
-            <div className="mb-5 flex gap-4">
-              <div className="size-20 animate-pulse rounded-2xl bg-muted" />
-              <div className="flex-1 space-y-2">
-                <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
-                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
-              </div>
-            </div>
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="h-4 animate-pulse rounded bg-muted" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-    </>
   );
 }
 
@@ -289,7 +249,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   }
 
   if (loading) {
-    return <ReserveLoading />;
+    return <ReserveSkeleton />;
   }
 
   if (!listing) {
