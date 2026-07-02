@@ -57,6 +57,31 @@
   --color-cream: #f3e1c8;
 }
 
+/* Strip MapLibre's default popup chrome — the card in map.tsx supplies its
+   own rounded corners and shadow, so the library's wrapper box + tip would
+   just double them up. */
+.beddn-map-popup .maplibregl-popup-content {
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(24, 17, 19, 0.22);
+}
+.beddn-map-popup .maplibregl-popup-close-button {
+  z-index: 2;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2b000a;
+  font-size: 16px;
+  line-height: 24px;
+}
+.beddn-map-popup .maplibregl-popup-tip {
+  border-top-color: #fff;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

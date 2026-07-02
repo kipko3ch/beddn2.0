@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactElement } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +22,40 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
+
+// Same four shortcuts as the homepage hero tabs, shrunk into a persistent
+// strip so switching categories doesn't require going back to "/" first.
+const CATEGORY_LINKS = [
+  { label: "All", href: ROUTES.search, icon: "/images/cat-all.png" },
+  { label: "Hourly", href: ROUTES.category("hourly"), icon: "/images/cat-hourly.png" },
+  { label: "Overnight", href: ROUTES.category("overnight"), icon: "/images/cat-overnight.png" },
+  { label: "Experiences", href: ROUTES.category("experience"), icon: "/images/cat-experiences.png" },
+];
+
+function CategoryStrip({ pathname }: { pathname: string | null }) {
+  return (
+    <div className="flex items-center gap-1 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8">
+      {CATEGORY_LINKS.map((cat) => {
+        const active =
+          cat.href === ROUTES.search
+            ? pathname === ROUTES.search
+            : pathname === cat.href;
+        return (
+          <Link
+            key={cat.label}
+            href={cat.href}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+              active ? "text-crimson" : "text-[#6f6568] hover:text-[#2b000a]"
+            }`}
+          >
+            <Image src={cat.icon} alt="" width={22} height={22} className="h-[22px] w-[22px] shrink-0" aria-hidden />
+            {cat.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
 
 function getInitials(user: User | null) {
   const name = user?.user_metadata?.full_name || user?.email || "Beddn";
@@ -264,6 +299,9 @@ export function Header() {
           <div className="absolute right-4">
             <CurrencySwitcher />
           </div>
+        </div>
+        <div className="border-t border-black/5">
+          <CategoryStrip pathname={pathname} />
         </div>
       </header>
       <nav className="fixed inset-x-0 bottom-0 z-40 grid w-full grid-cols-4 border-t border-black/10 bg-white px-1.5 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] text-center text-[11px] shadow-[0_-4px_16px_rgba(24,17,19,0.05)] md:hidden">

@@ -238,6 +238,13 @@ export default function LandingPage() {
           Beddn
         </Link>
 
+        {/* Third grid column on mobile — otherwise this is an empty 44px gap
+            and the currency switcher only exists inside .navRight, which is
+            hidden entirely below the 768px breakpoint. */}
+        <div className={styles.mobileProfileSlot}>
+          <CurrencySwitcher />
+        </div>
+
         <nav className={styles.navRight}>
           <a href={ROUTES.search} className={styles.navItem}>Discover</a>
           <a href={ROUTES.review} className={styles.navItem}>Review</a>

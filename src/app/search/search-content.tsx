@@ -238,11 +238,12 @@ export function SearchContent() {
     );
   }
 
+  // Clicking a pin now opens a card overlay directly on the map (handled
+  // inside <Map>) instead of jumping away — this only fires when the guest
+  // clicks into that card to actually open the listing.
   function handlePinClick(listing: Listing) {
-    setShowMap(false);
-    setHighlightedId(listing.id);
-    const el = document.getElementById(`listing-${listing.id}`);
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const isExp = (listing.categories || listing.category || []).includes("experience");
+    router.push(isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`);
   }
 
   function lookupQueryCenter(value: string): [number, number] | undefined {

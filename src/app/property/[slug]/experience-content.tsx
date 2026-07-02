@@ -230,7 +230,7 @@ export function ExperienceContent({
     `&guests=${guests}`;
 
   return (
-    <main className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6 lg:px-10 xl:px-16">
       {/* Back Navigation */}
       <div className="mb-6">
         <Link
