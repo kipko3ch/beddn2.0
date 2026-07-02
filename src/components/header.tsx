@@ -8,13 +8,7 @@ import { useAvatarUrl, useUserRole } from "@/lib/hooks";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { AuthDialog } from "@/components/auth-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { CurrencySwitcher } from "@/components/currency-switcher";
 import {
   Sheet,
   SheetClose,
@@ -27,7 +21,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
-import { useScrollUpVisibility } from "@/lib/use-scroll-up-visibility";
 
 function getInitials(user: User | null) {
   const name = user?.user_metadata?.full_name || user?.email || "Beddn";
@@ -40,9 +33,43 @@ function getInitials(user: User | null) {
 }
 
 /**
- * The full navigation menu, shown as a slide-out sheet. Used by both the mobile
- * hamburger (left) and the desktop hamburger (right). Primary links sit at the
- * top; Terms/Privacy and Sign out are pinned to the bottom.
+ * Single control that opens the full nav sheet — the avatar itself when
+ * signed in (no separate avatar-dropdown + hamburger pair), a hamburger icon
+ * when signed out.
+ */
+function MenuTrigger({ user, avatarUrl }: { user: User | null; avatarUrl?: string }) {
+  if (user) {
+    return (
+      <button
+        type="button"
+        aria-label="Open menu"
+        className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
+      >
+        <Avatar className="size-9 cursor-pointer">
+          <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
+          <AvatarFallback className="bg-[#f8eef2] font-semibold text-[#800020]">
+            {getInitials(user)}
+          </AvatarFallback>
+        </Avatar>
+      </button>
+    );
+  }
+  return (
+    <button
+      type="button"
+      aria-label="Open menu"
+      className="inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
+    >
+      <Icon icon="line-md:menu" className="h-5 w-5" />
+    </button>
+  );
+}
+
+/**
+ * The full navigation menu, shown as a slide-out sheet. One combined trigger
+ * (avatar or hamburger) replaces what used to be a separate avatar dropdown
+ * and hamburger button. Primary links sit at the top; Terms/Privacy and Sign
+ * out are pinned to the bottom.
  */
 function NavSheet({
   user,
@@ -144,7 +171,6 @@ export function Header() {
   const avatarUrl = useAvatarUrl(user);
   const pathname = usePathname();
   const supabase = createClient();
-  const bottomNavVisible = useScrollUpVisibility();
   const canHost = isHost || isAdmin;
   const rolePending = Boolean(user && loading);
   const showHostWorkspace = canHost || rolePending;
@@ -184,58 +210,7 @@ export function Header() {
               </Link>
             )}
 
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2">
-                  <Avatar className="size-9 cursor-pointer">
-                    <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
-                    <AvatarFallback className="bg-[#f8eef2] font-semibold text-[#800020]">
-                      {getInitials(user)}
-                    </AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem>
-                    <Link href={ROUTES.saved} className="flex items-center gap-2 w-full">
-                      <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
-                    </Link>
-                  </DropdownMenuItem>
-                  {showHostWorkspace ? (
-                    <>
-                      <DropdownMenuItem>
-                        <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                          <Icon icon="line-md:account" className="h-4 w-4" /> Host dashboard
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Link href={ROUTES.search} className="flex items-center gap-2 w-full">
-                          <Icon icon="line-md:search" className="h-4 w-4" /> Switch to traveler
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem>
-                      <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
-                        <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  {isAdmin && (
-                    <DropdownMenuItem>
-                      <Link href={ROUTES.adminHome} className="flex items-center gap-2 w-full">
-                        <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <span className="flex items-center gap-2">
-                      <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
-                    </span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
+            {!user && (
               <AuthDialog defaultHostIntent>
                 <Button className="h-10 rounded-full bg-black px-6 text-sm font-semibold text-white hover:bg-neutral-800">
                   Become a host
@@ -243,8 +218,10 @@ export function Header() {
               </AuthDialog>
             )}
 
-            {/* Full menu (Terms, Privacy, host/traveler, sign out) — some of
-                these aren't in the avatar dropdown. */}
+            <CurrencySwitcher />
+
+            {/* One control: the avatar itself when signed in, a hamburger
+                when signed out. Opens the full menu — no separate dropdown. */}
             <NavSheet
               user={user}
               showHostWorkspace={showHostWorkspace}
@@ -252,18 +229,12 @@ export function Header() {
               onSignOut={handleSignOut}
               side="right"
             >
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"
-              >
-                <Icon icon="line-md:menu" className="h-5 w-5" />
-              </button>
+              <MenuTrigger user={user} avatarUrl={avatarUrl} />
             </NavSheet>
           </div>
         </div>
         <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-center px-4 md:hidden">
-          <div className="absolute left-4">
+          <div className="absolute left-4 flex items-center gap-1.5">
             <NavSheet
               user={user}
               showHostWorkspace={showHostWorkspace}
@@ -271,86 +242,18 @@ export function Header() {
               onSignOut={handleSignOut}
               side="left"
             >
-              <button
-                type="button"
-                aria-label="Open navigation"
-                className="inline-flex size-9 items-center justify-center rounded-full text-[#181113] outline-none focus-visible:ring-2 focus-visible:ring-[#800020]"
-              >
-                <Icon icon="line-md:menu" className="h-5 w-5" />
-              </button>
+              <MenuTrigger user={user} avatarUrl={avatarUrl} />
             </NavSheet>
           </div>
           <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
             Beddn
           </Link>
           <div className="absolute right-4">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2">
-                  <Avatar className="size-9 cursor-pointer">
-                    <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
-                    <AvatarFallback className="bg-[#f8eef2] text-xs font-medium text-[#800020]">
-                      {getInitials(user)}
-                    </AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem>
-                    <Link href={ROUTES.saved} className="flex items-center gap-2 w-full">
-                      <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
-                    </Link>
-                  </DropdownMenuItem>
-                  {showHostWorkspace ? (
-                    <>
-                      <DropdownMenuItem>
-                        <Link href={ROUTES.dashboard} className="flex items-center gap-2 w-full">
-                          <Icon icon="line-md:account" className="h-4 w-4" /> Host dashboard
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Link href={ROUTES.search} className="flex items-center gap-2 w-full">
-                          <Icon icon="line-md:search" className="h-4 w-4" /> Switch to traveler
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem>
-                      <Link href={ROUTES.newListing} className="flex items-center gap-2 w-full">
-                        <Icon icon="line-md:briefcase" className="h-4 w-4" /> Become a host
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  {isAdmin && (
-                    <DropdownMenuItem>
-                      <Link href={ROUTES.adminHome} className="flex items-center gap-2 w-full">
-                        <Icon icon="line-md:check-all" className="h-4 w-4" /> Admin dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <span className="flex items-center gap-2">
-                      <Icon icon="line-md:log-out" className="h-4 w-4" /> Sign out
-                    </span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <AuthDialog defaultHostIntent>
-                <button className="inline-flex size-9 items-center justify-center rounded-full text-[#181113]">
-                  <Icon icon="line-md:account" className="h-5 w-5" />
-                  <span className="sr-only">Become a host</span>
-                </button>
-              </AuthDialog>
-            )}
+            <CurrencySwitcher />
           </div>
         </div>
       </header>
-      <nav
-        className={`fixed inset-x-0 bottom-0 z-40 grid w-full grid-cols-4 border-t border-black/10 bg-white px-1.5 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] text-center text-[11px] shadow-[0_-4px_16px_rgba(24,17,19,0.05)] transition-transform duration-300 md:hidden ${
-          bottomNavVisible ? "translate-y-0" : "translate-y-full pointer-events-none"
-        }`}
-      >
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid w-full grid-cols-4 border-t border-black/10 bg-white px-1.5 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] text-center text-[11px] shadow-[0_-4px_16px_rgba(24,17,19,0.05)] md:hidden">
           <Link
             href={ROUTES.home}
             className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${

@@ -34,7 +34,8 @@ interface AdminActionBody {
     | "remove_admin"
     | "flag_image"
     | "unflag_image"
-    | "set_feature_status";
+    | "set_feature_status"
+    | "reset_host_pin";
   id: string;
   reason?: string;
   // Featured placement fields (feature_listing / extend_feature).
@@ -278,6 +279,17 @@ export async function POST(request: Request) {
     const { error } = await admin
       .from("feature_requests")
       .update({ status })
+      .eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  // `id` here is the profile/user id (the PIN lives on profiles, not hosts) —
+  // for a locked-out or forgetful host, since the self-serve reset in
+  // /api/host/pin requires the current PIN.
+  if (body.action === "reset_host_pin") {
+    const { error } = await admin
+      .from("profiles")
+      .update({ host_pin_hash: null, host_pin_updated_at: null, host_pin_fail_count: 0, host_pin_locked_until: null })
       .eq("id", body.id);
     errorMessage = error?.message || null;
   }

@@ -26,6 +26,8 @@ import { CalendarDays, Clock, Compass, Moon, Plus, Search, Trash2, ChevronLeft, 
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 import { AMENITY_LABEL } from "@/lib/amenities";
 import { EXPERIENCE_GROUPS, EXPERIENCE_LABEL } from "@/lib/experience-types";
+import { useCurrency } from "@/components/currency-provider";
+import { convertAmount, formatMoney } from "@/lib/currency";
 import type { Listing, ListingCategory } from "@/lib/types";
 
 const CATEGORY_OPTIONS: {
@@ -136,6 +138,13 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const [latitude, setLatitude] = useState(listing?.latitude ?? -1.29);
   const [longitude, setLongitude] = useState(listing?.longitude ?? 36.82);
   const [currency, setCurrency] = useState(listing?.currency ?? "KES");
+  const { rates } = useCurrency();
+  function usdHint(amount: string) {
+    const value = parseFloat(amount || "0");
+    if (!value) return null;
+    const usd = convertAmount(value, currency, "USD", rates);
+    return usd == null ? null : `≈ ${formatMoney(usd, "USD")}`;
+  }
   const [totalUnits, setTotalUnits] = useState(listing?.total_units?.toString() ?? "1");
   const [bookingMode, setBookingMode] = useState(listing?.booking_mode ?? "manual_accept");
   const [minimumHours, setMinimumHours] = useState(listing?.minimum_hours?.toString() ?? "1");
@@ -715,6 +724,10 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               <SelectItem value="USD">USD</SelectItem>
             </SelectContent>
           </Select>
+          <p className="mt-1 text-xs text-muted-foreground">
+            You get paid in {currency}. Guests who switch their display currency see an
+            estimate — Beddn sets that rate.
+          </p>
         </div>
         {categories.includes("hourly") && (
           <div>
@@ -726,6 +739,9 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               value={hourlyPrice}
               onChange={(e) => setHourlyPrice(e.target.value)}
             />
+            {usdHint(hourlyPrice) && (
+              <p className="mt-1 text-xs text-muted-foreground">{usdHint(hourlyPrice)}</p>
+            )}
           </div>
         )}
         {categories.includes("overnight") && (
@@ -738,6 +754,9 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               value={overnightPrice}
               onChange={(e) => setOvernightPrice(e.target.value)}
             />
+            {usdHint(overnightPrice) && (
+              <p className="mt-1 text-xs text-muted-foreground">{usdHint(overnightPrice)}</p>
+            )}
           </div>
         )}
         {categories.includes("experience") && (
@@ -750,6 +769,9 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               value={experiencePrice}
               onChange={(e) => setExperiencePrice(e.target.value)}
             />
+            {usdHint(experiencePrice) && (
+              <p className="mt-1 text-xs text-muted-foreground">{usdHint(experiencePrice)}</p>
+            )}
           </div>
         )}
       </div>

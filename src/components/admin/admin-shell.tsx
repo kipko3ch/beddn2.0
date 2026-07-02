@@ -22,6 +22,7 @@ import {
   BarChart3,
   Star,
   Lightbulb,
+  Coins,
 } from "lucide-react";
 
 const ADMIN_NAV = [
@@ -39,6 +40,7 @@ const ADMIN_NAV = [
   { href: ROUTES.adminDisputes, label: "Disputes", icon: ShieldCheck },
   { href: ROUTES.adminFeedback, label: "Feedback", icon: MessageSquare },
   { href: ROUTES.adminFeatureRequests, label: "Feature requests", icon: Lightbulb },
+  { href: ROUTES.adminCurrency, label: "Currency", icon: Coins },
   { href: ROUTES.adminDemand, label: "Demand", icon: TrendingUp },
   { href: ROUTES.adminNotifications, label: "Notifications", icon: Bell },
   { href: ROUTES.adminDestinations, label: "Destinations", icon: MapPin },

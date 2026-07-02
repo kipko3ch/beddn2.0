@@ -7,6 +7,7 @@ import { Header } from "@/components/header";
 import { AuthDialog } from "@/components/auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/empty-state";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import type { User } from "@supabase/supabase-js";
@@ -157,27 +158,30 @@ function ReviewInner() {
           </Link>
         </div>
       ) : !user ? (
-        <div className="rounded-3xl border bg-white p-8 text-center shadow-sm">
-          <h2 className="font-brand text-2xl text-[#2b000a]">Log in to review</h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            Reviews are tied to your Beddn account so hosts and guests can trust them.
-          </p>
-          <AuthDialog>
-            <button className="mt-5 inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]">
-              Log in to continue
-            </button>
-          </AuthDialog>
+        <div className="rounded-3xl border bg-white shadow-sm">
+          <EmptyState
+            image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029375/empty-reviews_t8xgis.png"
+            title="Log in to review"
+            subtitle="Reviews are tied to your Beddn account so hosts and guests can trust them."
+          >
+            <AuthDialog>
+              <button className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]">
+                Log in to continue
+              </button>
+            </AuthDialog>
+          </EmptyState>
         </div>
       ) : !activeListing ? (
-        <div className="rounded-3xl border bg-white p-8 shadow-sm">
-          <h2 className="font-brand text-2xl text-[#2b000a]">Which stay are you reviewing?</h2>
+        <div className="rounded-3xl border bg-white shadow-sm">
           {myStays.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              You don&apos;t have any stays to review yet. After you inquire about a place on Beddn,
-              it&apos;ll show up here so you can leave a review.
-            </p>
+            <EmptyState
+              image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029375/empty-reviews_t8xgis.png"
+              title="Which stay are you reviewing?"
+              subtitle="You don't have any stays to review yet. After you inquire about a place on Beddn, it'll show up here so you can leave a review."
+            />
           ) : (
-            <>
+            <div className="p-8">
+              <h2 className="font-brand text-2xl text-[#2b000a]">Which stay are you reviewing?</h2>
               <p className="mt-1.5 text-sm text-muted-foreground">
                 Pick the place you stayed at to leave your review.
               </p>
@@ -194,7 +198,7 @@ function ReviewInner() {
                   </button>
                 ))}
               </div>
-            </>
+            </div>
           )}
         </div>
       ) : (
