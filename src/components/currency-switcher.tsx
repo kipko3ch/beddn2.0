@@ -31,14 +31,14 @@ export function CurrencySwitcher() {
         <DropdownMenuItem onClick={() => setDisplay("AUTO")}>
           <span className="flex w-full items-center justify-between">
             Local price
-            {display === "AUTO" && <span className="text-xs text-[#800020]">✓</span>}
+            {display === "AUTO" && <span className="text-xs text-cranberry">✓</span>}
           </span>
         </DropdownMenuItem>
         {DISPLAY_CURRENCIES.map((currency) => (
           <DropdownMenuItem key={currency} onClick={() => setDisplay(currency)}>
             <span className="flex w-full items-center justify-between">
               {LABEL[currency] ?? currency}
-              {display === currency && <span className="text-xs text-[#800020]">✓</span>}
+              {display === currency && <span className="text-xs text-cranberry">✓</span>}
             </span>
           </DropdownMenuItem>
         ))}

@@ -111,7 +111,7 @@ export function ListingCard({
           {reviews.length > 0 && (
             <div className="flex shrink-0 items-center gap-1 text-sm">
               <span>{avgRating.toFixed(1)}</span>
-              <Star className="h-4 w-4 fill-[#800020] text-[#800020]" />
+              <Star className="h-4 w-4 fill-cranberry text-cranberry" />
               <span className="text-muted-foreground">({reviews.length})</span>
             </div>
           )}
@@ -121,7 +121,7 @@ export function ListingCard({
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {listing.categories.map((cat) => (
-            <Badge key={cat} variant="secondary" className="rounded-full px-2 py-0 text-xs">
+            <Badge key={cat} className="rounded-full bg-cream/70 px-2 py-0 text-xs text-merlot hover:bg-cream/70">
               {cat}
             </Badge>
           ))}

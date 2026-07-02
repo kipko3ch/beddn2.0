@@ -39,8 +39,11 @@ export default async function HostLayout({
   const hostStatus = (host?.status as string | undefined) ?? null;
 
   // A host who exists but isn't approved sees a clear status screen instead of
-  // the dashboard — except the profile page, so they can finish their details.
-  if (host && !isAdmin && hostStatus && hostStatus !== 'approved' && pathname !== ROUTES.dashboardProfile) {
+  // the dashboard. Only a *pending* host (still awaiting the first review) can
+  // still reach the profile page to finish their details — a rejected or
+  // suspended host is blocked everywhere, full stop.
+  const canEditProfileWhileWaiting = hostStatus === 'pending' && pathname === ROUTES.dashboardProfile;
+  if (host && !isAdmin && hostStatus && hostStatus !== 'approved' && !canEditProfileWhileWaiting) {
     return <HostApprovalScreen status={hostStatus} />;
   }
 

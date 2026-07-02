@@ -33,6 +33,10 @@ const HOST_FIELDS = [
   "amenities",
   "house_rules",
   "listing_status",
+  "experience_duration",
+  "experience_meeting_point",
+  "experience_group_size",
+  "experience_requirements",
 ] as const;
 
 // Fields only an admin may set.

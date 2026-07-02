@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ListingForm } from "@/components/listing-form";
+import { ExperienceForm } from "@/components/experience-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
@@ -238,6 +239,10 @@ export default function NewListingPage() {
         </div>
       </div>
     );
+  }
+
+  if (initialCategory === "experience") {
+    return <ExperienceForm hostId={hostId!} isAdmin={isAdmin} />;
   }
 
   return <ListingForm hostId={hostId!} isAdmin={isAdmin} initialCategory={initialCategory} />;

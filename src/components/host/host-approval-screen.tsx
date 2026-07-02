@@ -1,11 +1,27 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
+import { createClient } from "@/lib/supabase/client";
 
 // Shown inside the host area when a host account exists but isn't approved yet.
 // Kept encouraging and clear — the host knows exactly what's happening and what
 // they can still do (finish their profile) while an admin reviews them.
 export function HostApprovalScreen({ status }: { status: string }) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    await supabase.auth.signOut();
+    router.push(ROUTES.home);
+    router.refresh();
+  }
+
   const copy: Record<string, { title: string; body: string; tone: string; icon: string }> = {
     pending: {
       title: "Your host account is under review",
@@ -52,18 +68,28 @@ export function HostApprovalScreen({ status }: { status: string }) {
         <p className="mx-auto mt-4 max-w-lg text-base text-muted-foreground">{c.body}</p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href={ROUTES.dashboardProfile}
-            className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
-          >
-            Complete your profile
-          </Link>
+          {status === "pending" && (
+            <Link
+              href={ROUTES.dashboardProfile}
+              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+            >
+              Complete your profile
+            </Link>
+          )}
           <Link
             href={ROUTES.search}
             className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-white"
           >
             Explore stays
           </Link>
+          <button
+            type="button"
+            disabled={signingOut}
+            onClick={handleSignOut}
+            className="inline-flex h-11 items-center rounded-full border border-red-200 bg-red-50 px-6 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-55 cursor-pointer"
+          >
+            {signingOut ? "Signing out..." : "Sign out"}
+          </button>
         </div>
       </main>
     </div>

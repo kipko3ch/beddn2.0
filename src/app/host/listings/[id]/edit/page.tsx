@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ListingForm } from "@/components/listing-form";
+import { ExperienceForm } from "@/components/experience-form";
 import type { Listing } from "@/lib/types";
 
 export default function EditListingPage({
@@ -46,6 +47,17 @@ export default function EditListingPage({
 
   if (!listing) {
     return <p className="text-muted-foreground">Listing not found</p>;
+  }
+
+  const isExp = (listing.categories || listing.category || []).includes("experience");
+
+  if (isExp) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold mb-6">Edit experience</h1>
+        <ExperienceForm listing={listing} isAdmin={isAdmin} />
+      </div>
+    );
   }
 
   return (

@@ -44,12 +44,39 @@ export default function HostRequestsPage() {
 
   async function load() {
     setLoading(true);
-    const { data: bookings } = await supabase
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      setLoading(false);
+      return;
+    }
+
+    const [{ data: profile }, { data: hostData }] = await Promise.all([
+      supabase.from("profiles").select("is_admin").eq("id", userData.user.id).maybeSingle(),
+      supabase.from("hosts").select("id").eq("user_id", userData.user.id).maybeSingle(),
+    ]);
+
+    const isAdmin = profile?.is_admin ?? false;
+    const hostId = hostData?.id;
+
+    if (!isAdmin && !hostId) {
+      setPending([]);
+      setConfirmed([]);
+      setLeads([]);
+      setLoading(false);
+      return;
+    }
+
+    let query = supabase
       .from("bookings")
       .select("*, listing:listings(name, title, city)")
       .in("status", ["requested", "paid_pending_host", "confirmed"])
       .order("created_at", { ascending: false });
 
+    if (!isAdmin) {
+      query = query.eq("host_id", hostId);
+    }
+
+    const { data: bookings } = await query;
     const rows = (bookings as BookingRow[]) ?? [];
     setPending(rows.filter((b) => b.status === "requested" || b.status === "paid_pending_host"));
     setConfirmed(rows.filter((b) => b.status === "confirmed"));

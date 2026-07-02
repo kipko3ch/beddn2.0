@@ -22,10 +22,24 @@ export default function HostLoginPage() {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
 
-  // Already signed in? Go straight to the dashboard.
+  // Already signed in? Go straight to the dashboard (if not rejected).
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) router.replace(ROUTES.dashboard);
+      if (data.user) {
+        supabase
+          .from("hosts")
+          .select("status")
+          .eq("user_id", data.user.id)
+          .maybeSingle()
+          .then(async ({ data: host }) => {
+            if (host?.status === "rejected") {
+              await supabase.auth.signOut();
+              setError("Your host profile has been rejected. Access is denied.");
+            } else {
+              router.replace(ROUTES.dashboard);
+            }
+          });
+      }
     });
   }, [supabase, router]);
 

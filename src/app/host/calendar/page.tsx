@@ -67,24 +67,59 @@ export default function CalendarPage() {
   }
 
   async function load() {
-    const [bookingsRes, slotsRes, listingsRes] = await Promise.all([
-      supabase
-        .from("bookings")
-        .select("*, listing:listings(name, title)")
-        .in("status", ["paid_pending_host", "confirmed", "completed"])
-        .order("start_datetime", { ascending: true }),
-      supabase
-        .from("availability_slots")
-        .select("*, listing:listings(name, title)")
-        .order("start_datetime", { ascending: true })
-        .limit(100),
-      supabase.from("listings").select("*").order("created_at", { ascending: false }),
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
+    const [{ data: profile }, { data: hostData }] = await Promise.all([
+      supabase.from("profiles").select("is_admin").eq("id", userData.user.id).maybeSingle(),
+      supabase.from("hosts").select("id").eq("user_id", userData.user.id).maybeSingle(),
     ]);
+
+    const isAdmin = profile?.is_admin ?? false;
+    const hostId = hostData?.id;
+
+    if (!isAdmin && !hostId) return;
+
+    let listingsQuery = supabase.from("listings").select("*").order("created_at", { ascending: false });
+    if (!isAdmin) {
+      listingsQuery = listingsQuery.eq("host_id", hostId);
+    }
+    const { data: listingsData } = await listingsQuery;
+    const listingsList = (listingsData as Listing[]) ?? [];
+    setListings(listingsList);
+    setListingId(listingsList[0]?.id ?? "");
+
+    const listingIds = listingsList.map((l) => l.id);
+
+    if (listingIds.length === 0) {
+      setBookings([]);
+      setSlots([]);
+      setInquiries([]);
+      return;
+    }
+
+    let bookingsQuery = supabase
+      .from("bookings")
+      .select("*, listing:listings(name, title)")
+      .in("status", ["paid_pending_host", "confirmed", "completed"])
+      .order("start_datetime", { ascending: true });
+    if (!isAdmin) {
+      bookingsQuery = bookingsQuery.eq("host_id", hostId);
+    }
+
+    let slotsQuery = supabase
+      .from("availability_slots")
+      .select("*, listing:listings(name, title)")
+      .order("start_datetime", { ascending: true })
+      .limit(100);
+    if (!isAdmin) {
+      slotsQuery = slotsQuery.in("listing_id", listingIds);
+    }
+
+    const [bookingsRes, slotsRes] = await Promise.all([bookingsQuery, slotsQuery]);
 
     setBookings((bookingsRes.data as Booking[]) ?? []);
     setSlots((slotsRes.data as AvailabilitySlot[]) ?? []);
-    setListings((listingsRes.data as Listing[]) ?? []);
-    setListingId((listingsRes.data?.[0]?.id as string | undefined) ?? "");
 
     // Demand layer: guest inquiries (the lead/inquiry pivot replaces paid
     // bookings as the primary signal). Service-role API scopes to this host.
