@@ -98,6 +98,10 @@ export interface Listing {
   house_rules: string | null;
   is_active: boolean;
   is_verified: boolean;
+  experience_duration?: string | null;
+  experience_meeting_point?: string | null;
+  experience_group_size?: number | null;
+  experience_requirements?: string | null;
   created_at: string;
   updated_at: string;
   // Joined

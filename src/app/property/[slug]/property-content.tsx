@@ -188,10 +188,12 @@ export function PropertyContent({
   function openLightbox(index: number) {
     setLightboxIndex(index);
   }
-  const categories = (listing.categories || listing.category || []) as ListingCategory[];
-  const [selectedCategory, setSelectedCategory] = useState<ListingCategory>(
-    categories[0] || "overnight"
+  const categories = ((listing.categories || listing.category || []) as ListingCategory[]).filter(
+    (c) => c !== "experience"
   );
+  const [selectedCategory, setSelectedCategory] = useState<ListingCategory>(() => {
+    return categories.includes("hourly") ? "hourly" : "overnight";
+  });
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => defaultDateRange());
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(defaultDateRange().from!));
   const [startTime, setStartTime] = useState("10:00");
@@ -624,7 +626,7 @@ export function PropertyContent({
           "Check Availability" tap: dates come pre-selected, so the action is
           ready the moment this renders. */}
       <section id="deals" className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border bg-white shadow-sm">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border bg-white shadow-sm">
           <div className="border-b bg-cream/40 p-4 sm:p-5">
             <h2 className="text-lg font-bold">Check availability</h2>
             {isOwnListing && (
@@ -643,130 +645,173 @@ export function PropertyContent({
                       : "border-neutral-200 bg-white"
                   }`}
                 >
-                  {cat === "experience" ? "Experience / class" : cat}
+                  {cat}
                 </button>
               ))}
             </div>
-            {(selectedCategory === "hourly" || selectedCategory === "experience") && (
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <label className="text-sm font-medium">
-                  Start time
-                  <input
-                    type="time"
-                    value={startTime}
-                    onChange={(event) => setStartTime(event.target.value)}
-                    className="mt-1 h-10 w-full rounded-lg border px-3"
-                  />
-                </label>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 p-5 sm:p-6 lg:p-8">
+            {/* Left side: selectors, pricing and reserve button */}
+            <div className="flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
                 {selectedCategory === "hourly" && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="text-sm font-medium">
+                      Start time
+                      <input
+                        type="time"
+                        value={startTime}
+                        onChange={(event) => setStartTime(event.target.value)}
+                        className="mt-1 h-10 w-full rounded-lg border px-3"
+                      />
+                    </label>
+                    <label className="text-sm font-medium">
+                      Hours
+                      <input
+                        type="number"
+                        min="1"
+                        value={durationHours}
+                        onChange={(event) => setDurationHours(event.target.value)}
+                        className="mt-1 h-10 w-full rounded-lg border px-3"
+                      />
+                    </label>
+                  </div>
+                )}
+                
+                <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-sm font-medium">
-                    Hours
+                    Guests
                     <input
                       type="number"
                       min="1"
-                      value={durationHours}
-                      onChange={(event) => setDurationHours(event.target.value)}
+                      value={guests}
+                      onChange={(event) => setGuests(event.target.value)}
                       className="mt-1 h-10 w-full rounded-lg border px-3"
                     />
                   </label>
-                )}
-                <label className="text-sm font-medium">
-                  {selectedCategory === "experience" ? "Seats" : "Guests"}
-                  <input
-                    type="number"
-                    min="1"
-                    value={guests}
-                    onChange={(event) => setGuests(event.target.value)}
-                    className="mt-1 h-10 w-full rounded-lg border px-3"
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-          <div className="px-4 py-4 sm:px-10 sm:pb-8 sm:pt-6">
-            <div className="px-1 pb-2 sm:px-4">
-              <h3 className="text-xl font-bold tracking-tight text-[#202124] sm:text-2xl">
-                {dateSummary.title}
-              </h3>
-              <p className="mt-1 text-sm font-medium text-[#6d6d6d]">{dateSummary.subtitle}</p>
-            </div>
-            <div className="md:hidden">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={handleSelectRange}
-                month={calendarMonth}
-                onMonthChange={setCalendarMonth}
-                numberOfMonths={1}
-                showOutsideDays={false}
-                disabled={disabledCalendarDays}
-                className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:clamp(2.45rem,12vw,3rem)]"
-                classNames={PROPERTY_CALENDAR_CLASS_NAMES}
-              />
-            </div>
-            <div className="hidden md:block">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={handleSelectRange}
-                month={calendarMonth}
-                onMonthChange={setCalendarMonth}
-                numberOfMonths={2}
-                showOutsideDays={false}
-                disabled={disabledCalendarDays}
-                className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:3.45rem]"
-                classNames={PROPERTY_CALENDAR_CLASS_NAMES}
-              />
-            </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setDateRange(undefined)}
-                className="rounded-full px-2 py-1 text-sm font-semibold text-[#202124] underline-offset-4 hover:underline"
-              >
-                Clear dates
-              </button>
-            </div>
-          </div>
-          <div className="border-t p-4 sm:p-5">
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className={`text-sm font-bold ${hasAvailability ? "text-[#1a7f46]" : "text-amber-700"}`}>
-                {!selectedDate
-                  ? "Pick your dates above."
-                  : hasAvailability
-                  ? "Looks available — request to book or message the host."
-                  : "These dates may not be available. Try another date or ask the host."}
-              </p>
-              {isOwnListing ? (
-                <Link
-                  href={`/host/listings/${listing.id}/edit`}
-                  className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-7 text-sm font-medium text-white hover:bg-merlot"
-                >
-                  Manage listing
-                </Link>
-              ) : (
-                <div className="flex flex-wrap items-center gap-2">
-                  {hasAvailability && (
-                    <Link
-                      href={reserveHref}
-                      className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
-                    >
-                      Request to book
-                    </Link>
-                  )}
-                  <Button
-                    onClick={openInquiry}
-                    variant={hasAvailability ? "outline" : "default"}
-                    className={
-                      hasAvailability
-                        ? "rounded-full px-6"
-                        : "rounded-full bg-[#800020] px-7 hover:bg-merlot"
-                    }
-                  >
-                    {hasAvailability ? "Message host" : "Ask host anyway"}
-                  </Button>
                 </div>
-              )}
+
+                {/* Estimate calculations summary */}
+                {selectedCategory === "overnight" && overnightEstimate && (
+                  <div className="rounded-2xl border p-4 bg-zinc-50 space-y-2 mt-4 animate-fade-in">
+                    <p className="text-xs text-muted-foreground font-semibold">PRICE ESTIMATE</p>
+                    <div className="flex justify-between text-sm font-medium text-zinc-700">
+                      <span>{formatPrice(Number(listing.overnight_price || 0), priceCurrency(listing))} x {overnightEstimate.nights} nights</span>
+                      <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-2 text-base font-bold text-[#202124]">
+                      <span>Total Estimate</span>
+                      <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCategory === "hourly" && listing.hourly_price && (
+                  <div className="rounded-2xl border p-4 bg-zinc-50 space-y-2 mt-4 animate-fade-in">
+                    <p className="text-xs text-muted-foreground font-semibold">PRICE ESTIMATE</p>
+                    <div className="flex justify-between text-sm font-medium text-zinc-700">
+                      <span>{formatPrice(Number(listing.hourly_price), priceCurrency(listing))} x {durationHours} hours</span>
+                      <span>{formatPrice(Number(listing.hourly_price) * Number(durationHours), priceCurrency(listing))}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-2 text-base font-bold text-[#202124]">
+                      <span>Total Estimate</span>
+                      <span>{formatPrice(Number(listing.hourly_price) * Number(durationHours), priceCurrency(listing))}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Status and Action Buttons */}
+              <div className="border-t pt-4 space-y-3">
+                <p className={`text-sm font-bold ${hasAvailability ? "text-[#1a7f46]" : "text-amber-700"}`}>
+                  {!selectedDate
+                    ? "Pick your dates on the calendar."
+                    : hasAvailability
+                    ? "Looks available — request to book or message the host."
+                    : "These dates may not be available. Try another date or ask the host."}
+                </p>
+                {isOwnListing ? (
+                  <Link
+                    href={`/host/listings/${listing.id}/edit`}
+                    className="flex w-full h-11 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot transition"
+                  >
+                    Manage listing
+                  </Link>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {hasAvailability && (
+                      <Link
+                        href={reserveHref}
+                        className="flex w-full h-11 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot transition shadow-sm"
+                      >
+                        Request to book
+                      </Link>
+                    )}
+                    <Button
+                      onClick={openInquiry}
+                      variant={hasAvailability ? "outline" : "default"}
+                      className={
+                        hasAvailability
+                          ? "w-full h-11 rounded-full border-neutral-300 font-bold"
+                          : "w-full h-11 rounded-full bg-[#800020] font-bold hover:bg-merlot"
+                      }
+                    >
+                      {hasAvailability ? "Message host" : "Ask host anyway"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right side: Calendar */}
+            <div className="border-t pt-6 lg:border-t-0 lg:pt-0 lg:border-l lg:pl-8 flex flex-col items-center">
+              <div className="mb-4 text-center">
+                <h3 className="text-lg font-bold text-[#202124] flex items-center gap-1.5 justify-center">
+                  <Calendar className="h-5 w-5 text-[#800020]" />
+                  {dateSummary.title}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{dateSummary.subtitle}</p>
+              </div>
+              <div className="w-full">
+                <div className="md:hidden">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={handleSelectRange}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    numberOfMonths={1}
+                    showOutsideDays={false}
+                    disabled={disabledCalendarDays}
+                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:2.0rem]"
+                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
+                  />
+                </div>
+                <div className="hidden md:block">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={handleSelectRange}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    numberOfMonths={1}
+                    showOutsideDays={false}
+                    disabled={disabledCalendarDays}
+                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:2.35rem]"
+                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
+                  />
+                </div>
+              </div>
+              <div className="mt-4 w-full flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setDateRange(undefined)}
+                  className="text-xs font-semibold text-[#800020] hover:underline"
+                >
+                  Clear dates
+                </button>
+              </div>
             </div>
           </div>
         </div>

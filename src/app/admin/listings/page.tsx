@@ -54,6 +54,17 @@ export default function AdminListingsPage() {
   const [featured, setFeatured] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [tab, setTab] = useState<"stays" | "experiences">("stays");
+
+  const stays = listings.filter((l) => {
+    const cats = l.categories || l.category || [];
+    return !cats.includes("experience");
+  });
+  const experiences = listings.filter((l) => {
+    const cats = l.categories || l.category || [];
+    return cats.includes("experience");
+  });
+  const displayedListings = tab === "stays" ? stays : experiences;
 
   async function load() {
     setLoading(true);
@@ -113,18 +124,38 @@ export default function AdminListingsPage() {
         </p>
       </div>
 
+      {/* Stays / Experiences tabs */}
+      <div className="mb-6 inline-flex rounded-full border bg-white p-1 text-sm font-semibold">
+        {(["stays", "experiences"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`rounded-full px-4 py-1.5 capitalize transition-colors ${
+              tab === t ? "bg-[#800020] text-white" : "text-[#6f6568] hover:text-[#2b000a]"
+            }`}
+          >
+            {t === "stays" ? `Stays (${stays.length})` : `Experiences (${experiences.length})`}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <DashboardTableSkeleton />
-      ) : listings.length === 0 ? (
+      ) : displayedListings.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-admin_ypowli.png"
-          title="No listings yet"
-          subtitle="Listings will appear here as hosts create them."
+          title={tab === "experiences" ? "No experiences yet" : "No listings yet"}
+          subtitle={
+            tab === "experiences"
+              ? "Experiences created by hosts will appear here."
+              : "Listings will appear here as hosts create them."
+          }
           size="sm"
         />
       ) : (
         <div className="space-y-3">
-          {listings.map((listing) => {
+          {displayedListings.map((listing) => {
             const status = statusOf(listing);
             const isPublic = status === "active";
             const featuredPlacement = featured.get(listing.id);

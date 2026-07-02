@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Listing, Review } from "@/lib/types";
 import { PropertyContent } from "./property-content";
+import { ExperienceContent } from "./experience-content";
 
 export default async function PropertyPage({
   params,
@@ -23,7 +24,7 @@ export default async function PropertyPage({
   const { data: listingData } = await admin
     .from("listings")
     .select(
-      "*, listing_images(*), host:hosts(user_id, name, bio, avatar_url, is_verified), reviews(*, profile:profiles(full_name)), blocked_dates(date)"
+      "*, listing_images(*), host:hosts(user_id, name, bio, avatar_url, is_verified), reviews(*, profile:profiles(full_name)), blocked_dates(date), availability_slots(*)"
     )
     .eq("slug", slug)
     .order("created_at", { ascending: false, referencedTable: "reviews" })
@@ -112,13 +113,21 @@ export default async function PropertyPage({
           Preview — this is how your listing will look. It is not live to guests yet.
         </div>
       )}
-      <PropertyContent
-        listing={listingData as Listing}
-        reviews={reviews}
-        blockedDateStrings={blockedDateStrings}
-        priceByDate={priceByDate}
-        isOwnListing={isOwnListing}
-      />
+      {((listingData.categories || listingData.category || []) as string[]).includes("experience") ? (
+        <ExperienceContent
+          listing={listingData as any}
+          reviews={reviews}
+          isOwnListing={isOwnListing}
+        />
+      ) : (
+        <PropertyContent
+          listing={listingData as Listing}
+          reviews={reviews}
+          blockedDateStrings={blockedDateStrings}
+          priceByDate={priceByDate}
+          isOwnListing={isOwnListing}
+        />
+      )}
     </>
   );
 }

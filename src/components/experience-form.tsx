@@ -33,6 +33,12 @@ import { useCurrency } from "@/components/currency-provider";
 import { convertAmount, formatMoney } from "@/lib/currency";
 import type { Listing } from "@/lib/types";
 
+const TIME_SLOTS = [
+  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", 
+  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", 
+  "20:00", "21:00", "22:00", "23:00"
+];
+
 const WEEK_DAYS = [
   { value: 0, label: "Sun" },
   { value: 1, label: "Mon" },
@@ -74,9 +80,16 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
     listing?.experience_types ?? []
   );
   const [experienceSearch, setExperienceSearch] = useState("");
-  const [experienceDuration, setExperienceDuration] = useState(
-    (listing as any)?.experience_duration ?? ""
-  );
+  const [durationValue, setDurationValue] = useState(() => {
+    const val = (listing as any)?.experience_duration || "3";
+    const match = val.match(/^(\d+)/);
+    return match ? match[1] : "3";
+  });
+  const [durationUnit, setDurationUnit] = useState(() => {
+    const val = (listing as any)?.experience_duration || "hours";
+    const match = val.match(/[a-zA-Z]+/);
+    return match ? match[0].toLowerCase() : "hours";
+  });
   const [experienceGroupSize, setExperienceGroupSize] = useState(
     (listing as any)?.experience_group_size?.toString() ?? "10"
   );
@@ -217,7 +230,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
       is_active: active,
       is_verified: isAdmin ? isVerified : listing?.is_verified ?? false,
       // Custom Experience fields
-      experience_duration: experienceDuration,
+      experience_duration: `${durationValue} ${durationUnit}`,
       experience_meeting_point: experienceMeetingPoint,
       experience_group_size: Math.max(1, parseInt(experienceGroupSize || "10")),
       experience_requirements: experienceRequirements || null,
@@ -348,22 +361,37 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
   // Step 3: Duration
   steps.push({
     title: "How long is the experience?",
-    subtitle: "Let guests know the timeframe so they can plan their day.",
-    valid: experienceDuration.trim().length > 0,
+    subtitle: "Select the timeframe for your experience.",
+    valid: true,
     content: (
-      <div className="space-y-4">
-        <Label htmlFor="duration">Duration / Timeframe</Label>
-        <Input
-          id="duration"
-          autoFocus
-          value={experienceDuration}
-          onChange={(e) => setExperienceDuration(e.target.value)}
-          placeholder="e.g. 3 hours, 2 days, Half-day"
-          className="h-12 text-base border-[#FCDCD3] focus:border-[#8A1C32]"
-        />
-        <p className="text-xs text-muted-foreground">
-          Include details like "usually runs from 9:00 AM to 12:00 PM" if helpful.
-        </p>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Duration Value</Label>
+          <Select value={durationValue} onValueChange={(val) => setDurationValue(val || "3")}>
+            <SelectTrigger className="border-[#FCDCD3] mt-2 h-12 text-base">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 18, 24].map((num) => (
+                <SelectItem key={num} value={String(num)}>
+                  {num}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Duration Unit</Label>
+          <Select value={durationUnit} onValueChange={(val) => setDurationUnit(val || "hours")}>
+            <SelectTrigger className="border-[#FCDCD3] mt-2 h-12 text-base">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="hours">Hours</SelectItem>
+              <SelectItem value="days">Days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     ),
   });
@@ -659,21 +687,35 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
                   </div>
                   <div>
                     <Label className="text-xs">Start Time</Label>
-                    <Input
-                      type="time"
+                    <Select
                       value={slot.startTime}
-                      onChange={(event) => updateDateSlot(slot.id, { startTime: event.target.value })}
-                      className="border-[#FCDCD3]"
-                    />
+                      onValueChange={(val) => updateDateSlot(slot.id, { startTime: val || "10:00" })}
+                    >
+                      <SelectTrigger className="border-[#FCDCD3] h-10 mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIME_SLOTS.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label className="text-xs">End Time</Label>
-                    <Input
-                      type="time"
+                    <Select
                       value={slot.endTime}
-                      onChange={(event) => updateDateSlot(slot.id, { endTime: event.target.value })}
-                      className="border-[#FCDCD3]"
-                    />
+                      onValueChange={(val) => updateDateSlot(slot.id, { endTime: val || "12:00" })}
+                    >
+                      <SelectTrigger className="border-[#FCDCD3] h-10 mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIME_SLOTS.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label className="text-xs">Seats / Capacity</Label>
