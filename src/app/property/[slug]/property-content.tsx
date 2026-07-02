@@ -108,32 +108,7 @@ function compactDate(date?: Date) {
     : "";
 }
 
-const PROPERTY_CALENDAR_CLASS_NAMES = {
-  root: "mx-auto w-full",
-  months: "relative flex w-full flex-col items-center gap-8 md:flex-row md:items-start md:justify-between md:gap-12",
-  month: "w-[calc(var(--cell-size)*7)] max-w-full",
-  month_caption: "mb-5 flex h-10 w-full items-center justify-center px-10",
-  caption_label: "text-lg font-bold text-[#202124] sm:text-xl",
-  nav: "absolute inset-x-0 top-0 flex w-full items-center justify-between",
-  button_previous: "size-10 rounded-full text-[#202124] hover:bg-[#f5f5f5] aria-disabled:text-[#d6d6d6]",
-  button_next: "size-10 rounded-full text-[#202124] hover:bg-[#f5f5f5] aria-disabled:text-[#d6d6d6]",
-  weekdays: "grid grid-cols-7",
-  weekday:
-    "flex h-10 items-center justify-center text-center text-sm font-semibold text-[#6d6d6d]",
-  week: "grid w-full grid-cols-7",
-  day: "relative h-(--cell-size) w-full p-0 text-center",
-  day_button:
-    "mx-auto size-(--cell-size) min-w-0 rounded-full text-base font-semibold text-[#202124] hover:bg-[#f5f5f5] data-[range-start=true]:bg-[#202124] data-[range-start=true]:text-white data-[range-end=true]:bg-[#202124] data-[range-end=true]:text-white data-[selected-single=true]:bg-[#202124] data-[selected-single=true]:text-white data-[range-middle=true]:bg-transparent data-[range-middle=true]:text-[#202124]",
-  range_start:
-    "rounded-l-full bg-[#f4f4f4] after:absolute after:inset-y-0 after:right-0 after:w-1/2 after:bg-[#f4f4f4]",
-  range_middle: "rounded-none bg-[#f4f4f4]",
-  range_end:
-    "rounded-r-full bg-[#f4f4f4] after:absolute after:inset-y-0 after:left-0 after:w-1/2 after:bg-[#f4f4f4]",
-  today: "bg-transparent",
-  disabled: "text-[#adadad] opacity-100 line-through",
-  outside: "invisible",
-  hidden: "invisible",
-};
+
 
 function AmenityItem({ label }: { label: string }) {
   // `label` is the stored amenity string: a catalog slug for new listings, or a
@@ -784,8 +759,7 @@ export function PropertyContent({
                     numberOfMonths={1}
                     showOutsideDays={false}
                     disabled={disabledCalendarDays}
-                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:2.0rem]"
-                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
+                    className="mx-auto bg-transparent p-0 [--cell-radius:999px]"
                   />
                 </div>
                 <div className="hidden md:block">
@@ -798,8 +772,7 @@ export function PropertyContent({
                     numberOfMonths={1}
                     showOutsideDays={false}
                     disabled={disabledCalendarDays}
-                    className="mx-auto bg-transparent p-0 [--cell-radius:999px] [--cell-size:2.35rem]"
-                    classNames={PROPERTY_CALENDAR_CLASS_NAMES}
+                    className="mx-auto bg-transparent p-0 [--cell-radius:999px]"
                   />
                 </div>
               </div>
