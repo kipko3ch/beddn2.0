@@ -64,9 +64,12 @@ export function ListingCard({
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
+  const isExp = (listing.categories || listing.category || []).includes("experience");
+  const detailHref = isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`;
+
   return (
     <Link
-      href={`/property/${listing.slug}`}
+      href={detailHref}
       className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
       onMouseEnter={() => onHover?.(listing.id)}
       onMouseLeave={() => onHover?.(null)}

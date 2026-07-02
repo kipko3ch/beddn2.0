@@ -19,6 +19,7 @@ import {
   AlertCircle,
   X,
   BadgeCheck,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -163,6 +164,17 @@ export function ExperienceContent({
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-12">
+      {/* Back Navigation */}
+      <div className="mb-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[#8A1C32] hover:underline"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to experiences
+        </Link>
+      </div>
+
       {/* Title & Metadata Header */}
       <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="space-y-3">

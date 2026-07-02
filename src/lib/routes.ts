@@ -40,6 +40,7 @@ export const ROUTES = {
   adminUser: (id: string) => `/admin/users/${id}`,
   category: (type: string) => `/category/${type}`,
   property: (slug: string) => `/property/${slug}`,
+  experience: (slug: string) => `/experience/${slug}`,
   reserve: (id: string) => `/reserve/${id}`,
   booking: (token: string) => `/booking/${token}`,
 } as const;

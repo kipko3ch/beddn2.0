@@ -84,10 +84,13 @@ function SavedTile({
   const place = listing.city || listing.area || "Saved";
   const locationLabel = [listing.area, listing.city].filter(Boolean).join(", ");
 
+  const isExp = (listing.categories || listing.category || []).includes("experience");
+  const detailHref = isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`;
+
   return (
     <article className="min-w-0">
       <Link
-        href={`/property/${listing.slug}`}
+        href={detailHref}
         className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
       >
         <div className="relative aspect-[1.28/1] overflow-hidden rounded-lg bg-[#eee6e9] shadow-sm">

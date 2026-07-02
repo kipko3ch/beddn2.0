@@ -263,11 +263,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     );
   }
 
+  const isExp = (listing.categories || listing.category || []).includes("experience");
+  const detailHref = isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`;
+
   // Booking is for registered users only — browsing stays open to everyone.
   if (!user) {
     return (
       <>
-        <CheckoutHeader backHref={`/property/${listing.slug}`} />
+        <CheckoutHeader backHref={detailHref} />
         <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
           <UserCircle className="mb-5 h-14 w-14 text-[#800020]" />
           <h1 className="text-2xl font-bold">Sign in to reserve</h1>
@@ -285,7 +288,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               </Button>
             </AuthDialog>
             <Link
-              href={`/property/${listing.slug}`}
+              href={detailHref}
               className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-muted"
             >
               Back to listing
@@ -299,7 +302,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   if (submittedCode) {
     return (
       <>
-        <CheckoutHeader backHref={`/property/${listing.slug}`} />
+        <CheckoutHeader backHref={detailHref} />
         <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
           <TicketCheck className="mb-5 h-14 w-14 text-[#128c4b]" />
           <h1 className="font-brand text-3xl text-[#2b000a]">Request sent to the host</h1>
@@ -316,7 +319,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           )}
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href={`/property/${listing.slug}`}
+              href={detailHref}
               className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-muted"
             >
               Back to listing
@@ -366,7 +369,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
   return (
     <>
-      <CheckoutHeader backHref={`/property/${listing.slug}`} />
+      <CheckoutHeader backHref={detailHref} />
       <main className="bg-[#fffdfd] px-4 pb-32 pt-6 text-[#181113] sm:px-6 lg:px-8 lg:pb-12">
         <div className="mx-auto mb-6 max-w-6xl">
           <p className="text-sm font-bold uppercase tracking-wide text-[#800020]">
@@ -798,7 +801,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             </Button>
           ) : (
             <Link
-              href={`/property/${listing.slug}`}
+              href={detailHref}
               className="flex h-11 shrink-0 items-center justify-center rounded-full border px-4 text-sm font-semibold"
             >
               Back

@@ -160,7 +160,8 @@ export default function AdminListingsPage() {
             const isPublic = status === "active";
             const featuredPlacement = featured.get(listing.id);
             const busy = busyId === listing.id;
-            const previewHref = `/property/${listing.slug}${isPublic ? "" : "?preview=1"}`;
+            const isExp = (listing.categories || listing.category || []).includes("experience");
+            const previewHref = `${isExp ? "/experience" : "/property"}/${listing.slug}${isPublic ? "" : "?preview=1"}`;
 
             return (
               <div key={listing.id} className="rounded-2xl border bg-white p-4 sm:p-5">

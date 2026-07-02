@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Listing, Review } from "@/lib/types";
 import { PropertyContent } from "./property-content";
 import { ExperienceContent } from "./experience-content";
+import { redirect } from "next/navigation";
 
 export default async function PropertyPage({
   params,
@@ -29,6 +30,14 @@ export default async function PropertyPage({
     .eq("slug", slug)
     .order("created_at", { ascending: false, referencedTable: "reviews" })
     .maybeSingle();
+
+  // Redirect to experience details route if listing is an experience
+  if (listingData) {
+    const cats = (listingData.categories || listingData.category || []) as string[];
+    if (cats.includes("experience")) {
+      redirect(`/experience/${slug}`);
+    }
+  }
 
   let visible = Boolean(listingData?.is_active);
   if (listingData && !visible && isPreview) {

@@ -209,7 +209,7 @@ export default function ListingsPage() {
                       </span>
                     </Button>
                     <a
-                      href={`/property/${listing.slug}${listing.is_active ? "" : "?preview=1"}`}
+                      href={`${(listing.categories || listing.category || []).includes("experience") ? "/experience" : "/property"}/${listing.slug}${listing.is_active ? "" : "?preview=1"}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
