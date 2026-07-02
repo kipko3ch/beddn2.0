@@ -47,6 +47,14 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Brand palette — burgundy (#800020, used everywhere already) stays the
+     primary action color. These four round it out for accents, hovers, and
+     warm backgrounds instead of leaning on flat pink/white everywhere. */
+  --color-merlot: #6b1029;
+  --color-cranberry: #a3193d;
+  --color-crimson: #e8547b;
+  --color-cream: #f3e1c8;
 }
 
 :root {

@@ -37,10 +37,21 @@ function getInitials(user: User | null) {
  * signed in (no separate avatar-dropdown + hamburger pair), a hamburger icon
  * when signed out.
  */
-function MenuTrigger({ user, avatarUrl }: { user: User | null; avatarUrl?: string }) {
+function MenuTrigger({
+  user,
+  avatarUrl,
+  ref,
+  ...props
+}: { user: User | null; avatarUrl?: string } & React.ComponentPropsWithRef<"button">) {
+  // SheetTrigger's `render` prop clones onClick/aria/data-* attributes onto
+  // whatever element we return — they MUST land on the real <button>, so
+  // `...props` (and `ref`) have to be spread here, not swallowed by this
+  // wrapper component.
   if (user) {
     return (
       <button
+        {...props}
+        ref={ref}
         type="button"
         aria-label="Open menu"
         className="rounded-full outline-none ring-offset-background transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
@@ -56,6 +67,8 @@ function MenuTrigger({ user, avatarUrl }: { user: User | null; avatarUrl?: strin
   }
   return (
     <button
+      {...props}
+      ref={ref}
       type="button"
       aria-label="Open menu"
       className="inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#800020]"

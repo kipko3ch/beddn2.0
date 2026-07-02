@@ -174,7 +174,7 @@ export function RoomRateCalendar({
               type="button"
               disabled={isPast}
               onClick={() => openDay(date)}
-              className={`flex min-h-[64px] flex-col items-start rounded-lg border p-1.5 text-left text-xs transition-colors ${
+              className={`flex min-h-[52px] w-full min-w-0 flex-col items-start overflow-hidden rounded-lg border p-1 text-left text-xs transition-colors sm:min-h-[64px] sm:p-1.5 ${
                 isPast
                   ? "cursor-default border-transparent text-[#cbb9bf]"
                   : d?.is_blocked
@@ -188,16 +188,18 @@ export function RoomRateCalendar({
               {!isPast && (
                 <>
                   {d?.is_blocked ? (
-                    <span className="mt-auto text-[10px] font-semibold">Blocked</span>
+                    <span className="mt-auto truncate text-[9px] font-semibold sm:text-[10px]">Blocked</span>
                   ) : (
                     <>
                       {priceLabel != null && (
-                        <span className="mt-auto text-[10px] text-[#6f6568]">
-                          {currency} {Number(priceLabel).toLocaleString()}
+                        <span className="mt-auto w-full truncate text-[9px] text-[#6f6568] sm:text-[10px]">
+                          {Number(priceLabel).toLocaleString()}
                         </span>
                       )}
                       {totalUnits > 1 && (
-                        <span className="text-[10px] font-semibold text-[#128c4b]">{open} left</span>
+                        <span className="w-full truncate text-[9px] font-semibold text-[#128c4b] sm:text-[10px]">
+                          {open} left
+                        </span>
                       )}
                     </>
                   )}

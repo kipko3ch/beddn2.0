@@ -63,6 +63,16 @@ function priceCurrency(listing: Listing) {
   return listing.currency || "KES";
 }
 
+// Grid spans for the up-to-4 side tiles in the desktop mosaic, keyed by how
+// many side tiles actually exist. Fewer photos means the last one stretches
+// to cover what would otherwise be an empty placeholder cell.
+function sideTileSpan(index: number, sideCount: number): string {
+  if (sideCount === 1) return "col-span-2 row-span-2";
+  if (sideCount === 2) return "col-span-2";
+  if (sideCount === 3) return index === 2 ? "col-span-2" : "";
+  return "";
+}
+
 function primaryImage(listing: Listing) {
   return listing.listing_images?.[0]?.url || LOGO_SRC;
 }
@@ -233,6 +243,7 @@ export function PropertyContent({
   const images = listing.listing_images?.length ? listing.listing_images : [
     { id: "fallback", listing_id: listing.id, url: primaryImage(listing), position: 0 },
   ];
+  const sideCount = Math.min(images.length - 1, 4);
 
   const blockedDates = useMemo(
     () => blockedDateStrings.map((date) => new Date(date)),
@@ -429,14 +440,14 @@ export function PropertyContent({
                 return (
                   <span
                     key={cat}
-                    className="inline-flex items-center gap-1 rounded-full bg-[#f5f1f2] px-2.5 py-1 text-xs font-medium capitalize text-[#6f6568]"
+                    className="inline-flex items-center gap-1 rounded-full bg-cream/70 px-2.5 py-1 text-xs font-medium capitalize text-merlot"
                   >
                     <Icon className="h-3.5 w-3.5" /> {cat}
                   </span>
                 );
               })}
               {(listing.is_verified || listing.host?.is_verified) && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#f8eef2] px-2.5 py-1 text-xs font-semibold text-[#800020]">
+                <span className="inline-flex items-center gap-1 rounded-full bg-crimson/15 px-2.5 py-1 text-xs font-semibold text-[#800020]">
                   <BadgeCheck className="h-3.5 w-3.5" />
                   {listing.is_verified ? "Beddn verified" : "Verified host"}
                 </span>
@@ -444,6 +455,14 @@ export function PropertyContent({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            {!isOwnListing && hasAvailability && (
+              <Link
+                href={reserveHref}
+                className="hidden h-9 items-center justify-center rounded-full bg-[#800020] px-5 text-sm font-bold text-white hover:bg-merlot sm:inline-flex"
+              >
+                Request to book
+              </Link>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -493,34 +512,35 @@ export function PropertyContent({
           </span>
         </div>
 
-        {/* Desktop: Airbnb-style mosaic — one hero + four tiles, equal gutters */}
+        {/* Desktop: Airbnb-style mosaic — one hero + up to four tiles. With
+            fewer than 5 photos, the last real tile stretches to cover the
+            space an empty placeholder would otherwise sit in. */}
         <div className="relative hidden overflow-hidden rounded-2xl sm:block">
           <div className="grid h-[420px] grid-cols-4 grid-rows-2 gap-2 lg:h-[480px]">
             <button
               type="button"
               onClick={() => openLightbox(0)}
-              className="relative col-span-2 row-span-2 bg-muted"
+              className={`relative bg-muted ${
+                sideCount === 0 ? "col-span-4 row-span-2" : "col-span-2 row-span-2"
+              }`}
             >
               <Image
                 src={images[0]?.url || LOGO_SRC}
                 alt={listing.name}
                 fill
                 priority
-                sizes="50vw"
+                sizes={sideCount === 0 ? "100vw" : "50vw"}
                 className="object-cover transition-opacity hover:opacity-95"
               />
             </button>
-            {Array.from({ length: 4 }).map((_, i) => {
+            {Array.from({ length: sideCount }).map((_, i) => {
               const image = images[i + 1];
-              if (!image) {
-                return <div key={`empty-${i}`} className="bg-[#f1e6ea]" />;
-              }
               return (
                 <button
                   key={image.id}
                   type="button"
                   onClick={() => openLightbox(i + 1)}
-                  className="relative bg-muted"
+                  className={`relative bg-muted ${sideTileSpan(i, sideCount)}`}
                 >
                   <Image
                     src={image.url}
@@ -605,7 +625,7 @@ export function PropertyContent({
           ready the moment this renders. */}
       <section id="deals" className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border bg-white shadow-sm">
-          <div className="border-b bg-[#fbf7f8] p-4 sm:p-5">
+          <div className="border-b bg-cream/40 p-4 sm:p-5">
             <h2 className="text-lg font-bold">Check availability</h2>
             {isOwnListing && (
               <p className="mt-2 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-[#800020]">
@@ -720,7 +740,7 @@ export function PropertyContent({
               {isOwnListing ? (
                 <Link
                   href={`/host/listings/${listing.id}/edit`}
-                  className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-7 text-sm font-medium text-white hover:bg-[#600018]"
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-7 text-sm font-medium text-white hover:bg-merlot"
                 >
                   Manage listing
                 </Link>
@@ -729,7 +749,7 @@ export function PropertyContent({
                   {hasAvailability && (
                     <Link
                       href={reserveHref}
-                      className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+                      className="inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
                     >
                       Request to book
                     </Link>
@@ -740,7 +760,7 @@ export function PropertyContent({
                     className={
                       hasAvailability
                         ? "rounded-full px-6"
-                        : "rounded-full bg-[#800020] px-7 hover:bg-[#600018]"
+                        : "rounded-full bg-[#800020] px-7 hover:bg-merlot"
                     }
                   >
                     {hasAvailability ? "Message host" : "Ask host anyway"}
@@ -768,7 +788,7 @@ export function PropertyContent({
             <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
-                  <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f8eef2] text-[#800020]">
+                  <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream text-[#800020]">
                     {listing.host?.avatar_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={listing.host.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -786,7 +806,7 @@ export function PropertyContent({
                   </div>
                 </div>
                 {listing.host?.is_verified && (
-                  <Badge className="w-fit gap-1 rounded-full bg-[#f8eef2] px-3 py-1 text-[#800020] hover:bg-[#f8eef2]">
+                  <Badge className="w-fit gap-1 rounded-full bg-crimson/15 px-3 py-1 text-[#800020] hover:bg-crimson/15">
                     <BadgeCheck className="h-3.5 w-3.5" /> Verified host
                   </Badge>
                 )}
@@ -874,7 +894,7 @@ export function PropertyContent({
             <h2 className="mb-4 text-xl font-bold">Reviews</h2>
             {reviews.length > 0 ? (
               <>
-                <div className="mb-5 flex items-center gap-4 rounded-2xl border bg-[#fbf7f8] p-4">
+                <div className="mb-5 flex items-center gap-4 rounded-2xl border bg-cream/40 p-4">
                   <p className="font-brand text-4xl text-[#2b000a]">{avgRating.toFixed(1)}</p>
                   <div>
                     <div className="flex">
@@ -954,7 +974,7 @@ export function PropertyContent({
                   {priceOptions.map((option) => (
                     <span
                       key={option.label}
-                      className="rounded-full bg-[#f5f1f2] px-3 py-1 text-xs font-semibold text-[#5d4f54]"
+                      className="rounded-full bg-cream/70 px-3 py-1 text-xs font-semibold text-merlot"
                     >
                       {option.label}: {formatPrice(option.value, priceCurrency(listing))}
                     </span>
@@ -968,7 +988,7 @@ export function PropertyContent({
                 </div>
               )}
               {overnightEstimate && (
-                <div className="mt-3 rounded-xl bg-[#fbf7f8] p-3">
+                <div className="mt-3 rounded-xl bg-cream/40 p-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
                       {overnightEstimate.nights} night{overnightEstimate.nights === 1 ? "" : "s"}
@@ -986,7 +1006,7 @@ export function PropertyContent({
             {isOwnListing ? (
               <Link
                 href={`/host/listings/${listing.id}/edit`}
-                className="mt-5 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#800020] px-4 text-sm font-medium text-white hover:bg-[#600018]"
+                className="mt-5 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#800020] px-4 text-sm font-medium text-white hover:bg-merlot"
               >
                 Manage listing
               </Link>
@@ -994,7 +1014,7 @@ export function PropertyContent({
               <div className="mt-5 space-y-2">
                 <Link
                   href={reserveHref}
-                  className="flex h-11 w-full items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-[#600018]"
+                  className="flex h-11 w-full items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot"
                 >
                   Request to book
                 </Link>
@@ -1005,7 +1025,7 @@ export function PropertyContent({
             ) : (
               <Button
                 onClick={openInquiry}
-                className="mt-5 w-full rounded-full bg-[#800020] hover:bg-[#600018]"
+                className="mt-5 w-full rounded-full bg-[#800020] hover:bg-merlot"
                 size="lg"
               >
                 Ask host anyway
@@ -1039,21 +1059,21 @@ export function PropertyContent({
           {isOwnListing ? (
             <Link
               href={`/host/listings/${listing.id}/edit`}
-              className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
             >
               Manage
             </Link>
           ) : hasAvailability ? (
             <Link
               href={reserveHref}
-              className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#600018]"
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
             >
               Request to book
             </Link>
           ) : (
             <Button
               onClick={openInquiry}
-              className="h-11 shrink-0 rounded-full bg-[#800020] px-6 font-bold hover:bg-[#600018]"
+              className="h-11 shrink-0 rounded-full bg-[#800020] px-6 font-bold hover:bg-merlot"
             >
               Ask host
             </Button>

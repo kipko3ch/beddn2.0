@@ -1109,7 +1109,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const percent = Math.round(((step + 1) / steps.length) * 100);
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl pb-28 sm:pb-0">
+    <form onSubmit={handleSubmit} className="mx-auto flex max-w-2xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-8">
       <div ref={topRef} className="scroll-mt-20" />
 
       {/* Progress */}
@@ -1144,12 +1144,16 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
         </div>
       </div>
 
-      <div className="rounded-2xl border bg-white p-5 shadow-sm sm:p-8">
-        <h2 className="text-2xl font-bold text-[#181113]">{current.title}</h2>
-        {current.subtitle && (
-          <p className="mt-2 text-sm text-muted-foreground">{current.subtitle}</p>
-        )}
-        <div className="mt-6">{current.content}</div>
+      {/* Centered focus area, Typeform-style — one step per screen instead of
+          a short card stranded at the top with a wall of empty space below. */}
+      <div className="flex flex-1 items-center py-4 sm:min-h-[50vh]">
+        <div className="w-full rounded-2xl border bg-white p-5 shadow-sm sm:p-8">
+          <h2 className="text-2xl font-bold text-[#181113]">{current.title}</h2>
+          {current.subtitle && (
+            <p className="mt-2 text-sm text-muted-foreground">{current.subtitle}</p>
+          )}
+          <div className="mt-6">{current.content}</div>
+        </div>
       </div>
 
       {/* Action bar — sticky to the bottom of the viewport on mobile so the

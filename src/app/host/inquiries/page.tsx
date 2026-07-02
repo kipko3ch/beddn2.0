@@ -118,7 +118,7 @@ export default function HostRequestsPage() {
             </h2>
             {pending.length === 0 ? (
               <EmptyState
-                image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029363/empty-bookings_e7n8sb.png"
+                image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029373/empty-bookings_dpa4kz.png"
                 title="No requests waiting"
                 subtitle="New booking requests from guests will appear here for you to confirm."
                 size="sm"

@@ -235,7 +235,8 @@ export default function HostProfilePage() {
           <div>
             <h2 className="font-bold text-[#2b000a]">Host PIN</h2>
             <p className="text-sm text-muted-foreground">
-              The 4-digit PIN that unlocks your dashboard, separate from your login.
+              The 4-digit PIN that unlocks your dashboard, separate from your login. Once entered,
+              it stays unlocked for 12 hours, then asks again (or sooner on a new browser or device).
             </p>
           </div>
         </div>
