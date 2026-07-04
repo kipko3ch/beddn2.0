@@ -509,7 +509,7 @@ export function SearchContent() {
           only the (header-controlled) full-screen overlay on mobile. Keeping a
           single instance also keeps a single body-scroll lock. */}
       <section className="bg-white md:border-b">
-        <div className="mx-auto max-w-7xl md:px-6 md:py-5 lg:px-8">
+        <div className="mx-auto max-w-[1920px] md:px-6 md:py-5 lg:px-8">
           <div className="mx-auto md:max-w-3xl">
             <SearchPill
               key={`${q}|${category}|${checkIn}|${checkOut}|${startTime}|${guests}`}
@@ -624,7 +624,7 @@ export function SearchContent() {
       )}
 
       {/* Desktop: results + sticky side map */}
-      <section className="mx-auto hidden max-w-7xl grid-cols-[minmax(0,1fr)_minmax(360px,42%)] gap-6 px-4 py-6 sm:px-6 lg:grid lg:px-8">
+      <section className="mx-auto hidden max-w-[1920px] grid-cols-[minmax(0,1fr)_minmax(360px,42%)] gap-6 px-4 py-6 sm:px-6 lg:grid lg:px-8">
         <div>{resultsContent}</div>
         <div className="relative overflow-hidden rounded-2xl border bg-muted lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)]">
           {isDesktop && !loading && mapView}

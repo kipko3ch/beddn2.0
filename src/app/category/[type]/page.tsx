@@ -138,7 +138,7 @@ export default function CategoryPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto min-h-screen max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8">
+      <main className="mx-auto min-h-screen w-full max-w-[1920px] px-4 pb-24 pt-6 sm:px-6 lg:px-8">
         <FeaturedRail
           placement="category_featured"
           category={type as ListingCategory}
@@ -240,7 +240,7 @@ export default function CategoryPage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <ListingCardSkeleton key={i} />
             ))}
@@ -253,7 +253,7 @@ export default function CategoryPage() {
             size="sm"
           />
         ) : (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {listings.map((listing) => (
               <ListingCard
                 key={listing.id}

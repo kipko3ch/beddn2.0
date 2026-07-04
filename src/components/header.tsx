@@ -34,25 +34,27 @@ const CATEGORY_LINKS = [
 
 function CategoryStrip({ pathname }: { pathname: string | null }) {
   return (
-    <div className="flex items-center gap-1 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8">
-      {CATEGORY_LINKS.map((cat) => {
-        const active =
-          cat.href === ROUTES.search
-            ? pathname === ROUTES.search
-            : pathname === cat.href;
-        return (
-          <Link
-            key={cat.label}
-            href={cat.href}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-              active ? "text-crimson" : "text-[#6f6568] hover:text-[#2b000a]"
-            }`}
-          >
-            <Image src={cat.icon} alt="" width={22} height={22} className="h-[22px] w-[22px] shrink-0" aria-hidden />
-            {cat.label}
-          </Link>
-        );
-      })}
+    <div className="mx-auto max-w-[1920px] w-full">
+      <div className="flex items-center gap-1 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8">
+        {CATEGORY_LINKS.map((cat) => {
+          const active =
+            cat.href === ROUTES.search
+              ? pathname === ROUTES.search
+              : pathname === cat.href;
+          return (
+            <Link
+              key={cat.label}
+              href={cat.href}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                active ? "text-crimson" : "text-[#6f6568] hover:text-[#2b000a]"
+              }`}
+            >
+              <Image src={cat.icon} alt="" width={22} height={22} className="h-[22px] w-[22px] shrink-0" aria-hidden />
+              {cat.label}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -231,7 +233,7 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
-        <div className="max-w-7xl mx-auto hidden items-center justify-between gap-3 px-4 h-14 sm:h-16 md:flex">
+        <div className="max-w-[1920px] mx-auto hidden items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 sm:h-16 md:flex">
           <Link href={ROUTES.home} className="flex items-center">
             <span className="font-brand text-2xl leading-none text-[#2b000a]">Beddn</span>
           </Link>
@@ -281,7 +283,7 @@ export function Header() {
             </NavSheet>
           </div>
         </div>
-        <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-center px-4 md:hidden">
+        <div className="relative mx-auto flex h-14 max-w-[1920px] items-center justify-center px-4 sm:px-6 md:hidden">
           <div className="absolute left-4 flex items-center gap-1.5">
             <NavSheet
               user={user}

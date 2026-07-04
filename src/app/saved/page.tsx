@@ -149,7 +149,7 @@ function SavedTile({
 
 function WishlistSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
       {Array.from({ length: 8 }).map((_, index) => (
         <div key={index} className="animate-pulse">
           <div className="aspect-[1.28/1] rounded-lg bg-[#eee6e9]" />
@@ -233,7 +233,7 @@ export default function SavedTripsPage() {
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="min-h-screen bg-white px-4 pb-24 pt-5 text-[#202124] sm:px-6 md:mx-auto md:max-w-7xl md:pb-12 md:pt-8">
+      <main className="min-h-screen bg-white px-4 pb-24 pt-5 text-[#202124] sm:px-6 md:mx-auto md:w-full md:max-w-[1920px] md:pb-12 md:pt-8 lg:px-8">
         <div className="mb-5 flex items-start justify-between gap-4 md:mb-7">
           <div>
             <p className="hidden text-sm font-semibold text-muted-foreground md:block">Saved</p>
@@ -311,7 +311,7 @@ export default function SavedTripsPage() {
         ) : loading ? (
           <WishlistSkeleton />
         ) : visibleListings.length > 0 ? (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {visibleListings.map((listing) => (
               <SavedTile
                 key={listing.id}
