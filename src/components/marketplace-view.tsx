@@ -158,10 +158,15 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   ];
 
   // Each pill acts as a filter on the global marketplace view.
-  // We keep everything in this unified layout so it feels like a seamless browsing experience.
+  // We push the route so the URL updates (e.g. for sharing), but since the category
+  // page renders this exact same component, the transition is completely seamless.
   function goToCategory(tab: TabType) {
-    setActiveTab(tab);
-    setSearch(null);
+    const category = TAB_DATA[tab].category;
+    if (category === 'all') {
+      router.push('/');
+    } else {
+      router.push(`/category/${category}`);
+    }
   }
 
   return (

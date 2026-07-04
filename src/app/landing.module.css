@@ -163,7 +163,7 @@
 }
 
 .tab.active:hover {
-  color: #fff;
+  color: var(--color-merlot);
 }
 
 .tabIcon {
