@@ -300,9 +300,11 @@ export function Header() {
             <CurrencySwitcher />
           </div>
         </div>
-        <div className="border-t border-black/5">
-          <CategoryStrip pathname={pathname} />
-        </div>
+        {!pathname?.startsWith('/property/') && !pathname?.startsWith('/experience/') && !pathname?.startsWith('/reserve/') && (
+          <div className="border-t border-black/5">
+            <CategoryStrip pathname={pathname} />
+          </div>
+        )}
       </header>
       <nav className="fixed inset-x-0 bottom-0 z-40 grid w-full grid-cols-4 border-t border-black/10 bg-white px-1.5 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] text-center text-[11px] shadow-[0_-4px_16px_rgba(24,17,19,0.05)] md:hidden">
           <Link
