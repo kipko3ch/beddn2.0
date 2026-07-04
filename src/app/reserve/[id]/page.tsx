@@ -323,11 +323,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           )}
           <div className="mt-7 flex flex-col w-full gap-3 sm:flex-row sm:items-center sm:justify-center">
             {whatsappUrl && (
-              <Button asChild className="h-11 w-full sm:w-auto rounded-full bg-[#25D366] px-6 font-bold text-white hover:bg-[#128C7E]">
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+              <a 
+                href={whatsappUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center h-11 w-full sm:w-auto rounded-full bg-[#25D366] px-6 font-bold text-white hover:bg-[#128C7E]"
+              >
                   Continue on WhatsApp
-                </a>
-              </Button>
+              </a>
             )}
             <Link
               href={detailHref}

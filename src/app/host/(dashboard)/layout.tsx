@@ -1,5 +1,5 @@
-
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ROUTES } from '@/lib/routes';
@@ -38,6 +38,8 @@ export default async function HostLayout({
   // the dashboard. Only a *pending* host (still awaiting the first review) can
   // still reach the profile page to finish their details — a rejected or
   // suspended host is blocked everywhere, full stop.
+  const headersList = await headers();
+  const pathname = headersList.get("x-invoke-path") || "";
   const canEditProfileWhileWaiting = hostStatus === 'pending' && pathname === ROUTES.dashboardProfile;
   if (host && !isAdmin && hostStatus && hostStatus !== 'approved' && !canEditProfileWhileWaiting) {
     return <HostApprovalScreen status={hostStatus} />;

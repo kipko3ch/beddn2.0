@@ -9,6 +9,7 @@ import {
   type ReservationInput,
 } from "@/lib/bookings/shared";
 import { sendSms, sendAdminSms } from "@/lib/notifications/server";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import type { Listing, ListingCategory } from "@/lib/types";
 
 // Free "Request to book" — creates a booking in `requested` status with no
