@@ -25,8 +25,9 @@ import { ROUTES } from "@/lib/routes";
 
 // Same four shortcuts as the homepage hero tabs, shrunk into a persistent
 // strip so switching categories doesn't require going back to "/" first.
+// "All" is the homepage — that's where every category is browsable at once.
 const CATEGORY_LINKS = [
-  { label: "All", href: ROUTES.search, icon: "/images/cat-all.png" },
+  { label: "All", href: ROUTES.home, icon: "/images/cat-all.png" },
   { label: "Hourly", href: ROUTES.category("hourly"), icon: "/images/cat-hourly.png" },
   { label: "Overnight", href: ROUTES.category("overnight"), icon: "/images/cat-overnight.png" },
   { label: "Experiences", href: ROUTES.category("experience"), icon: "/images/cat-experiences.png" },
@@ -35,21 +36,18 @@ const CATEGORY_LINKS = [
 function CategoryStrip({ pathname }: { pathname: string | null }) {
   return (
     <div className="mx-auto max-w-[1920px] w-full">
-      <div className="flex items-center gap-1 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8">
+      <div className="flex items-center gap-2 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8">
         {CATEGORY_LINKS.map((cat) => {
-          const active =
-            cat.href === ROUTES.search
-              ? pathname === ROUTES.search
-              : pathname === cat.href;
+          const active = pathname === cat.href;
           return (
             <Link
               key={cat.label}
               href={cat.href}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+              className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                 active ? "text-crimson" : "text-[#6f6568] hover:text-[#2b000a]"
               }`}
             >
-              <Image src={cat.icon} alt="" width={22} height={22} className="h-[22px] w-[22px] shrink-0" aria-hidden />
+              <Image src={cat.icon} alt="" width={24} height={24} className="h-6 w-6 shrink-0" aria-hidden />
               {cat.label}
             </Link>
           );
@@ -149,8 +147,8 @@ function NavSheet({
         </SheetHeader>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-          <SheetClose render={<Link href={ROUTES.search} className={item} />}>
-            <Icon icon="line-md:search" className="h-4 w-4" /> Discover
+          <SheetClose render={<Link href={ROUTES.home} className={item} />}>
+            <Icon icon="line-md:search" className="h-4 w-4" /> Browse all
           </SheetClose>
           <SheetClose render={<Link href={ROUTES.review} className={item} />}>
             <Icon icon="line-md:star" className="h-4 w-4" /> Review a stay
@@ -175,7 +173,7 @@ function NavSheet({
               <SheetClose render={<Link href={ROUTES.dashboardProfile} className={item} />}>
                 <Icon icon="line-md:account" className="h-4 w-4" /> Host profile
               </SheetClose>
-              <SheetClose render={<Link href={ROUTES.search} className={item} />}>
+              <SheetClose render={<Link href={ROUTES.home} className={item} />}>
                 <Icon icon="line-md:search" className="h-4 w-4" /> Switch to traveler
               </SheetClose>
             </>
@@ -239,8 +237,8 @@ export function Header() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <Link href={ROUTES.search} className="px-3 text-sm font-medium text-[#2b000a] hover:text-crimson">
-              Discover
+            <Link href={ROUTES.home} className="px-3 text-sm font-medium text-[#2b000a] hover:text-crimson">
+              Browse
             </Link>
             <Link href={ROUTES.review} className="px-3 text-sm font-medium text-[#2b000a] hover:text-crimson">
               Review

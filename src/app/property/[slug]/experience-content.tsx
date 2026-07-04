@@ -230,11 +230,11 @@ export function ExperienceContent({
     `&guests=${guests}`;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-[1920px] px-4 py-10 sm:px-6 lg:px-8">
       {/* Back Navigation */}
       <div className="mb-6">
         <Link
-          href="/"
+          href="/category/experience"
           className="inline-flex items-center gap-2 text-sm font-bold text-crimson hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -307,7 +307,7 @@ export function ExperienceContent({
       {/* Details & Sidebar Grid — the sidebar stays a sane fixed width so the
           extra room on wide screens goes to the content column, not a
           stretched-out booking box. */}
-      <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_400px]">
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_460px] 2xl:gap-16">
         
         {/* Left Column: Core Info & Highlights */}
         <div className="space-y-12">

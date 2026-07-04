@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
 import { FeaturedRail } from "@/components/home-sections";
 import { Map } from "@/components/map";
 import { SearchPill, type SearchPillValues } from "@/components/search-pill";
+import { ChipSelect } from "@/components/chip-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Sheet,
@@ -19,19 +21,19 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useSavedListings } from "@/lib/hooks";
-import { ArrowLeft, Check, ChevronDown, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, LayoutGrid, MapPin, SlidersHorizontal, X } from "lucide-react";
 import { PROPERTY_TYPES } from "@/lib/property-types";
+import { ROUTES } from "@/lib/routes";
 import type { Listing } from "@/lib/types";
 
 const CATEGORY_OPTIONS = [
-  { value: "all", label: "All" },
   { value: "hourly", label: "Hourly" },
   { value: "overnight", label: "Overnight" },
   { value: "experience", label: "Experiences" },
 ];
 
 /** Pill chip that opens a clean dropdown of options (mobile filter row). */
-function ChipSelect({
+function MobileChipSelect({
   label,
   value,
   options,
@@ -94,7 +96,7 @@ export function SearchContent() {
   const q = searchParams.get("q") ?? "";
   const lat = searchParams.get("lat");
   const lng = searchParams.get("lng");
-  const category = searchParams.get("category") ?? "all";
+  const category = searchParams.get("category") ?? "hourly";
   const propertyType = searchParams.get("type") ?? "all";
   const checkIn = searchParams.get("checkin");
   const checkOut = searchParams.get("checkout");
@@ -147,7 +149,7 @@ export function SearchContent() {
       query: q || null,
       latitude: lat ? parseFloat(lat) : null,
       longitude: lng ? parseFloat(lng) : null,
-      category: category !== "all" ? category : null,
+      category: category || null,
       results_count: results.length,
     });
   }, [q, lat, lng, category, propertyType]);
@@ -262,7 +264,7 @@ export function SearchContent() {
     lat && lng ? [parseFloat(lng), parseFloat(lat)] : lookupQueryCenter(q) || geocodedCenter;
 
   const activeFilterCount =
-    (category !== "all" ? 1 : 0) + (!isExperienceSearch && propertyType !== "all" ? 1 : 0);
+    1 + (!isExperienceSearch && propertyType !== "all" ? 1 : 0);
 
   const headerTitle = q
     ? `${isExperienceSearch ? "Experiences" : "Stays"} in ${q}`
@@ -306,6 +308,14 @@ export function SearchContent() {
 
   const resultsContent = (
     <>
+      {/* Browse all categories link */}
+      <Link
+        href={ROUTES.home}
+        className="mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-merlot hover:underline"
+      >
+        <LayoutGrid className="h-3.5 w-3.5" />
+        Browse all categories
+      </Link>
       {q && (
         <FeaturedRail
           placement="city_featured"
@@ -482,6 +492,7 @@ export function SearchContent() {
             value={category}
             options={CATEGORY_OPTIONS}
             onChange={(value) => pushSearch({ category: value })}
+            variant="compact"
           />
           {!isExperienceSearch && (
             <>
@@ -490,8 +501,9 @@ export function SearchContent() {
                 value={propertyType}
                 options={[{ value: "all", label: "Any type of place" }, ...PROPERTY_TYPES]}
                 onChange={(value) => pushSearch({ type: value })}
+                variant="compact"
               />
-              <ChipSelect
+              <MobileChipSelect
                 label="Price"
                 value={priceMode}
                 options={[
@@ -518,7 +530,7 @@ export function SearchContent() {
               initialCheckOut={checkOut}
               initialStartTime={startTime}
               initialGuests={guests}
-              mode={category === "all" ? "all" : category === "hourly" ? "hourly" : category === "experience" ? "experience" : "overnight"}
+              mode={category === "hourly" ? "hourly" : category === "experience" ? "experience" : "overnight"}
               onSearch={handlePillSearch}
               onNearby={handleNearby}
               showMobileTrigger={false}

@@ -152,11 +152,16 @@ export default function LandingPage() {
     { name: 'Experiences' },
   ];
 
-  // Each pill is a shortcut into its own filtered page — more effective than
-  // swapping an inline grid on the homepage under a changing heading.
+  // Each pill is a shortcut into its own filtered page. "All" IS this page,
+  // so it just resets the view instead of bouncing to /search.
   function goToCategory(tab: TabType) {
     const category = TAB_DATA[tab].category;
-    router.push(category === 'all' ? '/search' : `/category/${category}`);
+    if (category === 'all') {
+      setActiveTab('All');
+      setSearch(null);
+      return;
+    }
+    router.push(`/category/${category}`);
   }
 
   return (
@@ -188,8 +193,8 @@ export default function LandingPage() {
               <SheetDescription className="sr-only">Navigate Beddn</SheetDescription>
             </SheetHeader>
             <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.search}>
-                Discover
+              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.home}>
+                Browse all
               </a>
               <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.review}>
                 Review a stay
@@ -246,7 +251,7 @@ export default function LandingPage() {
         </div>
 
         <nav className={styles.navRight}>
-          <a href={ROUTES.search} className={styles.navItem}>Discover</a>
+          <a href={ROUTES.home} className={styles.navItem}>Browse</a>
           <a href={ROUTES.review} className={styles.navItem}>Review</a>
           {!user && (
             <AuthDialog>
