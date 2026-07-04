@@ -137,10 +137,23 @@ export async function POST(request: Request) {
       sendAdminSms(`New Beddn booking request: ${title} (${code}).`, booking.id),
     ]);
 
+    const whatsappUrl = listing.host?.phone
+      ? buildWhatsAppUrl(listing.host.phone, {
+          listingName: title,
+          guestName: input.guestName,
+          category: input.category,
+          checkIn: input.checkIn,
+          checkOut: input.checkOut,
+          hourlySlot: input.startTime,
+          guests: input.guestsCount,
+        })
+      : null;
+
     return NextResponse.json({
       ok: true,
       bookingId: booking.id,
       bookingToken: booking.booking_token || booking.token,
+      whatsappUrl,
     });
   } catch (error) {
     return NextResponse.json(

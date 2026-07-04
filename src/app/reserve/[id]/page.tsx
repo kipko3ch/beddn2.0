@@ -71,6 +71,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [isOwnListing, setIsOwnListing] = useState(false);
   const [step, setStep] = useState(0);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+  const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -235,6 +236,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     const result = (await response.json()) as {
       ok?: boolean;
       bookingToken?: string;
+      whatsappUrl?: string;
       error?: string;
     };
 
@@ -245,6 +247,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     }
 
     setSubmittedCode(result.bookingToken || "sent");
+    setWhatsappUrl(result.whatsappUrl || null);
     setSubmitting(false);
   }
 
@@ -307,30 +310,30 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         <CheckoutHeader backHref={detailHref} />
         <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
           <TicketCheck className="mb-5 h-14 w-14 text-[#128c4b]" />
-          <h1 className="font-brand text-3xl text-[#2b000a]">Request sent to the host</h1>
+          <h1 className="font-brand text-3xl text-[#2b000a]">Request created</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             Your booking request for{" "}
             <span className="font-semibold text-[#181113]">{listing.title || listing.name}</span> is
-            with the host. You&apos;ll get a message once they confirm — then the exact address and
-            contact unlock.
+            ready. Continue to WhatsApp to confirm directly with the host.
           </p>
           {submittedCode !== "sent" && (
             <p className="mt-4 rounded-full bg-[#fbf7f8] px-4 py-2 text-sm font-semibold text-crimson">
               Ref: {submittedCode}
             </p>
           )}
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-7 flex flex-col w-full gap-3 sm:flex-row sm:items-center sm:justify-center">
+            {whatsappUrl && (
+              <Button asChild className="h-11 w-full sm:w-auto rounded-full bg-[#25D366] px-6 font-bold text-white hover:bg-[#128C7E]">
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                  Continue on WhatsApp
+                </a>
+              </Button>
+            )}
             <Link
               href={detailHref}
-              className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-muted"
+              className="inline-flex h-11 w-full sm:w-auto items-center justify-center rounded-full border px-6 text-sm font-semibold hover:bg-muted"
             >
               Back to listing
-            </Link>
-            <Link
-              href="/search"
-              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
-            >
-              Explore more stays
             </Link>
           </div>
         </main>

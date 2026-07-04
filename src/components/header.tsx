@@ -231,7 +231,7 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
-        <div className="max-w-[1920px] mx-auto hidden items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 sm:h-16 md:flex">
+        <div className="max-w-7xl mx-auto hidden items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 sm:h-16 md:flex">
           <Link href={ROUTES.home} className="flex items-center">
             <span className="font-brand text-2xl leading-none text-[#2b000a]">Beddn</span>
           </Link>

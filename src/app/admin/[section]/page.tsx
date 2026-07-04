@@ -157,6 +157,19 @@ export default function AdminSectionPage() {
                   ))}
                   <td className="p-3">
                     <div className="flex flex-wrap gap-2">
+                      {section === "bookings" && (
+                        <>
+                          <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50" onClick={() => action("confirm_booking", row.id)}>
+                            Confirm
+                          </Button>
+                          <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => action("reject_booking", row.id)}>
+                            Reject
+                          </Button>
+                          <Button size="sm" variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-100" onClick={() => action("revoke_booking", row.id)}>
+                            Revoke
+                          </Button>
+                        </>
+                      )}
                       {section === "hosts" && (
                         <Button size="sm" variant="outline" onClick={() => action("verify_host", row.id)}>
                           Verify

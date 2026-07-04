@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/server";
 import { hostApprovedEmail, hostRejectedEmail } from "@/lib/email/templates";
 import { ROUTES } from "@/lib/routes";
+import { blockCalendarForBooking, unblockCalendarForBooking } from "@/lib/bookings/server";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://beddn.com").replace(/\/$/, "");
 
@@ -39,6 +40,9 @@ async function notifyHostStatus(
 
 interface AdminActionBody {
   action:
+    | "confirm_booking"
+    | "reject_booking"
+    | "revoke_booking"
     | "verify_host"
     | "approve_host"
     | "reject_host"
@@ -124,6 +128,41 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as AdminActionBody;
   let errorMessage: string | null = null;
+
+  // --- Admin Booking Validation Layer ---
+  if (body.action === "confirm_booking") {
+    const { data: booking, error: bookingError } = await admin
+      .from("bookings")
+      .update({ status: "confirmed" })
+      .eq("id", body.id)
+      .select("listing_id, category, start_datetime, end_datetime, units_reserved, listings(total_units)")
+      .single();
+    errorMessage = bookingError?.message || null;
+    
+    if (booking && !errorMessage) {
+      await blockCalendarForBooking(admin, booking, Array.isArray(booking.listings) ? booking.listings[0] : booking.listings as any);
+    }
+  }
+
+  if (body.action === "reject_booking") {
+    const { error } = await admin.from("bookings").update({ status: "rejected" }).eq("id", body.id);
+    errorMessage = error?.message || null;
+  }
+
+  if (body.action === "revoke_booking") {
+    const { data: booking, error: bookingError } = await admin
+      .from("bookings")
+      .update({ status: "cancelled" }) // 'revoked' not in constraint, fallback to cancelled
+      .eq("id", body.id)
+      .select("listing_id, category, start_datetime, end_datetime, units_reserved, guest_email")
+      .single();
+    errorMessage = bookingError?.message || null;
+
+    if (booking && !errorMessage) {
+      await unblockCalendarForBooking(admin, booking);
+      // Optional: notify guest that it was revoked
+    }
+  }
 
   if (body.action === "verify_host") {
     const { error } = await admin.from("hosts").update({ is_verified: true }).eq("id", body.id);

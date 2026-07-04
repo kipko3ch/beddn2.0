@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -14,10 +14,6 @@ export default async function HostLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = (await headers()).get('x-pathname') ?? '';
-  if (pathname === ROUTES.hostLogin || pathname === ROUTES.hostUnlock) {
-    return <>{children}</>;
-  }
 
   const supabase = await createClient();
   const {
