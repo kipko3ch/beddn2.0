@@ -197,17 +197,22 @@ export function CityRails({
   savedIds,
   onToggleSave,
   priceMode = "hourly",
+  category,
 }: {
   savedIds: Set<string>;
   onToggleSave: (id: string) => void;
   priceMode?: "hourly" | "overnight";
+  category?: string;
 }) {
   const [sections, setSections] = useState<CitySection[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   const fetchSections = useCallback(async (city?: string) => {
     try {
-      const res = await fetch(`/api/public/home-sections${city ? `?city=${encodeURIComponent(city)}` : ""}`);
+      const params = new URLSearchParams();
+      if (city) params.set("city", city);
+      if (category) params.set("category", category);
+      const res = await fetch(`/api/public/home-sections?${params.toString()}`);
       const json: { sections?: CitySection[] } = res.ok ? await res.json() : {};
       setSections(json.sections ?? []);
     } catch {
@@ -215,7 +220,7 @@ export function CityRails({
     } finally {
       setLoaded(true);
     }
-  }, []);
+  }, [category]);
 
   useEffect(() => {
     fetchSections();
@@ -241,7 +246,7 @@ export function CityRails({
         );
       })
       .catch(() => {});
-  }, [fetchSections]);
+  }, [fetchSections, category]);
 
   if (loaded && sections.length === 0) return null;
 

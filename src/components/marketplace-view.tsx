@@ -739,7 +739,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
         )}
       </section>
 
-      {!search && <CityRails savedIds={savedIds} onToggleSave={toggle} priceMode={priceMode} />}
+      {!search && <CityRails savedIds={savedIds} onToggleSave={toggle} priceMode={priceMode} category={currentData.category !== 'all' ? currentData.category : undefined} />}
 
       {/* Become a host CTA banner */}
       {!search && (

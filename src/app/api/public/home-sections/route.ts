@@ -13,12 +13,26 @@ const MAX_PER_SECTION = 10;
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const preferredCity = searchParams.get("city")?.trim().toLowerCase() || null;
+  const category = searchParams.get("category");
   const admin = createAdminClient();
 
-  const { data, error } = await admin
+  let query = admin
     .from("listings")
     .select(CARD_COLUMNS)
-    .eq("is_active", true)
+    .eq("is_active", true);
+
+  if (category && category !== "all") {
+    query = query.contains("categories", [category]);
+    if (category === "hourly") {
+      query = query.gt("hourly_price", 0);
+    } else if (category === "overnight") {
+      query = query.gt("overnight_price", 0);
+    } else if (category === "experience") {
+      query = query.gt("experience_price", 0);
+    }
+  }
+
+  const { data, error } = await query
     .order("created_at", { ascending: false })
     .limit(200);
 
