@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icon";
 import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
 import { ROUTES } from "@/lib/routes";
@@ -21,7 +22,18 @@ type HostStatus = {
   id: string;
   name?: string | null;
   is_verified: boolean;
+  verification_status: string;
 } | null;
+
+type Announcement = {
+  id: string;
+  title: string;
+  message: string;
+  priority: "normal" | "important" | "urgent";
+  is_mandatory: boolean;
+  expires_at: string | null;
+  created_at: string;
+};
 
 const QUICK_ACTIONS = [
   { label: "Create listing", description: "Add a new place or experience", href: ROUTES.newListing, icon: "line-md:plus" },
@@ -60,10 +72,36 @@ export default function DashboardPage() {
   const supabase = useMemo(() => createClient(), []);
   const [isAdmin, setIsAdmin] = useState(false);
   const [host, setHost] = useState<HostStatus>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [submittingVerification, setSubmittingVerification] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [stats, setStats] = useState<Stat[]>([]);
   const [pendingNew, setPendingNew] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  async function handleDismissAnnouncement(annId: string) {
+    if (!host) return;
+    setAnnouncements((prev) => prev.filter((a) => a.id !== annId));
+    await supabase.from("host_announcement_dismissals").insert({
+      announcement_id: annId,
+      host_id: host.id,
+    });
+  }
+
+  async function handleSubmitVerification() {
+    if (!host) return;
+    setSubmittingVerification(true);
+    const { error } = await supabase
+      .from("hosts")
+      .update({ verification_status: "under_review" })
+      .eq("id", host.id);
+    setSubmittingVerification(false);
+    if (error) {
+      alert("Failed to submit verification: " + error.message);
+    } else {
+      setHost((prev) => prev ? { ...prev, verification_status: "under_review" } : null);
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -135,7 +173,7 @@ export default function DashboardPage() {
 
       const { data: hostData } = await supabase
         .from("hosts")
-        .select("id, name, is_verified")
+        .select("id, name, is_verified, verification_status")
         .eq("user_id", user.user.id)
         .maybeSingle();
 
@@ -145,6 +183,24 @@ export default function DashboardPage() {
         setLoading(false);
         return;
       }
+
+      // Fetch active announcements and dismissals for this host
+      const [announcementsRes, dismissalsRes] = await Promise.all([
+        supabase
+          .from("host_announcements")
+          .select("*")
+          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
+        supabase
+          .from("host_announcement_dismissals")
+          .select("announcement_id")
+          .eq("host_id", hostData.id),
+      ]);
+
+      const dismissedIds = new Set((dismissalsRes.data ?? []).map((d: any) => d.announcement_id));
+      const visible = (announcementsRes.data ?? []).filter(
+        (a: any) => !dismissedIds.has(a.id)
+      );
+      setAnnouncements(visible);
 
       const { data: listingRows } = await supabase
         .from("listings")
@@ -269,21 +325,118 @@ export default function DashboardPage() {
         </Link>
       )}
 
-      {!isAdmin && host && !host.is_verified && (
-        <div className="flex items-center gap-3 rounded-2xl border bg-white px-4 py-3.5">
-          <Image
-            src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029380/spot-verified_anp2nf.png"
-            alt=""
-            width={48}
-            height={40}
-            className="h-auto w-[44px] shrink-0"
-            aria-hidden
-          />
-          <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-[#2b000a]">Verification badge pending.</span>{" "}
-            Your listings can be live now — admin review only adds the verified badge.
-          </p>
+      {/* Announcements */}
+      {!isAdmin && announcements.length > 0 && (
+        <div className="space-y-3">
+          {announcements.map((ann) => {
+            const isUrgent = ann.priority === "urgent";
+            const isImportant = ann.priority === "important";
+            return (
+              <div
+                key={ann.id}
+                className={`flex gap-3 rounded-2xl border px-4 py-3.5 shadow-sm ${
+                  isUrgent
+                    ? "bg-red-50 border-red-200 text-red-900"
+                    : isImportant
+                    ? "bg-amber-50 border-amber-200 text-amber-900"
+                    : "bg-blue-50 border-blue-200 text-blue-900"
+                }`}
+              >
+                <span
+                  className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
+                    isUrgent
+                      ? "bg-red-100 text-red-700"
+                      : isImportant
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  <Icon icon="line-md:bell" className="h-4 w-4" />
+                </span>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-sm leading-snug">{ann.title}</p>
+                    {ann.is_mandatory && (
+                      <Badge className="bg-red-200 text-red-900 border-none text-[10px] uppercase font-extrabold px-1.5 py-0.5">
+                        Mandatory
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-black/75 whitespace-pre-wrap">{ann.message}</p>
+                </div>
+                {!ann.is_mandatory && (
+                  <button
+                    onClick={() => handleDismissAnnouncement(ann.id)}
+                    className="ml-auto flex size-6 shrink-0 items-center justify-center rounded-full text-black/40 hover:bg-black/5 hover:text-black/75 transition-colors"
+                  >
+                    <Icon icon="line-md:close" className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
+      )}
+
+      {/* Verification alerts */}
+      {!isAdmin && host && (
+        <>
+          {(host.verification_status === "not_started" || !host.verification_status) && (
+            <div className="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <Image
+                  src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029380/spot-verified_anp2nf.png"
+                  alt=""
+                  width={44}
+                  height={40}
+                  className="h-auto w-[40px] shrink-0 grayscale opacity-80"
+                  aria-hidden
+                />
+                <div>
+                  <h3 className="font-bold text-[#2b000a] text-sm">Action Required: Complete verification</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Submit your profile details for verification to receive your Verified Host badge.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={handleSubmitVerification}
+                disabled={submittingVerification}
+                className="h-9 shrink-0 rounded-full bg-[#800020] text-white font-bold hover:bg-merlot text-xs px-4"
+              >
+                {submittingVerification ? "Submitting..." : "Submit for Verification"}
+              </Button>
+            </div>
+          )}
+
+          {host.verification_status === "under_review" && (
+            <div className="flex items-center gap-3 rounded-2xl border border-blue-200 bg-blue-50/40 p-4">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                <Icon icon="line-md:loading-twotone-loop" className="h-4 w-4 animate-spin" />
+              </span>
+              <div>
+                <p className="font-bold text-[#2b000a] text-sm">Your verification is under review</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  We are reviewing your profile. Once approved, your Verified Host badge will be assigned automatically.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {(host.verification_status === "verified" || host.is_verified) && (
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <Icon icon="line-md:check-all" className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="font-bold text-emerald-950 text-sm">Verification approved</p>
+                <p className="text-xs text-emerald-800 mt-0.5">
+                  Your profile is verified. The Verified Host badge is now active on your profile and listings.
+                </p>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Demand intro + quick actions (hosts only) */}

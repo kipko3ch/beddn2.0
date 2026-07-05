@@ -112,6 +112,7 @@ export function SearchContent() {
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [geocodedCenter, setGeocodedCenter] = useState<[number, number] | undefined>();
+  const [isBroadLocation, setIsBroadLocation] = useState(true);
   const [mapLabel, setMapLabel] = useState("");
   const { savedIds, toggle } = useSavedListings();
   const isExperienceSearch = category === "experience";
@@ -164,15 +165,17 @@ export function SearchContent() {
 
     setMapLabel(q);
     setGeocodedCenter(undefined);
+    setIsBroadLocation(true); // default to true for predefined queries or coordinates
 
     if (!q || (lat && lng) || localCenter) return;
 
     fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
       .then((response) => (response.ok ? response.json() : null))
-      .then((data: { center?: [number, number]; label?: string } | null) => {
+      .then((data: { center?: [number, number]; label?: string; isBroad?: boolean } | null) => {
         if (!active || !data?.center) return;
         setGeocodedCenter(data.center);
         setMapLabel(data.label || q);
+        setIsBroadLocation(data.isBroad ?? true);
       })
       .catch(() => {
         if (active) setMapLabel(q);
@@ -302,6 +305,7 @@ export function SearchContent() {
         highlightedId={highlightedId}
         onPinClick={handlePinClick}
         priceMode={isExperienceSearch ? "experience" : priceMode}
+        isBroad={isBroadLocation}
       />
     </>
   );

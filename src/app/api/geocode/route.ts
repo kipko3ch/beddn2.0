@@ -5,6 +5,7 @@ type NominatimResult = {
   lon: string;
   display_name?: string;
   address?: NominatimAddress;
+  place_rank?: string | number;
 };
 
 type NominatimAddress = {
@@ -25,6 +26,7 @@ type NominatimReverse = {
   lon: string;
   display_name?: string;
   address?: NominatimAddress;
+  place_rank?: string | number;
 };
 
 const NOMINATIM_HEADERS = {
@@ -56,9 +58,13 @@ export async function GET(request: Request) {
 
     const result = (await response.json()) as NominatimReverse;
     const a = result.address ?? {};
+    const placeRank = result.place_rank !== undefined ? Number(result.place_rank) : 30;
+    const isBroad = placeRank < 26;
+
     return NextResponse.json({
       center: [Number(result.lon ?? lon), Number(result.lat ?? lat)],
       label: result.display_name || "",
+      isBroad,
       address: {
         country: a.country ?? "",
         city: a.city || a.town || a.village || a.county || "",
@@ -103,9 +109,13 @@ export async function GET(request: Request) {
   }
 
   const a = first.address ?? {};
+  const placeRank = first.place_rank !== undefined ? Number(first.place_rank) : 30;
+  const isBroad = placeRank < 26;
+
   return NextResponse.json({
     center: [Number(first.lon), Number(first.lat)],
     label: first.display_name || query,
+    isBroad,
     address: {
       country: a.country ?? "",
       city: a.city || a.town || a.village || a.county || "",

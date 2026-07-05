@@ -23,11 +23,13 @@ import {
   Star,
   Lightbulb,
   Coins,
+  Megaphone,
 } from "lucide-react";
 
 const ADMIN_NAV = [
   { href: ROUTES.adminHome, label: "Overview", icon: LayoutDashboard },
   { href: ROUTES.adminAnalytics, label: "Analytics", icon: BarChart3 },
+  { href: ROUTES.adminAnnouncements, label: "Announcements", icon: Megaphone },
   { href: ROUTES.adminHosts, label: "Hosts", icon: UserCircle },
   { href: ROUTES.adminInquiries, label: "Inquiries", icon: MessageCircle },
   { href: ROUTES.adminEvents, label: "Events", icon: Activity },

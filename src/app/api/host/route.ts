@@ -25,7 +25,7 @@ export async function GET() {
   const admin = createAdminClient();
   const { data: rows } = await admin
     .from("hosts")
-    .select("id, name, phone, bio, avatar_url, is_verified")
+    .select("id, name, phone, bio, avatar_url, is_verified, verification_status")
     .eq("user_id", auth.user.id)
     .order("created_at", { ascending: true })
     .limit(1);
@@ -69,7 +69,7 @@ export async function PATCH(request: Request) {
     .from("hosts")
     .update(update)
     .eq("id", hostId)
-    .select("id, name, phone, bio, avatar_url, is_verified")
+    .select("id, name, phone, bio, avatar_url, is_verified, verification_status")
     .single();
 
   if (error) {
@@ -116,11 +116,12 @@ export async function POST(request: Request) {
       name,
       phone,
       is_verified: false,
-      // New hosts must be approved by an admin before they can publish.
-      status: "pending",
+      // Approved automatically by default so they can publish immediately.
+      status: "approved",
+      verification_status: "not_started",
       applied_at: new Date().toISOString(),
     })
-    .select("id, name, phone, is_verified, status")
+    .select("id, name, phone, is_verified, status, verification_status")
     .single();
 
   if (error || !host) {

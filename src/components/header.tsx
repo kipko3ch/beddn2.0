@@ -300,7 +300,7 @@ export function Header() {
             <CurrencySwitcher />
           </div>
         </div>
-        {!pathname?.startsWith('/property/') && !pathname?.startsWith('/experience/') && !pathname?.startsWith('/reserve/') && (
+        {!pathname?.startsWith('/property/') && !pathname?.startsWith('/experience/') && !pathname?.startsWith('/reserve/') && !pathname?.startsWith('/search') && (
           <div className="border-t border-black/5">
             <CategoryStrip pathname={pathname} />
           </div>

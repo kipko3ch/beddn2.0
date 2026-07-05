@@ -25,6 +25,7 @@ interface MapProps {
   priceMode?: "hourly" | "overnight" | "experience";
   /** When false the map is a static image: no pan/zoom/rotate and no controls. */
   interactive?: boolean;
+  isBroad?: boolean;
 }
 
 function listingPrice(listing: Listing, priceMode: "hourly" | "overnight" | "experience") {
@@ -144,6 +145,7 @@ export function Map({
   approximate = false,
   priceMode = "hourly",
   interactive = true,
+  isBroad = true,
 }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -189,9 +191,13 @@ export function Map({
     const map = mapRef.current;
     if (!map) return;
     // Animate only when interactive; a static map jumps straight to position.
-    if (interactive) map.easeTo({ center, zoom, duration: 450 });
-    else map.jumpTo({ center, zoom });
-  }, [center, zoom, interactive]);
+    // If we have listings on a search page, fitBounds will position the map,
+    // so we don't fight it here. We only center manually if listings are empty or it's a detail page.
+    if (listingsRef.current.length === 0 || approximate) {
+      if (interactive) map.easeTo({ center, zoom, duration: 450 });
+      else map.jumpTo({ center, zoom });
+    }
+  }, [center, zoom, interactive, approximate]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -309,10 +315,11 @@ export function Map({
         items.forEach((listing) => markersRef.current.set(listing.id, marker));
       });
 
-      if (currentListings.length > 1 && !highlightedId) {
+      if (currentListings.length > 0 && !highlightedId) {
         const bounds = new maplibregl.LngLatBounds();
         currentListings.forEach((l) => bounds.extend([l.longitude, l.latitude]));
-        map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+        const fitMaxZoom = isBroad ? 12 : 14.5;
+        map.fitBounds(bounds, { padding: 60, maxZoom: fitMaxZoom });
       }
     };
 
@@ -323,7 +330,7 @@ export function Map({
     return () => {
       map.off("moveend", rebuildMarkers);
     };
-  }, [listings, highlightedId, approximate, onPinClick, priceMode]);
+  }, [listings, highlightedId, approximate, onPinClick, priceMode, isBroad]);
 
   return <div ref={containerRef} className={className} />;
 }

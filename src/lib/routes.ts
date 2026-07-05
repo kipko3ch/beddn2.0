@@ -31,6 +31,7 @@ export const ROUTES = {
   adminFeedback: "/admin/feedback",
   adminDemand: "/admin/demand",
   adminNotifications: "/admin/notifications",
+  adminAnnouncements: "/admin/announcements",
   adminDestinations: "/admin/destinations",
   adminInquiries: "/admin/inquiries",
   adminEvents: "/admin/events",

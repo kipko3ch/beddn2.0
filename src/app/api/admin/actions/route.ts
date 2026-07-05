@@ -44,6 +44,7 @@ interface AdminActionBody {
     | "reject_booking"
     | "revoke_booking"
     | "verify_host"
+    | "unverify_host"
     | "approve_host"
     | "reject_host"
     | "suspend_host"
@@ -164,8 +165,15 @@ export async function POST(request: Request) {
     }
   }
 
-  if (body.action === "verify_host") {
-    const { error } = await admin.from("hosts").update({ is_verified: true }).eq("id", body.id);
+  if (body.action === "verify_host" || body.action === "unverify_host") {
+    const verified = body.action === "verify_host";
+    const { error } = await admin
+      .from("hosts")
+      .update({
+        is_verified: verified,
+        verification_status: verified ? "verified" : "not_started",
+      })
+      .eq("id", body.id);
     errorMessage = error?.message || null;
   }
 
