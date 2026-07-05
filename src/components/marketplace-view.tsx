@@ -661,7 +661,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
           </div>
         )}
         {loading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className={styles.listingsGrid}>
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className={styles.listingRailItem}>
                 <ListingCardSkeleton />
@@ -669,7 +669,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             ))}
           </div>
         ) : listings.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className={styles.listingsGrid}>
             {listings.map((listing) => (
               <div key={listing.id} className={styles.listingRailItem}>
                 <ListingCard
