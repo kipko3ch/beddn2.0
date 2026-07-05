@@ -45,14 +45,14 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  if (category && category !== "all") {
-    query = query.contains("categories", [category]);
+  if (category === "experience") {
+    query = query.contains("categories", ["experience"]).gt("experience_price", 0);
+  } else {
+    query = query.not("categories", "cs", '{"experience"}');
     if (category === "hourly") {
-      query = query.gt("hourly_price", 0);
+      query = query.contains("categories", ["hourly"]).gt("hourly_price", 0);
     } else if (category === "overnight") {
-      query = query.gt("overnight_price", 0);
-    } else if (category === "experience") {
-      query = query.gt("experience_price", 0);
+      query = query.contains("categories", ["overnight"]).gt("overnight_price", 0);
     }
   }
   if (type && type !== "all") {

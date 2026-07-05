@@ -155,7 +155,7 @@
    icons stay on a transparent background so they read as independent
    objects rather than sitting inside a badge. */
 .tab.active {
-  color: var(--color-crimson);
+  color: var(--color-merlot);
   font-weight: 700;
   background: none;
   border-color: transparent;
@@ -163,7 +163,7 @@
 }
 
 .tab.active:hover {
-  color: var(--color-merlot);
+  color: #800020;
 }
 
 .tabIcon {

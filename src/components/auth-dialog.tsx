@@ -48,14 +48,14 @@ export function AuthDialog({
 
   function callbackUrl() {
     const next = defaultHostIntent
-      ? ROUTES.newListing
+      ? ROUTES.dashboard
       : `${window.location.pathname}${window.location.search}`;
     return `${publicBaseUrl()}/api/auth/callback?next=${encodeURIComponent(next || ROUTES.home)}`;
   }
 
   function magicLinkNext() {
     const next = defaultHostIntent
-      ? ROUTES.newListing
+      ? ROUTES.dashboard
       : `${window.location.pathname}${window.location.search}`;
     return next || ROUTES.home;
   }

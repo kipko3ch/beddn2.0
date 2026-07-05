@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Delete, Lock, ShieldCheck } from "lucide-react";
@@ -9,7 +9,14 @@ import { HOST_PIN_LENGTH } from "@/lib/host-pin";
 
 type Stage = "loading" | "create" | "confirm" | "enter" | "locked";
 
-function Dots({ filled }: { filled: number }) {
+function Dots({ filled, submitting }: { filled: number; submitting: boolean }) {
+  if (submitting) {
+    return (
+      <div className="flex justify-center items-center h-4">
+        <span className="animate-spin size-5 border-2 border-[#800020] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
   return (
     <div className="flex justify-center gap-4">
       {Array.from({ length: HOST_PIN_LENGTH }).map((_, i) => (
@@ -27,7 +34,7 @@ function Dots({ filled }: { filled: number }) {
 function Keypad({ onDigit, onBackspace, disabled }: { onDigit: (d: string) => void; onBackspace: () => void; disabled: boolean }) {
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "back"];
   return (
-    <div className="mx-auto grid max-w-xs grid-cols-3 gap-3">
+    <div className="mx-auto grid w-full max-w-[280px] xs:max-w-xs grid-cols-3 gap-3">
       {keys.map((key, i) =>
         key === "" ? (
           <span key={i} />
@@ -38,7 +45,7 @@ function Keypad({ onDigit, onBackspace, disabled }: { onDigit: (d: string) => vo
             disabled={disabled}
             onClick={onBackspace}
             aria-label="Delete digit"
-            className="flex h-16 items-center justify-center rounded-2xl text-[#2b000a] hover:bg-[#f5f1f2] disabled:opacity-40"
+            className="flex h-14 sm:h-16 items-center justify-center rounded-2xl text-[#2b000a] hover:bg-[#f5f1f2] disabled:opacity-40"
           >
             <Delete className="h-6 w-6" />
           </button>
@@ -48,7 +55,7 @@ function Keypad({ onDigit, onBackspace, disabled }: { onDigit: (d: string) => vo
             type="button"
             disabled={disabled}
             onClick={() => onDigit(key)}
-            className="flex h-16 items-center justify-center rounded-2xl bg-[#fbf7f8] text-2xl font-bold text-[#2b000a] hover:bg-[#f5f1f2] disabled:opacity-40"
+            className="flex h-14 sm:h-16 items-center justify-center rounded-2xl bg-[#fbf7f8] text-2xl font-bold text-[#2b000a] hover:bg-[#f5f1f2] disabled:opacity-40"
           >
             {key}
           </button>
@@ -72,6 +79,55 @@ function UnlockInner() {
   const [error, setError] = useState("");
   const [lockedUntil, setLockedUntil] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const stateRef = useRef({ stage, pin, firstPin, submitting });
+  useEffect(() => {
+    stateRef.current = { stage, pin, firstPin, submitting };
+  });
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const { stage, pin, firstPin, submitting } = stateRef.current;
+      if (stage === "loading" || stage === "locked") return;
+
+      if (e.key >= "0" && e.key <= "9") {
+        if (submitting || pin.length >= HOST_PIN_LENGTH) return;
+        setError("");
+        const nextPin = pin + e.key;
+        setPin(nextPin);
+        if (nextPin.length !== HOST_PIN_LENGTH) return;
+
+        if (stage === "enter") {
+          submitPin(nextPin);
+          return;
+        }
+        if (stage === "create") {
+          setFirstPin(nextPin);
+          setPin("");
+          setStage("confirm");
+          return;
+        }
+        if (stage === "confirm") {
+          if (nextPin !== firstPin) {
+            setError("Those PINs didn't match. Try again.");
+            setFirstPin("");
+            setPin("");
+            setStage("create");
+            return;
+          }
+          submitPin(nextPin);
+        }
+      } else if (e.key === "Backspace") {
+        if (submitting) return;
+        setPin((p) => p.slice(0, -1));
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     fetch("/api/host/pin")
@@ -195,7 +251,7 @@ function UnlockInner() {
         ) : (
           <>
             <div className="mt-8">
-              <Dots filled={pin.length} />
+              <Dots filled={pin.length} submitting={submitting} />
             </div>
             {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
             <div className="mt-8 w-full">

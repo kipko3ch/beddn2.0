@@ -66,11 +66,19 @@ export async function GET(request: Request) {
   }
 
   // Only active listings ever surface publicly.
-  const { data: listings } = await admin
+  let listingsQuery = admin
     .from("listings")
     .select(CARD_COLUMNS)
     .in("id", orderedIds)
     .eq("is_active", true);
+
+  if (category === "experience") {
+    listingsQuery = listingsQuery.contains("categories", ["experience"]);
+  } else {
+    listingsQuery = listingsQuery.not("categories", "cs", '{"experience"}');
+  }
+
+  const { data: listings } = await listingsQuery;
 
   const byId = new Map((listings ?? []).map((l) => [(l as { id: string }).id, l]));
   const ordered = orderedIds.map((id) => byId.get(id)).filter(Boolean);

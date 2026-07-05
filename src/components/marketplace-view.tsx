@@ -802,7 +802,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             <span>Dashboard</span>
           </button>
         ) : user ? (
-          <button onClick={() => router.push(ROUTES.newListing)}>
+          <button onClick={() => router.push(ROUTES.dashboard)}>
             <Icon icon="line-md:briefcase" />
             <span>Host</span>
           </button>
