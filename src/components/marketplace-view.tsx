@@ -9,14 +9,16 @@ import {
   Menu,
   Bus,
   Waves,
-  Dumbbell
+  Dumbbell,
+  Star,
+  MapPin,
 } from 'lucide-react';
 import { Icon } from '@/components/icon';
 import styles from '../app/landing.module.css';
 import { createClient } from '@/lib/supabase/client';
 import { useSavedListings, useUserRole } from '@/lib/hooks';
 import { ListingCard, ListingCardSkeleton } from '@/components/listing-card';
-import { PopularDestinations, CityRails, FeaturedRail } from '@/components/home-sections';
+import { PopularDestinations, CityRails, FeaturedRail, Rail } from '@/components/home-sections';
 import { SearchPill, type SearchPillValues } from '@/components/search-pill';
 import { AuthDialog } from '@/components/auth-dialog';
 import { CurrencySwitcher } from '@/components/currency-switcher';
@@ -63,6 +65,20 @@ const TAB_ICONS: Record<TabType, string> = {
   Experiences: '/images/cat-experiences.png',
 };
 
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // radius of Earth in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // distance in km
+}
+
 export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?: 'all' | 'hourly' | 'overnight' | 'experience' }) {
   // Map the URL category back to our internal TabType
   const initialTab = Object.keys(TAB_DATA).find(
@@ -77,11 +93,137 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+
+  // Personalized location and permissions states
+  const [permissionState, setPermissionState] = useState<"granted" | "denied" | "prompt" | null>(null);
+  const [locationData, setLocationData] = useState<{ lat: number; lng: number; city: string; region: string } | null>(null);
+  const [showBanner, setShowBanner] = useState(false);
+  const [nearStays, setNearStays] = useState<Listing[]>([]);
+  const [trendingNearby, setTrendingNearby] = useState<Listing[]>([]);
+  const [popularInCity, setPopularInCity] = useState<Listing[]>([]);
+  const [weekendGetaways, setWeekendGetaways] = useState<Listing[]>([]);
+  const [topExperiences, setTopExperiences] = useState<Listing[]>([]);
+
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { user, isHost, isAdmin } = useUserRole();
   const canHost = isHost || isAdmin;
   const { savedIds, toggle } = useSavedListings();
+
+  const requestGeolocation = useCallback(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        localStorage.setItem("beddn_location_decision", "granted");
+        setPermissionState("granted");
+        setShowBanner(false);
+
+        try {
+          const res = await fetch(`/api/geocode?lat=${latitude}&lon=${longitude}`);
+          if (res.ok) {
+            const data = await res.json();
+            const city = data.address?.city || data.address?.town || data.address?.village || "";
+            const region = data.address?.region || "";
+            setLocationData({ lat: latitude, lng: longitude, city, region });
+          } else {
+            setLocationData({ lat: latitude, lng: longitude, city: "Nearby", region: "" });
+          }
+        } catch {
+          setLocationData({ lat: latitude, lng: longitude, city: "Nearby", region: "" });
+        }
+      },
+      () => {
+        localStorage.setItem("beddn_location_decision", "denied");
+        setPermissionState("denied");
+        setShowBanner(false);
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    const decision = localStorage.getItem("beddn_location_decision");
+    if (decision === "denied") {
+      setPermissionState("denied");
+      setShowBanner(false);
+    } else if (decision === "granted") {
+      setPermissionState("granted");
+      requestGeolocation();
+    } else {
+      if (!("permissions" in navigator)) {
+        setShowBanner(true);
+        return;
+      }
+      navigator.permissions
+        .query({ name: "geolocation" })
+        .then((status) => {
+          setPermissionState(status.state);
+          if (status.state === "prompt" || status.state === "denied") {
+            setShowBanner(status.state === "prompt");
+          } else if (status.state === "granted") {
+            requestGeolocation();
+          }
+        })
+        .catch(() => {
+          setShowBanner(true);
+        });
+    }
+  }, [requestGeolocation]);
+
+  useEffect(() => {
+    // Fetch experiences for fallback / curated experiences rail
+    fetch("/api/public/listings?category=experience&limit=15")
+      .then((res) => (res.ok ? res.json() : { listings: [] }))
+      .then((json) => setTopExperiences(json.listings ?? []))
+      .catch(() => {});
+
+    if (!locationData) return;
+
+    fetch("/api/public/listings?limit=50")
+      .then((res) => (res.ok ? res.json() : { listings: [] }))
+      .then((json: { listings?: Listing[] }) => {
+        const list = json.listings ?? [];
+        const lat1 = locationData.lat;
+        const lon1 = locationData.lng;
+
+        const mapped = list.map((item) => {
+          const d = getDistance(lat1, lon1, item.latitude, item.longitude);
+          return { ...item, distance: d };
+        });
+
+        // Near You (within 80km)
+        const near = mapped
+          .filter((item) => item.distance < 80)
+          .sort((a, b) => a.distance - b.distance);
+        setNearStays(near.slice(0, 8));
+
+        // Trending Nearby (within 150km, sorted by rating/reviews count)
+        const trending = mapped
+          .filter((item) => item.distance < 150)
+          .sort((a, b) => {
+            const aRev = a.reviews?.length ?? 0;
+            const bRev = b.reviews?.length ?? 0;
+            return bRev - aRev;
+          });
+        setTrendingNearby(trending.slice(0, 8));
+
+        // Popular in City
+        if (locationData.city) {
+          const inCity = list.filter((item) =>
+            item.city?.toLowerCase().includes(locationData.city.toLowerCase()) ||
+            locationData.city.toLowerCase().includes(item.city?.toLowerCase() ?? "")
+          );
+          setPopularInCity(inCity.slice(0, 8));
+        }
+
+        // Weekend Getaways Near You (Overnight stays within 150km)
+        const getaways = mapped
+          .filter((item) => item.distance < 150 && (item.categories?.includes("overnight") || (item.category as any)?.includes("overnight")))
+          .sort((a, b) => a.distance - b.distance);
+        setWeekendGetaways(getaways.slice(0, 8));
+      })
+      .catch(() => {});
+  }, [locationData]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -128,9 +270,22 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   }, [fetchListings]);
 
   function handleSearch(values: SearchPillValues) {
-    // Search right here on the landing page — results swap into the grid below.
-    setSearch(values.q ? values : null);
-    document.getElementById('home-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const params = new URLSearchParams();
+    if (values.q) params.set("q", values.q.trim());
+    if (currentData.category && currentData.category !== "all") {
+      params.set("category", currentData.category);
+    }
+    if (values.checkIn) params.set("checkin", values.checkIn);
+    if (values.checkOut && currentData.category !== "hourly" && currentData.category !== "experience") {
+      params.set("checkout", values.checkOut);
+    }
+    if (values.startTime && (currentData.category === "hourly" || currentData.category === "experience")) {
+      params.set("startTime", values.startTime);
+    }
+    if (values.guests && values.guests > 0) {
+      params.set("guests", String(values.guests));
+    }
+    router.push(`/search?${params.toString()}`);
   }
 
   function handleNearby() {
@@ -333,18 +488,139 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
 
       </main>
 
-      {!search && <PopularDestinations />}
+      {/* Localized Search Recommendations */}
+      {!search && locationData && (nearStays.length > 0 || popularInCity.length > 0) ? (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 space-y-2">
+          {nearStays.length > 0 && (
+            <section className="pt-10">
+              <Rail
+                heading={
+                  <h2 className="text-xl font-brand text-[#2b000a] sm:text-2xl font-bold">
+                    Near You
+                  </h2>
+                }
+              >
+                {nearStays.map((listing) => (
+                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                    <ListingCard
+                      listing={listing}
+                      isSaved={savedIds.has(listing.id)}
+                      onToggleSave={() => toggle(listing.id)}
+                      priceMode={priceMode}
+                    />
+                  </div>
+                ))}
+              </Rail>
+            </section>
+          )}
 
-      {!search && (
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <FeaturedRail
-            placement="homepage_featured"
-            heading="Featured stays"
-            savedIds={savedIds}
-            onToggleSave={toggle}
-            priceMode={priceMode}
-          />
+          {trendingNearby.length > 0 && (
+            <section className="pt-10">
+              <Rail
+                heading={
+                  <h2 className="text-xl font-brand text-[#2b000a] sm:text-2xl font-bold">
+                    Trending Nearby
+                  </h2>
+                }
+              >
+                {trendingNearby.map((listing) => (
+                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                    <ListingCard
+                      listing={listing}
+                      isSaved={savedIds.has(listing.id)}
+                      onToggleSave={() => toggle(listing.id)}
+                      priceMode={priceMode}
+                    />
+                  </div>
+                ))}
+              </Rail>
+            </section>
+          )}
+
+          {popularInCity.length > 0 && (
+            <section className="pt-10">
+              <Rail
+                heading={
+                  <h2 className="text-xl font-brand text-[#2b000a] sm:text-2xl font-bold">
+                    Popular in {locationData.city}
+                  </h2>
+                }
+              >
+                {popularInCity.map((listing) => (
+                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                    <ListingCard
+                      listing={listing}
+                      isSaved={savedIds.has(listing.id)}
+                      onToggleSave={() => toggle(listing.id)}
+                      priceMode={priceMode}
+                    />
+                  </div>
+                ))}
+              </Rail>
+            </section>
+          )}
+
+          {weekendGetaways.length > 0 && (
+            <section className="pt-10">
+              <Rail
+                heading={
+                  <h2 className="text-xl font-brand text-[#2b000a] sm:text-2xl font-bold">
+                    Weekend Getaways Near You
+                  </h2>
+                }
+              >
+                {weekendGetaways.map((listing) => (
+                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                    <ListingCard
+                      listing={listing}
+                      isSaved={savedIds.has(listing.id)}
+                      onToggleSave={() => toggle(listing.id)}
+                      priceMode={priceMode}
+                    />
+                  </div>
+                ))}
+              </Rail>
+            </section>
+          )}
         </div>
+      ) : (
+        /* Fallback sections when geolocation is denied or loading */
+        !search && (
+          <>
+            <PopularDestinations />
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+              <FeaturedRail
+                placement="homepage_featured"
+                heading="Featured stays"
+                savedIds={savedIds}
+                onToggleSave={toggle}
+                priceMode={priceMode}
+              />
+            </div>
+            {topExperiences.length > 0 && (
+              <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-10">
+                <Rail
+                  heading={
+                    <h2 className="text-xl font-brand text-[#2b000a] sm:text-2xl font-bold">
+                      Top Rated Experiences
+                    </h2>
+                  }
+                >
+                  {topExperiences.map((listing) => (
+                    <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                      <ListingCard
+                        listing={listing}
+                        isSaved={savedIds.has(listing.id)}
+                        onToggleSave={() => toggle(listing.id)}
+                        priceMode={priceMode}
+                      />
+                    </div>
+                  ))}
+                </Rail>
+              </div>
+            )}
+          </>
+        )
       )}
 
       {/* Listings grid */}
@@ -507,6 +783,41 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
           </AuthDialog>
         )}
       </nav>
+
+      {/* Geolocation Request Floating Banner */}
+      {showBanner && (
+        <div className="fixed bottom-6 left-6 right-6 z-50 mx-auto max-w-md rounded-3xl border border-[#e3d3d9] bg-white/95 p-5 shadow-2xl backdrop-blur-sm animate-in slide-in-from-bottom duration-300">
+          <div className="flex items-start gap-4">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-crimson">
+              <MapPin className="h-5 w-5 fill-crimson text-white" />
+            </span>
+            <div className="flex-1 space-y-1">
+              <h3 className="font-brand text-base font-bold text-[#2b000a]">Find stays near you</h3>
+              <p className="text-xs text-muted-foreground leading-normal">
+                Allow location access to discover nearby stays, experiences, and personalized recommendations.
+              </p>
+              <div className="flex items-center gap-3 pt-3">
+                <button
+                  onClick={requestGeolocation}
+                  className="rounded-full bg-[#800020] px-4 py-2 text-xs font-bold text-white hover:bg-merlot transition-colors"
+                >
+                  Allow Location
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.setItem("beddn_location_decision", "denied");
+                    setPermissionState("denied");
+                    setShowBanner(false);
+                  }}
+                  className="rounded-full border border-black/10 px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  Not Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

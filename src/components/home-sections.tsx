@@ -24,7 +24,7 @@ interface CitySection {
  * the section (next to the heading) rather than overlapping the first/last
  * card. Pass the section heading via `heading`.
  */
-function Rail({ heading, children }: { heading: React.ReactNode; children: React.ReactNode }) {
+export function Rail({ heading, children }: { heading: React.ReactNode; children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
 
   function scroll(direction: -1 | 1) {

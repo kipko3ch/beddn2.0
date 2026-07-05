@@ -20,12 +20,33 @@ interface MapProps {
   zoom?: number;
   highlightedId?: string | null;
   onPinClick?: (listing: Listing) => void;
+  onPinSelect?: (listing: Listing) => void;
   className?: string;
   approximate?: boolean;
   priceMode?: "hourly" | "overnight" | "experience";
   /** When false the map is a static image: no pan/zoom/rotate and no controls. */
   interactive?: boolean;
   isBroad?: boolean;
+}
+
+function jitterCoordinates(listings: Listing[]): Listing[] {
+  const coordMap = new globalThis.Map<string, number>();
+  return listings.map((listing) => {
+    const key = `${listing.latitude.toFixed(6)},${listing.longitude.toFixed(6)}`;
+    const count = coordMap.get(key) || 0;
+    coordMap.set(key, count + 1);
+
+    if (count === 0) return listing;
+
+    // Spiral arrangement for identical coordinates (~12-15 meters offset)
+    const angle = count * 0.7;
+    const radius = 0.00012 * Math.sqrt(count);
+    return {
+      ...listing,
+      latitude: listing.latitude + radius * Math.sin(angle),
+      longitude: listing.longitude + radius * Math.cos(angle),
+    };
+  });
 }
 
 function listingPrice(listing: Listing, priceMode: "hourly" | "overnight" | "experience") {
@@ -127,8 +148,33 @@ function buildPopupCard(
   priceLine.style.cssText = "margin: 6px 0 0; font-size: 13px; font-weight: 800; color: #800020;";
   body.appendChild(priceLine);
 
-  body.addEventListener("click", () => onSelect(listing));
-  imageWrap.addEventListener("click", () => onSelect(listing));
+  body.addEventListener("click", (e) => {
+    e.preventDefault();
+    onSelect(listing);
+  });
+  imageWrap.addEventListener("click", (e) => {
+    e.preventDefault();
+    onSelect(listing);
+  });
+
+  const viewLink = document.createElement("a");
+  viewLink.href = listingHref(listing);
+  viewLink.textContent = "View Listing →";
+  viewLink.style.cssText = `
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #800020;
+    text-decoration: underline;
+    cursor: pointer;
+  `;
+  viewLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSelect(listing);
+  });
+  body.appendChild(viewLink);
 
   card.appendChild(imageWrap);
   card.appendChild(body);
@@ -141,6 +187,7 @@ export function Map({
   zoom = 12,
   highlightedId,
   onPinClick,
+  onPinSelect,
   className = "w-full h-full",
   approximate = false,
   priceMode = "hourly",
@@ -152,6 +199,8 @@ export function Map({
   const markersRef = useRef(new globalThis.Map<string, maplibregl.Marker>());
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const listingsRef = useRef(listings);
+  const lastFittedKeyRef = useRef("");
+
   useEffect(() => {
     listingsRef.current = listings;
   }, [listings]);
@@ -215,6 +264,10 @@ export function Map({
       }).setLngLat(lngLat);
 
       const render = () => {
+        const currentListing = group[index];
+        if (currentListing) {
+          onPinClick?.(currentListing);
+        }
         popup.setDOMContent(
           buildPopupCard(
             group,
@@ -224,7 +277,7 @@ export function Map({
               index = next;
               render();
             },
-            (listing) => onPinClick?.(listing)
+            (listing) => onPinSelect?.(listing)
           )
         );
       };
@@ -236,7 +289,9 @@ export function Map({
     const rebuildMarkers = () => {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current.clear();
-      const currentListings = listingsRef.current;
+      
+      // Deterministically jitter identical/overlapping coordinates so markers don't stack directly on top
+      const currentListings = jitterCoordinates(listingsRef.current);
 
       if (approximate) {
         currentListings.forEach((listing) => {
@@ -309,13 +364,21 @@ export function Map({
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           openPopup(items, group.lngLat);
+          if (items.length > 0) {
+            onPinClick?.(items[0]);
+          }
         });
 
         const marker = new maplibregl.Marker({ element: el }).setLngLat(group.lngLat).addTo(map);
         items.forEach((listing) => markersRef.current.set(listing.id, marker));
       });
 
-      if (currentListings.length > 0 && !highlightedId) {
+      // Fit map bounds only if the actual listings have changed.
+      const listingsKey = listingsRef.current.map((l) => l.id).join(",");
+      const listingsChanged = lastFittedKeyRef.current !== listingsKey;
+
+      if (currentListings.length > 0 && listingsChanged) {
+        lastFittedKeyRef.current = listingsKey;
         const bounds = new maplibregl.LngLatBounds();
         currentListings.forEach((l) => bounds.extend([l.longitude, l.latitude]));
         const fitMaxZoom = isBroad ? 12 : 14.5;
@@ -330,7 +393,7 @@ export function Map({
     return () => {
       map.off("moveend", rebuildMarkers);
     };
-  }, [listings, highlightedId, approximate, onPinClick, priceMode, isBroad]);
+  }, [listings, highlightedId, approximate, onPinClick, onPinSelect, priceMode, isBroad]);
 
   return <div ref={containerRef} className={className} />;
 }

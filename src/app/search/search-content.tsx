@@ -153,7 +153,7 @@ export function SearchContent() {
       category: category || null,
       results_count: results.length,
     });
-  }, [q, lat, lng, category, propertyType]);
+  }, [q, lat, lng, category, propertyType, checkIn, checkOut, startTime, guests]);
 
   useEffect(() => {
     fetchResults();
@@ -246,7 +246,15 @@ export function SearchContent() {
   // Clicking a pin now opens a card overlay directly on the map (handled
   // inside <Map>) instead of jumping away — this only fires when the guest
   // clicks into that card to actually open the listing.
-  function handlePinClick(listing: Listing) {
+  function handlePinHighlight(listing: Listing) {
+    setHighlightedId(listing.id);
+    const card = document.getElementById(`listing-${listing.id}`);
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  function handlePinSelect(listing: Listing) {
     const isExp = (listing.categories || listing.category || []).includes("experience");
     router.push(isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`);
   }
@@ -303,7 +311,8 @@ export function SearchContent() {
         listings={listings}
         center={mapCenter}
         highlightedId={highlightedId}
-        onPinClick={handlePinClick}
+        onPinClick={handlePinHighlight}
+        onPinSelect={handlePinSelect}
         priceMode={isExperienceSearch ? "experience" : priceMode}
         isBroad={isBroadLocation}
       />

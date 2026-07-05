@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import {
@@ -13,6 +14,7 @@ import {
   Search,
   Users,
   X,
+  MapPin,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -86,7 +88,9 @@ export function SearchPill({
   /** Hide the built-in mobile summary pill when the page provides its own. */
   showMobileTrigger?: boolean;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [range, setRange] = useState<DateRange | undefined>(() => {
     const from = fromIso(initialCheckIn);
     if (!from) return undefined;
@@ -168,6 +172,25 @@ export function SearchPill({
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    const controller = new AbortController();
+    const delayDebounce = setTimeout(() => {
+      fetch(`/api/public/autocomplete?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+        .then((res) => (res.ok ? res.json() : { suggestions: [] }))
+        .then((json) => setSuggestions(json.suggestions ?? []))
+        .catch(() => {});
+    }, 200);
+
+    return () => {
+      controller.abort();
+      clearTimeout(delayDebounce);
+    };
+  }, [query]);
+
   // Close the desktop suggestions dropdown on outside click.
   useEffect(() => {
     if (!whereOpen) return;
@@ -226,9 +249,50 @@ export function SearchPill({
   const timeLabel = startTime || copy.timeEmpty;
   const afterWhenSection = asksForTime ? "time" : "who";
 
-  const suggestions = (
-    <ul className="max-h-72 overflow-y-auto">
-      {onNearby && (
+  const suggestionsDropdown = (
+    <ul className="max-h-72 overflow-y-auto divide-y divide-zinc-50">
+      <li>
+        <button
+          type="button"
+          onClick={() => {
+            if (!navigator.geolocation) {
+              alert("Geolocation is not supported by your browser.");
+              return;
+            }
+            navigator.geolocation.getCurrentPosition(
+              async (pos) => {
+                try {
+                  const res = await fetch(`/api/geocode?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+                  const data = await res.json();
+                  const cityName = data?.address?.city || data?.address?.area || "Nearby";
+                  setQuery(cityName);
+                  setWhereOpen(false);
+                  setMobileOpen(false);
+                  router.push(`/search?q=${encodeURIComponent(cityName)}&lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`);
+                } catch {
+                  setQuery("Nearby");
+                  setWhereOpen(false);
+                  setMobileOpen(false);
+                  router.push(`/search?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`);
+                }
+              },
+              () => {
+                alert("Location access denied. Please enable location permissions in your browser.");
+              }
+            );
+          }}
+          className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-muted transition-colors text-crimson font-bold text-sm"
+        >
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-crimson">
+            <MapPin className="h-4.5 w-4.5 fill-crimson text-white" />
+          </span>
+          <div>
+            <span className="block text-sm font-bold">Use my current location</span>
+            <span className="block text-xs text-muted-foreground font-normal">Search properties near you</span>
+          </div>
+        </button>
+      </li>
+      {onNearby && !query.trim() && (
         <li>
           <button
             type="button"
@@ -249,26 +313,64 @@ export function SearchPill({
           </button>
         </li>
       )}
-      {destinations.map((destination) => (
-        <li key={destination.id}>
-          <button
-            type="button"
-            onClick={() => pickDestination(destination)}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-muted"
-          >
-            <span className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-muted">
-              <Image
-                src={destination.image_url}
-                alt=""
-                fill
-                sizes="44px"
-                className="object-cover"
-              />
-            </span>
-            <span className="block truncate text-sm font-semibold">{destination.name}</span>
-          </button>
+      {query.trim() && suggestions.length === 0 ? (
+        <li className="px-4 py-3 text-sm text-muted-foreground text-center">
+          No matches found
         </li>
-      ))}
+      ) : query.trim() ? (
+        suggestions.map((s, index) => (
+          <li key={index}>
+            <button
+              type="button"
+              onClick={() => {
+                setQuery(s.search_query);
+                setWhereOpen(false);
+                if (mobileOpen) {
+                  setMobileSection("when");
+                } else {
+                  submit(s.search_query);
+                }
+              }}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-muted transition-colors"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600">
+                {s.type === "destination" ? (
+                  <Search className="h-4.5 w-4.5" />
+                ) : (
+                  <MapPin className="h-4.5 w-4.5" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-[#2b000a] truncate">{s.name}</span>
+                {s.subtitle && (
+                  <span className="block text-xs text-muted-foreground truncate">{s.subtitle}</span>
+                )}
+              </div>
+            </button>
+          </li>
+        ))
+      ) : (
+        destinations.map((destination) => (
+          <li key={destination.id}>
+            <button
+              type="button"
+              onClick={() => pickDestination(destination)}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-muted"
+            >
+              <span className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-muted">
+                <Image
+                  src={destination.image_url}
+                  alt=""
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                />
+              </span>
+              <span className="block truncate text-sm font-semibold">{destination.name}</span>
+            </button>
+          </li>
+        ))
+      )}
     </ul>
   );
 
@@ -348,12 +450,12 @@ export function SearchPill({
               className="w-full border-0 bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm"
             />
           </label>
-          {whereOpen && (destinations.length > 0 || onNearby) && (
+          {whereOpen && (destinations.length > 0 || suggestions.length > 0 || onNearby || query.trim()) && (
             <div className="absolute left-0 top-[calc(100%+12px)] z-40 w-[380px] rounded-3xl bg-white p-3 shadow-xl ring-1 ring-black/10">
               <p className="px-3 pb-1 pt-2 text-xs font-semibold text-muted-foreground">
-                {copy.suggestionTitle}
+                {query.trim() ? "Location matches" : copy.suggestionTitle}
               </p>
-              {suggestions}
+              {suggestionsDropdown}
             </div>
           )}
         </div>
@@ -494,9 +596,9 @@ export function SearchPill({
                     />
                   </div>
                   <p className="px-1 pb-1 pt-4 text-xs font-semibold text-muted-foreground">
-                    {copy.suggestionTitle}
+                    {query.trim() ? "Location matches" : copy.suggestionTitle}
                   </p>
-                  {suggestions}
+                  {suggestionsDropdown}
                 </>
               ) : (
                 <button
