@@ -179,10 +179,13 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
 
     if (!locationData) return;
 
-    fetch("/api/public/listings?limit=50")
+    // Fetch non-experience listings for location-based rails
+    fetch("/api/public/listings?limit=50&category=all")
       .then((res) => (res.ok ? res.json() : { listings: [] }))
       .then((json: { listings?: Listing[] }) => {
-        const list = json.listings ?? [];
+        const list = (json.listings ?? []).filter(
+          (item) => !(item.categories || []).includes("experience")
+        );
         const lat1 = locationData.lat;
         const lon1 = locationData.lng;
 
@@ -225,6 +228,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
       .catch(() => {});
   }, [locationData]);
 
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
     onScroll();
@@ -233,6 +237,8 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   }, []);
 
   const currentData = TAB_DATA[activeTab];
+  const isExperienceTab = currentData.category === "experience";
+  const isAllTab = currentData.category === "all";
   // Cache fetched listings per category so switching tabs you've already
   // viewed is instant instead of hitting the database again.
   const listingCache = useRef<Map<string, Listing[]>>(new Map());
@@ -489,7 +495,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
       </main>
 
       {/* Localized Search Recommendations */}
-      {!search && locationData && (nearStays.length > 0 || popularInCity.length > 0) ? (
+      {!search && !isExperienceTab && locationData && (nearStays.length > 0 || popularInCity.length > 0) ? (
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 space-y-2">
           {nearStays.length > 0 && (
             <section className="pt-10">
@@ -585,7 +591,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
         </div>
       ) : (
         /* Fallback sections when geolocation is denied or loading */
-        !search && (
+        !search && !isExperienceTab && (
           <>
             <PopularDestinations />
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -597,7 +603,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 priceMode={priceMode}
               />
             </div>
-            {topExperiences.length > 0 && (
+            {isAllTab && topExperiences.length > 0 && (
               <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-10">
                 <Rail
                   heading={
@@ -624,6 +630,35 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
       )}
 
 
+      {/* Become a Host CTA — shown mid-page on All tab */}
+      {!search && isAllTab && (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+          <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
+            <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
+              <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
+                Got a spare room or an empty couch?
+              </h2>
+              <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
+                Why let your space sit empty? Turn it into cash and meet awesome people along the way.
+              </p>
+              <div className="pt-1">
+                <button
+                  onClick={() => router.push(ROUTES.newListing)}
+                  className="rounded-full bg-[#800020] px-5 py-2 text-xs md:text-sm font-bold text-white hover:bg-merlot transition-colors shadow-sm"
+                >
+                  List my space
+                </button>
+              </div>
+            </div>
+            <img
+              src="/images/coach.png"
+              alt="Become a host couch setup"
+              className="absolute right-0 bottom-0 h-[90%] md:h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Listings grid */}
       <section id="home-results" className={styles.listingsSection}>
         {search && (
@@ -638,7 +673,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             </button>
           </div>
         )}
-        {!loading && listings.length > 0 && (
+        {!loading && listings.length > 0 && !isExperienceTab && (
           <div className={styles.priceToggleRow}>
             <span className={styles.priceToggleLabel}>Show prices</span>
             <div className={styles.priceToggle} role="group" aria-label="Price view">
@@ -741,23 +776,53 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
 
       {!search && <CityRails savedIds={savedIds} onToggleSave={toggle} priceMode={priceMode} category={currentData.category !== 'all' ? currentData.category : undefined} />}
 
-      {/* Become a host CTA banner */}
-      {!search && (
+      {/* CTA banners — different card per tab context */}
+      {!search && (isExperienceTab || isAllTab) && (
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
-            <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
+          <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#f4f8f5] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
+            <div className="max-w-[55%] space-y-2 z-10 flex flex-col items-start justify-center">
               <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
-                Become a host
+                Turn your passion into a paycheck!
               </h2>
               <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
-                Share your space and earn extra income.
+                Love cooking, hiking, or showing off your city? Host an experience and get paid to do what you love.
               </p>
               <div className="pt-1">
                 <button
                   onClick={() => router.push(ROUTES.newListing)}
                   className="rounded-full bg-[#800020] px-5 py-2 text-xs md:text-sm font-bold text-white hover:bg-merlot transition-colors shadow-sm"
                 >
-                  Get started
+                  Start earning
+                </button>
+              </div>
+            </div>
+            
+            {/* Right side transparent adventure gear image */}
+            <img
+              src="/images/experiences.png"
+              alt="Adventure travel gear"
+              className="absolute right-0 bottom-0 h-[85%] md:h-[90%] w-auto object-contain object-right-bottom pointer-events-none"
+            />
+          </div>
+        </div>
+      )}
+
+      {!search && !isExperienceTab && !isAllTab && (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+          <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
+            <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
+              <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
+                Got a spare room or an empty couch?
+              </h2>
+              <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
+                Why let your space sit empty? Turn it into cash and meet awesome people along the way.
+              </p>
+              <div className="pt-1">
+                <button
+                  onClick={() => router.push(ROUTES.newListing)}
+                  className="rounded-full bg-[#800020] px-5 py-2 text-xs md:text-sm font-bold text-white hover:bg-merlot transition-colors shadow-sm"
+                >
+                  List my space
                 </button>
               </div>
             </div>
@@ -766,7 +831,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             <img
               src="/images/coach.png"
               alt="Become a host couch setup"
-              className="absolute right-0 bottom-0 h-[90%] md:h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
+              className="absolute right-0 bottom-0 h-[90%] md:min-h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
             />
           </div>
         </div>

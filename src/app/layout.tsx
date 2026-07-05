@@ -22,8 +22,8 @@ const tripSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Beddn — Find Unique Stays",
-  description: "Book hourly stays, overnight getaways, and unique experiences.",
+  title: "Beddn — Discover Unique Homes, Hourly Stays, & Local Experiences",
+  description: "Book flexible hourly stays, overnight getaways, and unique local experiences. Become a host and start earning today.",
 };
 
 export default function RootLayout({
