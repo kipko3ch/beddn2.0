@@ -47,6 +47,13 @@ export async function GET(request: Request) {
 
   if (category && category !== "all") {
     query = query.contains("categories", [category]);
+    if (category === "hourly") {
+      query = query.gt("hourly_price", 0);
+    } else if (category === "overnight") {
+      query = query.gt("overnight_price", 0);
+    } else if (category === "experience") {
+      query = query.gt("experience_price", 0);
+    }
   }
   if (type && type !== "all") {
     query = query.eq("property_type", type);

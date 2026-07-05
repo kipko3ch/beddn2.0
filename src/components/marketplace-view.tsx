@@ -623,6 +623,41 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
         )
       )}
 
+      {/* Become a host CTA banner */}
+      {!search && (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <div className="relative overflow-hidden rounded-3xl bg-[#f7f2f4] p-8 md:p-12 lg:p-14 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="max-w-md space-y-4 text-center md:text-left z-10">
+              <h2 className="font-brand text-3xl font-bold text-[#2b000a] tracking-tight sm:text-4xl">
+                Become a host
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground font-medium">
+                Share your space and earn extra income.
+              </p>
+              <div className="pt-2">
+                <button
+                  onClick={() => router.push(ROUTES.newListing)}
+                  className="rounded-full bg-[#800020] px-6 py-3 text-sm font-bold text-white hover:bg-merlot transition-colors shadow-md"
+                >
+                  Get started
+                </button>
+              </div>
+            </div>
+            
+            {/* Right decoration photo */}
+            <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm">
+              <Image
+                src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80"
+                alt="Become a host room design"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Listings grid */}
       <section id="home-results" className={styles.listingsSection}>
         {search && (
