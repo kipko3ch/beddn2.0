@@ -636,10 +636,10 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
           <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
             <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
               <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
-                Got a spare room or an empty couch?
+                Got a spare room?
               </h2>
               <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
-                Why let your space sit empty? Turn it into cash and meet awesome people along the way.
+                Turn your empty space into extra cash.
               </p>
               <div className="pt-1">
                 <button
@@ -653,7 +653,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             <img
               src="/images/coach.png"
               alt="Become a host couch setup"
-              className="absolute right-0 bottom-0 h-[90%] md:h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
+              className="absolute right-0 bottom-0 h-[65%] sm:h-[80%] md:h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
             />
           </div>
         </div>
@@ -782,10 +782,10 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
           <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#f4f8f5] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
             <div className="max-w-[55%] space-y-2 z-10 flex flex-col items-start justify-center">
               <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
-                Turn your passion into a paycheck!
+                Share your passion!
               </h2>
               <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
-                Love cooking, hiking, or showing off your city? Host an experience and get paid to do what you love.
+                Host a local experience and earn from what you love.
               </p>
               <div className="pt-1">
                 <button
@@ -801,7 +801,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             <img
               src="/images/experiences.png"
               alt="Adventure travel gear"
-              className="absolute right-0 bottom-0 h-[85%] md:h-[90%] w-auto object-contain object-right-bottom pointer-events-none"
+              className="absolute right-0 bottom-0 h-[65%] sm:h-[80%] md:h-[90%] w-auto object-contain object-right-bottom pointer-events-none"
             />
           </div>
         </div>
@@ -812,10 +812,10 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
           <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
             <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
               <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
-                Got a spare room or an empty couch?
+                Got a spare room?
               </h2>
               <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
-                Why let your space sit empty? Turn it into cash and meet awesome people along the way.
+                Turn your empty space into extra cash.
               </p>
               <div className="pt-1">
                 <button
@@ -831,7 +831,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             <img
               src="/images/coach.png"
               alt="Become a host couch setup"
-              className="absolute right-0 bottom-0 h-[90%] md:min-h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
+              className="absolute right-0 bottom-0 h-[65%] sm:h-[80%] md:min-h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
             />
           </div>
         </div>
