@@ -532,7 +532,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   </div>
                   {(listing.total_units ?? 1) > 1 && (
                     <div>
-                      <Label htmlFor="units">Rooms/units</Label>
+                      <Label htmlFor="units">Bookable spaces</Label>
                       <Input
                         id="units"
                         type="number"
@@ -543,6 +543,9 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                         className="mt-1 h-11 border-neutral-400 focus-visible:border-crimson"
                         required
                       />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Choose how many separate spaces you want to reserve.
+                      </p>
                     </div>
                   )}
                   <div className="sm:col-span-2">
@@ -681,7 +684,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                     ["Dates", bookingDateLabel()],
                     [
                       isExperience ? "Seats" : "Guests",
-                      `${guests}${(listing.total_units ?? 1) > 1 ? ` · ${units} unit${units === "1" ? "" : "s"}` : ""}`,
+                      `${guests}${(listing.total_units ?? 1) > 1 ? ` · ${units} space${units === "1" ? "" : "s"}` : ""}`,
                     ],
                     ["Guest", `${firstName} ${lastName}`.trim()],
                     ["Phone", phone],

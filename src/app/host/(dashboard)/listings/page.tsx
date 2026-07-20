@@ -137,7 +137,7 @@ export default function ListingsPage() {
             </Button>
           </Link>
           <Link href="/host/listings/new?type=experience">
-            <Button className="gap-1 rounded-full bg-[#315f3a] hover:bg-[#264b2e]">
+            <Button variant="outline" className="gap-1 rounded-full bg-white">
               <Icon icon="line-md:star" className="h-4 w-4" /> Add experience
             </Button>
           </Link>
@@ -160,7 +160,7 @@ export default function ListingsPage() {
         ))}
       </div>
 
-      <div className="mb-5 rounded-2xl border bg-[#f8faf7] p-4 text-sm text-[#2b000a]">
+      <div className="mb-5 rounded-2xl border bg-[#fbf7f8] p-4 text-sm text-[#2b000a]">
         <p className="font-semibold">How guests reach you</p>
         <p className="mt-1 text-muted-foreground">
           Guests send inquiries through Beddn, then continue to your WhatsApp when your
@@ -261,7 +261,7 @@ export default function ListingsPage() {
                         onClick={() => changeStatus(listing.id, key)}
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-100 ${
                           status === key
-                            ? "border-[#315f3a] bg-[#315f3a] text-white"
+                            ? "border-[#2b000a] bg-[#2b000a] text-white"
                             : "border-[#e3d3d9] bg-white text-[#2b000a] hover:bg-muted disabled:opacity-50"
                         }`}
                       >
@@ -274,7 +274,7 @@ export default function ListingsPage() {
                 {status === "draft" && (
                   <div className="mt-3 border-t pt-3">
                     <Link href={`/host/listings/${listing.id}/edit`}>
-                      <Button size="sm" className="rounded-full bg-[#315f3a] hover:bg-[#264b2e]">
+                      <Button size="sm" className="rounded-full bg-[#800020] hover:bg-[#6b1029]">
                         Continue setup
                       </Button>
                     </Link>

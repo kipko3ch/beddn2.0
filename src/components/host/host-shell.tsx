@@ -116,11 +116,11 @@ export function HostShell({
                   onClick={onNavigate}
                   className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
-                      ? 'border border-[#e3d3d9] bg-[#f8faf7] text-[#2b000a] shadow-sm'
+                      ? 'border border-[#e3d3d9] bg-[#fbf7f8] text-[#2b000a] shadow-sm'
                       : 'text-[#5d4f54] hover:bg-[#faf4f6] hover:text-[#2b000a]'
                   }`}
                 >
-                  <Icon icon={icon} className={`h-4 w-4 ${active ? 'text-[#315f3a]' : 'text-[#a08b92]'}`} />
+                  <Icon icon={icon} className={`h-4 w-4 ${active ? 'text-[#800020]' : 'text-[#a08b92]'}`} />
                   {label}
                 </Link>
               );
@@ -178,7 +178,7 @@ export function HostShell({
           <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
             Beddn
           </Link>
-          <span className="rounded-full bg-[#f8faf7] px-2 py-0.5 text-[11px] font-bold text-[#315f3a]">
+          <span className="rounded-full bg-[#fbf7f8] px-2 py-0.5 text-[11px] font-bold text-[#800020]">
             Host
           </span>
         </div>
@@ -222,7 +222,7 @@ export function HostShell({
             <div className="flex items-center gap-2">
               <Link
                 href={ROUTES.newListing}
-                className="hidden items-center gap-1.5 rounded-full bg-[#315f3a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#264b2e] sm:inline-flex"
+                className="hidden items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-sm font-semibold text-white hover:bg-[#6b1029] sm:inline-flex"
               >
                 <Icon icon="line-md:plus" className="h-4 w-4" /> New listing
               </Link>

@@ -163,18 +163,18 @@ function validatePublishable(row: AnyRecord, imageUrls: string[] | undefined) {
   if (status === "draft") return null;
   const categories = Array.isArray(row.categories) ? (row.categories as string[]) : [];
   const urls = (imageUrls ?? []).map((url) => url.trim()).filter(Boolean);
-  if (urls.length === 0) return "Add at least one photo before publishing.";
-  if (!row.property_type) return "Choose what kind of place this is.";
-  if (!row.country || !row.city || !row.area) return "Add the public area guests will see.";
-  if (!row.private_address) return "Add the private address before publishing.";
+  if (urls.length === 0) return "Oops, add at least one photo before publishing.";
+  if (!row.property_type) return "Oops, choose what kind of place this is.";
+  if (!row.country || !row.city || !row.area) return "Oops, add the public area guests will see.";
+  if (!row.private_address) return "Oops, add the private address before publishing.";
   if (categories.includes("hourly") && Number(row.hourly_price ?? 0) <= 0) {
-    return "Add an hourly price before publishing.";
+    return "Oops, add an hourly price before publishing.";
   }
   if (categories.includes("overnight") && Number(row.overnight_price ?? 0) <= 0) {
-    return "Add a night price before publishing.";
+    return "Oops, add a night price before publishing.";
   }
   if (categories.includes("experience") && Number(row.experience_price ?? 0) <= 0) {
-    return "Add an experience price before publishing.";
+    return "Oops, add an experience price before publishing.";
   }
   return null;
 }

@@ -85,7 +85,7 @@ export function RoomRateCalendar({
     const parsedPrice = price === "" ? null : Number(price);
     const parsedMinNights = minNights === "" ? null : Math.round(Number(minNights));
     if (parsedUnits !== null && (!Number.isFinite(parsedUnits) || parsedUnits < 0 || parsedUnits > totalUnits)) {
-      alert(`Rooms open must be between 0 and ${totalUnits}.`);
+      alert(`Spaces open must be between 0 and ${totalUnits}.`);
       return;
     }
     if (parsedPrice !== null && (!Number.isFinite(parsedPrice) || parsedPrice < 0)) {
@@ -140,7 +140,7 @@ export function RoomRateCalendar({
     <section className="rounded-2xl border bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icon icon="line-md:calendar" className="h-5 w-5 text-[#315f3a]" />
+          <Icon icon="line-md:calendar" className="h-5 w-5 text-[#800020]" />
           <h2 className="font-bold">Rooms &amp; rates</h2>
         </div>
         <div className="flex items-center gap-1">
@@ -167,7 +167,7 @@ export function RoomRateCalendar({
       </div>
 
       <p className="mb-3 text-xs text-muted-foreground">
-        Tap a date to block it, change the price, set a minimum stay, or set how many rooms are open.
+        Tap a date to block it, change the price, set a minimum stay, or set how many separate spaces are open.
       </p>
 
       <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-[#a08b92]">
@@ -196,8 +196,8 @@ export function RoomRateCalendar({
                   ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                   : open <= 0
                   ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-[#eadfe3] bg-white hover:border-[#315f3a]"
-              } ${selected === date ? "ring-2 ring-[#315f3a]" : ""}`}
+                  : "border-[#eadfe3] bg-white hover:border-[#800020]"
+              } ${selected === date ? "ring-2 ring-[#800020]" : ""}`}
             >
               <span className="font-bold">{dayNum}</span>
               {!isPast && (
@@ -242,7 +242,7 @@ export function RoomRateCalendar({
           <label className="mb-3 flex items-center gap-2 text-sm font-medium">
             <input
               type="checkbox"
-              className="size-4 accent-[#315f3a]"
+              className="size-4 accent-[#800020]"
               checked={blocked}
               onChange={(e) => setBlocked(e.target.checked)}
             />
@@ -266,7 +266,7 @@ export function RoomRateCalendar({
               {totalUnits > 1 && (
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-[#6f6568]">
-                    Rooms open (of {totalUnits})
+                    Spaces open (of {totalUnits})
                   </label>
                   <input
                     type="number"
@@ -297,7 +297,7 @@ export function RoomRateCalendar({
             <Button
               onClick={save}
               disabled={saving}
-              className="rounded-full bg-[#315f3a] hover:bg-[#264b2e]"
+              className="rounded-full bg-[#800020] hover:bg-[#6b1029]"
             >
               {saving ? "Saving…" : "Save"}
             </Button>

@@ -361,7 +361,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             );
           })}
         </div>
-        <p className="rounded-xl bg-[#f8faf7] px-4 py-3 text-xs leading-5 text-muted-foreground">
+        <p className="rounded-xl bg-[#fbf7f8] px-4 py-3 text-xs leading-5 text-muted-foreground">
           You can change this later. Pricing fields will only appear for the booking types
           you choose here.
         </p>
@@ -529,45 +529,47 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   steps.push({
     title: "Where is it?",
-    subtitle: "Drop the pin with your GPS or a nearby landmark — no exact address needed.",
+    subtitle: "Choose the public area guests will recognize. They will not see your exact address here.",
     valid: country.trim().length > 0 && city.trim().length > 0 && area.trim().length > 0,
     content: (
-      <div className="space-y-4">
-        <LocationPicker
-          latitude={latitude}
-          longitude={longitude}
-          initialCountryCode={undefined}
-          onPlaceChange={(place) => {
-            if (place.country) setCountry(place.country);
-            setCity(place.region || "");
-            setArea(place.village || place.district || "");
-          }}
-          onCoordsChange={(lat, lng) => {
-            setLatitude(lat);
-            setLongitude(lng);
-          }}
-        />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div>
-            <Label htmlFor="country" className="text-xs text-muted-foreground">
-              Country (saved)
-            </Label>
-            <Input id="country" value={country} onChange={(e) => setCountry(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="city" className="text-xs text-muted-foreground">
-              City / Region (saved)
-            </Label>
-            <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="area" className="text-xs text-muted-foreground">
-              Area (saved)
-            </Label>
-            <Input id="area" value={area} onChange={(e) => setArea(e.target.value)} />
-          </div>
-        </div>
-      </div>
+      <LocationPicker
+        mode="area"
+        latitude={latitude}
+        longitude={longitude}
+        initialCountryCode={undefined}
+        onPlaceChange={(place) => {
+          if (place.country) setCountry(place.country);
+          setCity(place.region || "");
+          setArea(place.village || place.district || "");
+        }}
+        onCoordsChange={(lat, lng) => {
+          setLatitude(lat);
+          setLongitude(lng);
+        }}
+      />
+    ),
+  });
+
+  steps.push({
+    title: "Place the map pin",
+    subtitle: "Use GPS, a nearby landmark, or the map. Put the pin close to your gate or building.",
+    valid: Number.isFinite(latitude) && Number.isFinite(longitude),
+    content: (
+      <LocationPicker
+        mode="pin"
+        latitude={latitude}
+        longitude={longitude}
+        initialCountryCode={undefined}
+        onPlaceChange={(place) => {
+          if (place.country) setCountry(place.country);
+          if (place.region) setCity(place.region);
+          if (place.village || place.district) setArea(place.village || place.district || "");
+        }}
+        onCoordsChange={(lat, lng) => {
+          setLatitude(lat);
+          setLongitude(lng);
+        }}
+      />
     ),
   });
 
@@ -603,55 +605,64 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   steps.push({
     title: "Capacity & timing",
-    subtitle: "How many units and when guests can come and go.",
+    subtitle: "Set how many separate spaces guests can book, then add arrival times.",
     valid: !categories.includes("hourly") || parseInt(minimumHours || "0") >= 1,
     content: (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <Label htmlFor="units">Rooms / units / seats</Label>
+      <div className="space-y-4">
+        <div className="rounded-2xl border bg-[#fbf7f8] p-4">
+          <Label htmlFor="units">Separately bookable spaces</Label>
           <Input
             id="units"
             type="number"
             min="1"
             value={totalUnits}
             onChange={(e) => setTotalUnits(e.target.value)}
+            className="mt-2 max-w-32"
           />
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            Count only spaces guests can book independently. A whole 2-bedroom house is
+            <strong className="text-[#2b000a]"> 1 space</strong>, not 2. Use 2 only if you have
+            two separate rooms, houses, or workspaces that different guests can book at the same time.
+          </p>
         </div>
-        {categories.includes("hourly") && (
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {categories.includes("hourly") && (
+            <div>
+              <Label htmlFor="minimumHours">
+                Minimum hours bookable <span className="text-crimson">*</span>
+              </Label>
+              <Input
+                id="minimumHours"
+                type="number"
+                min="1"
+                value={minimumHours}
+                onChange={(e) => setMinimumHours(e.target.value)}
+                placeholder="e.g. 2"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Guests must book at least this many hours per reservation.
+              </p>
+            </div>
+          )}
           <div>
-            <Label htmlFor="minimumHours">
-              Minimum hours bookable <span className="text-crimson">*</span>
-            </Label>
+            <Label htmlFor="checkInTime">Check-in time</Label>
             <Input
-              id="minimumHours"
-              type="number"
-              min="1"
-              value={minimumHours}
-              onChange={(e) => setMinimumHours(e.target.value)}
-              placeholder="e.g. 2"
+              id="checkInTime"
+              type="time"
+              value={checkInTime}
+              onChange={(e) => setCheckInTime(e.target.value)}
             />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Guests must book at least this many hours per reservation.
-            </p>
           </div>
-        )}
-        <div>
-          <Label htmlFor="checkInTime">Check-in time</Label>
-          <Input
-            id="checkInTime"
-            type="time"
-            value={checkInTime}
-            onChange={(e) => setCheckInTime(e.target.value)}
-          />
-        </div>
-        <div>
-          <Label htmlFor="checkOutTime">Check-out time</Label>
-          <Input
-            id="checkOutTime"
-            type="time"
-            value={checkOutTime}
-            onChange={(e) => setCheckOutTime(e.target.value)}
-          />
+          <div>
+            <Label htmlFor="checkOutTime">Check-out time</Label>
+            <Input
+              id="checkOutTime"
+              type="time"
+              value={checkOutTime}
+              onChange={(e) => setCheckOutTime(e.target.value)}
+            />
+          </div>
         </div>
       </div>
     ),
@@ -702,7 +713,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   aria-pressed={selected}
                   className={`h-10 rounded-xl border text-xs font-bold transition ${
                     selected
-                      ? "border-[#315f3a] bg-[#315f3a] text-white"
+                      ? "border-[#800020] bg-[#800020] text-white"
                       : "border-border bg-white text-[#6f6568] hover:border-[#d7a9b7]"
                   }`}
                 >
@@ -925,7 +936,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   steps.push({
     title: "Add photos",
     subtitle: "Great photos get more bookings. Add as many as you like.",
-    valid: true,
+    valid: imageList.length > 0,
     content: (
       <div className="space-y-4">
         <Label
@@ -1113,7 +1124,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             </div>
           ))}
         </dl>
-        <div className="rounded-xl bg-[#f8faf7] p-4 text-sm text-[#2b000a]">
+        <div className="rounded-xl bg-[#fbf7f8] p-4 text-sm text-[#2b000a]">
           <p className="font-semibold">How requests and leads work</p>
           <p className="mt-1 text-muted-foreground">
             Guests check availability on Beddn, then send an inquiry. If your host phone is
@@ -1160,7 +1171,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   async function submitListing(asDraft: boolean) {
     if (asDraft && name.trim().length < 2) {
-      alert("Add a listing name before saving a draft.");
+      alert("Oops, add a listing name before saving a draft.");
       return;
     }
     if (!asDraft) {
@@ -1170,42 +1181,42 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       };
       if (categories.length === 0) {
         goToStep("How can guests book it?");
-        alert("Choose how guests can book this listing.");
+        alert("Oops, choose how guests can book this listing.");
         return;
       }
       if (!propertyType) {
         goToStep("What kind of place is it?");
-        alert("Choose what kind of place this is.");
+        alert("Oops, choose what kind of place this is.");
         return;
       }
       if (!country.trim() || !city.trim() || !area.trim()) {
         goToStep("Where is it?");
-        alert("Add the public area guests will see.");
+        alert("Oops, add the public area guests will see.");
         return;
       }
       if (!privateAddress.trim()) {
         goToStep("Exact address & arrival");
-        alert("Add the private address. Guests only see it after a confirmed booking.");
+        alert("Oops, add the private address. Guests only see it after a confirmed booking.");
         return;
       }
       if (categories.includes("hourly") && parseFloat(hourlyPrice || "0") <= 0) {
         goToStep("Pricing");
-        alert("Add an hourly price before publishing.");
+        alert("Oops, add an hourly price before publishing.");
         return;
       }
       if (categories.includes("overnight") && parseFloat(overnightPrice || "0") <= 0) {
         goToStep("Pricing");
-        alert("Add a night price before publishing.");
+        alert("Oops, add a night price before publishing.");
         return;
       }
       if (categories.includes("experience") && parseFloat(experiencePrice || "0") <= 0) {
         goToStep("Pricing");
-        alert("Add an experience price before publishing.");
+        alert("Oops, add an experience price before publishing.");
         return;
       }
       if (imageList.length === 0) {
         goToStep("Add photos");
-        alert("Add at least one photo before publishing. Photos are required for guest trust.");
+        alert("Oops, add at least one photo before publishing. Photos help guests trust the listing.");
         return;
       }
     }
@@ -1318,7 +1329,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                 disabled={i > step}
                 onClick={() => i < step && setStep(i)}
                 className={`h-1.5 flex-1 overflow-hidden rounded-full transition-colors ${
-                  done || isCurrent ? "bg-[#315f3a]" : "bg-[#e8eee7]"
+                  done || isCurrent ? "bg-[#800020]" : "bg-[#f1e6ea]"
                 } ${i < step ? "cursor-pointer" : "cursor-default"}`}
               />
             );
@@ -1357,16 +1368,16 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               type="button"
               onClick={next}
               disabled={!current.valid}
-              className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#6b1029]"
             >
-              {current.valid ? "Continue" : "Complete this step"}
+              {current.valid ? "Continue" : "Oops, add this first"}
             </Button>
           ) : (
             <Button
               type="button"
               onClick={() => submitListing(false)}
               disabled={submitting || savingDraft}
-              className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
+              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#6b1029]"
             >
               {submitting ? "Going live…" : listing ? "Save & go live" : "Go live"}
             </Button>

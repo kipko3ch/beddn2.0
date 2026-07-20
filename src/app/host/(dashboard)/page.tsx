@@ -262,7 +262,7 @@ export default function DashboardPage() {
       <div className="overflow-hidden rounded-3xl border bg-white">
         <div className="grid items-center gap-6 p-6 sm:grid-cols-[1fr_auto] sm:p-10">
           <div>
-            <Badge className="mb-4 rounded-full bg-[#f8faf7] text-[#315f3a] hover:bg-[#f8faf7]">
+            <Badge className="mb-4 rounded-full bg-[#fbf7f8] text-[#800020] hover:bg-[#fbf7f8]">
               {badge}
             </Badge>
             <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">Become a Beddn host</h1>
@@ -272,7 +272,7 @@ export default function DashboardPage() {
             </p>
             <Link
               href={ROUTES.newListing}
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#315f3a] px-6 text-sm font-bold text-white hover:bg-[#264b2e]"
+              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#6b1029]"
             >
               Create host profile <Icon icon="line-md:chevron-right" className="h-4 w-4" />
             </Link>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Badge className="mb-2 rounded-full bg-[#f8faf7] text-[#315f3a] hover:bg-[#f8faf7]">
+          <Badge className="mb-2 rounded-full bg-[#fbf7f8] text-[#800020] hover:bg-[#fbf7f8]">
             {badge}
           </Badge>
           <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">
@@ -404,7 +404,7 @@ export default function DashboardPage() {
               <Button
                 onClick={handleSubmitVerification}
                 disabled={submittingVerification}
-                className="h-9 shrink-0 rounded-full bg-[#315f3a] text-white font-bold hover:bg-[#264b2e] text-xs px-4"
+                className="h-9 shrink-0 rounded-full bg-[#800020] text-white font-bold hover:bg-[#6b1029] text-xs px-4"
               >
                 {submittingVerification ? "Submitting..." : "Submit for Verification"}
               </Button>
@@ -412,14 +412,16 @@ export default function DashboardPage() {
           )}
 
           {host.verification_status === "under_review" && (
-            <div className="flex items-center gap-3 rounded-2xl border border-blue-200 bg-blue-50/40 p-4">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+            <div className="flex items-center gap-3 rounded-2xl border border-[#f1e6ea] bg-[#fbf7f8] p-4">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-crimson">
                 <Icon icon="line-md:loading-twotone-loop" className="h-4 w-4 animate-spin" />
               </span>
               <div>
-                <p className="font-bold text-[#2b000a] text-sm">Your verification is under review</p>
+                <p className="font-bold text-[#2b000a] text-sm">Verification is in progress</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  We are reviewing your profile. Once approved, your Verified Host badge will be assigned automatically.
+                  If you feel stuck, contact the Beddn verification team on WhatsApp:
+                  Tanzania +255748962145 or +255743607369; Kenya +254727993661.
+                  Once approved, your Verified Host badge will be assigned automatically.
                 </p>
               </div>
             </div>
@@ -444,15 +446,15 @@ export default function DashboardPage() {
       {/* Demand intro + quick actions (hosts only) */}
       {!isAdmin && host && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <div className="flex flex-col justify-between rounded-3xl bg-[#315f3a] p-6 text-white shadow-md">
+          <div className="flex flex-col justify-between rounded-3xl border bg-white p-6 shadow-sm">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-white/70">
+              <p className="text-xs font-semibold uppercase tracking-widest text-cranberry">
                 Beddn demand
               </p>
-              <p className="mt-2 font-brand text-2xl leading-snug">
+              <p className="mt-2 font-brand text-2xl leading-snug text-[#2b000a]">
                 Organized leads, not random WhatsApp messages.
               </p>
-              <p className="mt-3 text-sm text-white/80">
+              <p className="mt-3 text-sm text-muted-foreground">
                 Beddn tracks views, availability checks, inquiries, and WhatsApp clicks. Guests
                 can continue directly to your WhatsApp after an inquiry, and payments are agreed
                 outside Beddn for now.
@@ -460,7 +462,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href={ROUTES.dashboardInquiries}
-              className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-[#315f3a] transition-colors hover:bg-white/90"
+              className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full bg-[#800020] px-5 text-sm font-bold text-white transition-colors hover:bg-[#6b1029]"
             >
               <Icon icon="line-md:bell" className="h-4 w-4" /> View inquiries
             </Link>
@@ -473,7 +475,7 @@ export default function DashboardPage() {
                 href={href}
                 className="group flex flex-col justify-between rounded-2xl border bg-white p-4 transition-shadow hover:shadow-md"
               >
-                <span className="flex size-9 items-center justify-center rounded-xl bg-[#f8faf7] text-[#315f3a]">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-[#fbf7f8] text-[#800020]">
                   <Icon icon={icon} className="h-4 w-4" />
                 </span>
                 <div className="mt-3">

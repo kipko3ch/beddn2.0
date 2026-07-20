@@ -198,7 +198,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
 
   async function submitListing(asDraft: boolean) {
     if (asDraft && name.trim().length < 2) {
-      alert("Add an experience name before saving a draft.");
+      alert("Oops, add an experience name before saving a draft.");
       return;
     }
     if (submitting || savingDraft) return;
@@ -260,7 +260,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
     if (!res.ok) {
       const { error } = await res.json().catch(() => ({ error: "Unknown error" }));
       alert(
-        `Failed to ${listing ? "update" : "create"} experience: ${error ?? "Unknown error"}`
+        `Oops, we could not ${listing ? "update" : "create"} this experience: ${error ?? "Unknown error"}`
       );
       setSubmitting(false);
       setSavingDraft(false);
@@ -767,7 +767,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
   const percent = Math.round(((step + 1) / steps.length) * 100);
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto flex max-w-2xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-8">
+    <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-6">
       <div ref={topRef} className="scroll-mt-20" />
 
       {/* Progress */}
@@ -802,9 +802,9 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
       </div>
 
       {/* Main step container */}
-      <div className="flex flex-1 items-center py-4 sm:min-h-[50vh]">
-        <div className="w-full rounded-2xl border bg-white p-5 shadow-sm sm:p-8 border-cream">
-          <h2 className="text-2xl font-bold text-[#2b000a] flex items-center gap-2">
+      <div className="py-3">
+        <div className="w-full rounded-2xl border bg-white p-5 shadow-sm sm:p-6 border-cream">
+          <h2 className="text-xl font-bold text-[#2b000a] flex items-center gap-2 sm:text-2xl">
             {step === 0 && <Compass className="h-6 w-6 text-crimson" />}
             {step === 2 && <Clock className="h-6 w-6 text-crimson" />}
             {step === 3 && <Users className="h-6 w-6 text-crimson" />}
@@ -815,7 +815,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
           {current.subtitle && (
             <p className="mt-2 text-sm text-muted-foreground leading-normal">{current.subtitle}</p>
           )}
-          <div className="mt-6">{current.content}</div>
+          <div className="mt-5 sm:max-h-[62vh] sm:overflow-y-auto sm:pr-1">{current.content}</div>
         </div>
       </div>
 
@@ -839,7 +839,7 @@ export function ExperienceForm({ listing, hostId, isAdmin }: ExperienceFormProps
               disabled={!current.valid}
               className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot text-white disabled:opacity-50"
             >
-              {current.valid ? "Continue" : "Complete this step"}
+              {current.valid ? "Continue" : "Oops, add this first"}
             </Button>
           ) : (
             <Button

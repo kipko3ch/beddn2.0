@@ -65,7 +65,7 @@ export function AmenityPicker({ value, onChange }: AmenityPickerProps) {
         />
       </div>
 
-      <div className="rounded-xl bg-[#f8faf7] p-3">
+      <div className="rounded-xl bg-[#fbf7f8] p-3">
         <p className="text-sm font-semibold text-[#181113]">
           {value.length > 0 ? `${value.length} selected` : "Start with the basics"}
         </p>

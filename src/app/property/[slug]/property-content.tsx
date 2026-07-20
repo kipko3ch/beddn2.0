@@ -273,7 +273,9 @@ export function PropertyContent({
   // useful stay facts — all rendered with neutral line icons (no ticks).
   const stayFacts = [
     listing.minimum_hours ? `${listing.minimum_hours}+ hour minimum` : null,
-    listing.total_units && listing.total_units > 1 ? `${listing.total_units} rooms / units` : null,
+    listing.total_units && listing.total_units > 1
+      ? `${listing.total_units} separate bookable spaces`
+      : null,
     "Exact address after you inquire",
   ].filter(Boolean) as string[];
   const allOfferings = [...listing.amenities, ...stayFacts];

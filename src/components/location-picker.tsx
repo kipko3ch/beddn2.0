@@ -18,6 +18,7 @@ import { Search, MapPin, Crosshair } from "lucide-react";
 interface LocationPickerProps {
   latitude: number;
   longitude: number;
+  mode?: "full" | "area" | "pin";
   /** Reports place names as the cascade is completed. */
   onPlaceChange: (place: {
     country: string;
@@ -36,6 +37,7 @@ const selectClass =
 export function LocationPicker({
   latitude,
   longitude,
+  mode = "full",
   onPlaceChange,
   onCoordsChange,
   initialCountryCode,
@@ -60,6 +62,8 @@ export function LocationPicker({
   const markerRef = useRef<maplibregl.Marker | null>(null);
 
   const meta: CountryMeta | undefined = index?.countries.find((c) => c.code === countryCode);
+  const showArea = mode === "full" || mode === "area";
+  const showPin = mode === "full" || mode === "pin";
 
   // Load the country index once.
   useEffect(() => {
@@ -68,6 +72,7 @@ export function LocationPicker({
 
   // Init map once.
   useEffect(() => {
+    if (!showPin) return;
     if (!containerRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -95,7 +100,7 @@ export function LocationPicker({
       markerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [showPin]);
 
   const flyTo = useCallback((lat: number, lng: number, zoom = 14) => {
     mapRef.current?.flyTo({ center: [lng, lat], zoom, essential: true });
@@ -308,13 +313,14 @@ export function LocationPicker({
       <div className="order-1 rounded-xl bg-[#fbf7f8] p-4">
         <p className="text-sm font-semibold text-[#2b000a]">No street address? That&apos;s fine.</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Guests find places by landmarks, not house numbers. You don&apos;t need an exact
-          address — just get the pin near your gate using <strong>any one</strong> of the
-          options below.
+          {showArea && !showPin
+            ? "Guests see the area and nearby place name first, not your exact address. Pick the public location details they can recognize."
+            : "Guests find places by landmarks, not house numbers. Use GPS, a nearby landmark, or the map to place the pin near your gate."}
         </p>
       </div>
 
       {/* Two primary ways to locate — GPS, or a nearby landmark search. */}
+      {showPin && (
       <div className="order-3 grid gap-3 sm:grid-cols-2">
         {/* Option 1: GPS */}
         <div className="flex flex-col rounded-xl border p-4">
@@ -378,8 +384,10 @@ export function LocationPicker({
           {geoError && <p className="mt-2 text-xs text-red-600">{geoError}</p>}
         </div>
       </div>
+      )}
 
       {/* Map */}
+      {showPin && (
       <div className="order-4 space-y-2">
         <div ref={containerRef} className="h-72 w-full overflow-hidden rounded-xl border" />
         <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
@@ -399,8 +407,10 @@ export function LocationPicker({
           </p>
         )}
       </div>
+      )}
 
       {/* Area names — auto-filled from GPS/search, editable. Shown to guests. */}
+      {showArea && (
       <div className="order-2 rounded-xl border bg-white p-4">
         <p className="text-sm font-semibold text-[#181113]">Area details guests will see</p>
         <p className="mb-3 text-xs text-muted-foreground">
@@ -491,6 +501,7 @@ export function LocationPicker({
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -137,9 +137,9 @@ export default function NewListingPage() {
               Step {step + 1} of {steps.length}
             </span>
           </div>
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#e8eee7]">
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#f1e6ea]">
               <div
-              className="h-full rounded-full bg-[#315f3a] transition-all duration-300"
+              className="h-full rounded-full bg-[#800020] transition-all duration-300"
               style={{ width: `${((step + 1) / steps.length) * 100}%` }}
             />
           </div>
@@ -232,7 +232,7 @@ export default function NewListingPage() {
                 type="button"
                 onClick={next}
                 disabled={!canNext}
-                className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
+                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#6b1029]"
               >
                 Continue
               </Button>
@@ -241,7 +241,7 @@ export default function NewListingPage() {
                 type="button"
                 onClick={() => createHost()}
                 disabled={creatingHost}
-                className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
+                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-[#6b1029]"
               >
                 {creatingHost ? "Creating..." : "Create host profile"}
               </Button>
@@ -283,7 +283,7 @@ export default function NewListingPage() {
             onClick={() => setListingKind("experience")}
             className="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:border-[#d7a9b7] hover:shadow-md"
           >
-            <span className="flex size-10 items-center justify-center rounded-xl bg-[#f8faf7] text-[#315f3a]">
+            <span className="flex size-10 items-center justify-center rounded-xl bg-[#fbf7f8] text-[#800020]">
               <Icon icon="line-md:star" className="h-5 w-5" />
             </span>
             <p className="mt-4 text-base font-bold text-[#181113]">Experience</p>
