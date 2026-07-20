@@ -8,6 +8,7 @@ import { ListingForm } from "@/components/listing-form";
 import { ExperienceForm } from "@/components/experience-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/icon";
 import { ROUTES } from "@/lib/routes";
 import type { ListingCategory } from "@/lib/types";
 
@@ -24,11 +25,15 @@ export default function NewListingPage() {
   const [creatingHost, setCreatingHost] = useState(false);
   const [step, setStep] = useState(0);
   const [initialCategory, setInitialCategory] = useState<ListingCategory | undefined>(undefined);
+  const [listingKind, setListingKind] = useState<"stay" | "experience" | null>(null);
 
   // "Add experience" deep-links here with ?type=experience — start on that path.
   useEffect(() => {
     const type = new URLSearchParams(window.location.search).get("type");
-    if (type === "experience") setInitialCategory("experience");
+    if (type === "experience") {
+      setInitialCategory("experience");
+      setListingKind("experience");
+    }
   }, []);
 
   useEffect(() => {
@@ -132,9 +137,9 @@ export default function NewListingPage() {
               Step {step + 1} of {steps.length}
             </span>
           </div>
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#f1e6ea]">
-            <div
-              className="h-full rounded-full bg-crimson transition-all duration-300"
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#e8eee7]">
+              <div
+              className="h-full rounded-full bg-[#315f3a] transition-all duration-300"
               style={{ width: `${((step + 1) / steps.length) * 100}%` }}
             />
           </div>
@@ -227,7 +232,7 @@ export default function NewListingPage() {
                 type="button"
                 onClick={next}
                 disabled={!canNext}
-                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
+                className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
               >
                 Continue
               </Button>
@@ -236,7 +241,7 @@ export default function NewListingPage() {
                 type="button"
                 onClick={() => createHost()}
                 disabled={creatingHost}
-                className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
+                className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
               >
                 {creatingHost ? "Creating..." : "Create host profile"}
               </Button>
@@ -247,7 +252,51 @@ export default function NewListingPage() {
     );
   }
 
-  if (initialCategory === "experience") {
+  if (!listingKind) {
+    return (
+      <div className="mx-auto max-w-xl pt-4 sm:pt-6">
+        <div className="mb-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-cranberry">
+            New listing
+          </p>
+          <h1 className="mt-1 font-brand text-3xl text-[#2b000a]">What are you hosting?</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Choose one path. You can add both stays and experiences from this dashboard.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setListingKind("stay")}
+            className="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:border-[#d7a9b7] hover:shadow-md"
+          >
+            <span className="flex size-10 items-center justify-center rounded-xl bg-[#f5f1f2] text-[#2b000a]">
+              <Icon icon="line-md:home" className="h-5 w-5" />
+            </span>
+            <p className="mt-4 text-base font-bold text-[#181113]">Stay</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Rooms, homes, studios, workspaces, hourly stays, or nights.
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setListingKind("experience")}
+            className="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:border-[#d7a9b7] hover:shadow-md"
+          >
+            <span className="flex size-10 items-center justify-center rounded-xl bg-[#f8faf7] text-[#315f3a]">
+              <Icon icon="line-md:star" className="h-5 w-5" />
+            </span>
+            <p className="mt-4 text-base font-bold text-[#181113]">Experience</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Tours, classes, trips, activities, sessions, or group experiences.
+            </p>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (listingKind === "experience" || initialCategory === "experience") {
     return <ExperienceForm hostId={hostId!} isAdmin={isAdmin} />;
   }
 

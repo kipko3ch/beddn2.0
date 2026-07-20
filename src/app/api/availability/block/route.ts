@@ -21,6 +21,11 @@ export async function POST(request: Request) {
   if (!body.listingId || !body.startDatetime || !body.endDatetime) {
     return NextResponse.json({ error: "Missing slot details" }, { status: 400 });
   }
+  const start = new Date(body.startDatetime);
+  const end = new Date(body.endDatetime);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+    return NextResponse.json({ error: "End time must be after start time" }, { status: 400 });
+  }
 
   const admin = createAdminClient();
   const { data: profile } = await admin

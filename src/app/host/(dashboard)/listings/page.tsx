@@ -126,34 +126,48 @@ export default function ListingsPage() {
   const experiences = listings.filter((l) => isExperience(l));
   const rows = tab === "stays" ? stays : experiences;
 
-  const addHref = tab === "experiences" ? "/host/listings/new?type=experience" : "/host/listings/new";
-  const addLabel = tab === "experiences" ? "Add experience" : "Add stay";
-
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
-        <Link href={addHref}>
-          <Button className="gap-1 rounded-full bg-[#800020] hover:bg-merlot">
-            <Icon icon="line-md:plus" className="h-4 w-4" /> {addLabel}
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/host/listings/new">
+            <Button variant="outline" className="gap-1 rounded-full bg-white">
+              <Icon icon="line-md:home" className="h-4 w-4" /> Add stay
+            </Button>
+          </Link>
+          <Link href="/host/listings/new?type=experience">
+            <Button className="gap-1 rounded-full bg-[#315f3a] hover:bg-[#264b2e]">
+              <Icon icon="line-md:star" className="h-4 w-4" /> Add experience
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stays / Experiences tabs */}
-      <div className="mb-5 inline-flex rounded-full border bg-white p-1 text-sm font-semibold">
+      <div className="mb-4 inline-flex rounded-full border bg-white p-1 text-sm font-semibold shadow-sm">
         {(["stays", "experiences"] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             className={`rounded-full px-4 py-1.5 capitalize transition-colors ${
-              tab === t ? "bg-[#800020] text-white" : "text-[#6f6568] hover:text-[#2b000a]"
+              tab === t ? "bg-[#2b000a] text-white" : "text-[#6f6568] hover:bg-[#f5f1f2] hover:text-[#2b000a]"
             }`}
           >
             {t === "stays" ? `Stays (${stays.length})` : `Experiences (${experiences.length})`}
           </button>
         ))}
+      </div>
+
+      <div className="mb-5 rounded-2xl border bg-[#f8faf7] p-4 text-sm text-[#2b000a]">
+        <p className="font-semibold">How guests reach you</p>
+        <p className="mt-1 text-muted-foreground">
+          Guests send inquiries through Beddn, then continue to your WhatsApp when your
+          host phone is saved. Hosts see guest contact details in Requests; payments and
+          final agreement happen outside Beddn for now. Keep your calendar updated after
+          every conversation.
+        </p>
       </div>
 
       {loading ? (
@@ -174,7 +188,7 @@ export default function ListingsPage() {
           {rows.map((listing) => {
             const status = effectiveStatus(listing);
             return (
-              <div key={listing.id} className="rounded-2xl border bg-white p-4">
+              <div key={listing.id} className="rounded-2xl border bg-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-semibold text-[#2b000a]">{listing.title || listing.name}</p>
@@ -186,7 +200,7 @@ export default function ListingsPage() {
                         {STATUS_TEXT[status] ?? status}
                       </Badge>
                       <Badge variant={listing.is_verified ? "default" : "outline"} className="text-xs">
-                        {listing.is_verified ? "Verified" : "Badge pending"}
+                        {listing.is_verified ? "Verified" : "Verification pending"}
                       </Badge>
                     </div>
                   </div>
@@ -232,7 +246,7 @@ export default function ListingsPage() {
                 {/* Lifecycle controls — clear, one tap each */}
                 {status !== "draft" && status !== "pending_review" && status !== "rejected" && (
                   <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
-                    <span className="text-xs font-semibold text-muted-foreground">Availability:</span>
+                    <span className="text-xs font-semibold text-muted-foreground">Availability</span>
                     {(
                       [
                         { key: "active", label: "Active", icon: "line-md:check-all" },
@@ -247,7 +261,7 @@ export default function ListingsPage() {
                         onClick={() => changeStatus(listing.id, key)}
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-100 ${
                           status === key
-                            ? "border-crimson bg-crimson text-white"
+                            ? "border-[#315f3a] bg-[#315f3a] text-white"
                             : "border-[#e3d3d9] bg-white text-[#2b000a] hover:bg-muted disabled:opacity-50"
                         }`}
                       >
@@ -260,7 +274,7 @@ export default function ListingsPage() {
                 {status === "draft" && (
                   <div className="mt-3 border-t pt-3">
                     <Link href={`/host/listings/${listing.id}/edit`}>
-                      <Button size="sm" className="rounded-full bg-[#800020] hover:bg-merlot">
+                      <Button size="sm" className="rounded-full bg-[#315f3a] hover:bg-[#264b2e]">
                         Continue setup
                       </Button>
                     </Link>

@@ -262,7 +262,7 @@ export default function DashboardPage() {
       <div className="overflow-hidden rounded-3xl border bg-white">
         <div className="grid items-center gap-6 p-6 sm:grid-cols-[1fr_auto] sm:p-10">
           <div>
-            <Badge className="mb-4 rounded-full bg-[#f8eef2] text-crimson hover:bg-[#f8eef2]">
+            <Badge className="mb-4 rounded-full bg-[#f8faf7] text-[#315f3a] hover:bg-[#f8faf7]">
               {badge}
             </Badge>
             <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">Become a Beddn host</h1>
@@ -272,7 +272,7 @@ export default function DashboardPage() {
             </p>
             <Link
               href={ROUTES.newListing}
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
+              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#315f3a] px-6 text-sm font-bold text-white hover:bg-[#264b2e]"
             >
               Create host profile <Icon icon="line-md:chevron-right" className="h-4 w-4" />
             </Link>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Badge className="mb-2 rounded-full bg-[#f8eef2] text-crimson hover:bg-[#f8eef2]">
+          <Badge className="mb-2 rounded-full bg-[#f8faf7] text-[#315f3a] hover:bg-[#f8faf7]">
             {badge}
           </Badge>
           <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">
@@ -394,15 +394,17 @@ export default function DashboardPage() {
                 />
                 <div>
                   <h3 className="font-bold text-[#2b000a] text-sm">Action Required: Complete verification</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                     Submit your profile details for verification to receive your Verified Host badge.
+                    For help, contact admins: Tanzania +255748962145 or +255743607369;
+                    Kenya +254727993661.
                   </p>
                 </div>
               </div>
               <Button
                 onClick={handleSubmitVerification}
                 disabled={submittingVerification}
-                className="h-9 shrink-0 rounded-full bg-[#800020] text-white font-bold hover:bg-merlot text-xs px-4"
+                className="h-9 shrink-0 rounded-full bg-[#315f3a] text-white font-bold hover:bg-[#264b2e] text-xs px-4"
               >
                 {submittingVerification ? "Submitting..." : "Submit for Verification"}
               </Button>
@@ -442,7 +444,7 @@ export default function DashboardPage() {
       {/* Demand intro + quick actions (hosts only) */}
       {!isAdmin && host && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <div className="flex flex-col justify-between rounded-3xl bg-gradient-to-br from-[#800020] to-merlot p-6 text-white shadow-md">
+          <div className="flex flex-col justify-between rounded-3xl bg-[#315f3a] p-6 text-white shadow-md">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-white/70">
                 Beddn demand
@@ -451,13 +453,14 @@ export default function DashboardPage() {
                 Organized leads, not random WhatsApp messages.
               </p>
               <p className="mt-3 text-sm text-white/80">
-                Beddn tracks your views, availability checks, inquiries, and WhatsApp clicks so you
-                can see which listings and dates get demand.
+                Beddn tracks views, availability checks, inquiries, and WhatsApp clicks. Guests
+                can continue directly to your WhatsApp after an inquiry, and payments are agreed
+                outside Beddn for now.
               </p>
             </div>
             <Link
               href={ROUTES.dashboardInquiries}
-              className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-[#800020] transition-colors hover:bg-white/90"
+              className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-[#315f3a] transition-colors hover:bg-white/90"
             >
               <Icon icon="line-md:bell" className="h-4 w-4" /> View inquiries
             </Link>
@@ -470,7 +473,7 @@ export default function DashboardPage() {
                 href={href}
                 className="group flex flex-col justify-between rounded-2xl border bg-white p-4 transition-shadow hover:shadow-md"
               >
-                <span className="flex size-9 items-center justify-center rounded-xl bg-[#f8eef2] text-crimson">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-[#f8faf7] text-[#315f3a]">
                   <Icon icon={icon} className="h-4 w-4" />
                 </span>
                 <div className="mt-3">

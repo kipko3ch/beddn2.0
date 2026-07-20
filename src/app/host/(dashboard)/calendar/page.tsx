@@ -87,7 +87,11 @@ export default function CalendarPage() {
     const { data: listingsData } = await listingsQuery;
     const listingsList = (listingsData as Listing[]) ?? [];
     setListings(listingsList);
-    setListingId(listingsList[0]?.id ?? "");
+    setListingId((current) =>
+      current && listingsList.some((listing) => listing.id === current)
+        ? current
+        : listingsList[0]?.id ?? ""
+    );
 
     const listingIds = listingsList.map((l) => l.id);
 
@@ -159,6 +163,16 @@ export default function CalendarPage() {
 
   async function blockSlot(e: React.FormEvent) {
     e.preventDefault();
+    if (!listingId || !date) {
+      alert("Choose a listing and date first.");
+      return;
+    }
+    const start = new Date(`${date}T${startTime}:00`);
+    const end = new Date(`${date}T${endTime}:00`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+      alert("Choose an end time after the start time.");
+      return;
+    }
     const response = await fetch("/api/availability/block", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -248,7 +262,7 @@ export default function CalendarPage() {
           {isExperience ? (
             <Icon icon="line-md:star" className="h-5 w-5 text-crimson" />
           ) : (
-            <Icon icon="line-md:calendar" className="h-5 w-5 text-crimson" />
+          <Icon icon="line-md:calendar" className="h-5 w-5 text-[#315f3a]" />
           )}
           <h2 className="font-bold">
             {isExperience ? "Block an experience session" : "Block a stay slot"}
@@ -295,7 +309,7 @@ export default function CalendarPage() {
             <Label>{isExperience ? "Session end" : "End"}</Label>
             <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
           </div>
-          <Button type="submit" className="bg-[#800020] hover:bg-merlot">
+          <Button type="submit" className="bg-[#315f3a] hover:bg-[#264b2e]">
             {isExperience ? "Block session" : "Block slot"}
           </Button>
         </div>
@@ -304,7 +318,7 @@ export default function CalendarPage() {
       {/* iCal sync with other platforms */}
       <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="mb-1 flex items-center gap-2">
-          <Icon icon="line-md:loading-twotone-loop" className="h-5 w-5 text-crimson" />
+          <Icon icon="line-md:loading-twotone-loop" className="h-5 w-5 text-[#315f3a]" />
           <h2 className="font-bold">Sync with Airbnb, Booking.com & others (iCal)</h2>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
@@ -353,7 +367,7 @@ export default function CalendarPage() {
                 type="button"
                 disabled={!listingId || !importUrl.trim() || syncing}
                 onClick={runImport}
-                className="bg-[#800020] hover:bg-merlot"
+                className="bg-[#315f3a] hover:bg-[#264b2e]"
               >
                 {syncing ? "Syncing…" : "Sync now"}
               </Button>

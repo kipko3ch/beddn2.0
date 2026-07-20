@@ -702,7 +702,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   aria-pressed={selected}
                   className={`h-10 rounded-xl border text-xs font-bold transition ${
                     selected
-                      ? "border-[#800020] bg-[#800020] text-white"
+                      ? "border-[#315f3a] bg-[#315f3a] text-white"
                       : "border-border bg-white text-[#6f6568] hover:border-[#d7a9b7]"
                   }`}
                 >
@@ -1113,12 +1113,20 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             </div>
           ))}
         </dl>
+        <div className="rounded-xl bg-[#f8faf7] p-4 text-sm text-[#2b000a]">
+          <p className="font-semibold">How requests and leads work</p>
+          <p className="mt-1 text-muted-foreground">
+            Guests check availability on Beddn, then send an inquiry. If your host phone is
+            saved, they can continue directly to WhatsApp. Payments and final agreement happen
+            outside Beddn for now, so keep your calendar updated after each conversation.
+          </p>
+        </div>
         <div className="rounded-xl bg-[#fbf7f8] p-4 text-sm text-[#2b000a]">
           <p className="font-semibold">Ready to publish?</p>
           <p className="mt-1 text-muted-foreground">
             Tap <strong>Go live</strong> below to make this listing visible to guests right
-            away. Not done yet? <strong>Save draft</strong> keeps it private so you can
-            finish later. The verified badge is added later by admin review.
+            after review. Not done yet? <strong>Save draft</strong> keeps it private so you can
+            finish later. Prices and at least one photo are required before publishing.
           </p>
         </div>
         <div className="rounded-xl border border-dashed border-[#d7a9b7] p-4 text-sm">
@@ -1154,6 +1162,52 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     if (asDraft && name.trim().length < 2) {
       alert("Add a listing name before saving a draft.");
       return;
+    }
+    if (!asDraft) {
+      const goToStep = (title: string) => {
+        const index = steps.findIndex((item) => item.title === title);
+        if (index >= 0) setStep(index);
+      };
+      if (categories.length === 0) {
+        goToStep("How can guests book it?");
+        alert("Choose how guests can book this listing.");
+        return;
+      }
+      if (!propertyType) {
+        goToStep("What kind of place is it?");
+        alert("Choose what kind of place this is.");
+        return;
+      }
+      if (!country.trim() || !city.trim() || !area.trim()) {
+        goToStep("Where is it?");
+        alert("Add the public area guests will see.");
+        return;
+      }
+      if (!privateAddress.trim()) {
+        goToStep("Exact address & arrival");
+        alert("Add the private address. Guests only see it after a confirmed booking.");
+        return;
+      }
+      if (categories.includes("hourly") && parseFloat(hourlyPrice || "0") <= 0) {
+        goToStep("Pricing");
+        alert("Add an hourly price before publishing.");
+        return;
+      }
+      if (categories.includes("overnight") && parseFloat(overnightPrice || "0") <= 0) {
+        goToStep("Pricing");
+        alert("Add a night price before publishing.");
+        return;
+      }
+      if (categories.includes("experience") && parseFloat(experiencePrice || "0") <= 0) {
+        goToStep("Pricing");
+        alert("Add an experience price before publishing.");
+        return;
+      }
+      if (imageList.length === 0) {
+        goToStep("Add photos");
+        alert("Add at least one photo before publishing. Photos are required for guest trust.");
+        return;
+      }
     }
     if (submitting || savingDraft) return;
     if (asDraft) setSavingDraft(true);
@@ -1237,7 +1291,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const percent = Math.round(((step + 1) / steps.length) * 100);
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto flex max-w-2xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-8">
+    <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-6">
       <div ref={topRef} className="scroll-mt-20" />
 
       {/* Progress */}
@@ -1264,7 +1318,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                 disabled={i > step}
                 onClick={() => i < step && setStep(i)}
                 className={`h-1.5 flex-1 overflow-hidden rounded-full transition-colors ${
-                  done || isCurrent ? "bg-[#800020]" : "bg-[#f1e6ea]"
+                  done || isCurrent ? "bg-[#315f3a]" : "bg-[#e8eee7]"
                 } ${i < step ? "cursor-pointer" : "cursor-default"}`}
               />
             );
@@ -1274,13 +1328,13 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
       {/* Centered focus area, Typeform-style — one step per screen instead of
           a short card stranded at the top with a wall of empty space below. */}
-      <div className="flex flex-1 items-center py-4 sm:min-h-[50vh]">
-        <div className="w-full rounded-2xl border bg-white p-5 shadow-sm sm:p-8">
-          <h2 className="text-2xl font-bold text-[#181113]">{current.title}</h2>
+      <div className="flex flex-1 items-start py-2">
+        <div className="w-full rounded-2xl border bg-white p-4 shadow-sm sm:p-6">
+          <h2 className="text-xl font-bold text-[#181113] sm:text-2xl">{current.title}</h2>
           {current.subtitle && (
             <p className="mt-2 text-sm text-muted-foreground">{current.subtitle}</p>
           )}
-          <div className="mt-6">{current.content}</div>
+          <div className="mt-5 sm:max-h-[62vh] sm:overflow-y-auto sm:pr-1">{current.content}</div>
         </div>
       </div>
 
@@ -1303,7 +1357,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               type="button"
               onClick={next}
               disabled={!current.valid}
-              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
+              className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
             >
               {current.valid ? "Continue" : "Complete this step"}
             </Button>
@@ -1312,7 +1366,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               type="button"
               onClick={() => submitListing(false)}
               disabled={submitting || savingDraft}
-              className="h-11 flex-1 rounded-full bg-[#800020] font-bold hover:bg-merlot"
+              className="h-11 flex-1 rounded-full bg-[#315f3a] font-bold hover:bg-[#264b2e]"
             >
               {submitting ? "Going live…" : listing ? "Save & go live" : "Go live"}
             </Button>

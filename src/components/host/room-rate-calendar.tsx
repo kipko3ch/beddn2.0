@@ -81,6 +81,21 @@ export function RoomRateCalendar({
 
   async function save() {
     if (!selected) return;
+    const parsedUnits = units === "" ? null : Math.round(Number(units));
+    const parsedPrice = price === "" ? null : Number(price);
+    const parsedMinNights = minNights === "" ? null : Math.round(Number(minNights));
+    if (parsedUnits !== null && (!Number.isFinite(parsedUnits) || parsedUnits < 0 || parsedUnits > totalUnits)) {
+      alert(`Rooms open must be between 0 and ${totalUnits}.`);
+      return;
+    }
+    if (parsedPrice !== null && (!Number.isFinite(parsedPrice) || parsedPrice < 0)) {
+      alert("Price must be zero or more.");
+      return;
+    }
+    if (parsedMinNights !== null && (!Number.isFinite(parsedMinNights) || parsedMinNights < 1)) {
+      alert("Minimum nights must be at least 1.");
+      return;
+    }
     setSaving(true);
     const res = await fetch(`/api/listings/${listingId}/calendar`, {
       method: "POST",
@@ -88,9 +103,9 @@ export function RoomRateCalendar({
       body: JSON.stringify({
         date: selected,
         is_blocked: blocked,
-        units_open: units === "" ? null : Math.max(0, parseInt(units, 10)),
-        price_override: price === "" ? null : Number(price),
-        min_nights: minNights === "" ? null : Math.max(1, parseInt(minNights, 10)),
+        units_open: parsedUnits,
+        price_override: parsedPrice,
+        min_nights: parsedMinNights,
       }),
     });
     setSaving(false);
@@ -125,7 +140,7 @@ export function RoomRateCalendar({
     <section className="rounded-2xl border bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icon icon="line-md:calendar" className="h-5 w-5 text-crimson" />
+          <Icon icon="line-md:calendar" className="h-5 w-5 text-[#315f3a]" />
           <h2 className="font-bold">Rooms &amp; rates</h2>
         </div>
         <div className="flex items-center gap-1">
@@ -181,8 +196,8 @@ export function RoomRateCalendar({
                   ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                   : open <= 0
                   ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-[#eadfe3] bg-white hover:border-crimson"
-              } ${selected === date ? "ring-2 ring-[#800020]" : ""}`}
+                  : "border-[#eadfe3] bg-white hover:border-[#315f3a]"
+              } ${selected === date ? "ring-2 ring-[#315f3a]" : ""}`}
             >
               <span className="font-bold">{dayNum}</span>
               {!isPast && (
@@ -227,7 +242,7 @@ export function RoomRateCalendar({
           <label className="mb-3 flex items-center gap-2 text-sm font-medium">
             <input
               type="checkbox"
-              className="size-4 accent-crimson"
+              className="size-4 accent-[#315f3a]"
               checked={blocked}
               onChange={(e) => setBlocked(e.target.checked)}
             />
@@ -282,7 +297,7 @@ export function RoomRateCalendar({
             <Button
               onClick={save}
               disabled={saving}
-              className="rounded-full bg-[#800020] hover:bg-merlot"
+              className="rounded-full bg-[#315f3a] hover:bg-[#264b2e]"
             >
               {saving ? "Saving…" : "Save"}
             </Button>

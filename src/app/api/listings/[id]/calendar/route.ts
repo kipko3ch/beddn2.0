@@ -79,11 +79,28 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: "No date provided" }, { status: 400 });
   }
 
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  if (dates.some((date) => !datePattern.test(date) || Number.isNaN(new Date(`${date}T00:00:00`).getTime()))) {
+    return NextResponse.json({ error: "Invalid date" }, { status: 400 });
+  }
+
+  const totalUnits = Math.max(1, Number(auth.listing.total_units ?? 1));
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (body.units_open !== undefined) patch.units_open = body.units_open;
-  if (body.price_override !== undefined)
-    patch.price_override = body.price_override === null ? null : Number(body.price_override);
-  if (body.min_nights !== undefined) patch.min_nights = body.min_nights;
+  if (body.units_open !== undefined) {
+    patch.units_open =
+      body.units_open === null ? null : Math.min(totalUnits, Math.max(0, Math.round(Number(body.units_open))));
+  }
+  if (body.price_override !== undefined) {
+    const price = body.price_override === null ? null : Number(body.price_override);
+    if (price !== null && (!Number.isFinite(price) || price < 0)) {
+      return NextResponse.json({ error: "Price must be zero or more" }, { status: 400 });
+    }
+    patch.price_override = price;
+  }
+  if (body.min_nights !== undefined) {
+    patch.min_nights =
+      body.min_nights === null ? null : Math.max(1, Math.round(Number(body.min_nights)));
+  }
   if (body.is_blocked !== undefined) patch.is_blocked = Boolean(body.is_blocked);
 
   const rows = dates.map((date) => ({ listing_id: id, date, ...patch }));

@@ -158,6 +158,27 @@ async function saveAvailabilitySlots(
   });
 }
 
+function validatePublishable(row: AnyRecord, imageUrls: string[] | undefined) {
+  const status = String(row.listing_status ?? "");
+  if (status === "draft") return null;
+  const categories = Array.isArray(row.categories) ? (row.categories as string[]) : [];
+  const urls = (imageUrls ?? []).map((url) => url.trim()).filter(Boolean);
+  if (urls.length === 0) return "Add at least one photo before publishing.";
+  if (!row.property_type) return "Choose what kind of place this is.";
+  if (!row.country || !row.city || !row.area) return "Add the public area guests will see.";
+  if (!row.private_address) return "Add the private address before publishing.";
+  if (categories.includes("hourly") && Number(row.hourly_price ?? 0) <= 0) {
+    return "Add an hourly price before publishing.";
+  }
+  if (categories.includes("overnight") && Number(row.overnight_price ?? 0) <= 0) {
+    return "Add a night price before publishing.";
+  }
+  if (categories.includes("experience") && Number(row.experience_price ?? 0) <= 0) {
+    return "Add an experience price before publishing.";
+  }
+  return null;
+}
+
 // Create a listing.
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -201,6 +222,11 @@ export async function POST(request: Request) {
   // (is_active is derived from listing_status by a DB trigger.)
   if (!isAdmin) {
     row.listing_status = row.listing_status === "draft" ? "draft" : "pending_review";
+  }
+
+  const publishError = validatePublishable(row, body.imageUrls);
+  if (publishError) {
+    return NextResponse.json({ error: publishError }, { status: 400 });
   }
 
   const { data: listing, error } = await admin
@@ -277,6 +303,11 @@ export async function PATCH(request: Request) {
     } else {
       row.listing_status = "pending_review";
     }
+  }
+
+  const publishError = validatePublishable(row, body.imageUrls);
+  if (publishError) {
+    return NextResponse.json({ error: publishError }, { status: 400 });
   }
 
   const { error } = await admin
