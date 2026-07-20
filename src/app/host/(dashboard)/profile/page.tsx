@@ -50,7 +50,7 @@ export default function HostProfilePage() {
     const json = (await res.json().catch(() => ({}))) as { error?: string };
     setPinBusy(false);
     if (!res.ok) {
-      setPinError(json.error || "Could not reset your PIN.");
+      setPinError(json.error || "Could not reset your access code.");
       return;
     }
     router.push(ROUTES.hostUnlock);
@@ -233,10 +233,10 @@ export default function HostProfilePage() {
             <Icon icon="line-md:lock" className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="font-bold text-[#2b000a]">Host PIN</h2>
+            <h2 className="font-bold text-[#2b000a]">Dashboard access</h2>
             <p className="text-sm text-muted-foreground">
-              The 4-digit PIN that unlocks your dashboard, separate from your login. Once entered,
-              it stays unlocked for 12 hours, then asks again (or sooner on a new browser or device).
+              Your 4-digit dashboard access code keeps host tools separate from guest browsing.
+              Once entered, host mode stays open for 12 hours on this device.
             </p>
           </div>
         </div>
@@ -248,12 +248,12 @@ export default function HostProfilePage() {
             onClick={() => setPinResetOpen(true)}
             className="mt-4 rounded-full"
           >
-            Reset my PIN
+            Reset access code
           </Button>
         ) : (
           <form onSubmit={resetPin} className="mt-4 space-y-3">
             <div>
-              <Label htmlFor="current-pin">Enter your current PIN to reset it</Label>
+              <Label htmlFor="current-pin">Enter your current access code to reset it</Label>
               <Input
                 id="current-pin"
                 type="password"
@@ -272,7 +272,7 @@ export default function HostProfilePage() {
                 disabled={pinBusy || currentPin.length !== 4}
                 className="rounded-full bg-[#800020] font-bold hover:bg-merlot"
               >
-                {pinBusy ? "Checking…" : "Reset PIN"}
+                {pinBusy ? "Checking…" : "Reset code"}
               </Button>
               <Button
                 type="button"

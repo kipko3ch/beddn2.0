@@ -22,7 +22,19 @@ import { AmenityPicker } from "@/components/amenity-picker";
 import { AmenityIcon } from "@/components/amenity-icon";
 import { CopyGuide } from "@/components/copy-guide";
 import { AiPromptHelper } from "@/components/ai-prompt-helper";
-import { CalendarDays, Clock, Compass, Moon, Plus, Search, Trash2, ChevronLeft, X } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  Clock,
+  ImagePlus,
+  Layers,
+  Moon,
+  Plus,
+  Search,
+  Trash2,
+  ChevronLeft,
+  X,
+} from "lucide-react";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 import { AMENITY_LABEL } from "@/lib/amenities";
 import { EXPERIENCE_GROUPS, EXPERIENCE_LABEL } from "@/lib/experience-types";
@@ -31,7 +43,7 @@ import { convertAmount, formatMoney } from "@/lib/currency";
 import type { Listing, ListingCategory } from "@/lib/types";
 
 const CATEGORY_OPTIONS: {
-  value: ListingCategory;
+  value: "hourly" | "overnight" | "both";
   label: string;
   description: string;
   icon: ElementType;
@@ -44,9 +56,15 @@ const CATEGORY_OPTIONS: {
   },
   {
     value: "overnight",
-    label: "Overnight stay",
+    label: "Night stay",
     description: "Homes, rooms, or suites guests can book for the night.",
     icon: Moon,
+  },
+  {
+    value: "both",
+    label: "Both",
+    description: "Let guests choose hourly or full-night stays for the same place.",
+    icon: Layers,
   },
 ];
 
@@ -151,23 +169,15 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const [categories, setCategories] = useState<ListingCategory[]>(
     (listing?.categories as ListingCategory[]) ?? (initialCategory ? [initialCategory] : [])
   );
-  const [alsoOvernight, setAlsoOvernight] = useState(
-    listing?.categories?.includes("hourly") && listing?.categories?.includes("overnight")
-  );
-
-  function handleSelectCategory(cat: "hourly" | "overnight") {
-    if (cat === "hourly") {
-      setCategories(alsoOvernight ? ["hourly", "overnight"] : ["hourly"]);
-    } else {
-      setCategories(["overnight"]);
-    }
+  function bookingChoice() {
+    if (categories.includes("hourly") && categories.includes("overnight")) return "both";
+    if (categories.includes("overnight")) return "overnight";
+    if (categories.includes("hourly")) return "hourly";
+    return "";
   }
 
-  function handleSetAlsoOvernight(val: boolean) {
-    setAlsoOvernight(val);
-    if (categories.includes("hourly")) {
-      setCategories(val ? ["hourly", "overnight"] : ["hourly"]);
-    }
+  function handleSelectBookingChoice(choice: "hourly" | "overnight" | "both") {
+    setCategories(choice === "both" ? ["hourly", "overnight"] : [choice]);
   }
   const [hourlyPrice, setHourlyPrice] = useState(listing?.hourly_price?.toString() ?? "");
   const [overnightPrice, setOvernightPrice] = useState(
@@ -215,10 +225,10 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     setImageUrls(imageList.filter((_, i) => i !== index).join("\n"));
   }
 
-  function toggleCategory(cat: ListingCategory) {
-    setCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-    );
+  function makeCoverImage(index: number) {
+    const selected = imageList[index];
+    if (!selected) return;
+    setImageUrls([selected, ...imageList.filter((_, i) => i !== index)].join("\n"));
   }
 
   function toggleExperienceType(value: string) {
@@ -284,6 +294,10 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     );
   }, [propertySearch]);
 
+  const popularPropertyTypes = PROPERTY_TYPES.filter((p) =>
+    ["apartment", "house", "private_room", "studio", "villa", "hotel_room"].includes(p.value)
+  );
+
   // --- Wizard steps ---------------------------------------------------------
   const steps: { title: string; subtitle?: string; valid: boolean; content: React.ReactNode }[] = [];
 
@@ -308,25 +322,30 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   steps.push({
     title: "How can guests book it?",
-    subtitle: "Pick the booking type for your property.",
+    subtitle: "Choose the option that matches how you want to earn from this place.",
     valid: categories.length > 0,
     content: (
-      <div className="space-y-6">
-        <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
           {CATEGORY_OPTIONS.map(({ value, label, description, icon: Icon }) => {
-            const selected = value === "hourly" ? categories.includes("hourly") : (categories.includes("overnight") && !categories.includes("hourly"));
+            const selected = bookingChoice() === value;
             return (
               <button
                 key={value}
                 type="button"
-                onClick={() => handleSelectCategory(value as "hourly" | "overnight")}
-                className={`min-h-36 rounded-2xl border p-4 text-left transition ${
+                onClick={() => handleSelectBookingChoice(value)}
+                className={`relative min-h-40 rounded-2xl border p-4 text-left transition ${
                   selected
                     ? "border-crimson bg-[#fbf7f8] shadow-sm"
                     : "border-border bg-white hover:border-[#d7a9b7]"
                 }`}
                 aria-pressed={selected}
               >
+                {selected && (
+                  <span className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-crimson text-white">
+                    <Check className="h-3.5 w-3.5" />
+                  </span>
+                )}
                 <span
                   className={`mb-3 inline-flex size-9 items-center justify-center rounded-full ${
                     selected ? "bg-crimson text-white" : "bg-muted text-[#2b000a]"
@@ -342,41 +361,10 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             );
           })}
         </div>
-
-        {categories.includes("hourly") && (
-          <div className="mt-6 rounded-2xl border bg-beige/10 p-5 space-y-3 animate-fade-in" style={{ backgroundColor: "#FFEBE5", borderColor: "#FCDCD3" }}>
-            <p className="text-sm font-bold text-[#2B0A11]">
-              Is this property also available for overnight stays?
-            </p>
-            <p className="text-xs text-muted-foreground leading-normal">
-              If yes, guests can book the property either by the hour or for full overnight stays. You will be able to configure both pricing models.
-            </p>
-            <div className="flex gap-3 pt-1">
-              <button
-                type="button"
-                onClick={() => handleSetAlsoOvernight(true)}
-                className={`h-11 flex-1 rounded-full text-sm font-bold border transition ${
-                  alsoOvernight
-                    ? "bg-[#8A1C32] text-white border-transparent"
-                    : "bg-white text-[#4E1424] border-[#FCDCD3] hover:bg-zinc-50"
-                }`}
-              >
-                Yes
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSetAlsoOvernight(false)}
-                className={`h-11 flex-1 rounded-full text-sm font-bold border transition ${
-                  !alsoOvernight
-                    ? "bg-[#8A1C32] text-white border-transparent"
-                    : "bg-white text-[#4E1424] border-[#FCDCD3] hover:bg-zinc-50"
-                }`}
-              >
-                No
-              </button>
-            </div>
-          </div>
-        )}
+        <p className="rounded-xl bg-[#f8faf7] px-4 py-3 text-xs leading-5 text-muted-foreground">
+          You can change this later. Pricing fields will only appear for the booking types
+          you choose here.
+        </p>
       </div>
     ),
   });
@@ -386,7 +374,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     subtitle: "Choose the property type. Search if you don't see it right away.",
     valid: propertyType.length > 0,
     content: (
-      <div className="space-y-3">
+      <div className="space-y-5">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -396,6 +384,42 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             className="pl-9"
           />
         </div>
+        {!propertySearch.trim() && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Most common
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {popularPropertyTypes.map((p) => {
+                const selected = propertyType === p.value;
+                return (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={() => setPropertyType(p.value)}
+                    aria-pressed={selected}
+                    className={`flex min-h-16 items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${
+                      selected
+                        ? "border-crimson bg-[#fbf7f8] font-medium text-[#2b000a]"
+                        : "border-border bg-white hover:border-[#d7a9b7]"
+                    }`}
+                  >
+                    <AmenityIcon
+                      icon={p.icon}
+                      width={22}
+                      height={22}
+                      className={selected ? "text-crimson" : "text-muted-foreground"}
+                    />
+                    <span className="min-w-0 flex-1">{p.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          All property types
+        </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {filteredPropertyTypes.map((p) => {
             const selected = propertyType === p.value;
@@ -405,7 +429,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                 type="button"
                 onClick={() => setPropertyType(p.value)}
                 aria-pressed={selected}
-                className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${
+                className={`flex min-h-14 items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition ${
                   selected
                     ? "border-crimson bg-[#fbf7f8] font-medium text-[#2b000a]"
                     : "border-border bg-white hover:border-[#d7a9b7]"
@@ -417,7 +441,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   height={22}
                   className={selected ? "text-crimson" : "text-muted-foreground"}
                 />
-                <span className="min-w-0 flex-1 truncate">{p.label}</span>
+                <span className="min-w-0 flex-1">{p.label}</span>
               </button>
             );
           })}
@@ -635,14 +659,37 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   steps.push({
     title: "Set your calendar",
-    subtitle: "Choose your usual open days, then add exact date hours for special sessions or custom availability.",
+    subtitle: "Start with your normal rhythm. Add special dates only when you need them.",
     valid: availableDays.length > 0,
     content: (
       <div className="space-y-5">
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-crimson" />
-            <p className="text-sm font-bold text-[#181113]">Usual open days</p>
+        <div className="rounded-2xl border bg-white p-4">
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-crimson" />
+                <p className="text-sm font-bold text-[#181113]">Usual open days</p>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Pick the days guests can normally book. You can block dates later.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Every day", days: [0, 1, 2, 3, 4, 5, 6] },
+                { label: "Weekdays", days: [1, 2, 3, 4, 5] },
+                { label: "Weekend", days: [0, 6] },
+              ].map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => setAvailableDays(preset.days)}
+                  className="rounded-full border px-3 py-1.5 text-xs font-semibold text-[#2b000a] hover:border-[#d7a9b7] hover:bg-[#fbf7f8]"
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="grid grid-cols-7 gap-1.5">
             {WEEK_DAYS.map((day) => {
@@ -664,8 +711,8 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
               );
             })}
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            These days become your default bookable rhythm. You can still block dates later.
+          <p className="mt-3 text-xs font-medium text-cranberry">
+            {availableDays.length} day{availableDays.length === 1 ? "" : "s"} selected
           </p>
         </div>
 
@@ -689,9 +736,12 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
           <div className="mt-4 space-y-3">
             {dateSlots.length === 0 ? (
-              <p className="rounded-xl border border-dashed bg-white px-4 py-5 text-center text-xs text-muted-foreground">
-                No custom date hours yet. Your usual open days and timing will be used.
-              </p>
+              <div className="rounded-xl border border-dashed bg-white px-4 py-5 text-center">
+                <p className="text-sm font-semibold text-[#181113]">No special dates yet</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  That is okay. Beddn will use your usual open days and timing.
+                </p>
+              </div>
             ) : (
               dateSlots.map((slot) => (
                 <div key={slot.id} className="grid gap-3 rounded-xl bg-white p-3 sm:grid-cols-[1.2fr_1fr_1fr_0.9fr_auto] sm:items-end">
@@ -877,23 +927,33 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     subtitle: "Great photos get more bookings. Add as many as you like.",
     valid: true,
     content: (
-      <div className="space-y-2">
-        <Label htmlFor="image-files">Photos</Label>
-        <input
-          id="image-files"
-          type="file"
-          accept="image/*"
-          multiple
-          disabled={uploading}
-          onChange={(e) => {
-            handleImageFiles(e.target.files);
-            e.target.value = "";
-          }}
-          className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-cranberry file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-merlot disabled:opacity-60"
-        />
-        <p className="text-xs text-muted-foreground">
-          Photos are compressed to about 250&nbsp;KB in your browser before upload.
-        </p>
+      <div className="space-y-4">
+        <Label
+          htmlFor="image-files"
+          className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#d7a9b7] bg-[#fbf7f8] px-4 py-8 text-center hover:bg-[#f8eef2]"
+        >
+          <span className="flex size-12 items-center justify-center rounded-full bg-white text-crimson shadow-sm">
+            <ImagePlus className="h-6 w-6" />
+          </span>
+          <span className="mt-3 text-sm font-bold text-[#181113]">
+            {uploading ? "Uploading photos..." : "Upload photos"}
+          </span>
+          <span className="mt-1 text-xs font-normal text-muted-foreground">
+            Add room, exterior, bathroom, view, and entrance photos. The first photo is the cover.
+          </span>
+          <input
+            id="image-files"
+            type="file"
+            accept="image/*"
+            multiple
+            disabled={uploading}
+            onChange={(e) => {
+              handleImageFiles(e.target.files);
+              e.target.value = "";
+            }}
+            className="sr-only"
+          />
+        </Label>
         <p className="rounded-lg bg-[#fbf7f8] px-3 py-2 text-xs text-cranberry">
           Do not add phone numbers or payment details to listing photos. Guests should use Check
           Availability so your inquiries are organized and tracked.
@@ -902,11 +962,21 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
         {uploadError && <p className="text-xs font-medium text-red-600">{uploadError}</p>}
 
         {imageList.length > 0 ? (
-          <div className="grid grid-cols-3 gap-2 pt-2 sm:grid-cols-4">
+          <div className="space-y-3 pt-2">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border bg-muted">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imageList[0]} alt="Cover photo" className="h-full w-full object-cover" />
+              <span className="absolute left-3 top-3 rounded-full bg-crimson px-3 py-1 text-xs font-bold text-white">
+                Main photo
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {imageList.map((url, i) => (
               <div
                 key={`${url}-${i}`}
-                className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
+                className={`group relative aspect-square overflow-hidden rounded-lg border bg-muted ${
+                  i === 0 ? "ring-2 ring-crimson ring-offset-2" : ""
+                }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
@@ -918,17 +988,26 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
-                {i === 0 && (
+                {i === 0 ? (
                   <span className="absolute bottom-1 left-1 rounded bg-crimson px-1.5 py-0.5 text-[10px] font-semibold text-white">
                     Cover
                   </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => makeCoverImage(i)}
+                    className="absolute bottom-1 left-1 rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-[#2b000a] opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                  >
+                    Make main
+                  </button>
                 )}
               </div>
             ))}
+            </div>
           </div>
         ) : (
-          <p className="pt-2 text-xs text-muted-foreground">
-            No photos yet. The first one you add becomes the cover photo.
+          <p className="rounded-xl border border-dashed px-4 py-5 text-center text-xs text-muted-foreground">
+            No photos yet. Add at least one clear image so guests can trust the listing.
           </p>
         )}
       </div>

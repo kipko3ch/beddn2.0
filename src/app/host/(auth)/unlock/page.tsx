@@ -109,7 +109,7 @@ function UnlockInner() {
         }
         if (stage === "confirm") {
           if (nextPin !== firstPin) {
-            setError("Those PINs didn't match. Try again.");
+            setError("Those codes did not match. Try again.");
             setFirstPin("");
             setPin("");
             setStage("create");
@@ -184,7 +184,7 @@ function UnlockInner() {
     }
     if (stage === "confirm") {
       if (nextPin !== firstPin) {
-        setError("Those PINs didn't match. Try again.");
+        setError("Those codes did not match. Try again.");
         setFirstPin("");
         setPin("");
         setStage("create");
@@ -201,21 +201,21 @@ function UnlockInner() {
 
   const title =
     stage === "create"
-      ? "Create your Host PIN"
+      ? "Set up host dashboard access"
       : stage === "confirm"
-      ? "Confirm your Host PIN"
+      ? "Confirm dashboard access"
       : stage === "locked"
-      ? "PIN locked"
-      : "Enter your Host PIN";
+      ? "Access paused"
+      : "Switching to host dashboard";
 
   const subtitle =
     stage === "create"
-      ? "Like your M-Pesa PIN — this locks your host and admin dashboard, even when you're already signed in. Once unlocked, it stays unlocked for 12 hours, then asks again (or sooner on a new browser or device)."
+      ? "Choose a simple 4-digit access code for this device. It keeps host tools separate from normal guest browsing."
       : stage === "confirm"
-      ? "Type it once more to confirm."
+      ? "Type the same 4 digits once more."
       : stage === "locked"
       ? "Too many wrong tries. Please wait before trying again."
-      : "Enter your 4-digit PIN to continue. This unlocks the dashboard for 12 hours.";
+      : "Confirm access to continue. You will stay in host mode for 12 hours on this device.";
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#181113]">
@@ -225,7 +225,7 @@ function UnlockInner() {
             Beddn
           </Link>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1 text-xs font-bold uppercase tracking-widest text-crimson">
-            <Lock className="h-3.5 w-3.5" /> Extranet
+            <Lock className="h-3.5 w-3.5" /> Host mode
           </span>
         </div>
       </header>
@@ -258,7 +258,7 @@ function UnlockInner() {
               <Keypad onDigit={onDigit} onBackspace={onBackspace} disabled={submitting || stage === "loading"} />
             </div>
             <p className="mt-8 text-xs text-muted-foreground">
-              Forgot your PIN? Ask Beddn support to reset it for you.
+              Trouble switching? Ask Beddn support to reset dashboard access for you.
             </p>
           </>
         )}

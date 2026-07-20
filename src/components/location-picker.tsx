@@ -303,9 +303,9 @@ export function LocationPicker({
   const isCascade = meta?.mode === "file" || meta?.mode === "region-files";
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* Reassurance — most homes here aren't on a street map. */}
-      <div className="rounded-xl bg-[#fbf7f8] p-4">
+      <div className="order-1 rounded-xl bg-[#fbf7f8] p-4">
         <p className="text-sm font-semibold text-[#2b000a]">No street address? That&apos;s fine.</p>
         <p className="mt-1 text-sm text-muted-foreground">
           Guests find places by landmarks, not house numbers. You don&apos;t need an exact
@@ -315,17 +315,17 @@ export function LocationPicker({
       </div>
 
       {/* Two primary ways to locate — GPS, or a nearby landmark search. */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="order-3 grid gap-3 sm:grid-cols-2">
         {/* Option 1: GPS */}
         <div className="flex flex-col rounded-xl border p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-[#181113]">
             <span className="flex size-7 items-center justify-center rounded-full bg-[#f0d9e0] text-crimson">
               <Crosshair className="h-4 w-4" />
             </span>
-            At the place right now?
+            At the place now?
           </div>
           <p className="mt-2 flex-1 text-xs text-muted-foreground">
-            Use your phone&apos;s GPS to drop the pin exactly where you&apos;re standing.
+            Use your phone&apos;s GPS to place the pin near your gate or building.
           </p>
           <button
             type="button"
@@ -380,7 +380,7 @@ export function LocationPicker({
       </div>
 
       {/* Map */}
-      <div className="space-y-2">
+      <div className="order-4 space-y-2">
         <div ref={containerRef} className="h-72 w-full overflow-hidden rounded-xl border" />
         <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
           <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-crimson" />
@@ -401,8 +401,8 @@ export function LocationPicker({
       </div>
 
       {/* Area names — auto-filled from GPS/search, editable. Shown to guests. */}
-      <div>
-        <p className="text-sm font-semibold text-[#181113]">Area details</p>
+      <div className="order-2 rounded-xl border bg-white p-4">
+        <p className="text-sm font-semibold text-[#181113]">Area details guests will see</p>
         <p className="mb-3 text-xs text-muted-foreground">
           These fill in automatically — adjust them if needed. Guests see the area, not
           your exact address.

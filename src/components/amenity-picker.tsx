@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AMENITY_GROUPS } from "@/lib/amenities";
+import { AMENITY_GROUPS, AMENITY_LABEL } from "@/lib/amenities";
 import { AmenityIcon } from "@/components/amenity-icon";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronDown, Check } from "lucide-react";
@@ -13,7 +13,10 @@ interface AmenityPickerProps {
 
 export function AmenityPicker({ value, onChange }: AmenityPickerProps) {
   const [query, setQuery] = useState("");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    Essentials: true,
+    "Parking & facilities": true,
+  });
 
   const selected = useMemo(() => new Set(value), [value]);
   const normalized = query.trim().toLowerCase();
@@ -25,6 +28,17 @@ export function AmenityPicker({ value, onChange }: AmenityPickerProps) {
       onChange([...value, amenityValue]);
     }
   }
+
+  const quickAmenities = [
+    "wifi",
+    "free_parking",
+    "kitchen",
+    "air_conditioning",
+    "hot_water",
+    "pool",
+    "self_checkin",
+    "security_guard",
+  ];
 
   // When searching, show every matching amenity regardless of group collapse.
   const groups = useMemo(() => {
@@ -51,11 +65,54 @@ export function AmenityPicker({ value, onChange }: AmenityPickerProps) {
         />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {value.length > 0
-          ? `${value.length} selected`
-          : "Tap everything your place offers."}
-      </p>
+      <div className="rounded-xl bg-[#f8faf7] p-3">
+        <p className="text-sm font-semibold text-[#181113]">
+          {value.length > 0 ? `${value.length} selected` : "Start with the basics"}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Tap every amenity guests can use. You can select from quick picks or open any group.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {quickAmenities.map((amenity) => {
+            const isOn = selected.has(amenity);
+            return (
+              <button
+                key={amenity}
+                type="button"
+                onClick={() => toggle(amenity)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                  isOn
+                    ? "border-crimson bg-crimson text-white"
+                    : "border-border bg-white text-[#2b000a] hover:border-[#d7a9b7]"
+                }`}
+              >
+                {AMENITY_LABEL[amenity] ?? amenity}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {value.slice(0, 10).map((amenity) => (
+            <button
+              key={amenity}
+              type="button"
+              onClick={() => toggle(amenity)}
+              className="inline-flex items-center gap-1 rounded-full bg-[#fbf7f8] px-3 py-1.5 text-xs font-semibold text-cranberry"
+            >
+              {AMENITY_LABEL[amenity] ?? amenity}
+              <span aria-hidden>×</span>
+            </button>
+          ))}
+          {value.length > 10 && (
+            <span className="rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground">
+              +{value.length - 10} more
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="space-y-2">
         {groups.map((group) => {
