@@ -79,6 +79,28 @@ export default function DashboardPage() {
   const [pendingNew, setPendingNew] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const [inquiryBannerDismissed, setInquiryBannerDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("beddn_inquiry_dismissed") === "true";
+  });
+
+  function dismissInquiries() {
+    setInquiryBannerDismissed(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("beddn_inquiry_dismissed", "true");
+    }
+  }
+
+  const [verifiedDismissed, setVerifiedDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("beddn_verified_dismissed") === "true";
+  });
+
+  function dismissVerified() {
+    setVerifiedDismissed(true);
+    localStorage.setItem("beddn_verified_dismissed", "true");
+  }
+
   async function handleDismissAnnouncement(annId: string) {
     if (!host) return;
     setAnnouncements((prev) => prev.filter((a) => a.id !== annId));
@@ -310,19 +332,29 @@ export default function DashboardPage() {
       </div>
 
       {/* Needs attention */}
-      {!isAdmin && pendingNew > 0 && (
-        <Link
-          href={ROUTES.dashboardInquiries}
-          className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors hover:bg-amber-100/60"
-        >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-            <Icon icon="line-md:bell" className="h-4 w-4" />
-          </span>
-          <p className="text-sm font-semibold text-amber-900">
-            {pendingNew} new inquiry{pendingNew === 1 ? "" : "s"} waiting for your response
-          </p>
-          <Icon icon="line-md:chevron-right" className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
-        </Link>
+      {!isAdmin && pendingNew > 0 && !inquiryBannerDismissed && (
+        <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors">
+          <Link
+            href={ROUTES.dashboardInquiries}
+            className="flex flex-1 items-center gap-3 hover:opacity-80 transition-opacity"
+          >
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+              <Icon icon="line-md:bell" className="h-4 w-4" />
+            </span>
+            <p className="text-sm font-semibold text-amber-900">
+              {pendingNew} new inquiry{pendingNew === 1 ? "" : "s"} waiting for your response
+            </p>
+            <Icon icon="line-md:chevron-right" className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
+          </Link>
+          <button
+            type="button"
+            onClick={dismissInquiries}
+            className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition-colors"
+            aria-label="Dismiss"
+          >
+            <Icon icon="line-md:close" className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
 
       {/* Announcements */}
@@ -427,17 +459,25 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {(host.verification_status === "verified" || host.is_verified) && (
+          {(host.verification_status === "verified" || host.is_verified) && !verifiedDismissed && (
             <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                 <Icon icon="line-md:check-all" className="h-4 w-4" />
               </span>
-              <div>
+              <div className="flex-1">
                 <p className="font-bold text-emerald-950 text-sm">Verification approved</p>
                 <p className="text-xs text-emerald-800 mt-0.5">
                   Your profile is verified. The Verified Host badge is now active on your profile and listings.
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={dismissVerified}
+                className="flex size-7 shrink-0 items-center justify-center rounded-full text-emerald-600 hover:bg-emerald-100 hover:text-emerald-800 transition-colors"
+                aria-label="Dismiss"
+              >
+                <Icon icon="line-md:close" className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
         </>

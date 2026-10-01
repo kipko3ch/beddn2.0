@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +10,7 @@ import { useAvatarUrl, useUserRole } from "@/lib/hooks";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { AuthDialog } from "@/components/auth-dialog";
+import { RoleSwitchTransition } from "@/components/role-switch-transition";
 import { CurrencySwitcher } from "@/components/currency-switcher";
 import {
   Sheet,
@@ -124,6 +126,7 @@ function NavSheet({
   showHostWorkspace,
   isAdmin,
   onSignOut,
+  onSwitch,
   side,
   children,
 }: {
@@ -131,6 +134,7 @@ function NavSheet({
   showHostWorkspace: boolean;
   isAdmin: boolean;
   onSignOut: () => void;
+  onSwitch: (to: string, mode: "host" | "traveler") => void;
   side: "left" | "right";
   children: ReactElement;
 }) {
@@ -167,13 +171,27 @@ function NavSheet({
 
           {showHostWorkspace ? (
             <>
-              <SheetClose render={<Link href={ROUTES.dashboard} className={item} />}>
+              <SheetClose
+                render={
+                  <button
+                    className={`${item} w-full text-left`}
+                    onClick={() => onSwitch(ROUTES.dashboard, "host")}
+                  />
+                }
+              >
                 <Icon icon="line-md:account" className="h-4 w-4" /> Host dashboard
               </SheetClose>
               <SheetClose render={<Link href={ROUTES.dashboardProfile} className={item} />}>
                 <Icon icon="line-md:account" className="h-4 w-4" /> Host profile
               </SheetClose>
-              <SheetClose render={<Link href={ROUTES.home} className={item} />}>
+              <SheetClose
+                render={
+                  <button
+                    className={`${item} w-full text-left`}
+                    onClick={() => onSwitch(ROUTES.home, "traveler")}
+                  />
+                }
+              >
                 <Icon icon="line-md:search" className="h-4 w-4" /> Switch to traveler
               </SheetClose>
             </>
@@ -222,6 +240,13 @@ export function Header() {
   const canHost = isHost || isAdmin;
   const rolePending = Boolean(user && loading);
   const showHostWorkspace = canHost || rolePending;
+
+  // Role-switch transition state
+  const [switching, setSwitching] = useState<{ to: string; mode: "host" | "traveler" } | null>(null);
+
+  function handleSwitch(to: string, mode: "host" | "traveler") {
+    setSwitching({ to, mode });
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -275,6 +300,7 @@ export function Header() {
               showHostWorkspace={showHostWorkspace}
               isAdmin={isAdmin}
               onSignOut={handleSignOut}
+              onSwitch={handleSwitch}
               side="right"
             >
               <MenuTrigger user={user} avatarUrl={avatarUrl} />
@@ -288,6 +314,7 @@ export function Header() {
               showHostWorkspace={showHostWorkspace}
               isAdmin={isAdmin}
               onSignOut={handleSignOut}
+              onSwitch={handleSwitch}
               side="left"
             >
               <MenuTrigger user={user} avatarUrl={avatarUrl} />
@@ -335,15 +362,16 @@ export function Header() {
             Saved
           </Link>
           {user && showHostWorkspace ? (
-            <Link
-              href={ROUTES.dashboard}
+            <button
+              type="button"
+              onClick={() => handleSwitch(ROUTES.dashboard, "host")}
               className={`flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] font-medium ${
                 pathname?.startsWith(ROUTES.dashboard) ? "text-[#800020]" : "text-[#6f6568]"
               }`}
             >
               <Icon icon="line-md:account" className="h-6 w-6" />
               Dashboard
-            </Link>
+            </button>
           ) : user ? (
             <Link
               href={ROUTES.newListing}
@@ -363,6 +391,18 @@ export function Header() {
             </AuthDialog>
           )}
       </nav>
+
+      {/* Role-switch transition overlay */}
+      {switching &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <RoleSwitchTransition
+            to={switching.to}
+            mode={switching.mode}
+            onDone={() => setSwitching(null)}
+          />,
+          document.body
+        )}
     </>
   );
 }

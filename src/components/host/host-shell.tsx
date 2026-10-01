@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { createClient } from '@/lib/supabase/client';
 import { ROUTES } from '@/lib/routes';
+import { RoleSwitchTransition } from '@/components/role-switch-transition';
 import {
   Sheet,
   SheetContent,
@@ -56,6 +58,9 @@ export function HostShell({
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const supabase = createClient();
+
+  // Role-switch transition state
+  const [switching, setSwitching] = useState<{ to: string; mode: "host" | "traveler" } | null>(null);
 
   // Close menus whenever the route changes.
   useEffect(() => {
@@ -147,13 +152,16 @@ export function HostShell({
 
   const navFooter = (onNavigate?: () => void) => (
     <div className="border-t p-3">
-      <Link
-        href={ROUTES.search}
-        onClick={onNavigate}
-        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#5d4f54] hover:bg-[#faf4f6] hover:text-[#2b000a]"
+      <button
+        type="button"
+        onClick={() => {
+          onNavigate?.();
+          setSwitching({ to: ROUTES.search, mode: "traveler" });
+        }}
+        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#5d4f54] hover:bg-[#faf4f6] hover:text-[#2b000a]"
       >
         <Icon icon="line-md:search" className="h-4 w-4 text-[#a08b92]" /> Switch to traveler
-      </Link>
+      </button>
       <div className="mt-2 flex items-center gap-3 rounded-xl bg-[#faf4f6] px-3 py-2.5">
         <Icon icon="line-md:account" className="h-8 w-8 shrink-0 text-crimson" />
         <div className="min-w-0 flex-1">
@@ -284,6 +292,18 @@ export function HostShell({
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-7">{children}</main>
       </div>
+
+      {/* Role-switch transition overlay */}
+      {switching &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <RoleSwitchTransition
+            to={switching.to}
+            mode={switching.mode}
+            onDone={() => setSwitching(null)}
+          />,
+          document.body
+        )}
     </div>
   );
 }

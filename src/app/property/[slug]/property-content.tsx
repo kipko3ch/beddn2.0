@@ -20,11 +20,16 @@ import {
   ChevronRight,
   Clock,
   Compass,
+  ExternalLink,
+  Flag,
   Heart,
+  Keyboard,
   MapPin,
   Moon,
+  Navigation,
   Share,
   ShowerHead,
+  ShieldCheck,
   Star,
   Check,
   Utensils,
@@ -39,6 +44,7 @@ import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/empty-state";
 import { Calendar } from "@/components/ui/calendar";
 import { AuthDialog } from "@/components/auth-dialog";
+import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { Map } from "@/components/map";
 import { useSavedListings } from "@/lib/hooks";
 import { useCurrency } from "@/components/currency-provider";
@@ -199,13 +205,14 @@ export function PropertyContent({
     (c) => c !== "experience"
   );
   const [selectedCategory, setSelectedCategory] = useState<ListingCategory>(() => {
-    return categories.includes("hourly") ? "hourly" : "overnight";
+    return categories.includes("overnight") ? "overnight" : categories[0] || "overnight";
   });
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => defaultDateRange());
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(defaultDateRange().from!));
   const [startTime, setStartTime] = useState("10:00");
   const [durationHours, setDurationHours] = useState("2");
   const [guests, setGuests] = useState("1");
+  const [reportOpen, setReportOpen] = useState(false);
   const { savedIds, toggle } = useSavedListings();
   const { formatPrice } = useCurrency();
   const isSaved = savedIds.has(listing.id);
@@ -405,6 +412,15 @@ export function PropertyContent({
     if (isOwnListing) return;
     setInquiryOpen(true);
   }
+
+  const cancellationDateText = useMemo(() => {
+    if (!dateRange?.from) return "before check-in";
+    const cancelDate = new Date(dateRange.from);
+    cancelDate.setDate(cancelDate.getDate() - 1);
+    return cancelDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  }, [dateRange?.from]);
+
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`;
 
   return (
     <main className="bg-white pb-24 text-[#181113] lg:pb-0">
@@ -633,185 +649,7 @@ export function PropertyContent({
         )}
       </section>
 
-      {/* Booking card sits right under the photos — reachable with no scroll
-          on desktop and only the gallery's height on mobile. No separate
-          "Check Availability" tap: dates come pre-selected, so the action is
-          ready the moment this renders. */}
-      <section id="deals" className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8 scroll-mt-20">
-        <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-          <div className="border-b bg-cream/40 p-4 sm:p-5">
-            <h2 className="text-lg font-bold">Check availability</h2>
-            {isOwnListing && (
-              <p className="mt-2 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-cranberry">
-                This is your listing. Guests can check dates and send inquiries here; use your dashboard to edit availability.
-              </p>
-            )}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`rounded-full border px-4 py-2 text-sm font-bold capitalize ${
-                    selectedCategory === cat
-                      ? "border-[#800020] bg-[#800020] text-white"
-                      : "border-neutral-200 bg-white"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 p-5 sm:p-6 lg:p-8">
-            {/* Left side: selectors, pricing and reserve button */}
-            <div className="flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                {selectedCategory === "hourly" && (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="text-sm font-medium">
-                      Start time
-                      <input
-                        type="time"
-                        value={startTime}
-                        onChange={(event) => setStartTime(event.target.value)}
-                        className="mt-1 h-10 w-full rounded-lg border px-3"
-                      />
-                    </label>
-                    <label className="text-sm font-medium">
-                      Hours
-                      <input
-                        type="number"
-                        min="1"
-                        value={durationHours}
-                        onChange={(event) => setDurationHours(event.target.value)}
-                        className="mt-1 h-10 w-full rounded-lg border px-3"
-                      />
-                    </label>
-                  </div>
-                )}
-                
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="text-sm font-medium">
-                    Guests
-                    <input
-                      type="number"
-                      min="1"
-                      value={guests}
-                      onChange={(event) => setGuests(event.target.value)}
-                      className="mt-1 h-10 w-full rounded-lg border px-3"
-                    />
-                  </label>
-                </div>
-
-                {/* Estimate calculations summary */}
-                {selectedCategory === "overnight" && overnightEstimate && (
-                  <div className="rounded-2xl border p-4 bg-zinc-50 space-y-2 mt-4 animate-fade-in">
-                    <p className="text-xs text-muted-foreground font-semibold">PRICE ESTIMATE</p>
-                    <div className="flex justify-between text-sm font-medium text-zinc-700">
-                      <span>{formatPrice(Number(listing.overnight_price || 0), priceCurrency(listing))} x {overnightEstimate.nights} nights</span>
-                      <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
-                    </div>
-                    <div className="flex justify-between border-t pt-2 text-base font-bold text-[#202124]">
-                      <span>Total Estimate</span>
-                      <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
-                    </div>
-                  </div>
-                )}
-
-                {selectedCategory === "hourly" && listing.hourly_price && (
-                  <div className="rounded-2xl border p-4 bg-zinc-50 space-y-2 mt-4 animate-fade-in">
-                    <p className="text-xs text-muted-foreground font-semibold">PRICE ESTIMATE</p>
-                    <div className="flex justify-between text-sm font-medium text-zinc-700">
-                      <span>{formatPrice(Number(listing.hourly_price), priceCurrency(listing))} x {durationHours} hours</span>
-                      <span>{formatPrice(Number(listing.hourly_price) * Number(durationHours), priceCurrency(listing))}</span>
-                    </div>
-                    <div className="flex justify-between border-t pt-2 text-base font-bold text-[#202124]">
-                      <span>Total Estimate</span>
-                      <span>{formatPrice(Number(listing.hourly_price) * Number(durationHours), priceCurrency(listing))}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Status and Action Buttons */}
-              <div className="border-t pt-4 space-y-3">
-                <p className={`text-sm font-bold ${hasAvailability ? "text-[#1a7f46]" : "text-amber-700"}`}>
-                  {!selectedDate
-                    ? "Pick your dates on the calendar."
-                    : hasAvailability
-                    ? "Looks available — request to book or message the host."
-                    : "These dates may not be available. Try another date or ask the host."}
-                </p>
-                {isOwnListing ? (
-                  <Link
-                    href={`/host/listings/${listing.id}/edit`}
-                    className="flex w-full h-11 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot transition"
-                  >
-                    Manage listing
-                  </Link>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    {hasAvailability && (
-                      <RequestToBookButton
-                        user={user}
-                        href={reserveHref}
-                        className="flex w-full h-11 items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot transition shadow-sm"
-                      >
-                        Request to book
-                      </RequestToBookButton>
-                    )}
-                    <Button
-                      onClick={openInquiry}
-                      variant={hasAvailability ? "outline" : "default"}
-                      className={
-                        hasAvailability
-                          ? "w-full h-11 rounded-full border-neutral-300 font-bold"
-                          : "w-full h-11 rounded-full bg-[#800020] font-bold hover:bg-merlot"
-                      }
-                    >
-                      {hasAvailability ? "Message host" : "Ask host anyway"}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right side: Calendar */}
-            <div className="border-t pt-6 lg:border-t-0 lg:pt-0 lg:border-l lg:pl-8 flex flex-col items-center">
-              <div className="mb-4 text-center">
-                <h3 className="text-lg font-bold text-[#202124] flex items-center gap-1.5 justify-center">
-                  <CalendarDays className="h-5 w-5 text-crimson" />
-                  {dateSummary.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{dateSummary.subtitle}</p>
-              </div>
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={handleSelectRange}
-                month={calendarMonth}
-                onMonthChange={setCalendarMonth}
-                numberOfMonths={1}
-                showOutsideDays={false}
-                disabled={disabledCalendarDays}
-                className="mx-auto bg-transparent p-0 [--cell-radius:999px]"
-              />
-              <div className="mt-4 w-full flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setDateRange(undefined)}
-                  className="text-xs font-semibold text-crimson hover:underline"
-                >
-                  Clear dates
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
+      <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_370px] lg:px-8">
         <div className="space-y-10">
           <section id="about">
             <h2 className="mb-3 text-xl font-bold">About this place</h2>
@@ -858,22 +696,6 @@ export function PropertyContent({
             </div>
           </section>
 
-          <section id="location">
-            <h2 className="mb-2 text-xl font-bold">Where you&apos;ll be</h2>
-            <p className="mb-3 text-sm text-muted-foreground">
-              You&apos;ll get the exact address after your booking is confirmed by the host.
-            </p>
-            <div className="h-64 overflow-hidden rounded-2xl border sm:h-80">
-              <Map
-                listings={[listing]}
-                center={[listing.longitude, listing.latitude]}
-                zoom={13}
-                approximate
-                interactive={false}
-              />
-            </div>
-          </section>
-
           <Separator />
 
           <section>
@@ -898,6 +720,175 @@ export function PropertyContent({
               <p className="text-sm text-muted-foreground">Amenities will be added soon.</p>
             )}
           </section>
+
+          <Separator />
+
+          {/* Clean 2-Month Calendar (Airbnb style matching user reference) */}
+          <section id="calendar" className="scroll-mt-24">
+            <div className="mb-4">
+              {categories.length > 1 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`rounded-full border px-4 py-1.5 text-xs font-bold capitalize transition-colors ${
+                        selectedCategory === cat
+                          ? "border-[#800020] bg-[#800020] text-white"
+                          : "border-neutral-200 bg-white hover:bg-neutral-50"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <h2 className="text-xl sm:text-2xl font-bold text-[#181113]">
+                {dateSummary.title}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {dateSummary.subtitle}
+              </p>
+            </div>
+
+            {selectedCategory === "hourly" && (
+              <div className="mb-6 grid gap-3 sm:grid-cols-2 max-w-sm rounded-2xl border bg-neutral-50/70 p-3">
+                <label className="text-xs font-semibold text-neutral-600">
+                  Start time
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(event) => setStartTime(event.target.value)}
+                    className="mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-xs"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-neutral-600">
+                  Duration (hours)
+                  <input
+                    type="number"
+                    min="1"
+                    value={durationHours}
+                    onChange={(event) => setDurationHours(event.target.value)}
+                    className="mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-xs"
+                  />
+                </label>
+              </div>
+            )}
+
+            {/* Desktop: 2-month side-by-side calendar */}
+            <div className="hidden sm:block">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={handleSelectRange}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                numberOfMonths={2}
+                showOutsideDays={false}
+                disabled={disabledCalendarDays}
+                className="w-full bg-transparent p-0"
+              />
+            </div>
+
+            {/* Mobile: single-month calendar */}
+            <div className="sm:hidden w-full">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={handleSelectRange}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                numberOfMonths={1}
+                showOutsideDays={false}
+                disabled={disabledCalendarDays}
+                className="w-full bg-transparent p-0"
+              />
+            </div>
+
+            {/* Bottom bar of calendar */}
+            <div className="mt-4 flex items-center justify-between border-t pt-3">
+              <div className="flex items-center gap-2 text-neutral-400" title="Keyboard shortcuts enabled">
+                <Keyboard className="h-4 w-4" />
+                <span className="text-xs hidden sm:inline">Select dates on the calendar</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDateRange(undefined)}
+                className="text-xs font-bold text-neutral-900 underline hover:text-crimson"
+              >
+                Clear dates
+              </button>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Where you'll be: Helpful and beautiful Map section */}
+          <section id="location" className="scroll-mt-24">
+            <h2 className="mb-2 text-xl font-bold text-[#181113]">Where you&apos;ll be</h2>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 shrink-0 text-crimson" />
+                <span className="font-semibold text-[#181113]">
+                  {listing.area ? `${listing.area}, ` : ""}{listing.city}, {listing.country}
+                </span>
+              </div>
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-bold text-neutral-700 hover:border-neutral-400 hover:text-crimson transition shadow-2xs"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-crimson" />
+                Open in Google Maps
+              </a>
+            </div>
+
+            <div className="h-80 overflow-hidden rounded-2xl border sm:h-96 shadow-xs">
+              <Map
+                listings={[listing]}
+                center={[listing.longitude, listing.latitude]}
+                zoom={15}
+                approximate
+                interactive
+              />
+            </div>
+
+            {/* 3 Context Cards providing real neighbourhood help */}
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-neutral-200/80 bg-[#fdfbfa] p-3.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#800020]">
+                  The neighborhood
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
+                  {listing.area
+                    ? `Located in ${listing.area}, ${listing.city}. A vibrant and sought-after area with popular dining, cafes, and local amenities.`
+                    : `Located in ${listing.city}. Safe, welcoming area close to local markets, dining, and transit.`}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-neutral-200/80 bg-[#fdfbfa] p-3.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#800020]">
+                  Getting around
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
+                  Taxis, Uber, and Bolt operate conveniently in this area. Easy road access and private parking on-premises.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-neutral-200/80 bg-[#fdfbfa] p-3.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#800020]">
+                  Privacy &amp; directions
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
+                  The exact building name, door number, and host contact are provided automatically in your booking confirmation.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <Separator />
 
           <section>
             <h2 className="mb-4 text-xl font-bold">Good to know</h2>
@@ -989,91 +980,183 @@ export function PropertyContent({
               />
             )}
           </section>
-
         </div>
 
+        {/* Right Column: Airbnb-style Sticky Booking Card + Report button */}
         <aside className="lg:pt-1">
-          <div className="sticky top-32 rounded-2xl border bg-white p-5 shadow-sm">
+          <div className="sticky top-28 rounded-3xl border border-neutral-200 bg-white p-6 shadow-lg shadow-neutral-100/70">
+            {/* Top Tag: Prices include all fees */}
+            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+              🏷️ Prices include all fees
+            </div>
+
             <div>
               {primaryPrice && (
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    From
-                  </p>
-                  <p className="mt-1 text-2xl font-bold text-[#2b000a]">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold text-[#181113]">
                     {formatPrice(primaryPrice.value, priceCurrency(listing))}
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {primaryPrice.suffix}
-                    </span>
-                  </p>
+                  </span>
+                  <span className="text-sm font-medium text-neutral-500">
+                    {primaryPrice.suffix}
+                  </span>
                 </div>
               )}
               {priceOptions.length > 1 && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {priceOptions.map((option) => (
                     <span
                       key={option.label}
-                      className="rounded-full bg-cream/70 px-3 py-1 text-xs font-semibold text-merlot"
+                      className="rounded-full bg-cream/70 px-2.5 py-0.5 text-[11px] font-semibold text-merlot"
                     >
                       {option.label}: {formatPrice(option.value, priceCurrency(listing))}
                     </span>
                   ))}
                 </div>
               )}
-              {listing.deposit_amount > 0 && (
-                <div className="mt-3 flex justify-between text-sm text-muted-foreground">
-                  <span>Reserve fee</span>
-                  <span>{formatPrice(Number(listing.deposit_amount), priceCurrency(listing))}</span>
-                </div>
-              )}
-              {overnightEstimate && (
-                <div className="mt-3 rounded-xl bg-cream/40 p-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {overnightEstimate.nights} night{overnightEstimate.nights === 1 ? "" : "s"}
-                    </span>
-                    <span className="font-bold text-[#2b000a]">
-                      {formatPrice(overnightEstimate.total, priceCurrency(listing))}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Prices can vary by date · pay the host on arrival.
-                  </p>
-                </div>
-              )}
             </div>
+
+            {/* Airbnb-style Checkin/Checkout/Guests box */}
+            <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-300 divide-y divide-neutral-300">
+              <div className="grid grid-cols-2 divide-x divide-neutral-300">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("calendar");
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                >
+                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                    Check-in
+                  </span>
+                  <span className="block text-xs font-semibold text-neutral-900 truncate mt-0.5">
+                    {compactDate(dateRange?.from) || "Add date"}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("calendar");
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                >
+                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                    Checkout
+                  </span>
+                  <span className="block text-xs font-semibold text-neutral-900 truncate mt-0.5">
+                    {compactDate(dateRange?.to) || "Add date"}
+                  </span>
+                </button>
+              </div>
+
+              <div className="p-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                    Guests
+                  </span>
+                  <span className="block text-xs font-semibold text-neutral-900 mt-0.5">
+                    {guests} {Number(guests) === 1 ? "guest" : "guests"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={Number(guests) <= 1}
+                    onClick={() => setGuests(String(Math.max(1, Number(guests) - 1)))}
+                    className="size-7 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                  >
+                    -
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGuests(String(Number(guests) + 1))}
+                    className="size-7 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Cancellation pill */}
+            <div className="mt-3.5 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-700 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>Free cancellation before {cancellationDateText}</span>
+            </div>
+
+            {/* Primary Action Button */}
             {isOwnListing ? (
               <Link
                 href={`/host/listings/${listing.id}/edit`}
-                className="mt-5 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#800020] px-4 text-sm font-medium text-white hover:bg-merlot"
+                className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[#800020] text-sm font-bold text-white hover:bg-merlot transition"
               >
                 Manage listing
               </Link>
             ) : hasAvailability ? (
-              <div className="mt-5 space-y-2">
+              <div className="mt-4 space-y-2">
                 <RequestToBookButton
                   user={user}
                   href={reserveHref}
-                  className="flex h-11 w-full items-center justify-center rounded-full bg-[#800020] text-sm font-bold text-white hover:bg-merlot"
+                  className="flex h-12 w-full items-center justify-center rounded-2xl bg-[#800020] text-base font-bold text-white hover:bg-merlot shadow-sm transition"
                 >
-                  Request to book
+                  Reserve
                 </RequestToBookButton>
-                <Button onClick={openInquiry} variant="outline" className="w-full rounded-full">
+                <Button
+                  onClick={openInquiry}
+                  variant="outline"
+                  className="w-full h-11 rounded-2xl font-bold border-neutral-300"
+                >
                   Message host
                 </Button>
               </div>
             ) : (
               <Button
                 onClick={openInquiry}
-                className="mt-5 w-full rounded-full bg-[#800020] hover:bg-merlot"
-                size="lg"
+                className="mt-4 w-full h-12 rounded-2xl bg-[#800020] text-base font-bold hover:bg-merlot"
               >
                 Ask host anyway
               </Button>
             )}
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              {selectedDate ? `${compactDate(selectedDate)} · pay the host on arrival.` : "Choose dates below, then request to book."}
+
+            <p className="mt-2.5 text-center text-xs text-muted-foreground">
+              You won&apos;t be charged yet
             </p>
+
+            {/* Estimate breakdown */}
+            {overnightEstimate && (
+              <div className="mt-4 space-y-2 border-t pt-4 text-xs font-medium text-neutral-600">
+                <div className="flex justify-between">
+                  <span className="underline">
+                    {formatPrice(Number(listing.overnight_price || 0), priceCurrency(listing))} x {overnightEstimate.nights} nights
+                  </span>
+                  <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
+                </div>
+                {listing.deposit_amount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="underline">Reserve fee</span>
+                    <span>{formatPrice(Number(listing.deposit_amount), priceCurrency(listing))}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t pt-2 text-sm font-bold text-[#181113]">
+                  <span>Total before taxes</span>
+                  <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
+                </div>
+              </div>
+            )}
+
+            {/* ⚑ Report this listing link */}
+            <div className="mt-5 flex justify-center border-t pt-4">
+              <button
+                type="button"
+                onClick={() => setReportOpen(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-black underline transition-colors"
+              >
+                <Flag className="h-3.5 w-3.5" />
+                Report this listing
+              </button>
+            </div>
           </div>
         </aside>
       </section>
@@ -1164,6 +1247,14 @@ export function PropertyContent({
           </div>
         </div>
       )}
+
+      <ReportListingDialog
+        listingId={listing.id}
+        listingTitle={listing.title || listing.name}
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        user={user}
+      />
     </main>
   );
 }

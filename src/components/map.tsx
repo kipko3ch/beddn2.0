@@ -296,22 +296,47 @@ export function Map({
       if (approximate) {
         currentListings.forEach((listing) => {
           const el = document.createElement("div");
-          // Privacy mode (property page): a soft circle over the neighbourhood
-          // instead of an exact pin — the precise spot unlocks after booking.
+          // Privacy mode (property page): an elegant soft circle over the neighbourhood
+          // with a clean area badge showing the neighborhood name
+          el.className = "beddn-neighborhood-circle";
           el.style.cssText = `
-            width: 110px; height: 110px; border-radius: 50%;
-            background: rgba(232,84,123,0.18); border: 2px solid rgba(232,84,123,0.45);
+            position: relative;
+            width: 140px; height: 140px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(128, 0, 32, 0.18) 0%, rgba(128, 0, 32, 0.05) 70%, transparent 100%);
+            border: 2px dashed rgba(128, 0, 32, 0.38);
             display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 24px rgba(128, 0, 32, 0.12);
           `;
-          const dot = document.createElement("div");
-          dot.style.cssText =
-            "width: 14px; height: 14px; border-radius: 50%; background: #e8547b; border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);";
-          el.appendChild(dot);
+          const badge = document.createElement("div");
+          badge.style.cssText = `
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 13px; border-radius: 999px;
+            background: #800020; color: #ffffff;
+            font-size: 12px; font-weight: 700;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            white-space: nowrap; pointer-events: auto;
+          `;
+          badge.innerHTML = `
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>${listing.area || listing.city || "General area"}</span>
+          `;
+          el.appendChild(badge);
           const marker = new maplibregl.Marker({ element: el })
             .setLngLat([listing.longitude, listing.latitude])
             .addTo(map);
           markersRef.current.set(listing.id, marker);
         });
+
+        // For approximate view (property page), center directly with crisp zoom (15)
+        if (currentListings[0]) {
+          map.jumpTo({
+            center: [currentListings[0].longitude, currentListings[0].latitude],
+            zoom: zoom || 15,
+          });
+        }
         return;
       }
 
@@ -377,12 +402,19 @@ export function Map({
       const listingsKey = listingsRef.current.map((l) => l.id).join(",");
       const listingsChanged = lastFittedKeyRef.current !== listingsKey;
 
-      if (currentListings.length > 0 && listingsChanged) {
+      if (!approximate && currentListings.length > 1 && listingsChanged) {
         lastFittedKeyRef.current = listingsKey;
         const bounds = new maplibregl.LngLatBounds();
         currentListings.forEach((l) => bounds.extend([l.longitude, l.latitude]));
-        const fitMaxZoom = isBroad ? 12 : 14.5;
+        const fitMaxZoom = isBroad ? 13.5 : 15;
         map.fitBounds(bounds, { padding: 60, maxZoom: fitMaxZoom });
+      } else if (!approximate && currentListings.length === 1 && listingsChanged) {
+        lastFittedKeyRef.current = listingsKey;
+        map.easeTo({
+          center: [currentListings[0].longitude, currentListings[0].latitude],
+          zoom: zoom || 14.5,
+          duration: 350,
+        });
       }
     };
 
