@@ -305,8 +305,8 @@
 
 .listingsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 16px;
 }
 
 .listingRailItem {
@@ -567,7 +567,7 @@
     display: none;
   }
   .listingRailItem {
-    flex: 0 0 clamp(156px, 44vw, 190px);
+    flex: 0 0 clamp(130px, 36vw, 155px);
     scroll-snap-align: start;
   }
   .listingsGrid :global(a) {

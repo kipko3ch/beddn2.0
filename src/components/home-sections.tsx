@@ -115,7 +115,7 @@ export function FeaturedRail({
         }
       >
         {listings.map((listing) => (
-              <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+              <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
                 <ListingCard
                   listing={listing}
                   isSaved={savedIds.has(listing.id)}
@@ -149,9 +149,9 @@ export function PopularDestinations() {
       <Rail
         heading={
           <Link href="/search" className="group flex items-center gap-2">
-            <h2 className="text-lg font-bold text-[#2b000a] sm:text-xl">Popular destinations</h2>
-            <span className="flex size-6 items-center justify-center rounded-full bg-[#f5eef1] transition-transform group-hover:translate-x-0.5">
-              <ArrowRight className="h-3.5 w-3.5 text-[#2b000a]" />
+            <h2 className="text-base font-bold text-[#2b000a] sm:text-lg">Popular destinations</h2>
+            <span className="flex size-5 items-center justify-center rounded-full bg-[#f5eef1] transition-transform group-hover:translate-x-0.5">
+              <ArrowRight className="h-3 w-3 text-[#2b000a]" />
             </span>
           </Link>
         }
@@ -160,25 +160,25 @@ export function PopularDestinations() {
           ? Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-square w-[115px] shrink-0 animate-pulse rounded-2xl bg-muted sm:w-[135px]"
+                className="aspect-square w-[76px] shrink-0 animate-pulse rounded-xl bg-muted sm:w-[92px]"
               />
             ))
           : destinations.map((destination) => (
               <Link
                 key={destination.id}
                 href={`/search?q=${encodeURIComponent(destination.search_query)}`}
-                className="group relative aspect-square w-[115px] shrink-0 snap-start overflow-hidden rounded-2xl bg-muted sm:w-[135px]"
+                className="group relative aspect-square w-[76px] shrink-0 snap-start overflow-hidden rounded-xl bg-muted sm:w-[92px]"
               >
                 <Image
                   src={destination.image_url}
                   alt={destination.name}
                   fill
-                  sizes="135px"
+                  sizes="92px"
                   quality={70}
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
-                <span className="absolute bottom-2 left-2 right-2 truncate text-sm sm:text-base font-bold text-white drop-shadow">
+                <span className="absolute bottom-1.5 left-1.5 right-1.5 truncate text-[10px] sm:text-xs font-bold text-white drop-shadow">
                   {destination.name}
                 </span>
               </Link>
@@ -257,7 +257,7 @@ export function CityRails({
           <div className="mb-4 h-7 w-56 animate-pulse rounded-full bg-muted" />
           <div className="flex gap-4 overflow-hidden">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-[170px] shrink-0 sm:w-[210px]">
+              <div key={i} className="w-[130px] shrink-0 sm:w-[160px]">
                 <ListingCardSkeleton />
               </div>
             ))}
@@ -282,7 +282,7 @@ export function CityRails({
               }
             >
               {section.listings.map((listing) => (
-                <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
                   <ListingCard
                     listing={listing}
                     isSaved={savedIds.has(listing.id)}

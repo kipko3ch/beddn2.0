@@ -77,59 +77,6 @@ interface PublicReview {
   } | null;
 }
 
-const FALLBACK_REVIEWS: PublicReview[] = [
-  {
-    id: "fb-1",
-    rating: 5,
-    comment:
-      "The apartment in Kilimani was spotless and exactly as pictured. Fast Wi-Fi, seamless check-in, and the host was very responsive. Perfect for my 3-day work trip in Nairobi.",
-    tags: ["clean", "easy_check_in", "accurate_photos"],
-    created_at: "2026-09-18T10:00:00Z",
-    listing: {
-      slug: "luxury-kilimani-penthouse",
-      title: "Sunny Modern Penthouse with Balcony",
-      city: "Nairobi",
-      area: "Kilimani",
-    },
-    profile: {
-      full_name: "Sarah M.",
-    },
-  },
-  {
-    id: "fb-2",
-    rating: 5,
-    comment:
-      "Great experience booking an hourly daytime stay between flights. The space was calm, air conditioning worked perfectly, and I got 4 hours of restful sleep and a shower before heading back to the airport.",
-    tags: ["clean", "good_value", "safe"],
-    created_at: "2026-09-12T14:30:00Z",
-    listing: {
-      slug: "cozy-arusha-garden-suite",
-      title: "Tranquil Garden Villa near Clocktower",
-      city: "Arusha",
-      area: "Central Arusha",
-    },
-    profile: {
-      full_name: "David K.",
-    },
-  },
-  {
-    id: "fb-3",
-    rating: 5,
-    comment:
-      "Our host went above and beyond with local recommendations and arranging transport. Spectacular views, sparkling clean rooms, and unmatched hospitality.",
-    tags: ["good_host", "good_location", "clean"],
-    created_at: "2026-08-28T09:15:00Z",
-    listing: {
-      slug: "oceanview-diani-retreat",
-      title: "Beachfront Coral Villa with Private Pool",
-      city: "Diani Beach",
-      area: "South Coast",
-    },
-    profile: {
-      full_name: "Elena R.",
-    },
-  },
-];
 
 function ReviewInner() {
   const searchParams = useSearchParams();
@@ -173,13 +120,9 @@ function ReviewInner() {
     fetch("/api/reviews")
       .then((r) => (r.ok ? r.json() : null))
       .then((data: { reviews?: PublicReview[] } | null) => {
-        if (data?.reviews && data.reviews.length > 0) {
-          setCommunityReviews(data.reviews);
-        } else {
-          setCommunityReviews(FALLBACK_REVIEWS);
-        }
+        setCommunityReviews(data?.reviews || []);
       })
-      .catch(() => setCommunityReviews(FALLBACK_REVIEWS));
+      .catch(() => setCommunityReviews([]));
   }, []);
 
   // Fetch active listing details when chosen
@@ -821,107 +764,109 @@ function ReviewInner() {
           </div>
         </div>
 
-        {/* Community Testimonials Wall */}
-        <section className="mt-16 border-t border-neutral-200 pt-12">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#800020]">Community Stories</span>
-              <h2 className="mt-1 font-brand text-2xl sm:text-3xl text-[#181113]">Recent reviews from travelers</h2>
+        {/* Community Testimonials Wall - Only shown when real reviews exist */}
+        {communityReviews.length > 0 && (
+          <section className="mt-16 border-t border-neutral-200 pt-12">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#800020]">Community Stories</span>
+                <h2 className="mt-1 font-brand text-2xl sm:text-3xl text-[#181113]">Recent reviews from travelers</h2>
+              </div>
+              <p className="text-xs text-neutral-500">Unfiltered ratings from verified stays</p>
             </div>
-            <p className="text-xs text-neutral-500">Unfiltered ratings from verified stays</p>
-          </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {communityReviews.map((rev) => {
-              const reviewerName = rev.profile?.full_name || "Verified Traveler";
-              const initials = reviewerName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase();
-              const stayTitle = rev.listing?.title || rev.listing?.name || "Beddn Stay";
-              const stayLocation = rev.listing?.area
-                ? `${rev.listing.area}, ${rev.listing.city || ""}`
-                : rev.listing?.city || "East Africa";
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {communityReviews.map((rev) => {
+                const reviewerName = rev.profile?.full_name || "Verified Traveler";
+                const initials = reviewerName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase();
+                const stayTitle = rev.listing?.title || rev.listing?.name || "Beddn Stay";
+                const stayLocation = rev.listing?.area
+                  ? `${rev.listing.area}, ${rev.listing.city || ""}`
+                  : rev.listing?.city || "East Africa";
 
-              return (
-                <div
-                  key={rev.id}
-                  className="flex flex-col justify-between rounded-3xl border border-neutral-200 bg-white p-6 shadow-2xs hover:shadow-sm transition"
-                >
-                  <div>
-                    {/* Review Header: User & Rating */}
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-9 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
-                          {initials}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-[#181113]">{reviewerName}</p>
-                          <div className="flex items-center gap-1 text-[10px] text-[#128c4b] font-semibold">
-                            <ShieldCheck className="h-3 w-3" />
-                            Verified Stay
+                return (
+                  <div
+                    key={rev.id}
+                    className="flex flex-col justify-between rounded-3xl border border-neutral-200 bg-white p-6 shadow-2xs hover:shadow-sm transition"
+                  >
+                    <div>
+                      {/* Review Header: User & Rating */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-9 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
+                            {initials}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-[#181113]">{reviewerName}</p>
+                            <div className="flex items-center gap-1 text-[10px] text-[#128c4b] font-semibold">
+                              <ShieldCheck className="h-3 w-3" />
+                              Verified Stay
+                            </div>
                           </div>
                         </div>
+
+                        {/* Stars */}
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3.5 w-3.5 ${
+                                i < (rev.rating || 5) ? "fill-[#800020] text-[#800020]" : "text-neutral-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </div>
 
-                      {/* Stars */}
-                      <div className="flex items-center gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3.5 w-3.5 ${
-                              i < (rev.rating || 5) ? "fill-[#800020] text-[#800020]" : "text-neutral-200"
-                            }`}
-                          />
-                        ))}
-                      </div>
+                      {/* Review Quote */}
+                      <p className="mt-3.5 text-xs sm:text-sm leading-relaxed text-neutral-700 italic">
+                        &ldquo;{rev.comment || "Great experience, very clean and friendly host. Highly recommended!"}&rdquo;
+                      </p>
+
+                      {/* Tags */}
+                      {rev.tags && rev.tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {rev.tags.map((t) => (
+                            <span
+                              key={t}
+                              className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-neutral-600"
+                            >
+                              <Sparkles className="h-2.5 w-2.5 text-[#800020]" />
+                              {t.replace(/_/g, " ")}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Review Quote */}
-                    <p className="mt-3.5 text-xs sm:text-sm leading-relaxed text-neutral-700 italic">
-                      &ldquo;{rev.comment || "Great experience, very clean and friendly host. Highly recommended!"}&rdquo;
-                    </p>
-
-                    {/* Tags */}
-                    {rev.tags && rev.tags.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {rev.tags.map((t) => (
-                          <span
-                            key={t}
-                            className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-neutral-600"
-                          >
-                            <Sparkles className="h-2.5 w-2.5 text-[#800020]" />
-                            {t.replace(/_/g, " ")}
-                          </span>
-                        ))}
+                    {/* Stay Link */}
+                    {rev.listing?.slug && (
+                      <div className="mt-5 border-t border-neutral-100 pt-3">
+                        <Link
+                          href={`/property/${rev.listing.slug}`}
+                          className="group flex items-center justify-between gap-2 text-xs font-semibold text-neutral-600 hover:text-[#800020] transition"
+                        >
+                          <div className="truncate">
+                            <p className="truncate font-bold text-[#181113] group-hover:text-[#800020] transition">
+                              {stayTitle}
+                            </p>
+                            <p className="text-[11px] text-neutral-400 truncate">{stayLocation}</p>
+                          </div>
+                          <span className="shrink-0 text-xs font-bold text-[#800020]">View stay →</span>
+                        </Link>
                       </div>
                     )}
                   </div>
-
-                  {/* Stay Link */}
-                  {rev.listing?.slug && (
-                    <div className="mt-5 border-t border-neutral-100 pt-3">
-                      <Link
-                        href={`/property/${rev.listing.slug}`}
-                        className="group flex items-center justify-between gap-2 text-xs font-semibold text-neutral-600 hover:text-[#800020] transition"
-                      >
-                        <div className="truncate">
-                          <p className="truncate font-bold text-[#181113] group-hover:text-[#800020] transition">
-                            {stayTitle}
-                          </p>
-                          <p className="text-[11px] text-neutral-400 truncate">{stayLocation}</p>
-                        </div>
-                        <span className="shrink-0 text-xs font-bold text-[#800020]">View stay →</span>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

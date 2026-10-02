@@ -607,34 +607,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
       )}
 
 
-      {/* Become a Host CTA — shown mid-page on All tab */}
-      {!search && isAllTab && (
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
-            <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
-              <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
-                Got a spare room?
-              </h2>
-              <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
-                Turn your empty space into extra cash.
-              </p>
-              <div className="pt-1">
-                <button
-                  onClick={() => router.push(ROUTES.newListing)}
-                  className="rounded-full bg-[#800020] px-5 py-2 text-xs md:text-sm font-bold text-white hover:bg-merlot transition-colors shadow-sm"
-                >
-                  List my space
-                </button>
-              </div>
-            </div>
-            <img
-              src="/images/coach.png"
-              alt="Become a host couch setup"
-              className="absolute right-0 bottom-0 h-[65%] sm:h-[80%] md:h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
-            />
-          </div>
-        </div>
-      )}
+
 
       {/* Listings grid */}
       <section id="home-results" className={styles.listingsSection}>
@@ -753,39 +726,9 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
 
       {!search && <CityRails savedIds={savedIds} onToggleSave={toggle} priceMode={priceMode} category={currentData.category !== 'all' ? currentData.category : undefined} />}
 
-      {/* CTA banners — different card per tab context */}
-      {!search && (isExperienceTab || isAllTab) && (
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#f4f8f5] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
-            <div className="max-w-[55%] space-y-2 z-10 flex flex-col items-start justify-center">
-              <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
-                Share your passion!
-              </h2>
-              <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
-                Host a local experience and earn from what you love.
-              </p>
-              <div className="pt-1">
-                <button
-                  onClick={() => router.push(ROUTES.newListing)}
-                  className="rounded-full bg-[#800020] px-5 py-2 text-xs md:text-sm font-bold text-white hover:bg-merlot transition-colors shadow-sm"
-                >
-                  Start earning
-                </button>
-              </div>
-            </div>
-            
-            {/* Right side transparent adventure gear image */}
-            <img
-              src="/images/experiences.png"
-              alt="Adventure travel gear"
-              className="absolute right-0 bottom-0 h-[65%] sm:h-[80%] md:h-[90%] w-auto object-contain object-right-bottom pointer-events-none"
-            />
-          </div>
-        </div>
-      )}
-
-      {!search && !isExperienceTab && !isAllTab && (
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      {/* Become a Host CTA — at the bottom of the page */}
+      {!search && (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
             <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
               <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
@@ -808,7 +751,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             <img
               src="/images/coach.png"
               alt="Become a host couch setup"
-              className="absolute right-0 bottom-0 h-[65%] sm:h-[80%] md:min-h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
+              className="absolute right-0 bottom-0 h-[65%] sm:h-[80%] md:h-[95%] w-auto object-contain object-right-bottom pointer-events-none"
             />
           </div>
         </div>

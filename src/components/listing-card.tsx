@@ -93,7 +93,7 @@ export function ListingCard({
         {onToggleSave && (
           <button
             aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
-            className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-full bg-white/90 shadow-sm transition-colors hover:bg-white"
+            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-white/90 shadow-2xs transition-colors hover:bg-white"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -101,46 +101,38 @@ export function ListingCard({
             }}
           >
             <Heart
-              className={`h-5 w-5 ${isSaved ? "fill-[#800020] text-[#800020]" : "text-[#181113]"}`}
+              className={`h-3.5 w-3.5 ${isSaved ? "fill-[#800020] text-[#800020]" : "text-[#181113]"}`}
             />
           </button>
         )}
 
         {(listing.is_verified || listing.host?.is_verified) && (
-          <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-crimson shadow-sm border border-cream">
-            <span className="flex size-3.5 items-center justify-center rounded-full bg-crimson text-white text-[9px]">✓</span>
-            {listing.is_verified ? "Beddn Verified" : "Verified Host"}
+          <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[9px] font-bold text-crimson shadow-2xs border border-cream">
+            <span className="flex size-3 items-center justify-center rounded-full bg-crimson text-white text-[8px]">✓</span>
+            {listing.is_verified ? "Verified" : "Verified"}
           </div>
         )}
       </div>
-      <div className="mt-3">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="min-w-0 truncate text-base font-bold underline-offset-2 group-hover:underline">
+      <div className="mt-2">
+        <div className="flex items-start justify-between gap-1.5">
+          <h3 className="min-w-0 truncate text-xs sm:text-sm font-bold underline-offset-2 group-hover:underline">
             {listing.title || listing.name}
           </h3>
           {reviews.length > 0 && (
-            <div className="flex shrink-0 items-center gap-1 text-sm">
+            <div className="flex shrink-0 items-center gap-0.5 text-xs">
               <span>{avgRating.toFixed(1)}</span>
-              <Star className="h-4 w-4 fill-cranberry text-cranberry" />
-              <span className="text-muted-foreground">({reviews.length})</span>
+              <Star className="h-3 w-3 fill-cranberry text-cranberry" />
             </div>
           )}
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {listing.area}, {listing.city}
+        <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+          {listing.area ? `${listing.area}, ` : ""}{listing.city}
         </p>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          {listing.categories.map((cat) => (
-            <Badge key={cat} className="rounded-full bg-cream/70 px-2 py-0 text-xs text-merlot hover:bg-cream/70">
-              {cat}
-            </Badge>
-          ))}
-        </div>
-        <p className="mt-2 text-sm">
-          <span className="font-semibold">
+        <p className="mt-1 text-xs">
+          <span className="font-bold text-[#181113]">
             {formatPrice(price, listing.currency || "KES")}
           </span>
-          <span className="text-muted-foreground">{priceLabel}</span>
+          <span className="text-[11px] text-muted-foreground ml-1">{priceLabel}</span>
         </p>
       </div>
     </Link>
