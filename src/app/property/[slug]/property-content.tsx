@@ -436,70 +436,23 @@ export function PropertyContent({
   return (
     <main className="bg-white pb-24 text-[#181113] lg:pb-0">
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-4">
+        {/* Top Action Bar: Back Link + Share, Save, Review */}
+        <div className="mb-4 flex items-center justify-between gap-3">
           <Link
             href="/"
-            className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-crimson hover:underline"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-crimson hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to stays
+            <span>Back to stays</span>
           </Link>
-        </div>
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="font-brand text-3xl tracking-tight text-[#2b000a] sm:text-4xl">
-              {listing.title || listing.name}
-            </h1>
-            {/* One compact meta line: location · type · rating, then small chips */}
-            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                {listing.area}, {listing.city}, {listing.country}
-              </span>
-              {listing.property_type && PROPERTY_TYPE_LABEL[listing.property_type] && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span>{PROPERTY_TYPE_LABEL[listing.property_type]}</span>
-                </>
-              )}
-              {reviews.length > 0 && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span className="inline-flex items-center gap-1 text-[#2b000a]">
-                    <Star className="h-4 w-4 fill-crimson text-crimson" />
-                    {avgRating.toFixed(1)} ({reviews.length})
-                  </span>
-                </>
-              )}
-            </div>
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-              {categories.map((cat) => {
-                const Icon = cat === "hourly" ? Clock : cat === "overnight" ? Moon : Compass;
-                return (
-                  <span
-                    key={cat}
-                    className="inline-flex items-center gap-1 rounded-full bg-cream/70 px-2.5 py-1 text-xs font-medium capitalize text-merlot"
-                  >
-                    <Icon className="h-3.5 w-3.5" /> {cat}
-                  </span>
-                );
-              })}
-              {(listing.is_verified || listing.host?.is_verified) && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-crimson/15 px-2.5 py-1 text-xs font-semibold text-crimson">
-                  <BadgeCheck className="h-3.5 w-3.5" />
-                  {listing.is_verified ? "Beddn verified" : "Verified host"}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {!isOwnListing && hasAvailability && (
               <button
                 type="button"
                 onClick={() =>
                   document.getElementById("deals")?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
-                className="hidden h-9 items-center justify-center rounded-full bg-[#800020] px-5 text-sm font-bold text-white hover:bg-merlot sm:inline-flex"
+                className="hidden h-9 items-center justify-center rounded-full bg-[#800020] px-4 text-xs sm:text-sm font-bold text-white hover:bg-merlot md:inline-flex"
               >
                 Request to book
               </button>
@@ -507,31 +460,79 @@ export function PropertyContent({
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 rounded-full"
+              className="h-8 sm:h-9 rounded-full px-2.5 sm:px-3 text-xs"
               onClick={shareProperty}
               aria-label="Share this listing"
             >
-              {shared ? <Check className="h-4 w-4 text-[#1a7f46]" /> : <Share className="h-4 w-4" />}
-              <span className="hidden sm:inline">{shared ? "Link copied" : "Share"}</span>
+              {shared ? <Check className="h-3.5 w-3.5 text-[#1a7f46]" /> : <Share className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline ml-1">{shared ? "Link copied" : "Share"}</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 rounded-full"
+              className="h-8 sm:h-9 rounded-full px-2.5 sm:px-3 text-xs"
               onClick={() => toggle(listing.id)}
               aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
             >
-              <Heart className={`h-4 w-4 ${isSaved ? "fill-crimson text-crimson" : ""}`} />
-              <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
+              <Heart className={`h-3.5 w-3.5 ${isSaved ? "fill-crimson text-crimson" : ""}`} />
+              <span className="hidden sm:inline ml-1">{isSaved ? "Saved" : "Save"}</span>
             </Button>
             <Link
               href={`/property/${listing.slug}/review`}
               aria-label="Write a review for this listing"
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:border-[#800020] hover:bg-[#fbf0f3]/70 hover:text-[#800020] transition-colors"
+              className="inline-flex h-8 sm:h-9 items-center gap-1.5 rounded-full border border-[#f3cfd9] bg-[#fbf0f3] px-3 sm:px-3.5 text-xs font-bold text-[#800020] hover:bg-[#f3d9e2] transition-colors shadow-2xs"
             >
               <PenLine className="h-3.5 w-3.5 text-[#800020]" />
               <span>Review</span>
             </Link>
+          </div>
+        </div>
+
+        {/* Title and Metadata: Full width */}
+        <div className="mb-5">
+          <h1 className="font-brand text-2xl sm:text-4xl font-extrabold tracking-tight text-[#2b000a] leading-tight">
+            {listing.title || listing.name}
+          </h1>
+          {/* One compact meta line: location · type · rating, then small chips */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+              {listing.area ? `${listing.area}, ` : ""}{listing.city}, {listing.country}
+            </span>
+            {listing.property_type && PROPERTY_TYPE_LABEL[listing.property_type] && (
+              <>
+                <span aria-hidden>·</span>
+                <span>{PROPERTY_TYPE_LABEL[listing.property_type]}</span>
+              </>
+            )}
+            {reviews.length > 0 && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1 text-[#2b000a] font-semibold">
+                  <Star className="h-3.5 w-3.5 fill-crimson text-crimson" />
+                  {avgRating.toFixed(1)} ({reviews.length})
+                </span>
+              </>
+            )}
+          </div>
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {categories.map((cat) => {
+              const Icon = cat === "hourly" ? Clock : cat === "overnight" ? Moon : Compass;
+              return (
+                <span
+                  key={cat}
+                  className="inline-flex items-center gap-1 rounded-full bg-[#fbf0f3] border border-[#f3cfd9] px-2.5 py-1 text-xs font-semibold capitalize text-[#800020]"
+                >
+                  <Icon className="h-3.5 w-3.5" /> {cat}
+                </span>
+              );
+            })}
+            {(listing.is_verified || listing.host?.is_verified) && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                <BadgeCheck className="h-3.5 w-3.5" />
+                {listing.is_verified ? "Beddn verified" : "Verified host"}
+              </span>
+            )}
           </div>
         </div>
 
