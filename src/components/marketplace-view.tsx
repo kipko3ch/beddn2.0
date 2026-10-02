@@ -511,7 +511,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {nearStays.map((listing) => (
-                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
+                  <div key={listing.id} className="w-[155px] shrink-0 snap-start sm:w-[185px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}
@@ -534,7 +534,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {trendingNearby.map((listing) => (
-                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
+                  <div key={listing.id} className="w-[155px] shrink-0 snap-start sm:w-[185px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}
@@ -557,7 +557,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {popularInCity.map((listing) => (
-                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
+                  <div key={listing.id} className="w-[155px] shrink-0 snap-start sm:w-[185px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}
@@ -580,7 +580,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {weekendGetaways.map((listing) => (
-                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
+                  <div key={listing.id} className="w-[155px] shrink-0 snap-start sm:w-[185px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}

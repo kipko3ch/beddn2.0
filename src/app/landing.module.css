@@ -305,7 +305,7 @@
 
 .listingsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
 }
 
@@ -318,8 +318,8 @@
 }
 
 .skeletonImage {
-  aspect-ratio: 4 / 3;
-  border-radius: 12px;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
   background: #f0f0f0;
 }
 
@@ -568,7 +568,7 @@
     display: none;
   }
   .listingRailItem {
-    flex: 0 0 clamp(130px, 36vw, 155px);
+    flex: 0 0 clamp(150px, 42vw, 180px);
     scroll-snap-align: start;
   }
   .listingsGrid :global(a) {

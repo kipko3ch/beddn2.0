@@ -10,7 +10,7 @@ import type { Listing } from "@/lib/types";
 export function ListingCardSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="aspect-[4/3] sm:aspect-square rounded-xl bg-muted" />
+      <div className="aspect-square rounded-2xl bg-muted" />
       <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
       <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
       <div className="mt-3 flex gap-1.5">
@@ -70,17 +70,17 @@ export function ListingCard({
   return (
     <Link
       href={detailHref}
-      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2"
+      className="group block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2"
       onMouseEnter={() => onHover?.(listing.id)}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="relative aspect-[4/3] sm:aspect-square overflow-hidden rounded-xl bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
         {image ? (
           <Image
             src={image}
             alt={listing.name}
             fill
-            sizes="(max-width: 640px) 60vw, (max-width: 1280px) 33vw, 300px"
+            sizes="(max-width: 640px) 70vw, (max-width: 1280px) 33vw, 320px"
             quality={70}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -93,7 +93,7 @@ export function ListingCard({
         {onToggleSave && (
           <button
             aria-label={isSaved ? "Remove from saved trips" : "Save listing"}
-            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-white/90 shadow-2xs transition-colors hover:bg-white"
+            className="absolute right-2.5 top-2.5 flex size-7 items-center justify-center rounded-full bg-white/90 shadow-2xs transition-colors hover:bg-[#fbf0f3]"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -107,8 +107,8 @@ export function ListingCard({
         )}
 
         {(listing.is_verified || listing.host?.is_verified) && (
-          <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[9px] font-bold text-crimson shadow-2xs border border-cream">
-            <span className="flex size-3 items-center justify-center rounded-full bg-crimson text-white text-[8px]">✓</span>
+          <div className="absolute left-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[9px] font-bold text-[#800020] shadow-2xs border border-[#f3cfd9]">
+            <span className="flex size-3 items-center justify-center rounded-full bg-[#800020] text-white text-[8px]">✓</span>
             {listing.is_verified ? "Verified" : "Verified"}
           </div>
         )}

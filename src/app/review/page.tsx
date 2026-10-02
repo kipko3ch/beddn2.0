@@ -266,19 +266,21 @@ function ReviewInner() {
         </div>
 
         {/* Selected stay card banner */}
-        <div className="mb-8 flex items-center gap-4 rounded-3xl border border-neutral-200 bg-white p-4 shadow-xs">
+        <div className="mb-8 flex items-center gap-4 rounded-3xl border border-[#f3cfd9] bg-gradient-to-r from-[#fbf0f3]/60 via-white to-white p-4 shadow-xs">
           {listingImage ? (
             <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-neutral-100">
               <Image src={listingImage} alt="" fill className="object-cover" />
             </div>
           ) : (
-            <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020]">
+            <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]">
               <Building2 className="h-7 w-7" />
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#800020]">Reviewing stay</span>
-            <h2 className="truncate text-base sm:text-lg font-bold text-[#181113]">
+            <span className="inline-block rounded-full bg-[#fbf0f3] border border-[#f3cfd9] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#800020]">
+              Reviewing stay
+            </span>
+            <h2 className="mt-1 truncate text-base sm:text-lg font-bold text-[#181113]">
               {listingName || "Beddn Property"}
             </h2>
             {listingLocation && (
@@ -291,11 +293,11 @@ function ReviewInner() {
         </div>
 
         {status?.type === "success" ? (
-          <div className="rounded-3xl border border-neutral-200 bg-white p-8 text-center shadow-xs">
+          <div className="rounded-3xl border border-[#f3cfd9] bg-white p-8 text-center shadow-xs">
             <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-[#e9f9f0] text-[#128c4b]">
               <ShieldCheck className="h-7 w-7" />
             </span>
-            <h2 className="font-brand text-2xl text-[#2b000a]">Review published</h2>
+            <h2 className="font-[family-name:var(--font-kualine)] font-extrabold text-2xl sm:text-3xl text-[#2b000a]">Review published</h2>
             <p className="mt-2 text-sm text-neutral-600">{status.message}</p>
             <div className="mt-6 flex justify-center gap-3">
               <Button
@@ -319,8 +321,10 @@ function ReviewInner() {
         ) : (
           <form onSubmit={submit} className="space-y-6">
             {/* Stars rating */}
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-xs text-center">
-              <p className="mb-1 text-base font-bold text-[#2b000a]">How would you rate your experience?</p>
+            <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 sm:p-8 shadow-xs text-center">
+              <p className="mb-1 font-[family-name:var(--font-kualine)] font-extrabold text-lg sm:text-xl text-[#2b000a]">
+                How would you rate your experience?
+              </p>
               <p className="mb-4 text-xs text-neutral-500">Tap a star to rate</p>
               <div className="flex justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((value) => {
@@ -337,7 +341,7 @@ function ReviewInner() {
                     >
                       <Star
                         className={`h-10 w-10 transition-colors ${
-                          active ? "fill-[#800020] text-[#800020]" : "text-neutral-200 hover:text-neutral-300"
+                          active ? "fill-[#800020] text-[#800020]" : "text-neutral-200 hover:text-[#f3cfd9]"
                         }`}
                       />
                     </button>
@@ -360,8 +364,10 @@ function ReviewInner() {
             </div>
 
             {/* Standout tags */}
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-xs">
-              <p className="mb-1 text-sm font-bold text-[#2b000a]">What stood out?</p>
+            <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-xs">
+              <p className="mb-1 font-[family-name:var(--font-kualine)] font-extrabold text-base sm:text-lg text-[#2b000a]">
+                What stood out?
+              </p>
               <p className="mb-3 text-xs text-neutral-500">Select all that apply to your stay</p>
               <div className="flex flex-wrap gap-2">
                 {TAGS.map(({ value, label, icon: tagIcon }) => {
@@ -373,8 +379,8 @@ function ReviewInner() {
                       onClick={() => toggleTag(value)}
                       className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                         on
-                          ? "border-[#800020] bg-[#fbf0f3] text-[#800020]"
-                          : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                          ? "border-[#800020] bg-[#fbf0f3] text-[#800020] ring-1 ring-[#f3cfd9]"
+                          : "border-neutral-200 bg-white text-neutral-700 hover:border-[#f3cfd9] hover:bg-[#fbf0f3]/30"
                       }`}
                     >
                       <Icon icon={tagIcon} className="h-4 w-4" />
@@ -391,8 +397,8 @@ function ReviewInner() {
             </div>
 
             {/* Public review text */}
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-xs">
-              <label htmlFor="comment" className="text-sm font-bold text-[#2b000a] block">
+            <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-xs">
+              <label htmlFor="comment" className="font-[family-name:var(--font-kualine)] font-extrabold text-base sm:text-lg text-[#2b000a] block">
                 Write your review
               </label>
               <p className="mt-0.5 text-xs text-neutral-500">
@@ -406,7 +412,7 @@ function ReviewInner() {
                   onChange={(e) => setComment(e.target.value)}
                   rows={4}
                   placeholder="The property was in a great location, very clean, and the host was welcoming..."
-                  className="rounded-2xl border-neutral-200 focus:border-[#800020] focus:ring-[#800020]"
+                  className="rounded-2xl border-neutral-200 focus:border-[#800020] focus:ring-[#f3cfd9]"
                 />
                 <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-neutral-400">
                   {comment.length}/{MAX}
@@ -415,9 +421,9 @@ function ReviewInner() {
             </div>
 
             {/* Private feedback */}
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-xs">
-              <label htmlFor="private" className="text-sm font-bold text-[#2b000a] block">
-                Private feedback to Beddn <span className="font-normal text-neutral-500">(optional)</span>
+            <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-xs">
+              <label htmlFor="private" className="font-[family-name:var(--font-kualine)] font-extrabold text-base sm:text-lg text-[#2b000a] block">
+                Private feedback to Beddn <span className="font-normal font-sans text-xs sm:text-sm text-neutral-500">(optional)</span>
               </label>
               <p className="mt-0.5 text-xs text-neutral-500">
                 Any private notes about your host or stay that won&apos;t appear publicly.
@@ -430,22 +436,24 @@ function ReviewInner() {
                   onChange={(e) => setPrivateNote(e.target.value)}
                   rows={2}
                   placeholder="Share any direct feedback with Beddn admins..."
-                  className="rounded-2xl border-neutral-200 focus:border-[#800020] focus:ring-[#800020]"
+                  className="rounded-2xl border-neutral-200 focus:border-[#800020] focus:ring-[#f3cfd9]"
                 />
               </div>
             </div>
 
             {/* Would you recommend */}
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-xs">
-              <p className="mb-3 text-sm font-bold text-[#2b000a]">Would you recommend this place?</p>
+            <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-xs">
+              <p className="mb-3 font-[family-name:var(--font-kualine)] font-extrabold text-base sm:text-lg text-[#2b000a]">
+                Would you recommend this place?
+              </p>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setRecommend(true)}
                   className={`flex h-12 items-center justify-center gap-2 rounded-full border text-sm font-bold transition ${
                     recommend === true
-                      ? "border-[#800020] bg-[#800020] text-white"
-                      : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                      ? "border-[#800020] bg-[#800020] text-white shadow-xs"
+                      : "border-neutral-200 bg-white text-neutral-700 hover:border-[#f3cfd9] hover:bg-[#fbf0f3]/40"
                   }`}
                 >
                   <ThumbsUp className="h-4 w-4" /> Yes, recommend
@@ -455,8 +463,8 @@ function ReviewInner() {
                   onClick={() => setRecommend(false)}
                   className={`flex h-12 items-center justify-center gap-2 rounded-full border text-sm font-bold transition ${
                     recommend === false
-                      ? "border-[#800020] bg-[#800020] text-white"
-                      : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                      ? "border-[#800020] bg-[#800020] text-white shadow-xs"
+                      : "border-neutral-200 bg-white text-neutral-700 hover:border-[#f3cfd9] hover:bg-[#fbf0f3]/40"
                   }`}
                 >
                   <ThumbsDown className="h-4 w-4" /> No
@@ -472,7 +480,7 @@ function ReviewInner() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="h-12 w-full rounded-full bg-[#800020] py-3 text-base font-bold text-white shadow-md hover:bg-neutral-800 transition"
+                className="h-12 w-full rounded-full bg-[#800020] py-3 text-base font-bold text-white shadow-md hover:bg-neutral-900 focus-visible:ring-2 focus-visible:ring-[#f3cfd9] transition"
               >
                 {submitting ? "Submitting review…" : "Submit Review"}
               </Button>
@@ -487,9 +495,9 @@ function ReviewInner() {
   return (
     <div className="min-h-screen bg-[#faf8f7] pb-36 sm:pb-28">
       {/* Hero: "Write a review, make someone's trip" */}
-      <section className="border-b border-neutral-200/80 bg-[#f4f1ef] py-14 sm:py-20">
+      <section className="border-b border-[#f3cfd9]/80 bg-gradient-to-b from-[#fbf0f3]/70 via-[#fdf5f7]/50 to-[#faf8f7] py-14 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
-          <h1 className="font-brand text-4xl sm:text-5xl lg:text-6xl text-[#181113] tracking-tight">
+          <h1 className="font-[family-name:var(--font-kualine)] font-extrabold text-3xl sm:text-5xl lg:text-6xl text-[#2b000a] tracking-tight">
             Write a review, make someone&apos;s stay
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-sm sm:text-base text-neutral-600 leading-relaxed">
@@ -499,7 +507,7 @@ function ReviewInner() {
 
           {/* Search Pill: "What would you like to review?" */}
           <div className="relative mx-auto mt-8 max-w-2xl">
-            <div className="flex h-14 w-full items-center gap-3 rounded-full border border-neutral-200 bg-white px-5 shadow-md shadow-neutral-200/60 transition focus-within:border-[#800020] focus-within:ring-2 focus-within:ring-[#800020]/20">
+            <div className="flex h-14 w-full items-center gap-3 rounded-full border border-[#f3cfd9] bg-white px-5 shadow-md shadow-[#800020]/5 transition focus-within:border-[#800020] focus-within:ring-2 focus-within:ring-[#f3cfd9]">
               <Search className="h-5 w-5 text-neutral-400 shrink-0" />
               <input
                 ref={searchInputRef}
@@ -611,9 +619,9 @@ function ReviewInner() {
                 setSearchQuery("Nairobi");
                 searchInputRef.current?.focus();
               }}
-              className="group flex flex-col items-center justify-center rounded-3xl border border-neutral-200/90 bg-white p-5 sm:p-6 shadow-xs hover:border-[#800020] hover:shadow-md transition text-center"
+              className="group flex flex-col items-center justify-center rounded-3xl border border-[#f3cfd9]/80 bg-white p-5 sm:p-6 shadow-xs hover:border-[#800020] hover:shadow-md transition text-center"
             >
-              <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] group-hover:scale-105 transition-transform">
+              <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]/50 group-hover:scale-105 transition-transform">
                 <Icon icon="solar:bed-bold-duotone" className="h-6 w-6" />
               </div>
               <p className="text-sm sm:text-base font-bold text-[#181113]">Overnight Stays</p>
@@ -626,9 +634,9 @@ function ReviewInner() {
                 setSearchQuery("Hourly");
                 searchInputRef.current?.focus();
               }}
-              className="group flex flex-col items-center justify-center rounded-3xl border border-neutral-200/90 bg-white p-5 sm:p-6 shadow-xs hover:border-[#800020] hover:shadow-md transition text-center"
+              className="group flex flex-col items-center justify-center rounded-3xl border border-[#f3cfd9]/80 bg-white p-5 sm:p-6 shadow-xs hover:border-[#800020] hover:shadow-md transition text-center"
             >
-              <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] group-hover:scale-105 transition-transform">
+              <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]/50 group-hover:scale-105 transition-transform">
                 <Icon icon="solar:clock-circle-bold-duotone" className="h-6 w-6" />
               </div>
               <p className="text-sm sm:text-base font-bold text-[#181113]">Hourly Spaces</p>
@@ -643,8 +651,10 @@ function ReviewInner() {
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           {/* Left Column: Your Reviews & Trust standard */}
           <div>
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-xs">
-              <h2 className="font-brand text-2xl sm:text-3xl text-[#181113]">Your reviews</h2>
+            <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 sm:p-8 shadow-xs">
+              <h2 className="font-[family-name:var(--font-kualine)] font-extrabold text-2xl sm:text-3xl text-[#2b000a]">
+                Your reviews
+              </h2>
 
               {!user ? (
                 <div className="mt-4 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-6 text-center">
@@ -653,7 +663,7 @@ function ReviewInner() {
                   </p>
                   <div className="mt-4">
                     <AuthDialog>
-                      <Button className="h-10 rounded-full bg-[#800020] px-6 text-xs font-bold text-white hover:bg-neutral-800 transition">
+                      <Button className="h-10 rounded-full bg-[#800020] px-6 text-xs font-bold text-white hover:bg-neutral-900 focus-visible:ring-2 focus-visible:ring-[#f3cfd9] transition">
                         Sign in
                       </Button>
                     </AuthDialog>
@@ -674,7 +684,7 @@ function ReviewInner() {
                         <Button
                           size="sm"
                           onClick={() => setChosenSlug(stay.slug)}
-                          className="h-8 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-neutral-800"
+                          className="h-8 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-neutral-900 focus-visible:ring-2 focus-visible:ring-[#f3cfd9]"
                         >
                           Write review
                         </Button>
@@ -690,11 +700,13 @@ function ReviewInner() {
             </div>
 
             {/* Why Beddn Reviews Matter (Trust cards) with clean Iconify icons */}
-            <div className="mt-8 rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-xs">
-              <h3 className="font-brand text-xl text-[#181113]">How Beddn reviews work</h3>
+            <div className="mt-8 rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 sm:p-8 shadow-xs">
+              <h3 className="font-[family-name:var(--font-kualine)] font-extrabold text-xl sm:text-2xl text-[#2b000a]">
+                How Beddn reviews work
+              </h3>
               <div className="mt-6 grid gap-6 sm:grid-cols-3">
                 <div className="flex flex-col items-start">
-                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020]">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]/50">
                     <Icon icon="solar:shield-check-bold-duotone" className="h-5 w-5" />
                   </div>
                   <p className="text-sm font-bold text-[#181113]">100% Verified</p>
@@ -704,7 +716,7 @@ function ReviewInner() {
                 </div>
 
                 <div className="flex flex-col items-start">
-                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020]">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]/50">
                     <Icon icon="solar:chat-round-line-bold-duotone" className="h-5 w-5" />
                   </div>
                   <p className="text-sm font-bold text-[#181113]">Unedited Feedback</p>
@@ -714,7 +726,7 @@ function ReviewInner() {
                 </div>
 
                 <div className="flex flex-col items-start">
-                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020]">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]/50">
                     <Icon icon="solar:heart-handshake-bold-duotone" className="h-5 w-5" />
                   </div>
                   <p className="text-sm font-bold text-[#181113]">Community Support</p>
@@ -734,7 +746,7 @@ function ReviewInner() {
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && setImpactOpen(true)}
-              className="group cursor-pointer overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-xs hover:border-[#800020]/40 hover:shadow-md transition text-left"
+              className="group cursor-pointer overflow-hidden rounded-3xl border border-[#f3cfd9]/80 bg-white shadow-xs hover:border-[#800020]/60 hover:shadow-md transition text-left"
             >
               <div className="relative h-44 w-full bg-neutral-800">
                 <Image
@@ -763,7 +775,7 @@ function ReviewInner() {
                   <span className="text-xs font-bold text-[#800020] group-hover:underline">
                     View community impact & story →
                   </span>
-                  <span className="flex size-7 items-center justify-center rounded-full bg-[#fbf0f3] text-[#800020]">
+                  <span className="flex size-7 items-center justify-center rounded-full bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]/50">
                     <Icon icon="solar:arrow-right-linear" className="h-4 w-4" />
                   </span>
                 </div>
@@ -771,14 +783,14 @@ function ReviewInner() {
             </div>
 
             {/* Is Beddn missing a place? Card */}
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-xs text-center">
+            <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-xs text-center">
               <h4 className="font-bold text-sm text-[#181113]">Are you a host?</h4>
               <p className="mt-1 text-xs text-neutral-500 leading-relaxed">
                 List your space or hourly stay on Beddn and start welcoming verified guests today.
               </p>
               <Link
                 href={ROUTES.newListing}
-                className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-full border border-neutral-300 text-xs font-bold text-neutral-800 hover:bg-neutral-50 transition"
+                className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-full border border-[#f3cfd9] bg-[#fbf0f3] text-xs font-bold text-[#800020] hover:bg-[#f3d9e2] transition"
               >
                 Add your place
               </Link>
@@ -788,11 +800,15 @@ function ReviewInner() {
 
         {/* Community Testimonials Wall - Only shown when real reviews exist */}
         {communityReviews.length > 0 && (
-          <section className="mt-16 border-t border-neutral-200 pt-12">
+          <section className="mt-16 border-t border-[#f3cfd9]/80 pt-12">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#800020]">Community Stories</span>
-                <h2 className="mt-1 font-brand text-2xl sm:text-3xl text-[#181113]">Recent reviews from travelers</h2>
+                <span className="inline-block rounded-full bg-[#fbf0f3] border border-[#f3cfd9] px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-[#800020]">
+                  Community Stories
+                </span>
+                <h2 className="mt-2 font-[family-name:var(--font-kualine)] font-extrabold text-2xl sm:text-3xl text-[#2b000a]">
+                  Recent reviews from travelers
+                </h2>
               </div>
               <p className="text-xs text-neutral-500">Unfiltered ratings from verified stays</p>
             </div>
@@ -814,13 +830,13 @@ function ReviewInner() {
                 return (
                   <div
                     key={rev.id}
-                    className="flex flex-col justify-between rounded-3xl border border-neutral-200 bg-white p-6 shadow-2xs hover:shadow-sm transition"
+                    className="flex flex-col justify-between rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-2xs hover:border-[#800020]/40 hover:shadow-sm transition"
                   >
                     <div>
                       {/* Review Header: User & Rating */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="flex size-9 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
+                          <div className="flex size-9 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020] border border-[#f3cfd9]/50">
                             {initials}
                           </div>
                           <div>

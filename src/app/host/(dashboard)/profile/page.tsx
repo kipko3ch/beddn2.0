@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Icon } from "@/components/icon";
 import { uploadListingImage } from "@/lib/upload-image";
-import { ROUTES } from "@/lib/routes";
+import { Icon } from "@iconify/react";
 
 interface HostProfile {
   id: string;
@@ -33,28 +32,6 @@ export default function HostProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [pinResetOpen, setPinResetOpen] = useState(false);
-  const [currentPin, setCurrentPin] = useState("");
-  const [pinBusy, setPinBusy] = useState(false);
-  const [pinError, setPinError] = useState("");
-
-  async function resetPin(e: React.FormEvent) {
-    e.preventDefault();
-    setPinBusy(true);
-    setPinError("");
-    const res = await fetch("/api/host/pin", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pin: currentPin }),
-    });
-    const json = (await res.json().catch(() => ({}))) as { error?: string };
-    setPinBusy(false);
-    if (!res.ok) {
-      setPinError(json.error || "Could not reset your access code.");
-      return;
-    }
-    router.push(ROUTES.hostUnlock);
-  }
 
   useEffect(() => {
     fetch("/api/host")
@@ -226,70 +203,6 @@ export default function HostProfilePage() {
           {saving ? "Saving…" : "Save profile"}
         </Button>
       </form>
-
-      <div className="mt-6 rounded-2xl border bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex items-center gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f8eef2] text-crimson">
-            <Icon icon="line-md:lock" className="h-5 w-5" />
-          </span>
-          <div>
-            <h2 className="font-bold text-[#2b000a]">Dashboard access</h2>
-            <p className="text-sm text-muted-foreground">
-              Your 4-digit dashboard access code keeps host tools separate from guest browsing.
-              Once entered, host mode stays open for 12 hours on this device.
-            </p>
-          </div>
-        </div>
-
-        {!pinResetOpen ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setPinResetOpen(true)}
-            className="mt-4 rounded-full"
-          >
-            Reset access code
-          </Button>
-        ) : (
-          <form onSubmit={resetPin} className="mt-4 space-y-3">
-            <div>
-              <Label htmlFor="current-pin">Enter your current access code to reset it</Label>
-              <Input
-                id="current-pin"
-                type="password"
-                inputMode="numeric"
-                maxLength={4}
-                value={currentPin}
-                onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, ""))}
-                className="mt-1 h-12 w-32 rounded-xl text-center text-lg tracking-[0.5em]"
-                autoFocus
-              />
-            </div>
-            {pinError && <p className="text-sm text-red-700">{pinError}</p>}
-            <div className="flex gap-2">
-              <Button
-                type="submit"
-                disabled={pinBusy || currentPin.length !== 4}
-                className="rounded-full bg-[#800020] font-bold hover:bg-merlot"
-              >
-                {pinBusy ? "Checking…" : "Reset code"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setPinResetOpen(false);
-                  setCurrentPin("");
-                  setPinError("");
-                }}
-                className="rounded-full"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        )}
-      </div>
     </div>
   );
 }

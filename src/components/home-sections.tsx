@@ -115,15 +115,15 @@ export function FeaturedRail({
         }
       >
         {listings.map((listing) => (
-              <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
-                <ListingCard
-                  listing={listing}
-                  isSaved={savedIds.has(listing.id)}
-                  onToggleSave={() => onToggleSave(listing.id)}
-                  priceMode={priceMode}
-                />
-              </div>
-            ))}
+          <div key={listing.id} className="w-[155px] shrink-0 snap-start sm:w-[185px]">
+            <ListingCard
+              listing={listing}
+              isSaved={savedIds.has(listing.id)}
+              onToggleSave={() => onToggleSave(listing.id)}
+              priceMode={priceMode}
+            />
+          </div>
+        ))}
       </Rail>
     </section>
   );
@@ -257,7 +257,7 @@ export function CityRails({
           <div className="mb-4 h-7 w-56 animate-pulse rounded-full bg-muted" />
           <div className="flex gap-4 overflow-hidden">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-[130px] shrink-0 sm:w-[160px]">
+              <div key={i} className="w-[155px] shrink-0 sm:w-[185px]">
                 <ListingCardSkeleton />
               </div>
             ))}
@@ -282,7 +282,7 @@ export function CityRails({
               }
             >
               {section.listings.map((listing) => (
-                <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
+                <div key={listing.id} className="w-[155px] shrink-0 snap-start sm:w-[185px]">
                   <ListingCard
                     listing={listing}
                     isSaved={savedIds.has(listing.id)}

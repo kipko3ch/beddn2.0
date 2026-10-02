@@ -287,7 +287,7 @@ export function PropertyContent({
     "Exact address after you inquire",
   ].filter(Boolean) as string[];
   const allOfferings = [...listing.amenities, ...stayFacts];
-  const visibleOfferings = allOfferings.slice(0, 8);
+  const visibleOfferings = allOfferings.slice(0, 10);
 
   const selectedDate = dateRange?.from;
   const blockedSet = useMemo(
@@ -722,15 +722,15 @@ export function PropertyContent({
             <h2 className="mb-4 text-xl font-bold">What this place offers</h2>
             {allOfferings.length > 0 ? (
               <>
-                <div className="grid gap-x-12 gap-y-1.5 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-x-4 sm:gap-x-12 gap-y-2.5 sm:gap-y-3">
                   {visibleOfferings.map((item, i) => (
                     <AmenityItem key={`${item}-${i}`} label={item} />
                   ))}
                 </div>
-                {allOfferings.length > 8 && (
+                {allOfferings.length > 10 && (
                   <button
                     onClick={() => setAmenitiesOpen(true)}
-                    className="mt-5 inline-flex items-center rounded-xl border border-[#181113] px-5 py-2.5 text-sm font-semibold hover:bg-neutral-50"
+                    className="mt-5 inline-flex items-center rounded-xl border border-[#181113] px-5 py-2.5 text-sm font-semibold hover:bg-[#fbf0f3] hover:border-[#800020] transition-colors"
                   >
                     Show all {allOfferings.length} amenities
                   </button>
@@ -796,8 +796,8 @@ export function PropertyContent({
               </div>
             )}
 
-            {/* Desktop: 2-month side-by-side calendar */}
-            <div className="hidden sm:block">
+            {/* 2-month calendar (stacked vertically on mobile, side-by-side on desktop) */}
+            <div className="w-full overflow-hidden">
               <Calendar
                 mode="range"
                 selected={dateRange}
@@ -805,21 +805,6 @@ export function PropertyContent({
                 month={calendarMonth}
                 onMonthChange={setCalendarMonth}
                 numberOfMonths={2}
-                showOutsideDays={false}
-                disabled={disabledCalendarDays}
-                className="w-full bg-transparent p-0"
-              />
-            </div>
-
-            {/* Mobile: single-month calendar */}
-            <div className="sm:hidden w-full">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={handleSelectRange}
-                month={calendarMonth}
-                onMonthChange={setCalendarMonth}
-                numberOfMonths={1}
                 showOutsideDays={false}
                 disabled={disabledCalendarDays}
                 className="w-full bg-transparent p-0"
@@ -873,38 +858,6 @@ export function PropertyContent({
                 approximate
                 interactive
               />
-            </div>
-
-            {/* 3 Context Cards providing real neighbourhood help */}
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-neutral-200/80 bg-[#fdfbfa] p-3.5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#800020]">
-                  The neighborhood
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
-                  {listing.area
-                    ? `Located in ${listing.area}, ${listing.city}. A vibrant and sought-after area with popular dining, cafes, and local amenities.`
-                    : `Located in ${listing.city}. Safe, welcoming area close to local markets, dining, and transit.`}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-neutral-200/80 bg-[#fdfbfa] p-3.5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#800020]">
-                  Getting around
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
-                  Taxis, Uber, and Bolt operate conveniently in this area. Easy road access and private parking on-premises.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-neutral-200/80 bg-[#fdfbfa] p-3.5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#800020]">
-                  Privacy &amp; directions
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
-                  The exact building name, door number, and host contact are provided automatically in your booking confirmation.
-                </p>
-              </div>
             </div>
           </section>
 
@@ -1013,17 +966,17 @@ export function PropertyContent({
 
         {/* Right Column: Airbnb-style Sticky Booking Card + Report button */}
         <aside className="lg:pt-1">
-          <div className="sticky top-28 rounded-3xl border border-neutral-200 bg-white p-6 shadow-lg shadow-neutral-100/70">
+          <div className="sticky top-28 rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-lg shadow-neutral-100/70">
             {/* Category Toggle: Hourly vs Overnight */}
             {hasHourly && hasOvernight && (
-              <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-neutral-100 p-1">
+              <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-[#fbf0f3] p-1 border border-[#f3cfd9]/70">
                 <button
                   type="button"
                   onClick={() => setSelectedCategory("hourly")}
                   className={`rounded-xl py-2 text-xs font-bold transition ${
                     selectedCategory === "hourly"
                       ? "bg-white text-[#800020] shadow-xs"
-                      : "text-neutral-600 hover:text-black"
+                      : "text-neutral-600 hover:text-[#800020]"
                   }`}
                 >
                   Hourly
@@ -1034,7 +987,7 @@ export function PropertyContent({
                   className={`rounded-xl py-2 text-xs font-bold transition ${
                     selectedCategory === "overnight"
                       ? "bg-white text-[#800020] shadow-xs"
-                      : "text-neutral-600 hover:text-black"
+                      : "text-neutral-600 hover:text-[#800020]"
                   }`}
                 >
                   Overnight
@@ -1061,17 +1014,17 @@ export function PropertyContent({
             </div>
 
             {/* Date and inputs box */}
-            <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-300 divide-y divide-neutral-300">
+            <div className="mt-5 overflow-hidden rounded-2xl border border-[#f3cfd9] divide-y divide-[#f3cfd9]/80">
               {selectedCategory === "hourly" ? (
                 <>
-                  <div className="grid grid-cols-2 divide-x divide-neutral-300">
+                  <div className="grid grid-cols-2 divide-x divide-[#f3cfd9]/80">
                     <button
                       type="button"
                       onClick={() => {
                         const el = document.getElementById("calendar");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                      className="p-2.5 text-left hover:bg-[#fbf0f3]/40 transition-colors"
                     >
                       <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
                         Date
@@ -1094,7 +1047,7 @@ export function PropertyContent({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 divide-x divide-neutral-300">
+                  <div className="grid grid-cols-2 divide-x divide-[#f3cfd9]/80">
                     <div className="p-2.5">
                       <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
                         Duration
@@ -1150,14 +1103,14 @@ export function PropertyContent({
                 </>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 divide-x divide-neutral-300">
+                  <div className="grid grid-cols-2 divide-x divide-[#f3cfd9]/80">
                     <button
                       type="button"
                       onClick={() => {
                         const el = document.getElementById("calendar");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                      className="p-2.5 text-left hover:bg-[#fbf0f3]/40 transition-colors"
                     >
                       <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
                         Check-in
@@ -1173,7 +1126,7 @@ export function PropertyContent({
                         const el = document.getElementById("calendar");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                      className="p-2.5 text-left hover:bg-[#fbf0f3]/40 transition-colors"
                     >
                       <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
                         Checkout
