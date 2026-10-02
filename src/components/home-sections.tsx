@@ -145,13 +145,13 @@ export function PopularDestinations() {
   if (loaded && destinations.length === 0) return null;
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+    <section className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
       <Rail
         heading={
           <Link href="/search" className="group flex items-center gap-2">
-            <h2 className="text-xl font-bold text-[#2b000a] sm:text-2xl">Popular destinations</h2>
-            <span className="flex size-7 items-center justify-center rounded-full bg-[#f5eef1] transition-transform group-hover:translate-x-0.5">
-              <ArrowRight className="h-4 w-4 text-[#2b000a]" />
+            <h2 className="text-lg font-bold text-[#2b000a] sm:text-xl">Popular destinations</h2>
+            <span className="flex size-6 items-center justify-center rounded-full bg-[#f5eef1] transition-transform group-hover:translate-x-0.5">
+              <ArrowRight className="h-3.5 w-3.5 text-[#2b000a]" />
             </span>
           </Link>
         }
@@ -160,25 +160,25 @@ export function PopularDestinations() {
           ? Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-square w-[150px] shrink-0 animate-pulse rounded-3xl bg-muted sm:w-[180px]"
+                className="aspect-square w-[115px] shrink-0 animate-pulse rounded-2xl bg-muted sm:w-[135px]"
               />
             ))
           : destinations.map((destination) => (
               <Link
                 key={destination.id}
                 href={`/search?q=${encodeURIComponent(destination.search_query)}`}
-                className="group relative aspect-square w-[150px] shrink-0 snap-start overflow-hidden rounded-3xl bg-muted sm:w-[180px]"
+                className="group relative aspect-square w-[115px] shrink-0 snap-start overflow-hidden rounded-2xl bg-muted sm:w-[135px]"
               >
                 <Image
                   src={destination.image_url}
                   alt={destination.name}
                   fill
-                  sizes="180px"
+                  sizes="135px"
                   quality={70}
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
-                <span className="absolute bottom-3 left-3 right-3 truncate text-lg font-bold text-white drop-shadow">
+                <span className="absolute bottom-2 left-2 right-2 truncate text-sm sm:text-base font-bold text-white drop-shadow">
                   {destination.name}
                 </span>
               </Link>

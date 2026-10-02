@@ -107,7 +107,7 @@
 
 .main {
   max-width: 1000px;
-  margin: 56px auto 0;
+  margin: 32px auto 0;
   padding: 0 24px;
   display: flex;
   flex-direction: column;
@@ -115,19 +115,20 @@
 }
 
 .title {
-  font-size: 64px;
+  font-size: 35px;
   font-weight: 800;
   font-family: var(--font-kualine), Arial, Helvetica, sans-serif;
   color: #2b000a;
-  margin-bottom: 40px;
-  letter-spacing: 0;
+  margin-bottom: 24px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
   text-align: center;
 }
 
 .tabs {
   display: inline-flex;
-  gap: 10px;
-  margin-bottom: 28px;
+  gap: 8px;
+  margin-bottom: 22px;
   background: none;
   padding: 0;
 }
@@ -135,9 +136,9 @@
 .tab {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
-  font-size: 15px;
+  gap: 7px;
+  padding: 6px 14px;
+  font-size: 14px;
   font-weight: 500;
   color: #6f6568;
   cursor: pointer;
@@ -168,8 +169,8 @@
 
 .tabIcon {
   display: inline-block;
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   object-fit: contain;
 }
