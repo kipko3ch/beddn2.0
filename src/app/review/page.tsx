@@ -937,7 +937,7 @@ function ReviewInner() {
 
             <div className="flex gap-3.5 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-3.5">
               <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                <Icon icon="solar:growth-bold-duotone" className="h-4 w-4" />
+                <Icon icon="solar:shop-2-bold-duotone" className="h-4 w-4" />
               </div>
               <div>
                 <p className="text-xs font-bold text-[#181113]">Supporting Local Entrepreneurs</p>

@@ -82,6 +82,14 @@
   border-top-color: #fff;
 }
 
+/* Ensure MapLibre controls on mobile never collide with the floating header */
+@media (max-width: 1023px) {
+  .maplibregl-ctrl-top-right {
+    top: 4.75rem !important;
+    right: 0.75rem !important;
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

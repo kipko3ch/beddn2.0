@@ -277,6 +277,53 @@ export default function BookingPage({
         )}
       </div>
 
+      {/* 24/7 Beddn Support */}
+      <div className="border rounded-2xl p-4 sm:p-5 mt-4 space-y-3 bg-[#fbf0f3]/50 border-[#f3cfd9]">
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4 text-[#800020]" />
+          <h2 className="text-sm font-bold text-[#2b000a]">Need help? Beddn Concierge Support</h2>
+        </div>
+        <p className="text-xs text-stone-600">
+          Available 24/7 on call and WhatsApp for check-in assistance or trip questions.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <div className="flex items-center justify-between rounded-xl bg-white border border-[#f3cfd9] p-2.5 shadow-2xs">
+            <div>
+              <span className="block text-[10px] font-bold uppercase text-[#800020]">Kenya Support</span>
+              <a href="tel:+254727993661" className="text-xs font-bold text-stone-900 hover:text-[#800020]">
+                +254 727 993 661
+              </a>
+            </div>
+            <a
+              href="https://wa.me/254727993661"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition"
+              title="WhatsApp Kenya Support"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
+          <div className="flex items-center justify-between rounded-xl bg-white border border-[#f3cfd9] p-2.5 shadow-2xs">
+            <div>
+              <span className="block text-[10px] font-bold uppercase text-[#800020]">Tanzania Support</span>
+              <a href="tel:+255743607361" className="text-xs font-bold text-stone-900 hover:text-[#800020]">
+                +255 743 607 361
+              </a>
+            </div>
+            <a
+              href="https://wa.me/255743607361"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition"
+              title="WhatsApp Tanzania Support"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
+        </div>
+      </div>
+
       {booking.status === "completed" && (
         <form onSubmit={submitFeedback} className="border rounded-xl p-5 mt-4 space-y-3">
           <h2 className="font-semibold">How was your stay?</h2>

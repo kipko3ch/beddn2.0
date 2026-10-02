@@ -78,6 +78,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [guests, setGuests] = useState(searchParams.get("guests") || "1");
   const [units, setUnits] = useState("1");
   const [note, setNote] = useState("");
+  const [activeStep, setActiveStep] = useState<1 | 2>(1);
 
   useEffect(() => {
     async function load() {
@@ -367,13 +368,9 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               </div>
             )}
 
-            {/* Header Badge */}
+            {/* Header */}
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fbf0f3] border border-[#f3cfd9] px-3.5 py-1 text-xs font-bold text-[#800020]">
-                <Icon icon="solar:shield-check-bold-duotone" className="h-4 w-4" />
-                Direct Host Reservation
-              </span>
-              <h1 className="mt-2 font-brand text-2xl sm:text-3xl font-extrabold tracking-tight text-[#2b000a]">
+              <h1 className="font-brand text-2xl sm:text-3xl font-extrabold tracking-tight text-[#2b000a]">
                 Request your stay
               </h1>
               <p className="mt-1 text-xs sm:text-sm text-stone-500">
@@ -381,262 +378,354 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Card 1: Contact Details */}
-              <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 sm:p-7 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 border-b border-[#f3cfd9]/40 pb-3">
-                  <div className="flex size-7 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
-                    1
+              {activeStep === 1 ? (
+                <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 sm:p-7 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#f3cfd9]/40 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex size-7 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
+                        1
+                      </div>
+                      <h2 className="text-base font-bold text-[#181113]">Your contact information</h2>
+                    </div>
+                    <span className="text-[11px] font-bold text-[#800020] bg-[#fbf0f3] px-2.5 py-0.5 rounded-full">
+                      Step 1 of 2
+                    </span>
                   </div>
-                  <h2 className="text-base font-bold text-[#181113]">Your contact information</h2>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName" className="text-xs font-bold text-stone-700">
+                        First Name <span className="text-[#800020]">*</span>
+                      </Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="firstName"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="Your first name"
+                          required
+                          className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                        />
+                        {firstName.trim().length >= 2 && (
+                          <Check className="absolute right-3 top-3.5 h-4 w-4 text-[#128c4b]" />
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="lastName" className="text-xs font-bold text-stone-700">
+                        Last Name
+                      </Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="lastName"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="Your last name"
+                          className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                        />
+                        {lastName.trim().length >= 1 && (
+                          <Check className="absolute right-3 top-3.5 h-4 w-4 text-[#128c4b]" />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Label htmlFor="phone" className="text-xs font-bold text-stone-700">
+                        Phone Number (WhatsApp) <span className="text-[#800020]">*</span>
+                      </Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="+254 712 345 678 or +255..."
+                          required
+                          className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                        />
+                        {phone.trim().length >= 8 && (
+                          <Check className="absolute right-3 top-3.5 h-4 w-4 text-[#128c4b]" />
+                        )}
+                      </div>
+                      <p className="mt-1 text-[11px] text-[#800020]/80">
+                        Your host will connect with you on WhatsApp for location pin and keys.
+                      </p>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Label htmlFor="email" className="text-xs font-bold text-stone-700">
+                        Email Address <span className="font-normal text-stone-400">(optional)</span>
+                      </Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="name@example.com"
+                          className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 flex items-center gap-2">
+                    <input
+                      id="sms-opt"
+                      type="checkbox"
+                      checked={smsUpdates}
+                      onChange={(e) => setSmsUpdates(e.target.checked)}
+                      className="h-4 w-4 rounded border-stone-300 text-[#800020] focus:ring-[#800020]"
+                    />
+                    <label htmlFor="sms-opt" className="text-xs text-stone-600 cursor-pointer">
+                      Receive reservation confirmation via WhatsApp or SMS
+                    </label>
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (firstName.trim().length >= 2 && phone.trim().length >= 8) {
+                          setActiveStep(2);
+                        } else {
+                          const input = !firstName.trim() ? document.getElementById("firstName") : document.getElementById("phone");
+                          input?.focus();
+                        }
+                      }}
+                      className="h-11 w-full rounded-2xl bg-[#800020] hover:bg-[#600018] text-white text-sm font-bold shadow-xs hover:shadow transition"
+                    >
+                      Continue to stay details →
+                    </Button>
+                  </div>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="firstName" className="text-xs font-bold text-stone-700">
-                      First Name <span className="text-[#800020]">*</span>
-                    </Label>
-                    <div className="relative mt-1">
-                      <Input
-                        id="firstName"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Your first name"
-                        required
-                        className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                      />
-                      {firstName.trim().length >= 2 && (
-                        <Check className="absolute right-3 top-3.5 h-4 w-4 text-[#128c4b]" />
-                      )}
+              ) : (
+                /* Collapsed Card 1 */
+                <div
+                  onClick={() => setActiveStep(1)}
+                  className="group flex cursor-pointer items-center justify-between rounded-2xl border border-[#f3cfd9]/80 bg-white px-5 py-3.5 shadow-2xs hover:border-[#800020]/40 transition-all"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                      <Check className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-[#181113]">1. Contact Information</p>
+                      <p className="truncate text-[11px] text-stone-500">
+                        {firstName} {lastName} {phone ? `· ${phone}` : ""}
+                      </p>
                     </div>
                   </div>
-
-                  <div>
-                    <Label htmlFor="lastName" className="text-xs font-bold text-stone-700">
-                      Last Name
-                    </Label>
-                    <div className="relative mt-1">
-                      <Input
-                        id="lastName"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Your last name"
-                        className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                      />
-                      {lastName.trim().length >= 1 && (
-                        <Check className="absolute right-3 top-3.5 h-4 w-4 text-[#128c4b]" />
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="phone" className="text-xs font-bold text-stone-700">
-                      Phone Number (WhatsApp) <span className="text-[#800020]">*</span>
-                    </Label>
-                    <div className="relative mt-1">
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+254 700 000 000 or +255..."
-                        required
-                        className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                      />
-                      {phone.trim().length >= 8 && (
-                        <Check className="absolute right-3 top-3.5 h-4 w-4 text-[#128c4b]" />
-                      )}
-                    </div>
-                    <p className="mt-1 text-[11px] text-[#800020]/80">
-                      Your host will connect with you on WhatsApp for location pin and keys.
-                    </p>
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="email" className="text-xs font-bold text-stone-700">
-                      Email Address <span className="font-normal text-stone-400">(optional)</span>
-                    </Label>
-                    <div className="relative mt-1">
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        className="h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                      />
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveStep(1);
+                    }}
+                    className="text-xs font-bold text-[#800020] hover:underline"
+                  >
+                    Edit
+                  </button>
                 </div>
-
-                <div className="pt-1 flex items-center gap-2">
-                  <input
-                    id="sms-opt"
-                    type="checkbox"
-                    checked={smsUpdates}
-                    onChange={(e) => setSmsUpdates(e.target.checked)}
-                    className="h-4 w-4 rounded border-stone-300 text-[#800020] focus:ring-[#800020]"
-                  />
-                  <label htmlFor="sms-opt" className="text-xs text-stone-600 cursor-pointer">
-                    Receive reservation confirmation via WhatsApp or SMS
-                  </label>
-                </div>
-              </div>
+              )}
 
               {/* Card 2: Stay Details */}
-              <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 sm:p-7 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 border-b border-[#f3cfd9]/40 pb-3">
-                  <div className="flex size-7 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
-                    2
-                  </div>
-                  <h2 className="text-base font-bold text-[#181113]">Stay details &amp; preferences</h2>
-                </div>
-
-                {/* Category Selector Pills */}
-                {listing.categories && listing.categories.length > 1 && (
-                  <div>
-                    <Label className="text-xs font-bold text-stone-700 mb-1.5 block">Booking Type</Label>
-                    <div className="inline-flex gap-2 p-1 rounded-2xl bg-[#fbf0f3] border border-[#f3cfd9]">
-                      {listing.categories.map((cat) => {
-                        const active = category === cat;
-                        return (
-                          <button
-                            key={cat}
-                            type="button"
-                            onClick={() => setCategory(cat as ListingCategory)}
-                            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                              active
-                                ? "bg-[#800020] text-white shadow-xs"
-                                : "text-stone-600 hover:text-[#800020]"
-                            }`}
-                          >
-                            <Icon
-                              icon={cat === "hourly" ? "solar:clock-circle-bold-duotone" : "solar:bed-bold-duotone"}
-                              className="h-3.5 w-3.5"
-                            />
-                            <span className="capitalize">{cat}</span>
-                          </button>
-                        );
-                      })}
+              {activeStep === 2 ? (
+                <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 sm:p-7 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#f3cfd9]/40 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex size-7 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
+                        2
+                      </div>
+                      <h2 className="text-base font-bold text-[#181113]">Stay details &amp; preferences</h2>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveStep(1)}
+                      className="text-xs font-semibold text-stone-500 hover:text-[#800020] transition"
+                    >
+                      ← Back to contact
+                    </button>
                   </div>
-                )}
 
-                {/* Dates & Time Controls */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {category === "overnight" ? (
-                    <>
-                      <div>
-                        <Label htmlFor="checkIn" className="text-xs font-bold text-stone-700">Check-in Date</Label>
-                        <Input
-                          id="checkIn"
-                          type="date"
-                          value={checkIn}
-                          onChange={(e) => setCheckIn(e.target.value)}
-                          className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                        />
+                  {/* Category Selector Pills */}
+                  {listing.categories && listing.categories.length > 1 && (
+                    <div>
+                      <Label className="text-xs font-bold text-stone-700 mb-1.5 block">Booking Type</Label>
+                      <div className="inline-flex gap-2 p-1 rounded-2xl bg-[#fbf0f3] border border-[#f3cfd9]">
+                        {listing.categories.map((cat) => {
+                          const active = category === cat;
+                          return (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setCategory(cat as ListingCategory)}
+                              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                                active
+                                  ? "bg-[#800020] text-white shadow-xs"
+                                  : "text-stone-600 hover:text-[#800020]"
+                              }`}
+                            >
+                              <Icon
+                                icon={cat === "hourly" ? "solar:clock-circle-bold-duotone" : "solar:bed-bold-duotone"}
+                                className="h-3.5 w-3.5"
+                              />
+                              <span className="capitalize">{cat}</span>
+                            </button>
+                          );
+                        })}
                       </div>
-                      <div>
-                        <Label htmlFor="checkOut" className="text-xs font-bold text-stone-700">Check-out Date</Label>
-                        <Input
-                          id="checkOut"
-                          type="date"
-                          value={checkOut}
-                          onChange={(e) => setCheckOut(e.target.value)}
-                          className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <Label htmlFor="stayDate" className="text-xs font-bold text-stone-700">Date of Use</Label>
-                        <Input
-                          id="stayDate"
-                          type="date"
-                          value={checkIn}
-                          onChange={(e) => setCheckIn(e.target.value)}
-                          className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="startTime" className="text-xs font-bold text-stone-700">Arrival Time</Label>
-                        <Input
-                          id="startTime"
-                          type="time"
-                          value={startTime}
-                          onChange={(e) => setStartTime(e.target.value)}
-                          className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                        />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <Label htmlFor="duration" className="text-xs font-bold text-stone-700">Duration (Hours)</Label>
-                        <select
-                          id="duration"
-                          value={duration}
-                          onChange={(e) => setDuration(e.target.value)}
-                          className="mt-1 h-11 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
-                        >
-                          <option value="1">1 hour</option>
-                          <option value="2">2 hours</option>
-                          <option value="3">3 hours</option>
-                          <option value="4">4 hours</option>
-                          <option value="6">6 hours</option>
-                          <option value="8">Full daytime (8 hours)</option>
-                        </select>
-                      </div>
-                    </>
+                    </div>
                   )}
 
-                  <div>
-                    <Label htmlFor="guests" className="text-xs font-bold text-stone-700">Number of Guests</Label>
-                    <select
-                      id="guests"
-                      value={guests}
-                      onChange={(e) => setGuests(e.target.value)}
-                      className="mt-1 h-11 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 8, 10].map((num) => (
-                        <option key={num} value={num}>
-                          {num} {num === 1 ? "guest" : "guests"}
-                        </option>
-                      ))}
-                    </select>
+                  {/* Dates & Time Controls */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {category === "overnight" ? (
+                      <>
+                        <div>
+                          <Label htmlFor="checkIn" className="text-xs font-bold text-stone-700">Check-in Date</Label>
+                          <Input
+                            id="checkIn"
+                            type="date"
+                            value={checkIn}
+                            onChange={(e) => setCheckIn(e.target.value)}
+                            className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="checkOut" className="text-xs font-bold text-stone-700">Check-out Date</Label>
+                          <Input
+                            id="checkOut"
+                            type="date"
+                            value={checkOut}
+                            onChange={(e) => setCheckOut(e.target.value)}
+                            className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <Label htmlFor="stayDate" className="text-xs font-bold text-stone-700">Date of Use</Label>
+                          <Input
+                            id="stayDate"
+                            type="date"
+                            value={checkIn}
+                            onChange={(e) => setCheckIn(e.target.value)}
+                            className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="startTime" className="text-xs font-bold text-stone-700">Arrival Time</Label>
+                          <Input
+                            id="startTime"
+                            type="time"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            className="mt-1 h-11 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label htmlFor="duration" className="text-xs font-bold text-stone-700">Duration (Hours)</Label>
+                          <select
+                            id="duration"
+                            value={duration}
+                            onChange={(e) => setDuration(e.target.value)}
+                            className="mt-1 h-11 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
+                          >
+                            <option value="1">1 hour</option>
+                            <option value="2">2 hours</option>
+                            <option value="3">3 hours</option>
+                            <option value="4">4 hours</option>
+                            <option value="6">6 hours</option>
+                            <option value="8">Full daytime (8 hours)</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    <div>
+                      <Label htmlFor="guests" className="text-xs font-bold text-stone-700">Number of Guests</Label>
+                      <select
+                        id="guests"
+                        value={guests}
+                        onChange={(e) => setGuests(e.target.value)}
+                        className="mt-1 h-11 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 8, 10].map((num) => (
+                          <option key={num} value={num}>
+                            {num} {num === 1 ? "guest" : "guests"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="units" className="text-xs font-bold text-stone-700">Rooms / Spaces</Label>
+                      <select
+                        id="units"
+                        value={units}
+                        onChange={(e) => setUnits(e.target.value)}
+                        className="mt-1 h-11 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
+                      >
+                        <option value="1">1 room / unit</option>
+                        <option value="2">2 rooms / units</option>
+                        <option value="3">3 rooms / units</option>
+                      </select>
+                    </div>
                   </div>
 
+                  {/* Note for Host */}
                   <div>
-                    <Label htmlFor="units" className="text-xs font-bold text-stone-700">Rooms / Spaces</Label>
-                    <select
-                      id="units"
-                      value={units}
-                      onChange={(e) => setUnits(e.target.value)}
-                      className="mt-1 h-11 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
-                    >
-                      <option value="1">1 room / unit</option>
-                      <option value="2">2 rooms / units</option>
-                      <option value="3">3 rooms / units</option>
-                    </select>
+                    <Label htmlFor="note" className="text-xs font-bold text-stone-700">
+                      Message or special request for host <span className="font-normal text-stone-400">(optional)</span>
+                    </Label>
+                    <Textarea
+                      id="note"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      rows={2}
+                      placeholder="E.g. Estimated arrival time, parking needed, quiet work space..."
+                      className="mt-1 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
+                    />
                   </div>
                 </div>
-
-                {/* Note for Host */}
-                <div>
-                  <Label htmlFor="note" className="text-xs font-bold text-stone-700">
-                    Message or special request for host <span className="font-normal text-stone-400">(optional)</span>
-                  </Label>
-                  <Textarea
-                    id="note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={2}
-                    placeholder="E.g. Estimated arrival time, parking needed, quiet work space..."
-                    className="mt-1 rounded-2xl border-stone-200 text-sm focus-visible:border-[#800020] focus-visible:ring-[#800020]/20"
-                  />
+              ) : (
+                /* Collapsed Card 2 */
+                <div
+                  onClick={() => setActiveStep(2)}
+                  className="group flex cursor-pointer items-center justify-between rounded-2xl border border-[#f3cfd9]/80 bg-white px-5 py-3.5 shadow-2xs hover:border-[#800020]/40 transition-all"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#fbf0f3] text-xs font-bold text-[#800020]">
+                      2
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-[#181113]">2. Stay details &amp; preferences</p>
+                      <p className="truncate text-[11px] text-stone-500">
+                        {category === "hourly" ? "Hourly stay" : "Overnight stay"} · {guests} {parseInt(guests) === 1 ? "guest" : "guests"}
+                        {category === "hourly" ? ` · ${duration}h` : checkIn ? ` · from ${checkIn}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveStep(2);
+                    }}
+                    className="text-xs font-bold text-[#800020] hover:underline"
+                  >
+                    Edit
+                  </button>
                 </div>
-              </div>
+              )}
 
-              {/* Card 3: Summary Banner & Submit Button */}
-              <div className="space-y-4">
+              {/* Bottom Action Area: info & submit button */}
+              <div className="space-y-4 pt-2">
                 <div className="flex items-start gap-3 rounded-2xl bg-[#fbf0f3] border border-[#f3cfd9] p-4 text-xs text-[#2b000a]">
                   <Icon icon="solar:info-circle-bold-duotone" className="h-5 w-5 text-[#800020] shrink-0 mt-0.5" />
                   <p className="leading-relaxed">

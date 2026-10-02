@@ -307,7 +307,7 @@ export function SearchContent() {
   const mapView = (
     <div className="relative h-full w-full">
       {mapCenter && listings.length === 0 && (
-        <div className="absolute left-4 top-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-md border border-neutral-200">
+        <div className="hidden lg:block absolute left-4 top-4 z-10 max-w-sm rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-md border border-neutral-200">
           <p className="font-bold text-[#181113]">Showing searched area</p>
           <p className="truncate text-xs text-muted-foreground">{mapLabel || q}</p>
         </div>
@@ -656,33 +656,47 @@ export function SearchContent() {
           <div className="absolute inset-0">{!loading && mapView}</div>
 
           {/* Top Floating Control Bar */}
-          <div className="absolute top-3 inset-x-3 z-30 flex items-center justify-between pointer-events-none">
+          <div className="absolute top-3 inset-x-3 z-30 flex items-center gap-2">
             <button
               type="button"
               onClick={() => setShowMap(false)}
               aria-label="Back to list"
-              className="pointer-events-auto flex size-10 items-center justify-center rounded-full bg-white shadow-md border border-neutral-200 text-[#181113] hover:bg-neutral-50 transition"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white shadow-md border border-neutral-200 text-[#181113] hover:bg-neutral-50 active:scale-95 transition"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <div className="pointer-events-auto rounded-full bg-white/95 px-4 py-2 shadow-md border border-neutral-200 backdrop-blur-sm">
-              <span className="text-xs font-bold text-[#181113]">
-                {listings.length} {listings.length === 1 ? "place" : "places"} found
-              </span>
+            <div className="flex min-w-0 flex-1 items-center justify-between rounded-2xl bg-white/95 px-3.5 py-2 shadow-md border border-neutral-200 backdrop-blur-sm">
+              <div className="min-w-0 flex-1 pr-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#181113]">
+                    {listings.length} {listings.length === 1 ? "place" : "places"} found
+                  </span>
+                  {listings.length === 0 && (
+                    <span className="rounded-full bg-[#fbf0f3] border border-[#f3cfd9] px-2 py-0.5 text-[10px] font-bold text-[#800020]">
+                      Searched area
+                    </span>
+                  )}
+                </div>
+                {(mapLabel || q) && (
+                  <p className="truncate text-[11px] text-muted-foreground mt-0.5">
+                    {mapLabel || q}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMap(false)}
+                aria-label="Close map"
+                className="flex size-7 shrink-0 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-[#181113] transition"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowMap(false)}
-              aria-label="Close map"
-              className="pointer-events-auto flex size-10 items-center justify-center rounded-full bg-white shadow-md border border-neutral-200 text-[#181113] hover:bg-neutral-50 transition"
-            >
-              <X className="h-5 w-5" />
-            </button>
           </div>
 
           {/* Bottom Swipeable Listings Carousel */}
           {listings.length > 0 && (
-            <div className="absolute bottom-28 inset-x-0 z-30 px-3">
+            <div className="absolute bottom-20 inset-x-0 z-30 px-3">
               <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {listings.map((item) => {
                   const isSelected = highlightedId === item.id;
@@ -738,7 +752,9 @@ export function SearchContent() {
           <button
             type="button"
             onClick={() => setShowMap(false)}
-            className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95"
+            className={`fixed ${
+              listings.length > 0 ? "bottom-6" : "bottom-8"
+            } left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95`}
           >
             <Icon icon="solar:list-bold-duotone" className="h-4 w-4 text-[#800020] bg-white rounded-full p-0.5" />
             <span>Show list</span>
