@@ -321,6 +321,26 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 Back to listing
               </Link>
             </div>
+
+            {/* Support Hotline Info */}
+            <div className="mt-8 border-t border-[#f3cfd9]/60 pt-5 text-center">
+              <p className="text-xs font-semibold text-stone-500">Need help with your reservation?</p>
+              <div className="mt-2 flex flex-wrap items-center justify-center gap-3 text-xs">
+                <a
+                  href="tel:+254727993661"
+                  className="inline-flex items-center gap-1 font-bold text-[#800020] hover:underline"
+                >
+                  <span>🇰🇪 Kenya: +254 727 993 661</span>
+                </a>
+                <span className="text-stone-300">·</span>
+                <a
+                  href="tel:+255743607361"
+                  className="inline-flex items-center gap-1 font-bold text-[#800020] hover:underline"
+                >
+                  <span>🇹🇿 Tanzania: +255 743 607 361</span>
+                </a>
+              </div>
+            </div>
           </div>
         </main>
       </>
@@ -719,25 +739,75 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 <span>24/7 Beddn Support</span>
               </div>
               <p className="text-xs text-stone-600 leading-relaxed">
-                Need assistance with your booking? Our local team is ready to assist.
+                Need assistance with your booking? Our dedicated support team is ready to assist you.
               </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <a
-                  href="tel:+254700000000"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#fbf0f3] border border-[#f3cfd9] px-3.5 py-2 text-xs font-bold text-[#800020] hover:bg-[#f3d9e2] transition shadow-2xs"
-                >
-                  <Icon icon="solar:phone-calling-bold-duotone" className="h-4 w-4" />
-                  <span>+254 700 000 000</span>
-                </a>
-                <a
-                  href="https://wa.me/254700000000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#e9f9f0] border border-[#c4f0d6] px-3.5 py-2 text-xs font-bold text-[#128c4b] hover:bg-[#d5f5e3] transition shadow-2xs"
-                >
-                  <Icon icon="solar:chat-round-dots-bold-duotone" className="h-4 w-4" />
-                  <span>WhatsApp</span>
-                </a>
+
+              <div className="space-y-2 pt-1">
+                {/* Kenya & General Support */}
+                <div className="flex items-center justify-between gap-2 rounded-2xl bg-[#fbf0f3]/70 border border-[#f3cfd9] p-2.5">
+                  <div className="min-w-0">
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-[#800020]">
+                      Kenya &amp; General
+                    </span>
+                    <a
+                      href="tel:+254727993661"
+                      className="text-xs font-bold text-stone-900 hover:text-[#800020] transition"
+                    >
+                      +254 727 993 661
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <a
+                      href="tel:+254727993661"
+                      title="Call Kenya support"
+                      className="flex size-7 items-center justify-center rounded-full bg-white text-[#800020] border border-[#f3cfd9] hover:bg-[#fbf0f3] transition shadow-2xs"
+                    >
+                      <Icon icon="solar:phone-calling-bold-duotone" className="h-3.5 w-3.5" />
+                    </a>
+                    <a
+                      href="https://wa.me/254727993661"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="WhatsApp Kenya support"
+                      className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition shadow-2xs"
+                    >
+                      <Icon icon="solar:chat-round-dots-bold-duotone" className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Tanzania Support */}
+                <div className="flex items-center justify-between gap-2 rounded-2xl bg-[#fbf0f3]/70 border border-[#f3cfd9] p-2.5">
+                  <div className="min-w-0">
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-[#800020]">
+                      Tanzania
+                    </span>
+                    <a
+                      href="tel:+255743607361"
+                      className="text-xs font-bold text-stone-900 hover:text-[#800020] transition"
+                    >
+                      +255 743 607 361
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <a
+                      href="tel:+255743607361"
+                      title="Call Tanzania support"
+                      className="flex size-7 items-center justify-center rounded-full bg-white text-[#800020] border border-[#f3cfd9] hover:bg-[#fbf0f3] transition shadow-2xs"
+                    >
+                      <Icon icon="solar:phone-calling-bold-duotone" className="h-3.5 w-3.5" />
+                    </a>
+                    <a
+                      href="https://wa.me/255743607361"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="WhatsApp Tanzania support"
+                      className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition shadow-2xs"
+                    >
+                      <Icon icon="solar:chat-round-dots-bold-duotone" className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </aside>
