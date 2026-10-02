@@ -214,6 +214,7 @@ export function Map({
       center,
       zoom,
       interactive,
+      renderWorldCopies: false,
       // Imagery requires attribution — keep it but compact (Google does too).
       attributionControl: { compact: true },
     });
@@ -289,56 +290,46 @@ export function Map({
     const rebuildMarkers = () => {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current.clear();
-      
-      // Deterministically jitter identical/overlapping coordinates so markers don't stack directly on top
-      const currentListings = jitterCoordinates(listingsRef.current);
 
       if (approximate) {
-        currentListings.forEach((listing) => {
+        // Privacy mode (property page): an elegant Airbnb-style soft circular radius
+        // with a clean center home icon, without jerky jumping or clunky pills.
+        listingsRef.current.forEach((listing) => {
           const el = document.createElement("div");
-          // Privacy mode (property page): an elegant soft circle over the neighbourhood
-          // with a clean area badge showing the neighborhood name
-          el.className = "beddn-neighborhood-circle";
+          el.className = "beddn-approximate-pin";
           el.style.cssText = `
             position: relative;
-            width: 140px; height: 140px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(128, 0, 32, 0.18) 0%, rgba(128, 0, 32, 0.05) 70%, transparent 100%);
-            border: 2px dashed rgba(128, 0, 32, 0.38);
+            width: 76px; height: 76px; border-radius: 50%;
+            background: rgba(128, 0, 32, 0.08);
+            border: 1.5px solid rgba(128, 0, 32, 0.28);
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 24px rgba(128, 0, 32, 0.12);
+            pointer-events: none;
           `;
-          const badge = document.createElement("div");
-          badge.style.cssText = `
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 6px 13px; border-radius: 999px;
-            background: #800020; color: #ffffff;
-            font-size: 12px; font-weight: 700;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-            white-space: nowrap; pointer-events: auto;
+          const pin = document.createElement("div");
+          pin.style.cssText = `
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #800020; border: 2px solid #ffffff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+            color: #ffffff;
           `;
-          badge.innerHTML = `
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-              <circle cx="12" cy="10" r="3"/>
+          pin.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
             </svg>
-            <span>${listing.area || listing.city || "General area"}</span>
           `;
-          el.appendChild(badge);
+          el.appendChild(pin);
+
           const marker = new maplibregl.Marker({ element: el })
             .setLngLat([listing.longitude, listing.latitude])
             .addTo(map);
           markersRef.current.set(listing.id, marker);
         });
-
-        // For approximate view (property page), center directly with crisp zoom (15)
-        if (currentListings[0]) {
-          map.jumpTo({
-            center: [currentListings[0].longitude, currentListings[0].latitude],
-            zoom: zoom || 15,
-          });
-        }
         return;
       }
+
+      // Deterministically jitter identical/overlapping coordinates so markers don't stack directly on top
+      const currentListings = jitterCoordinates(listingsRef.current);
 
       // Greedy pixel-distance clustering: listings that currently render on
       // top of (or right next to) each other on screen become one marker,
@@ -419,9 +410,10 @@ export function Map({
     };
 
     rebuildMarkers();
-    // Pixel positions shift on every pan/zoom, so re-cluster once the user
-    // settles rather than mid-gesture (moveend, not move — avoids thrashing).
-    map.on("moveend", rebuildMarkers);
+    // Re-cluster on pan/zoom only for multi-listing search view
+    if (!approximate) {
+      map.on("moveend", rebuildMarkers);
+    }
     return () => {
       map.off("moveend", rebuildMarkers);
     };

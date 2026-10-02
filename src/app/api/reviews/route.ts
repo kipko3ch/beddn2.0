@@ -32,6 +32,34 @@ function clampRating(value: unknown): number | null {
   return Math.min(5, Math.max(1, Math.round(n)));
 }
 
+export async function GET() {
+  try {
+    const admin = createAdminClient();
+    const { data: reviews, error } = await admin
+      .from("reviews")
+      .select(`
+        id,
+        rating,
+        comment,
+        tags,
+        would_recommend,
+        created_at,
+        listing:listings(id, slug, title, name, city, area, listing_images(url)),
+        profile:profiles(full_name, avatar_url)
+      `)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error) {
+      return NextResponse.json({ reviews: [] });
+    }
+
+    return NextResponse.json({ reviews: reviews || [] });
+  } catch {
+    return NextResponse.json({ reviews: [] });
+  }
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {

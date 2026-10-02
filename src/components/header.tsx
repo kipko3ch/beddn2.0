@@ -262,10 +262,24 @@ export function Header() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <Link href={ROUTES.home} className="px-3 text-sm font-medium text-[#2b000a] hover:text-crimson">
+            <Link
+              href={ROUTES.home}
+              className={`px-3 text-sm transition-colors ${
+                pathname === ROUTES.home
+                  ? "font-semibold text-[#800020]"
+                  : "font-medium text-[#2b000a] hover:text-crimson"
+              }`}
+            >
               Browse
             </Link>
-            <Link href={ROUTES.review} className="px-3 text-sm font-medium text-[#2b000a] hover:text-crimson">
+            <Link
+              href={ROUTES.review}
+              className={`px-3 text-sm transition-colors ${
+                pathname === ROUTES.review
+                  ? "font-semibold text-[#800020]"
+                  : "font-medium text-[#2b000a] hover:text-crimson"
+              }`}
+            >
               Review
             </Link>
             {!user && (
@@ -327,7 +341,7 @@ export function Header() {
             <CurrencySwitcher />
           </div>
         </div>
-        {!pathname?.startsWith('/property/') && !pathname?.startsWith('/experience/') && !pathname?.startsWith('/reserve/') && !pathname?.startsWith('/search') && (
+        {(pathname === ROUTES.home || pathname?.startsWith("/category/")) && (
           <div className="border-t border-black/5">
             <CategoryStrip pathname={pathname} />
           </div>
