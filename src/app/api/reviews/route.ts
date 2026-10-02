@@ -10,10 +10,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 interface ReviewBody {
   listing?: string; // slug or id
   rating?: number;
+  title?: string | null;
   comment?: string | null;
   tags?: string[];
   wouldRecommend?: boolean | null;
   privateNote?: string | null;
+  stayDate?: string | null;
+  tripType?: string | null;
+  subRatings?: Record<string, number> | null;
 }
 
 const ALLOWED_TAGS = new Set([
@@ -72,7 +76,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as ReviewBody;
   if (!body.listing) {
     return NextResponse.json(
-      { error: "We couldn't tell which stay you're reviewing. Open the review link from your inquiry." },
+      { error: "We couldn't tell which stay you're reviewing." },
       { status: 400 }
     );
   }
@@ -103,9 +107,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // Trust gate (not revealed): a completed booking is the strongest proof of a
-  // real stay; an inquiry is accepted as a lighter fallback. One of the two is
-  // required so reviews stay trustworthy.
+  // Check for prior booking or inquiry to attach verified references
   const [{ data: completedBooking }, { data: inquiry }] = await Promise.all([
     admin
       .from("bookings")
@@ -125,16 +127,6 @@ export async function POST(request: Request) {
       .limit(1)
       .maybeSingle(),
   ]);
-
-  if (!completedBooking && !inquiry) {
-    return NextResponse.json(
-      {
-        error:
-          "We couldn't verify a recent stay for this listing yet. Reviews open after you've stayed or connected with the host through Beddn.",
-      },
-      { status: 403 }
-    );
-  }
 
   // One review per guest per listing — upsert so editing is allowed.
   const { data: existing } = await admin
@@ -156,7 +148,11 @@ export async function POST(request: Request) {
     ...(inquiry?.id ? { inquiry_id: inquiry.id } : {}),
     ...(completedBooking?.id ? { booking_id: completedBooking.id } : {}),
     rating,
-    comment: body.comment?.trim() || null,
+    comment: (body.title?.trim()
+      ? body.comment?.trim()
+        ? `${body.title.trim()}\n\n${body.comment.trim()}`
+        : body.title.trim()
+      : body.comment?.trim()) || null,
     tags,
     would_recommend: typeof body.wouldRecommend === "boolean" ? body.wouldRecommend : null,
     private_note: body.privateNote?.trim() || null,

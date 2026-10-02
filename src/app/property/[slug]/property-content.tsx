@@ -27,6 +27,7 @@ import {
   MapPin,
   Moon,
   Navigation,
+  PenLine,
   Share,
   ShowerHead,
   ShieldCheck,
@@ -523,6 +524,14 @@ export function PropertyContent({
               <Heart className={`h-4 w-4 ${isSaved ? "fill-crimson text-crimson" : ""}`} />
               <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
             </Button>
+            <Link
+              href={`/property/${listing.slug}/review`}
+              aria-label="Write a review for this listing"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:border-[#800020] hover:bg-[#fbf0f3]/70 hover:text-[#800020] transition-colors"
+            >
+              <PenLine className="h-3.5 w-3.5 text-[#800020]" />
+              <span>Review</span>
+            </Link>
           </div>
         </div>
 
@@ -930,8 +939,17 @@ export function PropertyContent({
 
           <Separator />
 
-          <section id="reviews">
-            <h2 className="mb-4 text-xl font-bold">Reviews</h2>
+          <section id="reviews" className="scroll-mt-24">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-bold text-[#181113]">Reviews</h2>
+              <Link
+                href={`/property/${listing.slug}/review`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:border-[#800020] hover:bg-[#fbf0f3]/70 hover:text-[#800020] transition-colors"
+              >
+                <PenLine className="h-3.5 w-3.5 text-[#800020]" />
+                <span>Write a review</span>
+              </Link>
+            </div>
             {reviews.length > 0 ? (
               <>
                 <div className="mb-5 flex items-center gap-4 rounded-2xl border bg-cream/40 p-4">
