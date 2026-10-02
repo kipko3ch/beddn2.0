@@ -297,15 +297,14 @@ export function PropertyContent({
   const isSelectedBlocked = selectedDateKey ? blockedSet.has(selectedDateKey) : false;
   const availableUnits = Math.max(0, Number(listing.available_units || listing.total_units || 1));
   const hasAvailability = Boolean(selectedDate && !isSelectedBlocked && availableUnits > 0);
+  const hasHourly = Boolean(listing.hourly_price && Number(listing.hourly_price) > 0);
+  const hasOvernight = Boolean(listing.overnight_price && Number(listing.overnight_price) > 0);
   const priceOptions = [
-    listing.hourly_price
+    hasHourly
       ? { label: "Hourly", suffix: "/hr", value: Number(listing.hourly_price) }
       : null,
-    listing.overnight_price
+    hasOvernight
       ? { label: "Overnight", suffix: "/night", value: Number(listing.overnight_price) }
-      : null,
-    listing.experience_price
-      ? { label: "Experience", suffix: "/session", value: Number(listing.experience_price) }
       : null,
   ].filter(Boolean) as { label: string; suffix: string; value: number }[];
   const primaryPrice = priceOptions[0];
@@ -388,6 +387,17 @@ export function PropertyContent({
     }
     return nights > 0 ? { total, nights } : null;
   }, [selectedCategory, dateRange, listing.overnight_price, priceByDate]);
+
+  const hourlyEstimate = useMemo(() => {
+    if (selectedCategory !== "hourly" || !dateRange?.from) return null;
+    const base = Number(listing.hourly_price || 0);
+    if (!base) return null;
+    const hours = Math.max(1, Number(durationHours) || 1);
+    return {
+      total: base * hours,
+      hours,
+    };
+  }, [selectedCategory, dateRange, listing.hourly_price, durationHours]);
 
   // Deep link into the request-to-book flow, pre-filled with the chosen dates.
   const reserveHref =
@@ -985,105 +995,205 @@ export function PropertyContent({
         {/* Right Column: Airbnb-style Sticky Booking Card + Report button */}
         <aside className="lg:pt-1">
           <div className="sticky top-28 rounded-3xl border border-neutral-200 bg-white p-6 shadow-lg shadow-neutral-100/70">
-            {/* Top Tag: Prices include all fees */}
-            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-              🏷️ Prices include all fees
-            </div>
+            {/* Category Toggle: Hourly vs Overnight */}
+            {hasHourly && hasOvernight && (
+              <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-neutral-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory("hourly")}
+                  className={`rounded-xl py-2 text-xs font-bold transition ${
+                    selectedCategory === "hourly"
+                      ? "bg-white text-[#800020] shadow-xs"
+                      : "text-neutral-600 hover:text-black"
+                  }`}
+                >
+                  Hourly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory("overnight")}
+                  className={`rounded-xl py-2 text-xs font-bold transition ${
+                    selectedCategory === "overnight"
+                      ? "bg-white text-[#800020] shadow-xs"
+                      : "text-neutral-600 hover:text-black"
+                  }`}
+                >
+                  Overnight
+                </button>
+              </div>
+            )}
 
+            {/* Price display matching active category */}
             <div>
-              {primaryPrice && (
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-extrabold text-[#181113]">
-                    {formatPrice(primaryPrice.value, priceCurrency(listing))}
-                  </span>
-                  <span className="text-sm font-medium text-neutral-500">
-                    {primaryPrice.suffix}
-                  </span>
-                </div>
-              )}
-              {priceOptions.length > 1 && (
-                <div className="mt-2.5 flex flex-wrap gap-1.5">
-                  {priceOptions.map((option) => (
-                    <span
-                      key={option.label}
-                      className="rounded-full bg-cream/70 px-2.5 py-0.5 text-[11px] font-semibold text-merlot"
-                    >
-                      {option.label}: {formatPrice(option.value, priceCurrency(listing))}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-3xl font-extrabold text-[#181113]">
+                  {selectedCategory === "hourly" && listing.hourly_price
+                    ? formatPrice(Number(listing.hourly_price), priceCurrency(listing))
+                    : listing.overnight_price
+                    ? formatPrice(Number(listing.overnight_price), priceCurrency(listing))
+                    : primaryPrice
+                    ? formatPrice(primaryPrice.value, priceCurrency(listing))
+                    : ""}
+                </span>
+                <span className="text-sm font-medium text-neutral-500">
+                  {selectedCategory === "hourly" ? "/hr" : "/night"}
+                </span>
+              </div>
             </div>
 
-            {/* Airbnb-style Checkin/Checkout/Guests box */}
+            {/* Date and inputs box */}
             <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-300 divide-y divide-neutral-300">
-              <div className="grid grid-cols-2 divide-x divide-neutral-300">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById("calendar");
-                    el?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
-                >
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
-                    Check-in
-                  </span>
-                  <span className="block text-xs font-semibold text-neutral-900 truncate mt-0.5">
-                    {compactDate(dateRange?.from) || "Add date"}
-                  </span>
-                </button>
+              {selectedCategory === "hourly" ? (
+                <>
+                  <div className="grid grid-cols-2 divide-x divide-neutral-300">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("calendar");
+                        el?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                    >
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                        Date
+                      </span>
+                      <span className="block text-xs font-semibold text-neutral-900 truncate mt-0.5">
+                        {compactDate(dateRange?.from) || "Select date"}
+                      </span>
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById("calendar");
-                    el?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
-                >
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
-                    Checkout
-                  </span>
-                  <span className="block text-xs font-semibold text-neutral-900 truncate mt-0.5">
-                    {compactDate(dateRange?.to) || "Add date"}
-                  </span>
-                </button>
-              </div>
+                    <div className="p-2.5">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                        Start time
+                      </span>
+                      <input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="mt-0.5 block w-full text-xs font-semibold text-neutral-900 bg-transparent outline-none"
+                      />
+                    </div>
+                  </div>
 
-              <div className="p-2.5 flex items-center justify-between">
-                <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
-                    Guests
-                  </span>
-                  <span className="block text-xs font-semibold text-neutral-900 mt-0.5">
-                    {guests} {Number(guests) === 1 ? "guest" : "guests"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={Number(guests) <= 1}
-                    onClick={() => setGuests(String(Math.max(1, Number(guests) - 1)))}
-                    className="size-7 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
-                  >
-                    -
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGuests(String(Number(guests) + 1))}
-                    className="size-7 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
+                  <div className="grid grid-cols-2 divide-x divide-neutral-300">
+                    <div className="p-2.5">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                        Duration
+                      </span>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={Number(durationHours) <= 1}
+                          onClick={() => setDurationHours(String(Math.max(1, Number(durationHours) - 1)))}
+                          className="size-6 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-semibold text-neutral-900">
+                          {durationHours} {Number(durationHours) === 1 ? "hr" : "hrs"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setDurationHours(String(Number(durationHours) + 1))}
+                          className="size-6 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
 
-            {/* Cancellation pill */}
-            <div className="mt-3.5 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-700 flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Free cancellation before {cancellationDateText}</span>
+                    <div className="p-2.5">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                        Guests
+                      </span>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={Number(guests) <= 1}
+                          onClick={() => setGuests(String(Math.max(1, Number(guests) - 1)))}
+                          className="size-6 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-semibold text-neutral-900">
+                          {guests}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setGuests(String(Number(guests) + 1))}
+                          className="size-6 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 divide-x divide-neutral-300">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("calendar");
+                        el?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                    >
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                        Check-in
+                      </span>
+                      <span className="block text-xs font-semibold text-neutral-900 truncate mt-0.5">
+                        {compactDate(dateRange?.from) || "Add date"}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("calendar");
+                        el?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="p-2.5 text-left hover:bg-neutral-50 transition-colors"
+                    >
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                        Checkout
+                      </span>
+                      <span className="block text-xs font-semibold text-neutral-900 truncate mt-0.5">
+                        {compactDate(dateRange?.to) || "Add date"}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="p-2.5 flex items-center justify-between">
+                    <div>
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500">
+                        Guests
+                      </span>
+                      <span className="block text-xs font-semibold text-neutral-900 mt-0.5">
+                        {guests} {Number(guests) === 1 ? "guest" : "guests"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        disabled={Number(guests) <= 1}
+                        onClick={() => setGuests(String(Math.max(1, Number(guests) - 1)))}
+                        className="size-7 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100 disabled:opacity-30"
+                      >
+                        -
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGuests(String(Number(guests) + 1))}
+                        className="size-7 rounded-full border border-neutral-300 flex items-center justify-center text-xs font-bold text-neutral-700 hover:bg-neutral-100"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Primary Action Button */}
@@ -1120,34 +1230,35 @@ export function PropertyContent({
               </Button>
             )}
 
-            <p className="mt-2.5 text-center text-xs text-muted-foreground">
-              You won&apos;t be charged yet
-            </p>
-
-            {/* Estimate breakdown */}
-            {overnightEstimate && (
-              <div className="mt-4 space-y-2 border-t pt-4 text-xs font-medium text-neutral-600">
+            {/* Clean Estimate without unneeded payments or cancellation clauses */}
+            {selectedCategory === "overnight" && overnightEstimate && (
+              <div className="mt-4 space-y-1.5 border-t border-neutral-100 pt-3 text-xs font-medium text-neutral-600">
                 <div className="flex justify-between">
-                  <span className="underline">
-                    {formatPrice(Number(listing.overnight_price || 0), priceCurrency(listing))} x {overnightEstimate.nights} nights
+                  <span>
+                    {formatPrice(Number(listing.overnight_price || 0), priceCurrency(listing))} × {overnightEstimate.nights} nights
                   </span>
-                  <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
+                  <span className="font-bold text-[#181113]">
+                    {formatPrice(overnightEstimate.total, priceCurrency(listing))}
+                  </span>
                 </div>
-                {listing.deposit_amount > 0 && (
-                  <div className="flex justify-between">
-                    <span className="underline">Reserve fee</span>
-                    <span>{formatPrice(Number(listing.deposit_amount), priceCurrency(listing))}</span>
-                  </div>
-                )}
-                <div className="flex justify-between border-t pt-2 text-sm font-bold text-[#181113]">
-                  <span>Total before taxes</span>
-                  <span>{formatPrice(overnightEstimate.total, priceCurrency(listing))}</span>
+              </div>
+            )}
+
+            {selectedCategory === "hourly" && hourlyEstimate && (
+              <div className="mt-4 space-y-1.5 border-t border-neutral-100 pt-3 text-xs font-medium text-neutral-600">
+                <div className="flex justify-between">
+                  <span>
+                    {formatPrice(Number(listing.hourly_price || 0), priceCurrency(listing))} × {hourlyEstimate.hours} hours
+                  </span>
+                  <span className="font-bold text-[#181113]">
+                    {formatPrice(hourlyEstimate.total, priceCurrency(listing))}
+                  </span>
                 </div>
               </div>
             )}
 
             {/* ⚑ Report this listing link */}
-            <div className="mt-5 flex justify-center border-t pt-4">
+            <div className="mt-5 flex justify-center border-t border-neutral-100 pt-4">
               <button
                 type="button"
                 onClick={() => setReportOpen(true)}

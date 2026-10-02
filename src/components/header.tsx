@@ -32,7 +32,6 @@ const CATEGORY_LINKS = [
   { label: "All", href: ROUTES.home, icon: "/images/cat-all.png" },
   { label: "Hourly", href: ROUTES.category("hourly"), icon: "/images/cat-hourly.png" },
   { label: "Overnight", href: ROUTES.category("overnight"), icon: "/images/cat-overnight.png" },
-  { label: "Experiences", href: ROUTES.category("experience"), icon: "/images/cat-experiences.png" },
 ];
 
 function CategoryStrip({ pathname }: { pathname: string | null }) {

@@ -315,7 +315,6 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
     { name: 'All' },
     { name: 'Hourly' },
     { name: 'Overnight' },
-    { name: 'Experiences' },
   ];
 
   // Each pill acts as a filter on the global marketplace view.
@@ -603,28 +602,6 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 priceMode={priceMode}
               />
             </div>
-            {isAllTab && topExperiences.length > 0 && (
-              <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-10">
-                <Rail
-                  heading={
-                    <h2 className="text-xl font-brand text-[#2b000a] sm:text-2xl font-bold">
-                      Top Rated Experiences
-                    </h2>
-                  }
-                >
-                  {topExperiences.map((listing) => (
-                    <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
-                      <ListingCard
-                        listing={listing}
-                        isSaved={savedIds.has(listing.id)}
-                        onToggleSave={() => toggle(listing.id)}
-                        priceMode={priceMode}
-                      />
-                    </div>
-                  ))}
-                </Rail>
-              </div>
-            )}
           </>
         )
       )}
