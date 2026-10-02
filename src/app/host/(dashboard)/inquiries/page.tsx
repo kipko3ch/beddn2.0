@@ -85,6 +85,12 @@ export default function HostRequestsPage() {
       const res = await fetch("/api/inquiries");
       const json: { inquiries?: InquiryRow[] } = res.ok ? await res.json() : {};
       setLeads(json.inquiries ?? []);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("beddn_inquiry_dismissed", "true");
+        if (hostId) {
+          localStorage.setItem(`beddn_inquiry_dismissed_${hostId}`, "true");
+        }
+      }
     } catch {
       setLeads([]);
     }

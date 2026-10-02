@@ -76,29 +76,47 @@ export default function DashboardPage() {
   const [submittingVerification, setSubmittingVerification] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [stats, setStats] = useState<Stat[]>([]);
-  const [pendingNew, setPendingNew] = useState(0);
+  const [pendingBookingsCount, setPendingBookingsCount] = useState(0);
+  const [newInquiriesCount, setNewInquiriesCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const [inquiryBannerDismissed, setInquiryBannerDismissed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("beddn_inquiry_dismissed") === "true";
-  });
+  const [inquiryBannerDismissed, setInquiryBannerDismissed] = useState(false);
+  const [verifiedDismissed, setVerifiedDismissed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (
+      localStorage.getItem("beddn_verified_dismissed") === "true" ||
+      (host?.id && localStorage.getItem(`beddn_verified_dismissed_${host.id}`) === "true")
+    ) {
+      setVerifiedDismissed(true);
+    }
+    if (
+      localStorage.getItem("beddn_inquiry_dismissed") === "true" ||
+      (host?.id && localStorage.getItem(`beddn_inquiry_dismissed_${host.id}`) === "true")
+    ) {
+      setInquiryBannerDismissed(true);
+    }
+  }, [host?.id]);
 
   function dismissInquiries() {
     setInquiryBannerDismissed(true);
     if (typeof window !== "undefined") {
       localStorage.setItem("beddn_inquiry_dismissed", "true");
+      if (host?.id) {
+        localStorage.setItem(`beddn_inquiry_dismissed_${host.id}`, "true");
+      }
     }
   }
 
-  const [verifiedDismissed, setVerifiedDismissed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("beddn_verified_dismissed") === "true";
-  });
-
   function dismissVerified() {
     setVerifiedDismissed(true);
-    localStorage.setItem("beddn_verified_dismissed", "true");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("beddn_verified_dismissed", "true");
+      if (host?.id) {
+        localStorage.setItem(`beddn_verified_dismissed_${host.id}`, "true");
+      }
+    }
   }
 
   async function handleDismissAnnouncement(annId: string) {
@@ -234,8 +252,13 @@ export default function DashboardPage() {
           listing.is_active || listing.listing_status === "active"
       ).length;
 
-      // Demand proof: views, availability checks, inquiries, WhatsApp clicks.
-      const [totalInquiries, newInquiries, eventRowsRes] = await Promise.all([
+      // Demand proof: views, availability checks, inquiries, WhatsApp clicks, and pending booking requests.
+      const [pendingBookingsRes, totalInquiries, newInquiries, eventRowsRes] = await Promise.all([
+        supabase
+          .from("bookings")
+          .select("id", { count: "exact", head: true })
+          .eq("host_id", hostData.id)
+          .in("status", ["requested", "paid_pending_host"]),
         supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("host_id", hostData.id),
         supabase
           .from("inquiries")
@@ -250,12 +273,16 @@ export default function DashboardPage() {
       const events = (eventRowsRes.data ?? []) as { event_type: string }[];
       const countEvent = (type: string) => events.filter((e) => e.event_type === type).length;
 
-      setPendingNew(newInquiries.count ?? 0);
+      const pBookings = pendingBookingsRes.count ?? 0;
+      const nInquiries = newInquiries.count ?? 0;
+      setPendingBookingsCount(pBookings);
+      setNewInquiriesCount(nInquiries);
+
       setStats([
         { label: "Listing views", value: countEvent("LISTING_VIEW"), icon: "line-md:home", href: ROUTES.dashboardListings },
         { label: "Availability checks", value: countEvent("AVAILABILITY_CHECKED"), icon: "line-md:calendar", href: ROUTES.dashboardCalendar },
         { label: "Inquiries", value: totalInquiries.count ?? 0, icon: "line-md:bell", href: ROUTES.dashboardInquiries, tone: "brand" },
-        { label: "New inquiries", value: newInquiries.count ?? 0, icon: "line-md:bell", href: ROUTES.dashboardInquiries, tone: "warning" },
+        { label: "New inquiries", value: nInquiries, icon: "line-md:bell", href: ROUTES.dashboardInquiries, tone: nInquiries > 0 ? "warning" : "muted" },
         { label: "WhatsApp clicks", value: countEvent("WHATSAPP_CLICK"), icon: "line-md:account", href: ROUTES.dashboardInquiries },
         { label: "Active listings", value: activeListings, icon: "line-md:check-all", href: ROUTES.dashboardListings, tone: "brand" },
       ]);
@@ -331,8 +358,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Needs attention */}
-      {!isAdmin && pendingNew > 0 && !inquiryBannerDismissed && (
+      {/* Needs attention: Only show when there are actual pending booking requests waiting for host confirmation */}
+      {!isAdmin && pendingBookingsCount > 0 && (
         <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors">
           <Link
             href={ROUTES.dashboardInquiries}
@@ -342,7 +369,33 @@ export default function DashboardPage() {
               <Icon icon="line-md:bell" className="h-4 w-4" />
             </span>
             <p className="text-sm font-semibold text-amber-900">
-              {pendingNew} new inquiry{pendingNew === 1 ? "" : "s"} waiting for your response
+              {pendingBookingsCount} booking request{pendingBookingsCount === 1 ? "" : "s"} waiting for your response
+            </p>
+            <Icon icon="line-md:chevron-right" className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
+          </Link>
+          <button
+            type="button"
+            onClick={dismissInquiries}
+            className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition-colors"
+            aria-label="Dismiss"
+          >
+            <Icon icon="line-md:close" className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* New WhatsApp inquiries banner (dismissible, and only when there are no urgent booking requests) */}
+      {!isAdmin && pendingBookingsCount === 0 && newInquiriesCount > 0 && !inquiryBannerDismissed && (
+        <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors">
+          <Link
+            href={ROUTES.dashboardInquiries}
+            className="flex flex-1 items-center gap-3 hover:opacity-80 transition-opacity"
+          >
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+              <Icon icon="line-md:bell" className="h-4 w-4" />
+            </span>
+            <p className="text-sm font-semibold text-amber-900">
+              {newInquiriesCount} new WhatsApp inquiry{newInquiriesCount === 1 ? "" : "ies"} received
             </p>
             <Icon icon="line-md:chevron-right" className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
           </Link>
