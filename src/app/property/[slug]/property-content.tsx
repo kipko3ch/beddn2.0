@@ -218,6 +218,15 @@ export function PropertyContent({
   const { formatPrice } = useCurrency();
   const isSaved = savedIds.has(listing.id);
   const [shared, setShared] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsSmallScreen(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsSmallScreen(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   async function shareProperty() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -804,7 +813,7 @@ export function PropertyContent({
                 onSelect={handleSelectRange}
                 month={calendarMonth}
                 onMonthChange={setCalendarMonth}
-                numberOfMonths={2}
+                numberOfMonths={isSmallScreen ? 1 : 2}
                 showOutsideDays={false}
                 disabled={disabledCalendarDays}
                 className="w-full bg-transparent p-0"

@@ -30,7 +30,6 @@ import type { Listing } from "@/lib/types";
 const CATEGORY_OPTIONS = [
   { value: "hourly", label: "Hourly" },
   { value: "overnight", label: "Overnight" },
-  { value: "experience", label: "Experiences" },
 ];
 
 /** Pill chip that opens a clean dropdown of options (mobile filter row). */
@@ -116,8 +115,7 @@ export function SearchContent() {
   const [isBroadLocation, setIsBroadLocation] = useState(true);
   const [mapLabel, setMapLabel] = useState("");
   const { savedIds, toggle } = useSavedListings();
-  const isExperienceSearch = category === "experience";
-  const asksForTime = category === "hourly" || category === "experience";
+  const asksForTime = category === "hourly";
 
   // Only mount one MapLibre instance at a time (preview vs. side map).
   useEffect(() => {
@@ -216,10 +214,10 @@ export function SearchContent() {
     const nextGuests = next.guests !== undefined ? next.guests : guests;
     if (nextQ) params.set("q", nextQ);
     if (cat !== "all") params.set("category", cat);
-    if (type !== "all" && cat !== "experience") params.set("type", type);
+    if (type !== "all") params.set("type", type);
     if (nextCheckIn) params.set("checkin", nextCheckIn);
-    if (nextCheckOut && cat !== "hourly" && cat !== "experience") params.set("checkout", nextCheckOut);
-    if (nextStartTime && (cat === "hourly" || cat === "experience")) params.set("startTime", nextStartTime);
+    if (nextCheckOut && cat !== "hourly") params.set("checkout", nextCheckOut);
+    if (nextStartTime && cat === "hourly") params.set("startTime", nextStartTime);
     if (nextGuests) params.set("guests", String(nextGuests));
     router.push(`/search?${params.toString()}`);
   }
@@ -260,8 +258,7 @@ export function SearchContent() {
   }
 
   function handlePinSelect(listing: Listing) {
-    const isExp = (listing.categories || listing.category || []).includes("experience");
-    router.push(isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`);
+    router.push(`/property/${listing.slug}`);
   }
 
   function lookupQueryCenter(value: string): [number, number] | undefined {
@@ -280,12 +277,10 @@ export function SearchContent() {
     lat && lng ? [parseFloat(lng), parseFloat(lat)] : lookupQueryCenter(q) || geocodedCenter;
 
   const activeFilterCount =
-    1 + (!isExperienceSearch && propertyType !== "all" ? 1 : 0);
+    1 + (propertyType !== "all" ? 1 : 0);
 
   const headerTitle = q
-    ? `${isExperienceSearch ? "Experiences" : "Stays"} in ${q}`
-    : isExperienceSearch
-    ? "Explore experiences"
+    ? `Stays in ${q}`
     : "Where to?";
   const dateSummary = (() => {
     if (!checkIn) return "Anytime";
@@ -299,9 +294,7 @@ export function SearchContent() {
   const timeSummary = asksForTime && startTime ? ` at ${startTime}` : "";
   const guestSummary =
     guests > 0
-      ? `${guests} ${isExperienceSearch ? "seat" : "guest"}${guests === 1 ? "" : "s"}`
-      : isExperienceSearch
-      ? "Add seats"
+      ? `${guests} ${guests === 1 ? "guest" : "guests"}`
       : "Add guests";
 
   const mapView = (
@@ -318,7 +311,7 @@ export function SearchContent() {
         highlightedId={highlightedId}
         onPinClick={handlePinHighlight}
         onPinSelect={handlePinSelect}
-        priceMode={isExperienceSearch ? "experience" : priceMode}
+        priceMode={priceMode}
         isBroad={isBroadLocation}
         className="h-full w-full"
       />
@@ -347,35 +340,21 @@ export function SearchContent() {
       )}
       <div className="mb-5">
         <p className="text-sm font-semibold uppercase tracking-wide text-cranberry">
-          {isExperienceSearch
-            ? q
-              ? `Experience ideas for ${q}`
-              : "Explore trips and classes"
-            : q
-            ? `Search results for ${q}`
-            : "Explore verified stays"}
+          {q ? `Search results for ${q}` : "Explore verified stays"}
         </p>
         <h1 className="mt-1 font-brand text-2xl tracking-tight text-[#2b000a] sm:text-4xl">
           {loading
-            ? isExperienceSearch
-              ? "Finding experiences"
-              : "Finding places"
+            ? "Finding places"
             : listings.length > 0
-            ? isExperienceSearch
-              ? `${listings.length} verified experience${listings.length === 1 ? "" : "s"}`
-              : `${listings.length} verified listing${listings.length === 1 ? "" : "s"}`
-            : isExperienceSearch
-            ? "No hosted trips here yet"
-            : "No verified listings here yet"}
+            ? `${listings.length} verified place${listings.length === 1 ? "" : "s"} to stay`
+            : `No places to stay found in "${q || "this area"}"`}
         </h1>
       </div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {isExperienceSearch
-            ? "Tip: try simple words like road trip, swimming, or yoga."
-            : "Tip: pick a place, then reserve with your phone number."}
+          Tip: pick a place, then reserve with your phone number.
         </p>
-        {!isExperienceSearch && listings.length > 0 && (
+        {listings.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Show prices</span>
             <div className="inline-flex rounded-full bg-[#f5eef1] p-0.5" role="group">
@@ -420,26 +399,6 @@ export function SearchContent() {
               />
             </div>
           ))}
-        </div>
-      ) : isExperienceSearch ? (
-        <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-10 text-center sm:px-8">
-          <Image
-            src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-experiences_uxhnur.png"
-            alt=""
-            width={200}
-            height={160}
-            className="mx-auto mb-4 h-auto w-[160px] sm:w-[180px]"
-            aria-hidden
-          />
-          <p className="text-xs font-semibold uppercase tracking-wide text-cranberry">
-            Experiences are coming
-          </p>
-          <h2 className="mt-2 text-xl font-bold sm:text-2xl">
-            Trips, classes, and tours are forming.
-          </h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-            We&apos;re gathering demand first so local organizers know where groups are forming.
-          </p>
         </div>
       ) : (
         <div className="rounded-2xl border bg-[#fbf7f8] px-5 py-12 text-center sm:px-8">
@@ -513,26 +472,22 @@ export function SearchContent() {
             onChange={(value) => pushSearch({ category: value })}
             variant="compact"
           />
-          {!isExperienceSearch && (
-            <>
-              <ChipSelect
-                label="Type of place"
-                value={propertyType}
-                options={[{ value: "all", label: "Any type of place" }, ...PROPERTY_TYPES]}
-                onChange={(value) => pushSearch({ type: value })}
-                variant="compact"
-              />
-              <MobileChipSelect
-                label="Price"
-                value={priceMode}
-                options={[
-                  { value: "hourly", label: "Hourly prices" },
-                  { value: "overnight", label: "Nightly prices" },
-                ]}
-                onChange={(value) => setPriceMode(value as "hourly" | "overnight")}
-              />
-            </>
-          )}
+          <ChipSelect
+            label="Type of place"
+            value={propertyType}
+            options={[{ value: "all", label: "Any type of place" }, ...PROPERTY_TYPES]}
+            onChange={(value) => pushSearch({ type: value })}
+            variant="compact"
+          />
+          <MobileChipSelect
+            label="Price"
+            value={priceMode}
+            options={[
+              { value: "hourly", label: "Hourly prices" },
+              { value: "overnight", label: "Nightly prices" },
+            ]}
+            onChange={(value) => setPriceMode(value as "hourly" | "overnight")}
+          />
         </div>
       </div>
 
@@ -549,7 +504,7 @@ export function SearchContent() {
               initialCheckOut={checkOut}
               initialStartTime={startTime}
               initialGuests={guests}
-              mode={category === "hourly" ? "hourly" : category === "experience" ? "experience" : "overnight"}
+              mode={category === "hourly" ? "hourly" : "overnight"}
               onSearch={handlePillSearch}
               onNearby={handleNearby}
               showMobileTrigger={false}
@@ -573,14 +528,12 @@ export function SearchContent() {
                 </button>
               ))}
             </div>
-            {!isExperienceSearch && (
-              <ChipSelect
-                label="Property type"
-                value={propertyType}
-                options={[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES]}
-                onChange={(value) => pushSearch({ type: value })}
-              />
-            )}
+            <ChipSelect
+              label="Property type"
+              value={propertyType}
+              options={[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES]}
+              onChange={(value) => pushSearch({ type: value })}
+            />
           </div>
         </div>
       </section>
@@ -614,31 +567,29 @@ export function SearchContent() {
                 ))}
               </div>
             </div>
-            {!isExperienceSearch && (
-              <div>
-                <p className="mb-3 text-sm font-bold text-[#2b000a]">Property type</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES].map((p) => (
-                    <button
-                      key={p.value}
-                      type="button"
-                      onClick={() => {
-                        pushSearch({ type: p.value });
-                        setFiltersOpen(false);
-                      }}
-                      className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-semibold ${
-                        propertyType === p.value
-                          ? "border-crimson bg-crimson text-white"
-                          : "border-[#e3d3d9] bg-white text-[#2b000a]"
-                      }`}
-                    >
-                      <span className="truncate">{p.label}</span>
-                      {propertyType === p.value && <Check className="h-4 w-4 shrink-0" />}
-                    </button>
-                  ))}
-                </div>
+            <div>
+              <p className="mb-3 text-sm font-bold text-[#2b000a]">Property type</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[{ value: "all", label: "All property types" }, ...PROPERTY_TYPES].map((p) => (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={() => {
+                      pushSearch({ type: p.value });
+                      setFiltersOpen(false);
+                    }}
+                    className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-semibold ${
+                      propertyType === p.value
+                        ? "border-crimson bg-crimson text-white"
+                        : "border-[#e3d3d9] bg-white text-[#2b000a]"
+                    }`}
+                  >
+                    <span className="truncate">{p.label}</span>
+                    {propertyType === p.value && <Check className="h-4 w-4 shrink-0" />}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
