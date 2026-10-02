@@ -496,10 +496,11 @@
   }
   .tabs {
     width: 100%;
+    max-width: 320px;
+    margin: 0 auto 20px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
     padding: 0;
     background: none;
   }

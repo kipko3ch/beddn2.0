@@ -493,6 +493,11 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
 
       </main>
 
+      {/* Popular destinations - always visible when not searching */}
+      {!search && !isExperienceTab && (
+        <PopularDestinations />
+      )}
+
       {/* Localized Search Recommendations */}
       {!search && !isExperienceTab && locationData && (nearStays.length > 0 || popularInCity.length > 0) ? (
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 space-y-2">
@@ -506,7 +511,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {nearStays.map((listing) => (
-                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}
@@ -529,7 +534,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {trendingNearby.map((listing) => (
-                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}
@@ -552,7 +557,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {popularInCity.map((listing) => (
-                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}
@@ -575,7 +580,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 }
               >
                 {weekendGetaways.map((listing) => (
-                  <div key={listing.id} className="w-[170px] shrink-0 snap-start sm:w-[210px]">
+                  <div key={listing.id} className="w-[130px] shrink-0 snap-start sm:w-[160px]">
                     <ListingCard
                       listing={listing}
                       isSaved={savedIds.has(listing.id)}
@@ -591,18 +596,15 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
       ) : (
         /* Fallback sections when geolocation is denied or loading */
         !search && !isExperienceTab && (
-          <>
-            <PopularDestinations />
-            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-              <FeaturedRail
-                placement="homepage_featured"
-                heading="Featured stays"
-                savedIds={savedIds}
-                onToggleSave={toggle}
-                priceMode={priceMode}
-              />
-            </div>
-          </>
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <FeaturedRail
+              placement="homepage_featured"
+              heading="Featured stays"
+              savedIds={savedIds}
+              onToggleSave={toggle}
+              priceMode={priceMode}
+            />
+          </div>
         )
       )}
 

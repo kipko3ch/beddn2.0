@@ -10,7 +10,7 @@ import type { Listing } from "@/lib/types";
 export function ListingCardSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="aspect-square rounded-xl bg-muted" />
+      <div className="aspect-[4/3] sm:aspect-square rounded-xl bg-muted" />
       <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
       <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
       <div className="mt-3 flex gap-1.5">
@@ -74,7 +74,7 @@ export function ListingCard({
       onMouseEnter={() => onHover?.(listing.id)}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
+      <div className="relative aspect-[4/3] sm:aspect-square overflow-hidden rounded-xl bg-muted">
         {image ? (
           <Image
             src={image}

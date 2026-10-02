@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
+import { Icon } from "@iconify/react";
 import type { User } from "@supabase/supabase-js";
 import {
   ArrowLeft,
@@ -32,15 +33,22 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const TAGS = [
-  { value: "clean", label: "Clean", icon: Sparkles },
-  { value: "safe", label: "Safe", icon: ShieldCheck },
-  { value: "good_host", label: "Good host", icon: UserRound },
-  { value: "accurate_photos", label: "Accurate photos", icon: Camera },
-  { value: "easy_check_in", label: "Easy check-in", icon: KeyRound },
-  { value: "good_value", label: "Good value", icon: Tag },
-  { value: "good_location", label: "Good location", icon: MapPin },
+  { value: "clean", label: "Clean", icon: "solar:magic-stick-3-bold-duotone" },
+  { value: "safe", label: "Safe", icon: "solar:shield-check-bold-duotone" },
+  { value: "good_host", label: "Good host", icon: "solar:user-hand-up-bold-duotone" },
+  { value: "accurate_photos", label: "Accurate photos", icon: "solar:camera-bold-duotone" },
+  { value: "easy_check_in", label: "Easy check-in", icon: "solar:key-square-bold-duotone" },
+  { value: "good_value", label: "Good value", icon: "solar:tag-price-bold-duotone" },
+  { value: "good_location", label: "Good location", icon: "solar:map-point-wave-bold-duotone" },
 ] as const;
 
 const MAX = 1000;
@@ -110,6 +118,7 @@ function ReviewInner() {
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const [communityReviews, setCommunityReviews] = useState<PublicReview[]>([]);
+  const [impactOpen, setImpactOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -242,7 +251,7 @@ function ReviewInner() {
   // ACTIVE REVIEW COMPOSER VIEW: User has picked a place to review
   if (activeListing) {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:py-12">
+      <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:py-12 pb-36 sm:pb-28">
         <div className="mb-6 flex items-center justify-between">
           <button
             type="button"
@@ -355,7 +364,7 @@ function ReviewInner() {
               <p className="mb-1 text-sm font-bold text-[#2b000a]">What stood out?</p>
               <p className="mb-3 text-xs text-neutral-500">Select all that apply to your stay</p>
               <div className="flex flex-wrap gap-2">
-                {TAGS.map(({ value, label, icon: Icon }) => {
+                {TAGS.map(({ value, label, icon: tagIcon }) => {
                   const on = tags.includes(value);
                   return (
                     <button
@@ -368,7 +377,7 @@ function ReviewInner() {
                           : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
                       }`}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon icon={tagIcon} className="h-4 w-4" />
                       {label}
                       {on && (
                         <span className="flex size-4 items-center justify-center rounded-full bg-[#800020] text-white">
@@ -459,13 +468,15 @@ function ReviewInner() {
               <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 font-medium">{status.message}</p>
             )}
 
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="h-12 w-full rounded-full bg-[#800020] py-3 text-base font-bold text-white hover:bg-neutral-800 transition"
-            >
-              {submitting ? "Submitting review…" : "Submit Review"}
-            </Button>
+            <div className="pt-2 pb-12 sm:pb-4">
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="h-12 w-full rounded-full bg-[#800020] py-3 text-base font-bold text-white shadow-md hover:bg-neutral-800 transition"
+              >
+                {submitting ? "Submitting review…" : "Submit Review"}
+              </Button>
+            </div>
           </form>
         )}
       </main>
@@ -474,7 +485,7 @@ function ReviewInner() {
 
   // TRIPADVISOR-INSPIRED REVIEW HUB LANDING PAGE
   return (
-    <div className="min-h-screen bg-[#faf8f7] pb-24">
+    <div className="min-h-screen bg-[#faf8f7] pb-36 sm:pb-28">
       {/* Hero: "Write a review, make someone's trip" */}
       <section className="border-b border-neutral-200/80 bg-[#f4f1ef] py-14 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
@@ -603,7 +614,7 @@ function ReviewInner() {
               className="group flex flex-col items-center justify-center rounded-3xl border border-neutral-200/90 bg-white p-5 sm:p-6 shadow-xs hover:border-[#800020] hover:shadow-md transition text-center"
             >
               <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] group-hover:scale-105 transition-transform">
-                <Calendar className="h-6 w-6" />
+                <Icon icon="solar:bed-bold-duotone" className="h-6 w-6" />
               </div>
               <p className="text-sm sm:text-base font-bold text-[#181113]">Overnight Stays</p>
               <p className="mt-1 text-xs text-neutral-500">Apartments, villas, and boutique homes</p>
@@ -618,7 +629,7 @@ function ReviewInner() {
               className="group flex flex-col items-center justify-center rounded-3xl border border-neutral-200/90 bg-white p-5 sm:p-6 shadow-xs hover:border-[#800020] hover:shadow-md transition text-center"
             >
               <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] group-hover:scale-105 transition-transform">
-                <Clock className="h-6 w-6" />
+                <Icon icon="solar:clock-circle-bold-duotone" className="h-6 w-6" />
               </div>
               <p className="text-sm sm:text-base font-bold text-[#181113]">Hourly Spaces</p>
               <p className="mt-1 text-xs text-neutral-500">Workspaces, day use, and short stays</p>
@@ -628,7 +639,7 @@ function ReviewInner() {
       </section>
 
       {/* Main Body: TripAdvisor Two-Column Split */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-24 sm:pb-16">
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           {/* Left Column: Your Reviews & Trust standard */}
           <div>
@@ -678,36 +689,36 @@ function ReviewInner() {
               )}
             </div>
 
-            {/* Why Beddn Reviews Matter (Trust cards) */}
+            {/* Why Beddn Reviews Matter (Trust cards) with clean Iconify icons */}
             <div className="mt-8 rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-xs">
               <h3 className="font-brand text-xl text-[#181113]">How Beddn reviews work</h3>
-              <div className="mt-6 grid gap-5 sm:grid-cols-3">
-                <div>
-                  <div className="mb-2 flex size-8 items-center justify-center rounded-xl bg-[#fbf0f3] text-[#800020]">
-                    <ShieldCheck className="h-4 w-4" />
+              <div className="mt-6 grid gap-6 sm:grid-cols-3">
+                <div className="flex flex-col items-start">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020]">
+                    <Icon icon="solar:shield-check-bold-duotone" className="h-5 w-5" />
                   </div>
-                  <p className="text-xs font-bold text-[#181113]">100% Verified</p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
+                  <p className="text-sm font-bold text-[#181113]">100% Verified</p>
+                  <p className="mt-1 text-xs leading-relaxed text-neutral-500">
                     Reviews come exclusively from travelers who stayed through Beddn.
                   </p>
                 </div>
 
-                <div>
-                  <div className="mb-2 flex size-8 items-center justify-center rounded-xl bg-[#fbf0f3] text-[#800020]">
-                    <MessageSquare className="h-4 w-4" />
+                <div className="flex flex-col items-start">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020]">
+                    <Icon icon="solar:chat-round-line-bold-duotone" className="h-5 w-5" />
                   </div>
-                  <p className="text-xs font-bold text-[#181113]">Unedited Feedback</p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
+                  <p className="text-sm font-bold text-[#181113]">Unedited Feedback</p>
+                  <p className="mt-1 text-xs leading-relaxed text-neutral-500">
                     Hosts cannot edit or delete ratings. Honest experiences help all guests.
                   </p>
                 </div>
 
-                <div>
-                  <div className="mb-2 flex size-8 items-center justify-center rounded-xl bg-[#fbf0f3] text-[#800020]">
-                    <HeartHandshake className="h-4 w-4" />
+                <div className="flex flex-col items-start">
+                  <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020]">
+                    <Icon icon="solar:heart-handshake-bold-duotone" className="h-5 w-5" />
                   </div>
-                  <p className="text-xs font-bold text-[#181113]">Community Support</p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
+                  <p className="text-sm font-bold text-[#181113]">Community Support</p>
+                  <p className="mt-1 text-xs leading-relaxed text-neutral-500">
                     Your tips support local hosts and guide future travelers across East Africa.
                   </p>
                 </div>
@@ -717,19 +728,28 @@ function ReviewInner() {
 
           {/* Right Column: TripAdvisor Promo & Missing Place Cards */}
           <div className="space-y-6">
-            {/* Impact Promo Card */}
-            <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-xs">
+            {/* Interactive Impact Promo Card */}
+            <div
+              onClick={() => setImpactOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && setImpactOpen(true)}
+              className="group cursor-pointer overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-xs hover:border-[#800020]/40 hover:shadow-md transition text-left"
+            >
               <div className="relative h-44 w-full bg-neutral-800">
                 <Image
                   src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=800&auto=format&fit=crop"
                   alt="Beddn travel community"
                   fill
-                  className="object-cover opacity-80"
+                  className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-300">Community Impact</span>
-                  <p className="text-base font-bold leading-snug">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-rose-300">
+                    <Icon icon="solar:stars-line-bold-duotone" className="h-3.5 w-3.5" />
+                    Community Impact
+                  </span>
+                  <p className="text-base font-bold leading-snug mt-0.5">
                     See how your reviews help travelers and business owners
                   </p>
                 </div>
@@ -739,12 +759,14 @@ function ReviewInner() {
                   Every candid review gives hosts actionable feedback to elevate their stays and gives fellow guests the
                   confidence to book.
                 </p>
-                <Link
-                  href={ROUTES.home}
-                  className="mt-4 inline-flex h-9 items-center justify-center rounded-full border border-neutral-300 px-4 text-xs font-bold text-neutral-800 hover:bg-neutral-50 transition"
-                >
-                  Explore popular stays
-                </Link>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#800020] group-hover:underline">
+                    View community impact & story →
+                  </span>
+                  <span className="flex size-7 items-center justify-center rounded-full bg-[#fbf0f3] text-[#800020]">
+                    <Icon icon="solar:arrow-right-linear" className="h-4 w-4" />
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -868,6 +890,82 @@ function ReviewInner() {
           </section>
         )}
       </div>
+
+      {/* Community Impact Modal Dialog */}
+      <Dialog open={impactOpen} onOpenChange={setImpactOpen}>
+        <DialogContent className="max-w-md rounded-3xl p-6 sm:p-7 bg-white text-left">
+          <DialogHeader>
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] mb-2">
+              <Icon icon="solar:users-group-rounded-bold-duotone" className="h-6 w-6" />
+            </div>
+            <DialogTitle className="font-brand text-2xl text-[#181113]">
+              Community Impact at Beddn
+            </DialogTitle>
+            <DialogDescription className="text-xs text-neutral-500">
+              How authentic reviews elevate hospitality across East Africa
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 space-y-3.5">
+            <div className="flex gap-3.5 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-3.5">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                <Icon icon="solar:star-bold-duotone" className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#181113]">100% Genuine, Verified Stays</p>
+                <p className="mt-0.5 text-[11px] text-neutral-500 leading-relaxed">
+                  Only travelers with confirmed bookings can post reviews. No paid endorsements or manipulated boosts.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-3.5">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                <Icon icon="solar:growth-bold-duotone" className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#181113]">Supporting Local Entrepreneurs</p>
+                <p className="mt-0.5 text-[11px] text-neutral-500 leading-relaxed">
+                  High ratings directly boost host earnings and help local operators build sustainable hospitality businesses.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-3.5">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-[#800020]">
+                <Icon icon="solar:chat-round-check-bold-duotone" className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#181113]">Actionable Feedback Loop</p>
+                <p className="mt-0.5 text-[11px] text-neutral-500 leading-relaxed">
+                  Your feedback helps hosts quickly upgrade amenities, Wi-Fi, and check-in smoothness for the next traveler.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setImpactOpen(false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                setTimeout(() => searchInputRef.current?.focus(), 300);
+              }}
+              className="inline-flex h-11 w-full items-center justify-center rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-neutral-800 transition"
+            >
+              Write a review now
+            </button>
+            <button
+              type="button"
+              onClick={() => setImpactOpen(false)}
+              className="inline-flex h-9 w-full items-center justify-center rounded-full border border-neutral-200 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition"
+            >
+              Close
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

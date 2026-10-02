@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { useSavedListings } from "@/lib/hooks";
 import { ArrowLeft, Check, ChevronDown, LayoutGrid, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { PROPERTY_TYPES } from "@/lib/property-types";
 import { ROUTES } from "@/lib/routes";
 import type { Listing } from "@/lib/types";
@@ -252,6 +253,10 @@ export function SearchContent() {
     if (card) {
       card.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
+    const carouselCard = document.getElementById(`carousel-card-${listing.id}`);
+    if (carouselCard) {
+      carouselCard.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
   }
 
   function handlePinSelect(listing: Listing) {
@@ -300,11 +305,11 @@ export function SearchContent() {
       : "Add guests";
 
   const mapView = (
-    <>
+    <div className="relative h-full w-full">
       {mapCenter && listings.length === 0 && (
-        <div className="absolute left-4 top-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-sm">
+        <div className="absolute left-4 top-4 z-10 max-w-[calc(100%-2rem)] rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-md border border-neutral-200">
           <p className="font-bold text-[#181113]">Showing searched area</p>
-          <p className="truncate text-muted-foreground">{mapLabel || q}</p>
+          <p className="truncate text-xs text-muted-foreground">{mapLabel || q}</p>
         </div>
       )}
       <Map
@@ -315,8 +320,9 @@ export function SearchContent() {
         onPinSelect={handlePinSelect}
         priceMode={isExperienceSearch ? "experience" : priceMode}
         isBroad={isBroadLocation}
+        className="h-full w-full"
       />
-    </>
+    </div>
   );
 
   const resultsContent = (
@@ -637,53 +643,128 @@ export function SearchContent() {
         </SheetContent>
       </Sheet>
 
-      {/* Mobile / tablet: map preview with the results panel sliding over it */}
-      {!isDesktop && (
-        <section className="lg:hidden">
-          <div className="relative h-[40vh] min-h-[260px] bg-muted">{!loading && !showMap && mapView}</div>
-          <div className="relative z-10 -mt-6 rounded-t-3xl bg-white px-4 pb-12 pt-3 shadow-[0_-6px_24px_rgba(0,0,0,0.12)] sm:px-6">
-            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-black/15" />
-            {resultsContent}
-          </div>
+      {/* Mobile / tablet: clean results list when not in map mode */}
+      {!isDesktop && !showMap && (
+        <section className="lg:hidden px-4 py-4 pb-36 sm:px-6">
+          {resultsContent}
         </section>
       )}
 
+      {/* Mobile: full-screen interactive map view when showMap is true */}
+      {!isDesktop && showMap && (
+        <div className="fixed inset-0 z-50 bg-white lg:hidden">
+          <div className="absolute inset-0">{!loading && mapView}</div>
+
+          {/* Top Floating Control Bar */}
+          <div className="absolute top-3 inset-x-3 z-30 flex items-center justify-between pointer-events-none">
+            <button
+              type="button"
+              onClick={() => setShowMap(false)}
+              aria-label="Back to list"
+              className="pointer-events-auto flex size-10 items-center justify-center rounded-full bg-white shadow-md border border-neutral-200 text-[#181113] hover:bg-neutral-50 transition"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="pointer-events-auto rounded-full bg-white/95 px-4 py-2 shadow-md border border-neutral-200 backdrop-blur-sm">
+              <span className="text-xs font-bold text-[#181113]">
+                {listings.length} {listings.length === 1 ? "place" : "places"} found
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowMap(false)}
+              aria-label="Close map"
+              className="pointer-events-auto flex size-10 items-center justify-center rounded-full bg-white shadow-md border border-neutral-200 text-[#181113] hover:bg-neutral-50 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Bottom Swipeable Listings Carousel */}
+          {listings.length > 0 && (
+            <div className="absolute bottom-28 inset-x-0 z-30 px-3">
+              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {listings.map((item) => {
+                  const isSelected = highlightedId === item.id;
+                  const img = item.listing_images?.[0]?.url;
+                  const price =
+                    priceMode === "overnight" && item.overnight_price
+                      ? item.overnight_price
+                      : priceMode === "hourly" && item.hourly_price
+                      ? item.hourly_price
+                      : item.hourly_price ?? item.overnight_price ?? 0;
+                  const unit = priceMode === "overnight" ? "night" : "hr";
+
+                  return (
+                    <div
+                      key={item.id}
+                      id={`carousel-card-${item.id}`}
+                      onClick={() => handlePinSelect(item)}
+                      className={`flex w-[290px] shrink-0 snap-center cursor-pointer items-center gap-3 rounded-2xl bg-white p-2.5 shadow-xl transition-all border ${
+                        isSelected ? "border-[#800020] ring-2 ring-[#800020]/25" : "border-neutral-200/90"
+                      }`}
+                    >
+                      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+                        {img ? (
+                          <Image src={img} alt="" fill className="object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-neutral-100 text-[10px] text-neutral-400">
+                            No image
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-bold text-[#181113]">{item.title || item.name}</p>
+                        <p className="truncate text-[11px] text-neutral-500">
+                          {item.area ? `${item.area}, ` : ""}{item.city}
+                        </p>
+                        <div className="mt-1 flex items-baseline justify-between">
+                          <span className="text-xs font-extrabold text-[#800020]">
+                            ${price} <span className="text-[10px] font-normal text-neutral-500">/{unit}</span>
+                          </span>
+                          <span className="rounded-full bg-[#fbf0f3] px-2 py-0.5 text-[10px] font-bold text-[#800020]">
+                            View →
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Floating toggle button: View list */}
+          <button
+            type="button"
+            onClick={() => setShowMap(false)}
+            className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95"
+          >
+            <Icon icon="solar:list-bold-duotone" className="h-4 w-4 text-[#800020] bg-white rounded-full p-0.5" />
+            <span>Show list</span>
+          </button>
+        </div>
+      )}
+
+      {/* Floating View Toggle Button on Mobile when in list view: positioned at bottom-20 z-40 above bottom nav */}
+      {!showMap && (
+        <button
+          type="button"
+          onClick={() => setShowMap(true)}
+          className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95 lg:hidden"
+        >
+          <Icon icon="solar:map-bold-duotone" className="h-4 w-4 text-[#800020] bg-white rounded-full p-0.5" />
+          <span>Show map</span>
+        </button>
+      )}
+
       {/* Desktop: results + sticky side map */}
-      <section className="mx-auto hidden max-w-7xl grid-cols-[minmax(0,1fr)_minmax(360px,42%)] gap-6 px-4 py-6 sm:px-6 lg:grid lg:px-8">
+      <section className="mx-auto hidden max-w-7xl grid-cols-[minmax(0,1fr)_minmax(380px,44%)] gap-8 px-4 py-6 sm:px-6 lg:grid lg:px-8">
         <div>{resultsContent}</div>
-        <div className="relative overflow-hidden rounded-2xl border bg-muted lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)]">
+        <div className="relative overflow-hidden rounded-3xl border border-neutral-200/90 shadow-xs bg-muted lg:sticky lg:top-20 lg:h-[calc(100vh-6.5rem)]">
           {isDesktop && !loading && mapView}
         </div>
       </section>
-
-      {/* Mobile: full-screen map overlay */}
-      {showMap && (
-        <div className="fixed inset-0 z-50 bg-white lg:hidden">
-          <div className="absolute inset-0">{!loading && mapView}</div>
-          <button
-            onClick={() => setShowMap(false)}
-            aria-label="Close map"
-            className="absolute right-4 top-4 z-10 rounded-full bg-white p-2.5 shadow-md"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => setShowMap(false)}
-            className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-6 py-3 text-sm font-medium text-white shadow-lg"
-          >
-            View list
-          </button>
-        </div>
-      )}
-
-      {!showMap && (
-        <button
-          onClick={() => setShowMap(true)}
-          className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-6 py-3 text-sm font-medium text-white shadow-lg lg:hidden"
-        >
-          <MapPin className="h-4 w-4" /> Map
-        </button>
-      )}
     </main>
   );
 }

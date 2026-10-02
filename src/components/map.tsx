@@ -419,5 +419,5 @@ export function Map({
     };
   }, [listings, highlightedId, approximate, onPinClick, onPinSelect, priceMode, isBroad]);
 
-  return <div ref={containerRef} className={className} />;
+  return <div ref={containerRef} className={className || "h-full w-full min-h-[300px]"} />;
 }
