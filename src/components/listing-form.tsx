@@ -50,8 +50,8 @@ const CATEGORY_OPTIONS: {
 }[] = [
   {
     value: "hourly",
-    label: "Hourly stay",
-    description: "Rooms, workspaces, or private places booked by the hour.",
+    label: "Hourly stay or space",
+    description: "Conferences, halls, event grounds, workspaces, or rooms booked by the hour.",
     icon: Clock,
   },
   {
@@ -294,9 +294,21 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     );
   }, [propertySearch]);
 
-  const popularPropertyTypes = PROPERTY_TYPES.filter((p) =>
-    ["apartment", "house", "private_room", "studio", "villa", "hotel_room"].includes(p.value)
-  );
+  const popularPropertyTypes = PROPERTY_TYPES.filter((p) => {
+    if (categories.includes("hourly") && !categories.includes("overnight")) {
+      return [
+        "conference_hall",
+        "event_hall",
+        "event_grounds",
+        "meeting_room",
+        "conference_room",
+        "workspace",
+        "studio_space",
+        "private_room",
+      ].includes(p.value);
+    }
+    return ["apartment", "house", "private_room", "studio", "villa", "hotel_room"].includes(p.value);
+  });
 
   // --- Wizard steps ---------------------------------------------------------
   const steps: { title: string; subtitle?: string; valid: boolean; content: React.ReactNode }[] = [];

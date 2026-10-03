@@ -51,13 +51,17 @@ export const PROPERTY_TYPES: PropertyType[] = [
   { value: "camper", label: "Camper / RV", icon: "mdi:rv-truck", group: "Unique" },
   { value: "dome", label: "Dome", icon: "mdi:dome-light", group: "Unique" },
 
-  // Spaces & experiences
+  // Spaces & hourly venues
+  { value: "conference_hall", label: "Conference hall & center", icon: "mdi:presentation", group: "Spaces" },
+  { value: "event_hall", label: "Event & banquet hall", icon: "mdi:party-popper", group: "Spaces" },
+  { value: "event_grounds", label: "Event grounds & gardens", icon: "mdi:pine-tree", group: "Spaces" },
+  { value: "meeting_room", label: "Meeting room", icon: "mdi:table-chair", group: "Spaces" },
+  { value: "conference_room", label: "Conference room", icon: "mdi:presentation", group: "Spaces" },
   { value: "event_space", label: "Event space", icon: "mdi:party-popper", group: "Spaces" },
   { value: "workspace", label: "Workspace / office", icon: "mdi:briefcase", group: "Spaces" },
   { value: "studio_space", label: "Studio space", icon: "mdi:camera", group: "Spaces" },
-  { value: "conference_room", label: "Conference room", icon: "mdi:presentation", group: "Spaces" },
-  { value: "venue", label: "Venue", icon: "mdi:stadium", group: "Spaces" },
-  { value: "other", label: "Other", icon: "mdi:dots-horizontal-circle", group: "Spaces" },
+  { value: "venue", label: "Outdoor venue / grounds", icon: "mdi:stadium", group: "Spaces" },
+  { value: "other", label: "Other space", icon: "mdi:dots-horizontal-circle", group: "Spaces" },
 ];
 
 export const PROPERTY_TYPE_LABEL: Record<string, string> = Object.fromEntries(

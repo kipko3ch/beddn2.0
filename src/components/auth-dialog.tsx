@@ -18,12 +18,14 @@ import { ROUTES } from "@/lib/routes";
 
 export function AuthDialog({
   children,
+  mode = "signin",
   defaultHostIntent = false,
   defaultOpen = false,
   open: openProp,
   onOpenChange,
 }: {
   children?: React.ReactNode;
+  mode?: "signin" | "signup";
   defaultHostIntent?: boolean;
   /** Start open without needing a trigger click (e.g. auto-prompt login). */
   defaultOpen?: boolean;
@@ -35,6 +37,7 @@ export function AuthDialog({
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const open = openProp ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
+  const [authMode, setAuthMode] = useState<"signin" | "signup">(mode);
   const [showEmail, setShowEmail] = useState(false);
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState("");
@@ -130,12 +133,18 @@ export function AuthDialog({
           <div className="mb-8">
             <p className="mb-6 font-brand text-3xl leading-none text-[#2b000a]">Beddn</p>
             <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
-              {defaultHostIntent ? "Start hosting on Beddn." : "Log in once. You are signed up."}
+              {defaultHostIntent
+                ? "Start hosting on Beddn."
+                : authMode === "signup"
+                ? "Create your Beddn account."
+                : "Welcome back to Beddn."}
             </DialogTitle>
             <DialogDescription className="mt-3 max-w-sm">
               {defaultHostIntent
                 ? "Create your account, then set up your host profile and publish your first listing."
-                : "Save trips, reserve faster, and manage your bookings with one secure account."}
+                : authMode === "signup"
+                ? "Sign up in seconds to save stays, reserve faster, and connect with verified hosts."
+                : "Sign in to access your saved trips, manage bookings, and contact hosts."}
             </DialogDescription>
           </div>
 
@@ -218,7 +227,41 @@ export function AuthDialog({
             )}
           </div>
 
-          <p className="mt-10 text-center text-sm text-muted-foreground">
+          {!defaultHostIntent && (
+            <div className="mt-5 text-center text-xs text-muted-foreground">
+              {authMode === "signup" ? (
+                <p>
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode("signin");
+                      setError("");
+                    }}
+                    className="font-bold text-[#800020] underline-offset-4 hover:underline"
+                  >
+                    Sign in
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Don&apos;t have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode("signup");
+                      setError("");
+                    }}
+                    className="font-bold text-[#800020] underline-offset-4 hover:underline"
+                  >
+                    Sign up
+                  </button>
+                </p>
+              )}
+            </div>
+          )}
+
+          <p className="mt-8 text-center text-xs text-muted-foreground">
             By proceeding, you agree to our{" "}
             <Link href={ROUTES.terms} className="underline">
               Terms of Use

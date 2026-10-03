@@ -727,7 +727,7 @@ function ReviewInner() {
 
                 <div className="flex flex-col items-start">
                   <div className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]/50">
-                    <Icon icon="solar:heart-handshake-bold-duotone" className="h-5 w-5" />
+                    <Icon icon="solar:users-group-rounded-bold-duotone" className="h-5 w-5" />
                   </div>
                   <p className="text-sm font-bold text-[#181113]">Community Support</p>
                   <p className="mt-1 text-xs leading-relaxed text-neutral-500">

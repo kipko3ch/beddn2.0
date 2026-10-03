@@ -122,6 +122,7 @@ function MenuTrigger({
  */
 function NavSheet({
   user,
+  avatarUrl,
   showHostWorkspace,
   isAdmin,
   onSignOut,
@@ -130,6 +131,7 @@ function NavSheet({
   children,
 }: {
   user: User | null;
+  avatarUrl?: string;
   showHostWorkspace: boolean;
   isAdmin: boolean;
   onSignOut: () => void;
@@ -149,6 +151,44 @@ function NavSheet({
           <SheetDescription className="sr-only">Navigate Beddn</SheetDescription>
         </SheetHeader>
 
+        {/* Auth CTA or User Profile Card */}
+        <div className="border-b p-4">
+          {!user ? (
+            <div className="flex flex-col gap-2">
+              <AuthDialog mode="signup">
+                <Button className="h-11 w-full rounded-full bg-[#800020] text-sm font-bold text-white shadow-sm hover:bg-[#600018] transition">
+                  <Icon icon="line-md:account" className="mr-2 h-4 w-4" />
+                  Sign up
+                </Button>
+              </AuthDialog>
+              <AuthDialog mode="signin">
+                <Button
+                  variant="outline"
+                  className="h-11 w-full rounded-full border-[#2b000a]/25 text-sm font-bold text-[#2b000a] hover:bg-[#fbf7f8] hover:border-[#2b000a] transition"
+                >
+                  <Icon icon="line-md:log-in" className="mr-2 h-4 w-4" />
+                  Sign in
+                </Button>
+              </AuthDialog>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-2xl bg-[#fbf7f8] p-3 border border-[#f1e6ea]">
+              <Avatar className="size-10 border border-[#800020]/20">
+                <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
+                <AvatarFallback className="bg-[#800020] font-semibold text-white">
+                  {getInitials(user)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-[#2b000a]">
+                  {user.user_metadata?.full_name || user.email?.split("@")[0] || "Account"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
           <SheetClose render={<Link href={ROUTES.home} className={item} />}>
             <Icon icon="line-md:search" className="h-4 w-4" /> Browse all
@@ -159,14 +199,6 @@ function NavSheet({
           <SheetClose render={<Link href={ROUTES.saved} className={item} />}>
             <Icon icon="line-md:heart" className="h-4 w-4" /> Saved trips
           </SheetClose>
-
-          {!user && (
-            <AuthDialog>
-              <button className={`${item} w-full text-left`}>
-                <Icon icon="line-md:log-in" className="h-4 w-4" /> Login or sign up
-              </button>
-            </AuthDialog>
-          )}
 
           {showHostWorkspace ? (
             <>
@@ -310,6 +342,7 @@ export function Header() {
                 when signed out. Opens the full menu — no separate dropdown. */}
             <NavSheet
               user={user}
+              avatarUrl={avatarUrl}
               showHostWorkspace={showHostWorkspace}
               isAdmin={isAdmin}
               onSignOut={handleSignOut}
@@ -324,6 +357,7 @@ export function Header() {
           <div className="absolute left-4 flex items-center gap-1.5">
             <NavSheet
               user={user}
+              avatarUrl={avatarUrl}
               showHostWorkspace={showHostWorkspace}
               isAdmin={isAdmin}
               onSignOut={handleSignOut}

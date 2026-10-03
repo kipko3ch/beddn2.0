@@ -311,7 +311,7 @@ export function PropertyReviewClient({ listing }: { listing: ListingProps }) {
           {/* ================= LEFT COLUMN ================= */}
           <aside className="lg:col-span-5 lg:sticky lg:top-24 self-start space-y-6">
             <div>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#2b000a] tracking-tight leading-[1.1]">
+              <h1 className="font-brand text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#2b000a] tracking-tight leading-[1.1]">
                 Tell us, how was your stay?
               </h1>
               <p className="mt-2 text-sm sm:text-base text-stone-600">

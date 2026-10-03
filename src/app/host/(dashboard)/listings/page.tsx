@@ -28,23 +28,16 @@ const STATUS_BADGE: Record<string, string> = {
   archived: "bg-zinc-200 text-zinc-600 hover:bg-zinc-200",
 };
 
-type Tab = "stays" | "experiences";
 type StatusTarget = "active" | "paused" | "archived";
 
 function effectiveStatus(listing: Listing): string {
   return listing.listing_status ?? (listing.is_active ? "active" : "draft");
 }
 
-function isExperience(listing: Listing): boolean {
-  const cats = (listing.categories || listing.category || []) as string[];
-  return cats.includes("experience") && !cats.includes("hourly") && !cats.includes("overnight");
-}
-
 export default function ListingsPage() {
   const supabase = useMemo(() => createClient(), []);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>("stays");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -122,9 +115,7 @@ export default function ListingsPage() {
     }
   }
 
-  const stays = listings.filter((l) => !isExperience(l));
-  const experiences = listings.filter((l) => isExperience(l));
-  const rows = tab === "stays" ? stays : experiences;
+  const rows = listings;
 
   return (
     <div>
@@ -132,32 +123,11 @@ export default function ListingsPage() {
         <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
         <div className="flex flex-wrap gap-2">
           <Link href="/host/listings/new">
-            <Button variant="outline" className="gap-1 rounded-full bg-white">
-              <Icon icon="line-md:home" className="h-4 w-4" /> Add stay
-            </Button>
-          </Link>
-          <Link href="/host/listings/new?type=experience">
-            <Button variant="outline" className="gap-1 rounded-full bg-white">
-              <Icon icon="line-md:star" className="h-4 w-4" /> Add experience
+            <Button className="gap-1.5 rounded-full bg-[#800020] px-5 font-semibold text-white shadow-sm hover:bg-[#600018]">
+              <Icon icon="line-md:plus" className="h-4 w-4" /> New listing
             </Button>
           </Link>
         </div>
-      </div>
-
-      {/* Stays / Experiences tabs */}
-      <div className="mb-4 inline-flex rounded-full border bg-white p-1 text-sm font-semibold shadow-sm">
-        {(["stays", "experiences"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={`rounded-full px-4 py-1.5 capitalize transition-colors ${
-              tab === t ? "bg-[#2b000a] text-white" : "text-[#6f6568] hover:bg-[#f5f1f2] hover:text-[#2b000a]"
-            }`}
-          >
-            {t === "stays" ? `Stays (${stays.length})` : `Experiences (${experiences.length})`}
-          </button>
-        ))}
       </div>
 
       <div className="mb-5 rounded-2xl border bg-[#fbf7f8] p-4 text-sm text-[#2b000a]">
@@ -175,12 +145,8 @@ export default function ListingsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-listings_xklz7s.png"
-          title={tab === "experiences" ? "No experiences yet" : "No stays yet"}
-          subtitle={
-            tab === "experiences"
-              ? "Add an experience — a tour, class, or activity guests can book."
-              : "Create your first stay to start receiving booking requests."
-          }
+          title="No listings yet"
+          subtitle="Create your first listing to start receiving booking requests."
           size="sm"
         />
       ) : (
