@@ -27,10 +27,10 @@ let CachedMeshGradient: React.ComponentType<any> | null = null;
 
 export const MeshGradient = React.memo(function MeshGradient({
   colors: colorsProp,
-  color1 = "#4c9bff",
-  color2 = "#1f4fd8",
-  color3 = "#0a1a4a",
-  color4,
+  color1 = "#800020",
+  color2 = "#4a0014",
+  color3 = "#1f0007",
+  color4 = "#2b000a",
   speed = 1,
   distortion = 1,
   swirl = 0.57,
@@ -85,14 +85,15 @@ export const MeshGradient = React.memo(function MeshGradient({
   }, []);
 
   if (!mounted || !ShaderComp) {
+    const fallbackBg = colors.length >= 2 ? `linear-gradient(135deg, ${colors.join(", ")})` : undefined;
     return (
       <div
         ref={containerRef}
         className={cn(
-          "size-full bg-gradient-to-tr from-[#0a1a4a] via-[#1f4fd8] to-[#4c9bff]",
+          "size-full bg-gradient-to-tr from-[#1f0007] via-[#4a0014] to-[#800020]",
           className,
         )}
-        style={style}
+        style={{ ...style, background: fallbackBg || style?.background }}
       />
     );
   }

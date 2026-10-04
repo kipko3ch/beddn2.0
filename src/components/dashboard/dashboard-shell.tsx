@@ -16,7 +16,6 @@ import {
   Compass,
   LayoutDashboard,
   CheckCircle2,
-  Search,
 } from "lucide-react";
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { createClient } from "@/lib/supabase/client";
@@ -318,23 +317,16 @@ export function DashboardShell({
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
           <div className="relative mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            {/* Left: Mobile trigger & Search Pill */}
+            {/* Left: Mobile trigger */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
                 className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 md:hidden"
+                aria-label="Open navigation menu"
               >
                 <Menu className="size-5" />
               </button>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-white/60" />
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="h-8.5 w-44 sm:w-56 rounded-full border border-white/20 bg-white/10 pl-8 pr-3 text-xs text-white placeholder:text-white/50 backdrop-blur-sm outline-none transition focus:border-white/40 focus:bg-white/15"
-                />
-              </div>
             </div>
 
             {/* Center: Greeting with User's Name */}

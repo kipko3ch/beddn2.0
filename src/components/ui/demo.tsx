@@ -9,10 +9,10 @@ import {
 export interface MeshGradientDemoProps extends MeshGradientProps {}
 
 export default function Demo({
-  color1 = "#4c9bff",
-  color2 = "#1f4fd8",
-  color3 = "#0a1a4a",
-  color4,
+  color1 = "#800020",
+  color2 = "#4a0014",
+  color3 = "#1f0007",
+  color4 = "#2b000a",
   colors,
   speed = 1,
   distortion = 1,
