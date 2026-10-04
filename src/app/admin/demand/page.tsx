@@ -183,7 +183,7 @@ export default function AdminDemandPage() {
         <MetricCard
           label="Unmatched Shortages"
           value={totalUnmatched.toLocaleString()}
-          icon={<AlertTriangle className="size-5 text-rose-600" />}
+          icon={<AlertTriangle className="size-5" />}
           tone="rose"
           trend={{
             value: `${totalUnmatched} zero-result searches`,
@@ -195,7 +195,7 @@ export default function AdminDemandPage() {
         <MetricCard
           label="Critical Supply Gaps"
           value={criticalGapsCount.toLocaleString()}
-          icon={<MapPin className="size-5 text-amber-600" />}
+          icon={<MapPin className="size-5" />}
           tone="amber"
           trend={{
             value: `${destinationGaps.length} destinations monitored`,
@@ -207,7 +207,7 @@ export default function AdminDemandPage() {
         <MetricCard
           label="Supply Fulfillment Rate"
           value={`${fulfillmentRate}%`}
-          icon={<CheckCircle2 className="size-5 text-emerald-600" />}
+          icon={<CheckCircle2 className="size-5" />}
           tone="emerald"
           trend={{
             value: `${fulfillmentRate}% satisfied`,

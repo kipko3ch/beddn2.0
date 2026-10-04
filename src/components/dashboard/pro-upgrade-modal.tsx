@@ -1,9 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Star, Check, Zap, Crown, ArrowRight, ShieldCheck } from "lucide-react";
+import { Check, Sparkles, Star, ArrowRight, X } from "lucide-react";
 
 export function ProUpgradeModal({
   trigger,
@@ -25,68 +32,92 @@ export function ProUpgradeModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger ? (trigger as any) : (
-        <button className="rounded-full bg-white text-stone-900 font-bold px-4 py-2 text-xs shadow-sm hover:bg-stone-100 transition">
-          Upgrade Pro
-        </button>
-      )} />
-      <DialogContent className="max-w-2xl overflow-hidden rounded-3xl p-0 border border-stone-200">
-        {/* Header with deep burgundy silk gradient */}
-        <div className="bg-gradient-to-r from-[#2b000a] via-[#5c0017] to-[#800020] p-6 sm:p-8 text-white">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white border border-white/20 mb-3">
-            <Crown className="size-3.5 text-amber-400" />
-            Marketplace Visibility
+      <DialogTrigger
+        render={
+          trigger ? (
+            (trigger as any)
+          ) : (
+            <button className="rounded-full bg-[#800020] text-white font-bold px-4 py-2 text-xs shadow-xs hover:bg-[#68001a] transition">
+              Upgrade to Pro
+            </button>
+          )
+        }
+      />
+      <DialogContent
+        className="max-w-2xl overflow-hidden rounded-3xl p-0 border border-stone-200/90 bg-white shadow-xl"
+        showCloseButton={false}
+      >
+        {/* Minimal clean header */}
+        <div className="relative border-b border-stone-100 p-6 sm:p-8">
+          <button
+            onClick={() => setOpen(false)}
+            className="absolute right-5 top-5 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition"
+            aria-label="Close"
+          >
+            <X className="size-4" />
+          </button>
+
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-[#fdf2f4] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#800020] border border-[#f9c8d4]/70 mb-3">
+            <Sparkles className="size-3 text-[#800020]" />
+            Listing Promotions
           </div>
-          <DialogTitle className="font-brand text-2xl sm:text-3xl text-white font-black leading-tight">
-            Boost Your Listings with Beddn Pro
+
+          <DialogTitle className="font-brand text-2xl sm:text-3xl font-extrabold text-[#2b000a] tracking-tight">
+            Upgrade Your Listing Presence
           </DialogTitle>
-          <DialogDescription className="text-white/80 text-sm mt-1 max-w-lg leading-relaxed">
-            Get more views, higher guest inquiries, and prominent placement across East Africa.
+          <DialogDescription className="mt-1.5 text-sm text-stone-500 max-w-lg leading-relaxed">
+            Gain higher visibility across East Africa, stand out with verified badges, and connect with more travelers.
           </DialogDescription>
 
           {activeTier && (
-            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white/15 px-3.5 py-1.5 text-xs text-white border border-white/20">
-              <Star className="size-4 text-amber-400 fill-amber-400" />
-              <span>Current Status: <strong>{activeTier} — Active</strong></span>
-              {expiresAt && <span className="text-white/70">· Expires {expiresAt}</span>}
+            <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#fdf2f4] px-3.5 py-1.5 text-xs text-[#800020] border border-[#f9c8d4]">
+              <Star className="size-3.5 text-[#800020] fill-[#800020]" />
+              <span>
+                Current Tier: <strong>{activeTier}</strong> (Active)
+              </span>
+              {expiresAt && <span className="text-stone-500">· Expires {expiresAt}</span>}
             </div>
           )}
         </div>
 
-        {/* Tiers Comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 sm:p-8 bg-stone-50">
+        {/* Tiers Comparison - Minimal and Clean */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 sm:p-8 bg-stone-50/50">
           {/* Pro Tier */}
-          <div className="flex flex-col justify-between rounded-2xl border-2 border-[#800020] bg-white p-5 shadow-sm relative">
-            <span className="absolute -top-3 right-4 rounded-full bg-[#800020] text-white px-3 py-0.5 text-[10px] font-black uppercase tracking-wider">
-              Most Popular
+          <div className="flex flex-col justify-between rounded-2xl border-2 border-[#800020] bg-white p-5 shadow-xs relative">
+            <span className="absolute -top-3 right-4 rounded-full bg-[#800020] text-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+              Popular
             </span>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="flex size-9 items-center justify-center rounded-xl bg-[#fdf2f4] text-[#800020]">
-                  <Zap className="size-5" />
+                  <Sparkles className="size-4" />
                 </div>
                 <div>
-                  <h4 className="font-brand text-lg font-bold text-[#181113]">Beddn Pro</h4>
-                  <p className="text-xs text-stone-500">For active hosts seeking steady bookings</p>
+                  <h4 className="font-brand text-base font-bold text-stone-900">Beddn Pro</h4>
+                  <p className="text-xs text-stone-500">For active hosts seeking steady inquiries</p>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2.5 text-xs text-stone-700">
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
-                  <span><strong>Verified Pro Badge</strong> on your listing card</span>
+              <div className="mt-5 space-y-2.5 text-xs text-stone-600">
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-stone-900">Verified Pro Badge</strong> on your listing card
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
-                  <span><strong>Priority Search Ranking</strong> above standard listings</span>
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-stone-900">Priority Search Ranking</strong> above standard spaces
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
                   <span>Highlighted card border in search results</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
-                  <span>Detailed <strong>Beta Analytics</strong> access</span>
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
+                  <span>Detailed inquiry &amp; impression metrics</span>
                 </div>
               </div>
             </div>
@@ -104,35 +135,39 @@ export function ProUpgradeModal({
             </div>
           </div>
 
-          {/* Pro Plus / Featured Tier */}
-          <div className="flex flex-col justify-between rounded-2xl border border-stone-200 bg-white p-5 shadow-xs">
+          {/* Featured Placement */}
+          <div className="flex flex-col justify-between rounded-2xl border border-stone-200/90 bg-white p-5 shadow-xs">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="flex size-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-                  <Crown className="size-5" />
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-stone-100 text-stone-700">
+                  <Star className="size-4" />
                 </div>
                 <div>
-                  <h4 className="font-brand text-lg font-bold text-[#181113]">Featured Placement</h4>
-                  <p className="text-xs text-stone-500">Maximum visibility across the marketplace</p>
+                  <h4 className="font-brand text-base font-bold text-stone-900">Featured</h4>
+                  <p className="text-xs text-stone-500">Maximum exposure across the platform</p>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2.5 text-xs text-stone-700">
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
-                  <span><strong>Everything in Pro</strong> included</span>
+              <div className="mt-5 space-y-2.5 text-xs text-stone-600">
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-stone-900">Everything in Pro</strong> included
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
-                  <span><strong>Homepage Carousel Placement</strong></span>
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-stone-900">Homepage Carousel</strong> spotlight placement
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
                   <span>Top of City &amp; Category search results</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600 shrink-0" />
-                  <span>Dedicated WhatsApp support from Beddn team</span>
+                <div className="flex items-start gap-2">
+                  <Check className="size-3.5 text-[#800020] shrink-0 mt-0.5" />
+                  <span>Dedicated host support from Beddn team</span>
                 </div>
               </div>
             </div>
@@ -151,10 +186,11 @@ export function ProUpgradeModal({
           </div>
         </div>
 
-        <div className="bg-white px-6 py-4 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-          <span>Manual activation: Pay via M-Pesa or Bank transfer. Admin activates your tier within minutes.</span>
-          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
-            Close
+        {/* Minimal Footer */}
+        <div className="bg-white px-6 py-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
+          <span>Activation via M-Pesa or Bank transfer. Tiers are activated quickly upon confirmation.</span>
+          <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="rounded-full text-stone-600">
+            Dismiss
           </Button>
         </div>
       </DialogContent>

@@ -157,123 +157,113 @@ export default function AdminOverviewPage() {
           </p>
         </div>
 
-        {/* Date Filter & Comparison Pills matching Image 3 */}
+        {/* Date Filter & Comparison Pills */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Date range pill */}
+          {/* Live status badge */}
           <div className="flex items-center gap-1.5 rounded-xl border border-stone-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-2xs">
-            <Calendar className="size-3.5 text-stone-400" />
-            <span>Jan 01 - Jun 30</span>
-            <span className="text-stone-400 text-[10px]">▼</span>
+            <Calendar className="size-3.5 text-[#800020]" />
+            <span>Live Overview</span>
           </div>
 
-          {/* Compared to pill */}
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-500 font-medium">
-            <span>Compared to</span>
-            <div className="flex items-center gap-1.5 rounded-xl border border-stone-200/90 bg-white px-3 py-1.5 font-semibold text-stone-700 shadow-2xs">
-              <Calendar className="size-3.5 text-stone-400" />
-              <span>Jan 01 - Jun 30</span>
-              <span className="text-stone-400 text-[10px]">▼</span>
-            </div>
-          </div>
-
-          {/* Filter button */}
-          <button
-            type="button"
+          <Link
+            href={ROUTES.adminDemand}
             className="flex items-center gap-1.5 rounded-xl border border-stone-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-2xs hover:bg-stone-50 transition"
           >
             <SlidersHorizontal className="size-3.5 text-stone-500" />
-            <span>Filter</span>
-          </button>
+            <span>Demand Analytics</span>
+          </Link>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. Top 4 Metric KPI Cards (matching Image 3 screenshot)                   */}
+      {/* 2. Top 4 Metric KPI Cards (Real Marketplace Operations Data)               */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <MetricCard
-          label="Total sales this month"
-          prefix="KES"
-          value="24,850"
+          label="Active listings"
+          value={activeListings.toLocaleString()}
           icon={<Building2 className="size-4" />}
-          tone="emerald"
+          tone="burgundy"
           href={ROUTES.adminListings}
           trend={{
-            value: "+18% vs last month",
+            value: `${totalListings} total listings`,
             isPositive: true,
           }}
+          subtitle={`${pendingListings} pending review`}
         />
 
         <MetricCard
-          label="Total expenses"
-          prefix="KES"
-          value="4,220"
+          label="Registered hosts"
+          value={totalHosts.toLocaleString()}
           icon={<Users className="size-4" />}
-          tone="rose"
+          tone="burgundy"
           href={ROUTES.adminHosts}
           trend={{
-            value: "+6% vs last month",
-            isPositive: false,
+            value: `${verifiedHosts} verified hosts`,
+            isPositive: true,
           }}
+          subtitle={`${pendingHosts} pending verification`}
         />
 
         <MetricCard
-          label="Pending inquiries"
-          prefix="KES"
-          value="6,450"
+          label="Booking requests"
+          value={totalBookings.toLocaleString()}
+          icon={<CalendarCheck className="size-4" />}
+          tone="burgundy"
+          href={ROUTES.adminBookings}
+          trend={{
+            value: `${pendingBookings} awaiting confirmation`,
+            isNeutral: pendingBookings === 0,
+            isPositive: pendingBookings > 0,
+          }}
+          subtitle="Guest reservations pipeline"
+        />
+
+        <MetricCard
+          label="Search demand"
+          value={totalDemand.toLocaleString()}
           icon={<TrendingUp className="size-4" />}
-          tone="amber"
+          tone="burgundy"
           href={ROUTES.adminDemand}
           trend={{
-            value: "+24% vs last month",
-            isPositive: true,
+            value: `${unmatchedDemand} shortages`,
+            isNeutral: unmatchedDemand === 0,
+            isPositive: false,
           }}
-        />
-
-        <MetricCard
-          label="Estimated profit"
-          prefix="KES"
-          value="14,180"
-          icon={<Crown className="size-4" />}
-          tone="teal"
-          href={ROUTES.adminFeatured}
-          trend={{
-            value: "+56% vs last month",
-            isPositive: true,
-          }}
+          subtitle="Zero-result supply gaps"
         />
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. Primary Two-Column Row: Monthly Sales & Invoice Status (matching Image 3) */}
+      {/* 3. Primary Two-Column Row: Demand & Verification Breakdown                 */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
-        {/* Left Column: Monthly Sales Bar Chart (~65% width) */}
+        {/* Left Column: Monthly Demand Bar Chart (~65% width) */}
         <div className="lg:col-span-8 flex flex-col">
           <PerformanceChart
-            title="Monthly sales"
+            title="Search & demand activity"
             subtitle="Marketplace volume across East Africa"
             data={chartData}
             metricLabel="searches"
             summaryPills={[
-              { label: "Quarterly Growth", value: "+18% vs Last Quarter" },
-              { label: "Peak", value: "Jan (27K KES)" },
-              { label: "Monthly Avg", value: "17.5K KES/mo" },
+              { label: "Total Searches", value: `${totalDemand.toLocaleString()} searches` },
+              { label: "Active Stays", value: `${activeListings.toLocaleString()} listings` },
+              { label: "Supply Gaps", value: `${unmatchedDemand.toLocaleString()} shortages` },
             ]}
           />
         </div>
 
-        {/* Right Column: Invoice Status Donut Chart (~35% width) */}
+        {/* Right Column: Listing Status Donut Chart (~35% width) */}
         <div className="lg:col-span-4 flex flex-col">
           <StatusDonut
-            title="Invoice status"
-            subtitle="Breakdown of listing payments & verification"
+            title="Listing status"
+            subtitle="Breakdown of accommodation inventory"
             totalLabel="Total"
             segments={[
-              { label: "Paid", count: 1420, color: "#10b981" },
-              { label: "Sent", count: 380, color: "#60a5fa" },
-              { label: "Overdue", count: 42, color: "#f87171" },
-              { label: "Draft", count: 95, color: "#cbd5e1" },
+              { label: "Active", count: activeListings, color: "#800020" },
+              { label: "Verified", count: verifiedListings, color: "#5c0017" },
+              { label: "Pending", count: pendingListings, color: "#9f1239" },
+              { label: "Featured", count: featuredCount, color: "#2b000a" },
             ]}
           />
         </div>
@@ -345,38 +335,44 @@ export default function AdminOverviewPage() {
           <div className="space-y-2.5">
             <Link
               href={ROUTES.adminHosts}
-              className="flex items-center justify-between rounded-xl bg-amber-50/60 border border-amber-200/60 p-3.5 text-xs text-amber-900 hover:bg-amber-100/60 transition"
+              className="flex items-center justify-between rounded-xl bg-[#fdf2f4]/60 border border-[#f9c8d4]/80 p-3.5 text-xs text-[#2b000a] hover:bg-[#fdf2f4] transition"
             >
               <div className="flex items-center gap-2.5">
-                <ShieldCheck className="size-4 text-amber-600 shrink-0" />
+                <div className="flex size-7 items-center justify-center rounded-lg bg-[#800020] text-white">
+                  <ShieldCheck className="size-4" />
+                </div>
                 <div>
                   <p className="font-bold">{pendingHosts} Hosts Pending Verification</p>
-                  <p className="text-[11px] text-amber-700">Review submitted national IDs</p>
-                </div>
-              </div>
-              <ArrowRight className="size-4 text-amber-600" />
-            </Link>
-
-            <Link
-              href={ROUTES.adminFeatured}
-              className="flex items-center justify-between rounded-xl bg-[#fdf2f4]/70 border border-[#f9c8d4] p-3.5 text-xs text-[#800020] hover:bg-[#fdf2f4] transition"
-            >
-              <div className="flex items-center gap-2.5">
-                <Crown className="size-4 text-amber-500 shrink-0" />
-                <div>
-                  <p className="font-bold">Manage Pro / Featured Tiers</p>
-                  <p className="text-[11px] text-stone-600">Activate or extend host promotions</p>
+                  <p className="text-[11px] text-stone-500">Review submitted identity documents</p>
                 </div>
               </div>
               <ArrowRight className="size-4 text-[#800020]" />
             </Link>
 
             <Link
-              href={ROUTES.adminBookings}
-              className="flex items-center justify-between rounded-xl bg-stone-50 border border-stone-200/80 p-3.5 text-xs text-stone-800 hover:bg-stone-100 transition"
+              href={ROUTES.adminFeatured}
+              className="flex items-center justify-between rounded-xl bg-white border border-stone-200/90 p-3.5 text-xs text-[#2b000a] hover:border-[#800020]/40 transition"
             >
               <div className="flex items-center gap-2.5">
-                <CalendarCheck className="size-4 text-emerald-600 shrink-0" />
+                <div className="flex size-7 items-center justify-center rounded-lg bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4]">
+                  <Crown className="size-4" />
+                </div>
+                <div>
+                  <p className="font-bold">Manage Pro / Featured Tiers</p>
+                  <p className="text-[11px] text-stone-500">Activate or extend host promotions</p>
+                </div>
+              </div>
+              <ArrowRight className="size-4 text-stone-400" />
+            </Link>
+
+            <Link
+              href={ROUTES.adminBookings}
+              className="flex items-center justify-between rounded-xl bg-white border border-stone-200/90 p-3.5 text-xs text-[#2b000a] hover:border-[#800020]/40 transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-7 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
+                  <CalendarCheck className="size-4" />
+                </div>
                 <div>
                   <p className="font-bold">{pendingBookings} Booking Requests Active</p>
                   <p className="text-[11px] text-stone-500">Monitor host confirmations</p>

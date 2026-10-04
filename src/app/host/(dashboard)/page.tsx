@@ -443,22 +443,22 @@ export default function HostDashboardPage() {
               {
                 label: "Active Listings",
                 count: activeListingsCount,
-                color: "#059669",
+                color: "#800020",
               },
               {
                 label: "Pending Verification",
                 count: listings.filter((l) => !l.is_verified && (l.is_active || l.listing_status === "active")).length,
-                color: "#d97706",
+                color: "#9f1239",
               },
               {
                 label: "Pro / Featured",
                 count: activeTier ? activeListingsCount : 0,
-                color: "#800020",
+                color: "#2b000a",
               },
               {
                 label: "Drafts / Inactive",
                 count: listings.filter((l) => !l.is_active && l.listing_status !== "active").length,
-                color: "#a8a29e",
+                color: "#78716c",
               },
             ]}
           />
