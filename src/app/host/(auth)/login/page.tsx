@@ -64,6 +64,9 @@ export default function HostLoginPage() {
     }
   }
 
+  const [otpCode, setOtpCode] = useState("");
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+
   async function sendMagicLink() {
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) {
@@ -72,12 +75,19 @@ export default function HostLoginPage() {
     }
     setError("");
     setWorking(true);
+
+    const flowId =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    document.cookie = `beddn_auth_flow=${flowId}; path=/; max-age=1800; SameSite=Lax`;
+
     let failed = "";
     try {
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail, next: ROUTES.dashboard }),
+        body: JSON.stringify({ email: normalizedEmail, next: ROUTES.dashboard, flowId }),
       });
       if (!response.ok) {
         const data = (await response.json().catch(() => ({}))) as { error?: string };
@@ -93,6 +103,28 @@ export default function HostLoginPage() {
     }
     setSentEmail(normalizedEmail);
     setSent(true);
+  }
+
+  async function verifyOtpCode(event: React.FormEvent) {
+    event.preventDefault();
+    const cleanCode = otpCode.trim();
+    if (!cleanCode || cleanCode.length < 6) {
+      setError("Please enter the 6-digit code from your email.");
+      return;
+    }
+    setError("");
+    setVerifyingOtp(true);
+    const { error: otpError } = await supabase.auth.verifyOtp({
+      email: sentEmail,
+      token: cleanCode,
+      type: "email",
+    });
+    setVerifyingOtp(false);
+    if (otpError) {
+      setError(otpError.message || "Invalid or expired code. Please try again.");
+      return;
+    }
+    window.location.href = ROUTES.dashboard;
   }
 
   async function continueWithEmail(event: React.FormEvent) {
@@ -146,20 +178,67 @@ export default function HostLoginPage() {
               Continue with magic link via email
             </Button>
           ) : sent ? (
-            <div className="space-y-3 rounded-2xl bg-[#fbf7f8] p-4 text-sm">
-              <p>
-                Magic link sent to <span className="font-semibold text-[#2b000a]">{sentEmail}</span>.
-                Open it from the same device to finish signing in.
-              </p>
-              {error && <p className="text-red-700">{error}</p>}
-              <button
-                type="button"
-                onClick={sendMagicLink}
-                disabled={working}
-                className="font-bold text-crimson underline-offset-4 hover:underline disabled:opacity-60"
-              >
-                {working ? "Sending..." : "Send magic link again"}
-              </button>
+            <div className="space-y-4 rounded-2xl bg-[#fdf2f4]/60 p-5 text-sm border border-[#f9c8d4]">
+              <div>
+                <p className="font-bold text-[#2b000a] text-base">Check your email</p>
+                <p className="mt-1 text-xs text-stone-600 leading-relaxed">
+                  Magic link sent to <span className="font-semibold text-[#800020]">{sentEmail}</span>. Tap the link or enter your 6-digit code below:
+                </p>
+              </div>
+
+              <form onSubmit={verifyOtpCode} className="space-y-3 pt-1">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#a3193d]">
+                    Enter 6-digit code
+                  </label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                      setOtpCode(val);
+                      setError("");
+                    }}
+                    placeholder="• • • • • •"
+                    className="h-12 rounded-xl border-[#800020]/30 bg-white text-center font-mono text-xl font-bold tracking-[8px] text-[#2b000a] focus:border-[#800020]"
+                  />
+                </div>
+
+                {error && <p className="text-xs text-red-700 font-medium">{error}</p>}
+
+                <Button
+                  type="submit"
+                  disabled={verifyingOtp || otpCode.length < 6}
+                  className="h-11 w-full rounded-full bg-gradient-to-r from-[#800020] to-[#a3193d] font-bold text-white shadow-sm hover:opacity-95 disabled:opacity-50"
+                >
+                  {verifyingOtp ? "Verifying code..." : "Sign in with code"}
+                </Button>
+              </form>
+
+              <div className="flex items-center justify-between pt-1 text-xs">
+                <button
+                  type="button"
+                  onClick={sendMagicLink}
+                  disabled={working}
+                  className="font-bold text-[#800020] underline-offset-4 hover:underline disabled:opacity-60"
+                >
+                  {working ? "Resending..." : "Resend email"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSent(false);
+                    setOtpCode("");
+                    setError("");
+                  }}
+                  className="text-stone-500 hover:text-stone-800 underline"
+                >
+                  Change email
+                </button>
+              </div>
             </div>
           ) : (
             <form onSubmit={continueWithEmail} className="space-y-3">

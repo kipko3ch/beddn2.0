@@ -1,9 +1,7 @@
 .container {
   min-height: 100vh;
-  background-color: #ffffff;
-  /* Match the global body font (Trip Sans). Previously this hardcoded a system
-     stack, so the whole landing page rendered in Arial instead of the brand
-     body font. */
+  background: radial-gradient(circle at 50% 0%, #fef3f6 0%, #ffffff 550px), #ffffff;
+  /* Match the global body font (Trip Sans). */
   font-family: var(--font-trip-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   color: #000;
 }
@@ -149,22 +147,24 @@
 }
 
 .tab:hover {
-  color: #2b000a;
+  color: #800020;
+  background-color: #fef3f6;
+  border-color: #fce7ec;
 }
 
-/* Active state is shown by colour + weight only, no filled pill — the 3D
-   icons stay on a transparent background so they read as independent
-   objects rather than sitting inside a badge. */
+/* Active state is highlighted with a delicate pink pill and burgundy text */
 .tab.active {
-  color: var(--color-merlot);
+  color: #800020;
   font-weight: 700;
-  background: none;
-  border-color: transparent;
-  box-shadow: none;
+  background-color: #fdf2f4;
+  border-color: #f9c8d4;
+  box-shadow: 0 1px 3px rgba(232, 84, 123, 0.12);
 }
 
 .tab.active:hover {
   color: #800020;
+  background-color: #fce7ec;
+  border-color: #f3cfd9;
 }
 
 .tabIcon {
@@ -634,7 +634,7 @@
     white-space: nowrap;
   }
   .mobileBottomNavActive {
-    color: #800020 !important;
+    color: #e8547b !important;
   }
   .mobileBottomNav button svg,
   .mobileBottomNav button :global(svg),

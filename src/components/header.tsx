@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/icon";
+import { HangingMenu } from "@/components/hanging-menu";
 import { ROUTES } from "@/lib/routes";
 
 // Same four shortcuts as the homepage hero tabs, shrunk into a persistent
@@ -314,11 +315,18 @@ export function Header() {
               Review
             </Link>
             {!user && (
-              <AuthDialog>
-                <Button variant="ghost" size="sm" className="rounded-full">
-                  Login
-                </Button>
-              </AuthDialog>
+              <>
+                <AuthDialog mode="signin">
+                  <Button variant="ghost" size="sm" className="rounded-full font-semibold text-stone-700 hover:text-[#800020] hover:bg-[#fdf2f4]">
+                    Sign in
+                  </Button>
+                </AuthDialog>
+                <AuthDialog mode="signup">
+                  <Button size="sm" className="rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] text-white font-bold hover:opacity-95 shadow-xs">
+                    Sign up
+                  </Button>
+                </AuthDialog>
+              </>
             )}
             {user && !showHostWorkspace && (
               <Link href={ROUTES.newListing} className="hidden sm:block">
@@ -330,7 +338,7 @@ export function Header() {
 
             {!user && (
               <AuthDialog defaultHostIntent>
-                <Button className="h-10 rounded-full bg-black px-6 text-sm font-semibold text-white hover:bg-neutral-800">
+                <Button className="h-10 rounded-full border border-stone-300 bg-white px-5 text-sm font-semibold text-stone-800 hover:border-[#800020] hover:bg-[#fdf2f4]">
                   Become a host
                 </Button>
               </AuthDialog>
@@ -338,39 +346,42 @@ export function Header() {
 
             <CurrencySwitcher />
 
-            {/* One control: the avatar itself when signed in, a hamburger
-                when signed out. Opens the full menu — no separate dropdown. */}
-            <NavSheet
+            {/* Hanging dropdown menu directly under trigger */}
+            <HangingMenu
               user={user}
               avatarUrl={avatarUrl}
               showHostWorkspace={showHostWorkspace}
               isAdmin={isAdmin}
               onSignOut={handleSignOut}
-              onSwitch={handleSwitch}
-              side="right"
-            >
-              <MenuTrigger user={user} avatarUrl={avatarUrl} />
-            </NavSheet>
+              align="end"
+            />
           </div>
         </div>
-        <div className="relative mx-auto flex h-14 max-w-[1920px] items-center justify-center px-4 sm:px-6 md:hidden">
-          <div className="absolute left-4 flex items-center gap-1.5">
-            <NavSheet
+        <div className="relative mx-auto flex h-14 max-w-[1920px] items-center justify-between px-4 sm:px-6 md:hidden">
+          <div className="flex items-center gap-1.5">
+            <HangingMenu
               user={user}
               avatarUrl={avatarUrl}
               showHostWorkspace={showHostWorkspace}
               isAdmin={isAdmin}
               onSignOut={handleSignOut}
-              onSwitch={handleSwitch}
-              side="left"
-            >
-              <MenuTrigger user={user} avatarUrl={avatarUrl} />
-            </NavSheet>
+              align="start"
+            />
           </div>
           <Link href={ROUTES.home} className="font-brand text-2xl leading-none text-[#2b000a]">
             Beddn
           </Link>
-          <div className="absolute right-4">
+          <div className="flex items-center gap-1.5">
+            {!user && (
+              <AuthDialog mode="signup">
+                <button
+                  type="button"
+                  className="h-8.5 rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] px-3.5 text-xs font-bold text-white shadow-xs hover:opacity-95 transition active:scale-95"
+                >
+                  Sign up
+                </button>
+              </AuthDialog>
+            )}
             <CurrencySwitcher />
           </div>
         </div>

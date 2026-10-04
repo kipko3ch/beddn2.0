@@ -96,6 +96,7 @@ export function inquiryReceivedEmail(input: InquiryEmailInput): { subject: strin
 
 export interface MagicLinkInput {
   url: string;
+  code?: string;
 }
 
 /** Passwordless sign-in link, delivered via Beddn's own (ZeptoMail) pipeline
@@ -103,13 +104,31 @@ export interface MagicLinkInput {
 export function magicLinkEmail(input: MagicLinkInput): { subject: string; html: string } {
   const html = shell({
     title: "Your Beddn sign-in link",
-    preheader: "Tap to sign in to Beddn — this link expires shortly.",
+    preheader: input.code
+      ? `Your Beddn verification code is ${input.code}. Tap to sign in.`
+      : "Tap to sign in to Beddn — this link expires shortly.",
     bodyHtml: `
       <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Sign in to Beddn</h1>
       <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${MUTED};">
-        Tap the button below to finish signing in. Open it on the same device you started from. For your security, this link expires shortly and can only be used once.
+        Tap the button below to finish signing in automatically on this device:
       </p>
-      <p style="margin:0 0 20px;">${button(input.url, "Sign in to Beddn")}</p>
+      <p style="margin:0 0 24px;">${button(input.url, "Sign in to Beddn")}</p>
+      ${
+        input.code
+          ? `
+      <div style="background:#fdf2f4;border:1px solid #f9c8d4;border-radius:16px;padding:20px;text-align:center;margin:20px 0 24px;">
+        <p style="margin:0 0 6px;font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#a3193d;">
+          Or enter this 6-digit code on your device
+        </p>
+        <div style="font-size:32px;font-weight:800;letter-spacing:8px;color:#800020;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;margin:8px 0;">
+          ${input.code}
+        </div>
+        <p style="margin:0;font-size:13px;line-height:1.5;color:${MUTED};">
+          If you requested this on your computer or another device, enter this code there to complete sign-in.
+        </p>
+      </div>`
+          : ""
+      }
       <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
         If you didn't request this, you can safely ignore this email.
       </p>

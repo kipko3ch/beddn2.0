@@ -17,7 +17,7 @@ function safeNext(next: unknown): string {
 }
 
 export async function POST(request: Request) {
-  let body: { email?: string; next?: string };
+  let body: { email?: string; next?: string; flowId?: string };
   try {
     body = await request.json();
   } catch {
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
 
   const baseUrl = publicBaseUrl(request);
   const next = safeNext(body.next);
+  const flowId = typeof body.flowId === "string" ? body.flowId.slice(0, 64) : "";
   const admin = createAdminClient();
 
   // No redirectTo: we don't use the generated action_link, only its
@@ -55,11 +56,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const confirmUrl = `${baseUrl}/api/auth/confirm?token_hash=${encodeURIComponent(
-    data.properties.hashed_token
-  )}&type=magiclink&next=${encodeURIComponent(next)}`;
+  const emailOtp = data.properties.email_otp || "";
+  const confirmParams = new URLSearchParams({
+    token_hash: data.properties.hashed_token,
+    type: "magiclink",
+    next,
+  });
+  if (flowId) confirmParams.set("flow_id", flowId);
+  if (emailOtp) confirmParams.set("code", emailOtp);
+  if (email) confirmParams.set("email", email);
 
-  const { subject, html } = magicLinkEmail({ url: confirmUrl });
+  const confirmUrl = `${baseUrl}/api/auth/confirm?${confirmParams.toString()}`;
+
+  const { subject, html } = magicLinkEmail({ url: confirmUrl, code: emailOtp });
   const result = await sendEmail({ to: email, subject, html, eventType: "magic_link" });
 
   // If the email didn't actually go out, tell the user instead of a false
