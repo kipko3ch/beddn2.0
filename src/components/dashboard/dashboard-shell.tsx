@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -365,16 +366,7 @@ export function DashboardShell({
             </Avatar>
           </Link>
 
-          {/* Expand sidebar button */}
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            title="Expand sidebar"
-            className="flex size-8 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 transition"
-            aria-label="Expand sidebar"
-          >
-            <PanelLeftOpen className="size-4" />
-          </button>
+
 
           {/* Sign out */}
           <button
@@ -462,16 +454,7 @@ export function DashboardShell({
           </button>
         </div>
 
-        {/* Shrink sidebar toggle button at bottom */}
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          title="Shrink sidebar (show icons only)"
-          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-stone-200/80 bg-white py-1.5 text-[11px] font-semibold text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition"
-        >
-          <PanelLeftClose className="size-3.5" />
-          <span>Shrink sidebar</span>
-        </button>
+
       </div>
     );
   };
@@ -487,19 +470,41 @@ export function DashboardShell({
       >
         {/* Brand Header */}
         {isCollapsed ? (
-          <div className="flex h-18 flex-col items-center justify-center border-b border-stone-100 px-2 py-3">
+          <div className="relative flex h-18 items-center justify-center gap-0 border-b border-stone-100 px-2 py-3">
             <Link
               href={ROUTES.home}
               title="Beddn Home"
-              className="group relative flex size-11 items-center justify-center rounded-2xl bg-stone-900 text-white shadow-xs transition hover:scale-105 active:scale-95"
+              className="group relative flex size-11 items-center justify-center rounded-2xl bg-stone-900 shadow-xs transition hover:scale-105 active:scale-95 overflow-hidden"
             >
-              <span className="font-brand text-xl font-black tracking-tight text-white">B</span>
+              <Image
+                src="/images/logo.png"
+                alt="Beddn"
+                width={28}
+                height={28}
+                className="object-contain brightness-0 invert select-none"
+              />
             </Link>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Expand sidebar"
+              className="absolute right-1 top-1/2 -translate-y-1/2 flex size-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition active:scale-95 z-10"
+              aria-label="Expand sidebar"
+            >
+              <PanelLeftOpen className="size-3.5" />
+            </button>
           </div>
         ) : (
           <div className="flex h-18 items-center justify-between border-b border-stone-100 px-5">
             <Link href={ROUTES.home} className="flex items-center gap-2">
-              <span className="font-brand text-2xl font-bold tracking-tight text-[#2b000a]">Beddn</span>
+              <Image
+                src="/images/logo.png"
+                alt="Beddn"
+                width={90}
+                height={32}
+                className="object-contain select-none"
+                priority
+              />
             </Link>
             <button
               type="button"
