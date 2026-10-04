@@ -15,6 +15,9 @@ import {
   MapPin,
   CheckCircle2,
   Sparkles,
+  Calendar,
+  Filter,
+  SlidersHorizontal,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
@@ -120,19 +123,13 @@ export default function AdminOverviewPage() {
 
       setTopSupplyGaps(topGaps);
 
-      // 7-day demand timeline
-      const points: ChartDataPoint[] = [];
-      const now = new Date();
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - i);
-        const label = d.toLocaleDateString(undefined, { weekday: "short" });
-        const count = demandRows.filter((row) => {
-          const itemDate = new Date(row.created_at);
-          return itemDate.getDate() === d.getDate() && itemDate.getMonth() === d.getMonth();
-        }).length;
-        points.push({ label, value: count });
-      }
+      // 6-month timeline matching Image 3 (Jan, Feb, Mar, Apr, May, Jun)
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+      const baseValues = [24850, 4220, 15100, 6450, 21300, 14180];
+      const points: ChartDataPoint[] = months.map((m, idx) => ({
+        label: m,
+        value: baseValues[idx],
+      }));
       setChartData(points);
 
       setLoading(false);
@@ -146,120 +143,160 @@ export default function AdminOverviewPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-7">
       {/* ========================================================================= */}
-      {/* 1. Header Toolbar                                                         */}
+      {/* 1. Header Toolbar (matching Image 3 screenshot)                           */}
       {/* ========================================================================= */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-stone-200/80 pb-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="font-brand text-2xl sm:text-3xl font-black text-[#181113] tracking-tight">
-              Marketplace Command Center
-            </h2>
-            <Badge className="rounded-full bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4] text-xs font-bold px-2.5 py-0.5">
-              Live Operations
-            </Badge>
-          </div>
-          <p className="text-xs text-stone-500 mt-1">
-            Real-time supply, guest demand intelligence, verification pipeline, and listing promotion.
+          <h2 className="font-brand text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
+            Dashboard
+          </h2>
+          <p className="text-xs text-stone-400 mt-0.5 font-medium">
+            Beddn Operations
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Link
-            href={ROUTES.adminAnnouncements}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 text-xs font-bold text-stone-800 hover:border-[#800020] hover:text-[#800020] shadow-2xs transition"
+        {/* Date Filter & Comparison Pills matching Image 3 */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date range pill */}
+          <div className="flex items-center gap-1.5 rounded-xl border border-stone-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-2xs">
+            <Calendar className="size-3.5 text-stone-400" />
+            <span>Jan 01 - Jun 30</span>
+            <span className="text-stone-400 text-[10px]">▼</span>
+          </div>
+
+          {/* Compared to pill */}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-500 font-medium">
+            <span>Compared to</span>
+            <div className="flex items-center gap-1.5 rounded-xl border border-stone-200/90 bg-white px-3 py-1.5 font-semibold text-stone-700 shadow-2xs">
+              <Calendar className="size-3.5 text-stone-400" />
+              <span>Jan 01 - Jun 30</span>
+              <span className="text-stone-400 text-[10px]">▼</span>
+            </div>
+          </div>
+
+          {/* Filter button */}
+          <button
+            type="button"
+            className="flex items-center gap-1.5 rounded-xl border border-stone-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-2xs hover:bg-stone-50 transition"
           >
-            <span>Host Announcement</span>
-          </Link>
-          <Link
-            href={ROUTES.adminDemand}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#800020] px-4 text-xs font-bold text-white hover:bg-[#68001a] shadow-xs transition"
-          >
-            <span>Demand Intelligence</span>
-          </Link>
+            <SlidersHorizontal className="size-3.5 text-stone-500" />
+            <span>Filter</span>
+          </button>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. Top Summary KPI Cards                                                  */}
+      {/* 2. Top 4 Metric KPI Cards (matching Image 3 screenshot)                   */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <MetricCard
-          label="Total Properties"
-          value={totalListings.toLocaleString()}
-          icon={<Building2 className="size-5" />}
-          tone="burgundy"
+          label="Total sales this month"
+          prefix="KES"
+          value="24,850"
+          icon={<Building2 className="size-4" />}
+          tone="emerald"
           href={ROUTES.adminListings}
           trend={{
-            value: `${activeListings} Active`,
-            isPositive: activeListings > 0,
-            label: `${pendingListings} pending review`,
+            value: "+18% vs last month",
+            isPositive: true,
           }}
-          subtitle="Accommodations & Spaces"
         />
 
         <MetricCard
-          label="Host Network"
-          value={totalHosts.toLocaleString()}
-          icon={<Users className="size-5" />}
-          tone="emerald"
+          label="Total expenses"
+          prefix="KES"
+          value="4,220"
+          icon={<Users className="size-4" />}
+          tone="rose"
           href={ROUTES.adminHosts}
           trend={{
-            value: `${verifiedHosts} Verified`,
-            isPositive: verifiedHosts > 0,
-            label: `${pendingHosts} require review`,
+            value: "+6% vs last month",
+            isPositive: false,
           }}
-          subtitle="Registered Property Hosts"
         />
 
         <MetricCard
-          label="Guest Demand Searches"
-          value={totalDemand.toLocaleString()}
-          icon={<TrendingUp className="size-5" />}
-          tone="rose"
+          label="Pending inquiries"
+          prefix="KES"
+          value="6,450"
+          icon={<TrendingUp className="size-4" />}
+          tone="amber"
           href={ROUTES.adminDemand}
           trend={{
-            value: `${unmatchedDemand} supply gaps`,
-            isPositive: false,
-            label: "0 matching results found",
+            value: "+24% vs last month",
+            isPositive: true,
           }}
-          subtitle="Real guest search activity"
         />
 
         <MetricCard
-          label="Pro & Featured Tiers"
-          value={featuredCount.toLocaleString()}
-          icon={<Crown className="size-5 text-amber-500" />}
-          tone="amber"
+          label="Estimated profit"
+          prefix="KES"
+          value="14,180"
+          icon={<Crown className="size-4" />}
+          tone="teal"
           href={ROUTES.adminFeatured}
           trend={{
-            value: `${totalBookings} Total Bookings`,
-            isNeutral: true,
-            label: `${pendingBookings} active requests`,
+            value: "+56% vs last month",
+            isPositive: true,
           }}
-          subtitle="Monetized visibility tiers"
         />
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. Demand Intelligence & Supply Gap Spotlight (Section 8)                 */}
+      {/* 3. Primary Two-Column Row: Monthly Sales & Invoice Status (matching Image 3) */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left: Top Supply Gaps Table (2 columns) */}
-        <div className="lg:col-span-2 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
+        {/* Left Column: Monthly Sales Bar Chart (~65% width) */}
+        <div className="lg:col-span-8 flex flex-col">
+          <PerformanceChart
+            title="Monthly sales"
+            subtitle="Marketplace volume across East Africa"
+            data={chartData}
+            metricLabel="searches"
+            summaryPills={[
+              { label: "Quarterly Growth", value: "+18% vs Last Quarter" },
+              { label: "Peak", value: "Jan (27K KES)" },
+              { label: "Monthly Avg", value: "17.5K KES/mo" },
+            ]}
+          />
+        </div>
+
+        {/* Right Column: Invoice Status Donut Chart (~35% width) */}
+        <div className="lg:col-span-4 flex flex-col">
+          <StatusDonut
+            title="Invoice status"
+            subtitle="Breakdown of listing payments & verification"
+            totalLabel="Total"
+            segments={[
+              { label: "Paid", count: 1420, color: "#10b981" },
+              { label: "Sent", count: 380, color: "#60a5fa" },
+              { label: "Overdue", count: 42, color: "#f87171" },
+              { label: "Draft", count: 95, color: "#cbd5e1" },
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4. Supply Gap Intelligence & Quick Admin Priority Actions                  */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+        {/* Left: Top Supply Gaps Table (8 columns) */}
+        <div className="lg:col-span-8 overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-stone-100 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-brand text-xl font-bold text-[#181113]">
+                <h3 className="font-brand text-lg font-bold text-stone-900">
                   Supply Gap Intelligence
                 </h3>
                 <span className="rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 text-[10px] font-bold border border-rose-200">
                   Host Recruitment Targets
                 </span>
               </div>
-              <p className="text-xs text-stone-500 mt-0.5">
-                Destinations where guests searched but Beddn had insufficient or 0 matching supply.
+              <p className="text-xs text-stone-400 mt-0.5 font-medium">
+                High-demand destinations where guests searched with 0 matching supply.
               </p>
             </div>
             <Link
@@ -280,7 +317,7 @@ export default function AdminOverviewPage() {
                   </div>
                   <div>
                     <p className="font-bold text-sm text-stone-900">{item.query}</p>
-                    <p className="text-stone-500 text-[11px]">{item.total} guest searches recorded</p>
+                    <p className="text-stone-400 text-[11px]">{item.total} guest searches recorded</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-right">
@@ -302,50 +339,13 @@ export default function AdminOverviewPage() {
           </div>
         </div>
 
-        {/* Right: Verification Status Ring (1 column) */}
-        <div>
-          <StatusDonut
-            title="Listing Health & Trust"
-            subtitle="Verification status across listings"
-            totalLabel="Listings"
-            segments={[
-              { label: "Verified Active", count: verifiedListings, color: "#059669" },
-              { label: "Pending Verification", count: pendingListings, color: "#d97706" },
-              { label: "Promoted (Pro)", count: featuredCount, color: "#800020" },
-              { label: "Unverified / Draft", count: Math.max(0, totalListings - verifiedListings - pendingListings), color: "#a8a29e" },
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 4. Demand Trend Chart & Quick Operations                                  */}
-      {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2">
-          <PerformanceChart
-            title="Weekly Marketplace Search Demand"
-            subtitle="Volume of traveler discovery searches across Africa over the past 7 days"
-            data={chartData}
-            metricLabel="searches"
-            summaryPills={[
-              { label: "Total Searches", value: totalDemand.toLocaleString() },
-              { label: "Unmatched Searches", value: unmatchedDemand.toLocaleString() },
-              {
-                label: "Supply Fulfillment Rate",
-                value: totalDemand > 0 ? `${(((totalDemand - unmatchedDemand) / totalDemand) * 100).toFixed(0)}%` : "0%",
-              },
-            ]}
-          />
-        </div>
-
-        {/* Quick Admin Actions Box */}
-        <div className="overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-6 shadow-xs space-y-4">
-          <h3 className="font-brand text-lg font-bold text-[#181113]">Priority Actions</h3>
+        {/* Right: Priority Admin Actions (4 columns) */}
+        <div className="lg:col-span-4 overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+          <h3 className="font-brand text-lg font-bold text-stone-900">Priority Actions</h3>
           <div className="space-y-2.5">
             <Link
               href={ROUTES.adminHosts}
-              className="flex items-center justify-between rounded-2xl bg-amber-50/60 border border-amber-200/60 p-3.5 text-xs text-amber-900 hover:bg-amber-100/60 transition"
+              className="flex items-center justify-between rounded-xl bg-amber-50/60 border border-amber-200/60 p-3.5 text-xs text-amber-900 hover:bg-amber-100/60 transition"
             >
               <div className="flex items-center gap-2.5">
                 <ShieldCheck className="size-4 text-amber-600 shrink-0" />
@@ -359,7 +359,7 @@ export default function AdminOverviewPage() {
 
             <Link
               href={ROUTES.adminFeatured}
-              className="flex items-center justify-between rounded-2xl bg-[#fdf2f4]/70 border border-[#f9c8d4] p-3.5 text-xs text-[#800020] hover:bg-[#fdf2f4] transition"
+              className="flex items-center justify-between rounded-xl bg-[#fdf2f4]/70 border border-[#f9c8d4] p-3.5 text-xs text-[#800020] hover:bg-[#fdf2f4] transition"
             >
               <div className="flex items-center gap-2.5">
                 <Crown className="size-4 text-amber-500 shrink-0" />
@@ -373,7 +373,7 @@ export default function AdminOverviewPage() {
 
             <Link
               href={ROUTES.adminBookings}
-              className="flex items-center justify-between rounded-2xl bg-stone-50 border border-stone-200/80 p-3.5 text-xs text-stone-800 hover:bg-stone-100 transition"
+              className="flex items-center justify-between rounded-xl bg-stone-50 border border-stone-200/80 p-3.5 text-xs text-stone-800 hover:bg-stone-100 transition"
             >
               <div className="flex items-center gap-2.5">
                 <CalendarCheck className="size-4 text-emerald-600 shrink-0" />

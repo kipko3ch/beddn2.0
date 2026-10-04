@@ -38,7 +38,6 @@ export function AuthDialog({
   const open = openProp ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
   const [authMode, setAuthMode] = useState<"signin" | "signup">(mode);
-  const [showEmail, setShowEmail] = useState(false);
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -215,17 +214,44 @@ export function AuthDialog({
               Continue with Google
             </Button>
 
-            {!showEmail ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowEmail(true)}
-                className="h-14 w-full rounded-full border-[#2b000a] text-base font-bold"
-              >
-                <Mail className="mr-4 h-5 w-5" />
-                Continue with magic link via email
-              </Button>
-            ) : sent ? (
+            {/* Direct Email Input Form */}
+            {!sent ? (
+              <div className="space-y-4 pt-1">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-full border-t border-stone-200" />
+                  <span className="absolute bg-white px-3 text-xs text-stone-400 font-medium uppercase tracking-wider">
+                    or
+                  </span>
+                </div>
+
+                <form onSubmit={continueWithEmail} className="space-y-3">
+                  <div>
+                    <Input
+                      type="email"
+                      required
+                      autoFocus={false}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError("");
+                      }}
+                      placeholder="Enter your email address"
+                      className="h-13 rounded-full border-stone-300 bg-white px-5 text-sm text-[#181113] placeholder:text-stone-400 focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
+                    />
+                  </div>
+
+                  {error && <p className="px-2 text-xs font-semibold text-rose-600">{error}</p>}
+
+                  <Button
+                    type="submit"
+                    disabled={working}
+                    className="h-13 w-full rounded-full bg-[#800020] hover:bg-[#68001a] text-base font-bold text-white shadow-sm transition active:scale-[0.99]"
+                  >
+                    {working ? "Sending link..." : "Continue with email"}
+                  </Button>
+                </form>
+              </div>
+            ) : (
               <div className="space-y-4 rounded-2xl bg-[#fdf2f4]/60 p-5 text-sm border border-[#f9c8d4]">
                 <div>
                   <p className="font-bold text-[#2b000a] text-base">Check your email</p>
@@ -289,28 +315,6 @@ export function AuthDialog({
                   </button>
                 </div>
               </div>
-            ) : (
-              <form onSubmit={continueWithEmail} className="space-y-3">
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    setError("");
-                  }}
-                  placeholder="you@example.com"
-                  className="h-12 rounded-full border-[#2b000a] px-5"
-                  required
-                />
-                {error && <p className="text-sm text-red-700">{error}</p>}
-                <Button
-                  type="submit"
-                  disabled={working}
-                  className="h-12 w-full rounded-full bg-[#800020] font-bold hover:bg-merlot"
-                >
-                  {working ? "Sending..." : "Send magic link"}
-                </Button>
-              </form>
             )}
 
             {defaultHostIntent && (

@@ -21,11 +21,11 @@ export function CurrencySwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-crimson"
+        className="inline-flex size-9 items-center justify-center rounded-full border border-stone-200/90 bg-white text-[#181113] outline-none transition-all hover:bg-stone-50 hover:border-stone-300 focus-visible:ring-2 focus-visible:ring-crimson shadow-2xs"
         aria-label="Choose display currency"
+        title="Languages & currency"
       >
-        <Globe className="h-4 w-4" />
-        <span className="hidden sm:inline">{display === "AUTO" ? "Currency" : display}</span>
+        <Globe className="h-4 w-4 text-[#181113]" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuItem onClick={() => setDisplay("AUTO")}>

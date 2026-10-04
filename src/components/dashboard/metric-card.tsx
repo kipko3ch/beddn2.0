@@ -7,6 +7,7 @@ import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 export interface MetricCardProps {
   label: string;
   value: string | number;
+  prefix?: string;
   icon: ReactNode;
   href?: string;
   trend?: {
@@ -15,54 +16,76 @@ export interface MetricCardProps {
     isNeutral?: boolean;
     label?: string;
   };
-  tone?: "burgundy" | "rose" | "emerald" | "amber" | "neutral";
+  tone?: "burgundy" | "rose" | "emerald" | "amber" | "teal" | "neutral";
   subtitle?: string;
 }
 
-const TONE_STYLES = {
+const TONE_CONFIG = {
   burgundy: {
-    iconBg: "bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4]/60",
-    sparkColor: "#800020",
+    iconBg: "bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4]/70",
+    stroke: "#800020",
+    gradientId: "grad-burgundy",
+    fillColor: "#800020",
+    trendColor: "text-emerald-600",
   },
   rose: {
-    iconBg: "bg-rose-50 text-rose-600 border border-rose-200/60",
-    sparkColor: "#e11d48",
+    iconBg: "bg-rose-50 text-rose-600 border border-rose-200/70",
+    stroke: "#f43f5e",
+    gradientId: "grad-rose",
+    fillColor: "#f43f5e",
+    trendColor: "text-rose-600",
   },
   emerald: {
-    iconBg: "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
-    sparkColor: "#059669",
+    iconBg: "bg-emerald-50 text-emerald-600 border border-emerald-200/70",
+    stroke: "#10b981",
+    gradientId: "grad-emerald",
+    fillColor: "#10b981",
+    trendColor: "text-emerald-600",
   },
   amber: {
-    iconBg: "bg-amber-50 text-amber-700 border border-amber-200/60",
-    sparkColor: "#d97706",
+    iconBg: "bg-amber-50 text-amber-600 border border-amber-200/70",
+    stroke: "#f59e0b",
+    gradientId: "grad-amber",
+    fillColor: "#f59e0b",
+    trendColor: "text-amber-600",
+  },
+  teal: {
+    iconBg: "bg-teal-50 text-teal-600 border border-teal-200/70",
+    stroke: "#14b8a6",
+    gradientId: "grad-teal",
+    fillColor: "#14b8a6",
+    trendColor: "text-teal-600",
   },
   neutral: {
-    iconBg: "bg-stone-100 text-stone-700 border border-stone-200/60",
-    sparkColor: "#78716c",
+    iconBg: "bg-stone-100 text-stone-600 border border-stone-200/70",
+    stroke: "#78716c",
+    gradientId: "grad-neutral",
+    fillColor: "#78716c",
+    trendColor: "text-stone-600",
   },
 };
 
 export function MetricCard({
   label,
   value,
+  prefix,
   icon,
   href,
   trend,
   tone = "burgundy",
   subtitle,
 }: MetricCardProps) {
-  const styles = TONE_STYLES[tone] || TONE_STYLES.burgundy;
+  const config = TONE_CONFIG[tone] || TONE_CONFIG.burgundy;
 
   const content = (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-5 shadow-xs transition hover:border-[#800020]/30 hover:shadow-md">
-      {/* Top row: Icon & Label */}
-      <div className="flex items-center gap-3">
-        <div className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${styles.iconBg} shadow-2xs transition group-hover:scale-105`}>
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:border-[#800020]/30 hover:shadow-md">
+      {/* Top Row: Icon container + Label */}
+      <div className="flex items-center gap-2.5">
+        <div className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${config.iconBg} shadow-2xs transition group-hover:scale-105`}>
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-bold uppercase tracking-wider text-stone-500">{label}</p>
-          {subtitle && <p className="truncate text-[11px] text-stone-400 mt-0.5">{subtitle}</p>}
+          <p className="truncate text-xs font-semibold text-stone-600">{label}</p>
         </div>
         {href && (
           <div className="text-stone-300 transition group-hover:text-[#800020] group-hover:translate-x-0.5">
@@ -71,47 +94,68 @@ export function MetricCard({
         )}
       </div>
 
-      {/* Middle row: Big Metric Value */}
-      <div className="mt-4 flex items-baseline justify-between gap-2">
-        <p className="font-brand text-3xl sm:text-4xl font-black text-[#181113] tracking-tight">
+      {/* Middle Row: Big Bold Metric Value */}
+      <div className="mt-4 flex items-baseline gap-1.5">
+        {prefix && (
+          <span className="text-xs font-bold uppercase tracking-wider text-stone-400">
+            {prefix}
+          </span>
+        )}
+        <p className="font-brand text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
           {value}
         </p>
-
-        {/* Decorative mini spark wave */}
-        <svg className="h-6 w-16 opacity-30 group-hover:opacity-60 transition" viewBox="0 0 60 20" fill="none">
-          <path
-            d="M0 16 Q 15 4, 30 12 T 60 4"
-            stroke={styles.sparkColor}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
       </div>
 
-      {/* Bottom row: Trend or contextual pill */}
-      {trend && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs">
-          <span
-            className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 font-bold ${
-              trend.isNeutral
-                ? "bg-stone-100 text-stone-600"
-                : trend.isPositive
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-rose-50 text-rose-700"
-            }`}
-          >
-            {trend.isNeutral ? (
-              <Minus className="size-3" />
-            ) : trend.isPositive ? (
-              <ArrowUpRight className="size-3" />
-            ) : (
-              <ArrowDownRight className="size-3" />
+      {/* Bottom Row: Trend Percentage on Left + Smooth Area Wave Sparkline on Right */}
+      <div className="mt-3 flex items-end justify-between gap-2">
+        {trend ? (
+          <div className="flex items-center gap-1 text-xs font-bold">
+            <span
+              className={
+                trend.isNeutral
+                  ? "text-stone-500"
+                  : trend.isPositive
+                  ? "text-emerald-600"
+                  : "text-rose-600"
+              }
+            >
+              {trend.value}
+            </span>
+            {trend.label && (
+              <span className="text-[10px] font-normal text-stone-400 truncate max-w-[120px]">
+                {trend.label}
+              </span>
             )}
-            {trend.value}
-          </span>
-          {trend.label && <span className="text-[11px] text-stone-500">{trend.label}</span>}
+          </div>
+        ) : subtitle ? (
+          <p className="text-[11px] text-stone-400 truncate">{subtitle}</p>
+        ) : <div />}
+
+        {/* Smooth Area Wave Sparkline (matching Image 3) */}
+        <div className="relative -mb-1 -mr-2 h-9 w-24 shrink-0 overflow-hidden">
+          <svg className="h-full w-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id={config.gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={config.fillColor} stopOpacity="0.25" />
+                <stop offset="100%" stopColor={config.fillColor} stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
+            {/* Area fill */}
+            <path
+              d="M0 38 Q 25 35, 45 22 T 85 10 T 100 6 L 100 40 L 0 40 Z"
+              fill={`url(#${config.gradientId})`}
+            />
+            {/* Line stroke */}
+            <path
+              d="M0 38 Q 25 35, 45 22 T 85 10 T 100 6"
+              fill="none"
+              stroke={config.stroke}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+          </svg>
         </div>
-      )}
+      </div>
     </div>
   );
 
