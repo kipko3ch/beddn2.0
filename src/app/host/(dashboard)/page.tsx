@@ -583,17 +583,13 @@ export default function HostDashboardPage() {
             </div>
 
             <div className="mt-4 pt-3 border-t border-[#f9c8d4]/60">
-              <ProUpgradeModal
-                hostName={host.name || userEmail}
-                activeTier={activeTier}
-                expiresAt={tierExpiry}
-                trigger={
-                  <button className="flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-2xs transition">
-                    <Sparkles className="size-3.5" />
-                    <span>{activeTier ? "Manage Promotion" : "Upgrade to Pro"}</span>
-                  </button>
-                }
-              />
+              <Link
+                href="/host/pro"
+                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-2xs transition"
+              >
+                <Sparkles className="size-3.5" />
+                <span>{activeTier ? "Manage Promotion" : "Upgrade to Pro"}</span>
+              </Link>
             </div>
           </div>
         </div>

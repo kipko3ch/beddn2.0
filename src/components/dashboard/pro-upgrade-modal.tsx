@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -155,9 +156,16 @@ export function ProUpgradeModal({
 
         {/* Clean Footer Note */}
         <div className="bg-stone-50 px-6 py-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <MessageCircle className="size-4 text-[#800020]" />
-            <span>Fast activation via M-Pesa or Bank transfer upon confirmation.</span>
+            <span>Fast activation via M-Pesa or Bank transfer.</span>
+            <Link
+              href="/host/pro"
+              onClick={() => setOpen(false)}
+              className="text-[#800020] font-bold hover:underline"
+            >
+              Open dedicated membership page →
+            </Link>
           </div>
           <Button
             variant="ghost"

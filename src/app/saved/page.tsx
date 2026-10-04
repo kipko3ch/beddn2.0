@@ -9,7 +9,9 @@ import { EmptyState } from "@/components/empty-state";
 import { AuthDialog } from "@/components/auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icon";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { ROUTES } from "@/lib/routes";
+import { Heart, MapPin, Star, Trash2 } from "lucide-react";
 import type { Listing, ListingCategory } from "@/lib/types";
 
 type SavedFilter = "all" | "places" | "experiences";
@@ -35,7 +37,7 @@ function priceLabel(listing: Listing) {
     : listing.hourly_price
     ? "/hr"
     : "/session";
-  return `${listing.currency || "KES"} ${Number(price).toLocaleString()}${suffix}`;
+  return `${listing.currency || "KES"} ${Number(price).toLocaleString()} ${suffix}`;
 }
 
 function SavedBottomNav({ loggedOut }: { loggedOut: boolean }) {
@@ -81,81 +83,100 @@ function SavedTile({
   onRemove: () => void;
 }) {
   const image = listingImage(listing);
-  const place = listing.city || listing.area || "Saved";
   const locationLabel = [listing.area, listing.city].filter(Boolean).join(", ");
-
-  const isExp = (listing.categories || listing.category || []).includes("experience");
+  const isExp = isExperience(listing);
   const detailHref = isExp ? `/experience/${listing.slug}` : `/property/${listing.slug}`;
 
   return (
-    <article className="min-w-0">
+    <article className="group relative flex flex-col rounded-3xl border border-stone-200/90 bg-white p-3 shadow-xs transition-all duration-300 hover:shadow-md hover:border-[#800020]/30">
       <Link
         href={detailHref}
-        className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2"
+        className="block outline-none focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2 rounded-2xl"
       >
-        <div className="relative aspect-[1.28/1] overflow-hidden rounded-lg bg-[#eee6e9] shadow-sm">
+        {/* Photo Container */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone-100">
           {image ? (
             <Image
               src={image}
               alt={listing.title || listing.name}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-              quality={72}
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+              quality={75}
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center px-3 text-center text-xs font-semibold text-muted-foreground">
+            <div className="flex h-full w-full items-center justify-center px-3 text-center text-xs font-medium text-stone-400">
               No image yet
             </div>
           )}
-          <div className="absolute inset-x-2 bottom-2 flex justify-center">
-            <span className="max-w-[90%] truncate rounded-md bg-white/92 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-[#202124] shadow-sm">
-              {place}
+
+          {/* Verified Badge Overlay */}
+          {(listing.is_verified || listing.host?.is_verified) && (
+            <div className="absolute left-2.5 top-2.5 z-10">
+              <VerifiedBadge text="Verified" size="xs" className="bg-white/95 backdrop-blur-xs shadow-xs" />
+            </div>
+          )}
+
+          {/* Category Chip (Normal Case) */}
+          <div className="absolute right-2.5 bottom-2.5 z-10">
+            <span className="rounded-full bg-black/60 backdrop-blur-xs px-2.5 py-0.5 text-[11px] font-medium text-white shadow-xs capitalize">
+              {isExp ? "Experience" : listing.category || "Stay"}
             </span>
           </div>
-          {editMode && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onRemove();
-              }}
-              className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-white text-crimson shadow-sm"
-              aria-label={`Remove ${listing.title || listing.name} from saved`}
-            >
-              <Icon icon="line-md:close" className="h-4 w-4" />
-            </button>
-          )}
         </div>
-        <div className="mt-2 min-w-0">
-          <p className="truncate text-[11px] font-black uppercase tracking-wide text-[#202124] sm:text-xs">
-            {isExperience(listing) ? "Experience saved" : "1 location saved"}
-          </p>
-          <h2 className="mt-0.5 truncate text-sm font-bold text-[#202124] sm:text-base">
-            {listing.title || listing.name}
-          </h2>
-          <p className="mt-0.5 truncate text-[11px] font-medium text-[#777] sm:text-xs">
-            {locationLabel || listing.country}
-          </p>
-          <p className="mt-1 text-[11px] font-bold text-[#202124] sm:text-xs">
-            {priceLabel(listing)}
-          </p>
+
+        {/* Details (No Capslock) */}
+        <div className="mt-3 px-1 pb-1 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-brand font-bold text-sm sm:text-base text-stone-900 truncate leading-snug group-hover:text-[#800020] transition-colors">
+              {listing.title || listing.name}
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-1 text-xs text-stone-500 truncate">
+            <MapPin className="size-3.5 shrink-0 text-[#800020]" />
+            <span className="truncate">{locationLabel || listing.country || "East Africa"}</span>
+          </div>
+
+          <div className="pt-1.5 flex items-baseline justify-between border-t border-stone-100">
+            <p className="font-brand font-extrabold text-sm text-[#2b000a]">
+              {priceLabel(listing)}
+            </p>
+          </div>
         </div>
       </Link>
+
+      {/* Remove / Edit Button */}
+      {editMode && (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onRemove();
+          }}
+          className="absolute -top-2 -right-2 z-20 flex size-8 items-center justify-center rounded-full bg-white text-rose-600 border border-rose-200 shadow-md hover:bg-rose-50 transition"
+          aria-label={`Remove ${listing.title || listing.name} from saved`}
+          title="Remove from saved"
+        >
+          <Trash2 className="size-4" />
+        </button>
+      )}
     </article>
   );
 }
 
 function WishlistSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {Array.from({ length: 8 }).map((_, index) => (
-        <div key={index} className="animate-pulse">
-          <div className="aspect-[1.28/1] rounded-lg bg-[#eee6e9]" />
-          <div className="mt-2 h-3 w-24 rounded bg-[#eee6e9]" />
-          <div className="mt-2 h-4 w-full rounded bg-[#eee6e9]" />
-          <div className="mt-2 h-3 w-2/3 rounded bg-[#eee6e9]" />
+        <div key={index} className="animate-pulse rounded-3xl border border-stone-200/80 bg-white p-3 space-y-3">
+          <div className="aspect-[4/3] rounded-2xl bg-stone-100" />
+          <div className="space-y-2 px-1">
+            <div className="h-4 w-3/4 rounded-md bg-stone-200/80" />
+            <div className="h-3 w-1/2 rounded-md bg-stone-200/60" />
+            <div className="h-4 w-1/3 rounded-md bg-stone-200/70 pt-2" />
+          </div>
         </div>
       ))}
     </div>
@@ -233,107 +254,125 @@ export default function SavedTripsPage() {
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="min-h-screen bg-white px-4 pb-24 pt-5 text-[#202124] sm:px-6 md:mx-auto md:w-full md:max-w-[1920px] md:pb-12 md:pt-8 lg:px-8">
-        <div className="mb-5 flex items-start justify-between gap-4 md:mb-7">
-          <div>
-            <p className="hidden text-sm font-semibold text-muted-foreground md:block">Saved</p>
-            <h1 className="text-3xl font-black tracking-tight md:font-brand md:text-4xl md:text-[#2b000a]">
-              Wishlist
-            </h1>
-            {!loggedOut && !loading && (
-              <p className="mt-1 text-sm font-medium text-muted-foreground">
-                {listings.length} saved {listings.length === 1 ? "item" : "items"}
-              </p>
+
+      <main className="min-h-screen bg-[#faf8f9] text-[#181113] pb-24 pt-6 md:pt-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Header Row */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-stone-200/80 pb-6">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#800020] mb-1.5">
+                <Heart className="size-3.5 fill-[#800020]" />
+                <span>Your Saved Collection</span>
+              </div>
+              <h1 className="font-brand text-3xl sm:text-4xl font-extrabold text-[#2b000a] tracking-tight">
+                Wishlist
+              </h1>
+              {!loggedOut && !loading && (
+                <p className="mt-1 text-xs sm:text-sm text-stone-500 font-medium">
+                  {listings.length} {listings.length === 1 ? "saved stay" : "saved stays & experiences"}
+                </p>
+              )}
+            </div>
+
+            {!loggedOut && listings.length > 0 && (
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setEditMode((value) => !value)}
+                  className="rounded-full border border-stone-200 bg-white px-4 py-1.5 text-xs font-bold text-stone-700 hover:border-[#800020] hover:text-[#800020] shadow-2xs transition"
+                >
+                  {editMode ? "Done Editing" : "Manage List"}
+                </button>
+              </div>
             )}
           </div>
-          {!loggedOut && listings.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setEditMode((value) => !value)}
-              className="mt-1 rounded-full px-2 py-1 text-sm font-semibold underline-offset-4 hover:underline"
-            >
-              {editMode ? "Done" : "Edit"}
-            </button>
+
+          {/* Filter Tabs & Sort Controls */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="inline-flex rounded-full border border-stone-200/80 bg-white p-1 shadow-2xs self-start">
+              {[
+                ["all", "All Stays"],
+                ["places", "Places"],
+                ["experiences", "Experiences"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setFilter(value as SavedFilter)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                    filter === value
+                      ? "bg-[#800020] text-white shadow-xs"
+                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {!loggedOut && listings.length > 0 && (
+              <div className="flex items-center gap-2 text-xs text-stone-500 self-start sm:self-auto">
+                <span className="font-medium">Sort by:</span>
+                <select
+                  value={sortMode}
+                  onChange={(event) => setSortMode(event.target.value as SortMode)}
+                  className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-bold text-stone-800 shadow-2xs focus:border-[#800020] outline-none"
+                  aria-label="Sort saved trips"
+                >
+                  <option value="recent">Recently saved</option>
+                  <option value="city">City name</option>
+                  <option value="price">Price (lowest first)</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Content Area */}
+          {loggedOut ? (
+            <section className="rounded-3xl border border-stone-200/90 bg-white p-8 sm:p-12 text-center max-w-lg mx-auto shadow-xs space-y-4">
+              <div className="size-14 rounded-2xl bg-[#fdf2f4] text-[#800020] flex items-center justify-center mx-auto">
+                <Heart className="size-7 fill-[#800020]" />
+              </div>
+              <h2 className="font-brand text-2xl font-extrabold text-[#2b000a]">Sign in to see your wishlist</h2>
+              <p className="text-xs sm:text-sm text-stone-500 leading-relaxed max-w-sm mx-auto">
+                Save places, apartments, and unique experiences you love across East Africa, then easily come back to them anytime.
+              </p>
+              <div className="pt-2">
+                <AuthDialog>
+                  <Button className="rounded-full bg-[#800020] px-8 font-bold text-white hover:bg-[#68001a] shadow-xs">
+                    Sign in to Beddn
+                  </Button>
+                </AuthDialog>
+              </div>
+            </section>
+          ) : loading ? (
+            <WishlistSkeleton />
+          ) : visibleListings.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+              {visibleListings.map((listing) => (
+                <SavedTile
+                  key={listing.id}
+                  listing={listing}
+                  editMode={editMode}
+                  onRemove={() => removeSaved(listing.id)}
+                />
+              ))}
+            </div>
+          ) : listings.length > 0 ? (
+            <div className="rounded-3xl border border-stone-200/90 bg-white p-8 text-center text-sm text-stone-500 max-w-md mx-auto shadow-xs">
+              No items in this category yet. Select &quot;All Stays&quot; to view everything in your wishlist.
+            </div>
+          ) : (
+            <EmptyState
+              image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029376/empty-saved_clsjni.png"
+              title="No saved places yet"
+              subtitle="Browse listings across Kenya, Uganda, Rwanda, and Tanzania. Tap the heart to bookmark spaces you love."
+              size="sm"
+            />
           )}
         </div>
-
-        <div className="mb-5 flex items-center justify-center md:justify-start">
-          <div className="grid w-full max-w-[340px] grid-cols-3 rounded-full border bg-white p-1 text-center text-xs font-bold shadow-sm md:max-w-sm">
-            {[
-              ["all", "All"],
-              ["places", "Places"],
-              ["experiences", "Experiences"],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFilter(value as SavedFilter)}
-                className={`rounded-full px-3 py-2 transition-colors ${
-                  filter === value
-                    ? "bg-[#800020] text-white"
-                    : "text-[#202124] hover:bg-[#f5f1f2]"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {!loggedOut && (
-          <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-[#555]">
-            <span>Order by:</span>
-            <select
-              value={sortMode}
-              onChange={(event) => setSortMode(event.target.value as SortMode)}
-              className="rounded-full border bg-white px-2 py-1 text-xs font-bold text-[#202124]"
-              aria-label="Sort saved trips"
-            >
-              <option value="recent">Recently saved</option>
-              <option value="city">City</option>
-              <option value="price">Price</option>
-            </select>
-          </div>
-        )}
-
-        {loggedOut ? (
-          <section className="rounded-lg border bg-[#fbf7f8] p-5 text-left shadow-sm sm:p-8 md:max-w-xl">
-            <h2 className="text-2xl font-black text-[#202124]">Sign in to see your wishlist</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Save places and experiences you like, then come back to them from this page.
-            </p>
-            <AuthDialog>
-              <Button className="mt-5 rounded-full bg-[#800020] px-6 hover:bg-merlot">
-                Sign in
-              </Button>
-            </AuthDialog>
-          </section>
-        ) : loading ? (
-          <WishlistSkeleton />
-        ) : visibleListings.length > 0 ? (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-            {visibleListings.map((listing) => (
-              <SavedTile
-                key={listing.id}
-                listing={listing}
-                editMode={editMode}
-                onRemove={() => removeSaved(listing.id)}
-              />
-            ))}
-          </div>
-        ) : listings.length > 0 ? (
-          <div className="rounded-lg border bg-[#fbf7f8] p-5 text-sm text-muted-foreground">
-            Nothing in this filter yet. Try All or save more from search.
-          </div>
-        ) : (
-          <EmptyState
-            image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029376/empty-saved_clsjni.png"
-            title="No saved places yet"
-            subtitle="Browse listings and tap the heart on anything worth coming back to."
-            size="sm"
-          />
-        )}
       </main>
+
       <SavedBottomNav loggedOut={loggedOut} />
     </>
   );

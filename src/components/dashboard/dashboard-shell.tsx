@@ -168,17 +168,13 @@ export function DashboardShell({
             Boost listing visibility and get verified badge with priority placement.
           </p>
           <div className="mt-3">
-            <ProUpgradeModal
-              hostName={displayName}
-              activeTier={activeTier}
-              expiresAt={activeTierExpires}
-              trigger={
-                <button className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] transition active:scale-98">
-                  <span>Upgrade to Pro</span>
-                  <ArrowRight className="size-3" />
-                </button>
-              }
-            />
+            <Link
+              href="/host/pro"
+              className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] transition active:scale-98"
+            >
+              <span>Upgrade to Pro</span>
+              <ArrowRight className="size-3" />
+            </Link>
           </div>
         </div>
       </div>
