@@ -315,6 +315,14 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   Continue on WhatsApp
                 </a>
               )}
+              {submittedCode !== "sent" && (
+                <Link
+                  href={`/booking/${submittedCode}`}
+                  className="inline-flex h-11 w-full sm:w-auto items-center justify-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot transition shadow-sm"
+                >
+                  View Booking Status
+                </Link>
+              )}
               <Link
                 href={detailHref}
                 className="inline-flex h-11 w-full sm:w-auto items-center justify-center rounded-full border border-stone-200 px-6 text-sm font-semibold text-stone-700 hover:bg-stone-50 transition"

@@ -6,13 +6,17 @@ import type { ListingEventType } from "@/lib/types";
 
 // Fire-and-forget analytics ingest. Never fails the caller; best effort.
 const VALID_EVENTS: ListingEventType[] = [
+  "LISTING_IMPRESSION",
   "LISTING_VIEW",
+  "LISTING_CLICK",
   "CALENDAR_DATE_SELECTED",
   "AVAILABILITY_CHECKED",
   "INQUIRY_STARTED",
   "LOGIN_REQUIRED_FOR_CONTACT",
   "INQUIRY_SUBMITTED",
   "WHATSAPP_CLICK",
+  "BOOKING_REQUESTED",
+  "BOOKING_CONFIRMED",
   "EXPERIENCE_LINK_CLICK",
   "GROUP_LINK_CLICK",
 ];

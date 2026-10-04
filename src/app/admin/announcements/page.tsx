@@ -40,6 +40,7 @@ export default function AdminAnnouncementsPage() {
   const [priority, setPriority] = useState<"normal" | "important" | "urgent">("normal");
   const [isMandatory, setIsMandatory] = useState(false);
   const [expiresAt, setExpiresAt] = useState("");
+  const [sendEmailCopy, setSendEmailCopy] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -63,28 +64,38 @@ export default function AdminAnnouncementsPage() {
     if (!title.trim() || !message.trim()) return;
 
     setSaving(true);
-    const insertPayload = {
-      title: title.trim(),
-      message: message.trim(),
-      priority,
-      is_mandatory: isMandatory,
-      expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
-    };
+    try {
+      const response = await fetch("/api/admin/announcements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          message: message.trim(),
+          priority,
+          is_mandatory: isMandatory,
+          expires_at: expiresAt || null,
+          send_email: sendEmailCopy,
+        }),
+      });
 
-    const { error } = await supabase.from("host_announcements").insert(insertPayload);
-    setSaving(false);
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.error || "Failed to publish announcement");
+      }
 
-    if (error) {
-      alert("Failed to create announcement: " + error.message);
-    } else {
       setShowModal(false);
-      // Reset form
       setTitle("");
       setMessage("");
       setPriority("normal");
       setIsMandatory(false);
       setExpiresAt("");
+      setSendEmailCopy(false);
       await load();
+      alert(`Announcement published successfully! Notified ${resData.notifiedCount || 0} active hosts.`);
+    } catch (err: any) {
+      alert(err.message || "Failed to create announcement");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -250,17 +261,32 @@ export default function AdminAnnouncementsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  id="ann-mandatory"
-                  type="checkbox"
-                  checked={isMandatory}
-                  onChange={(e) => setIsMandatory(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-[#800020] focus:ring-[#800020]"
-                />
-                <Label htmlFor="ann-mandatory" className="cursor-pointer select-none">
-                  Mark as Mandatory (Hosts cannot dismiss this announcement)
-                </Label>
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    id="ann-mandatory"
+                    type="checkbox"
+                    checked={isMandatory}
+                    onChange={(e) => setIsMandatory(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-[#800020] focus:ring-[#800020]"
+                  />
+                  <Label htmlFor="ann-mandatory" className="cursor-pointer select-none text-xs sm:text-sm">
+                    Mark as Mandatory (Hosts cannot dismiss this announcement)
+                  </Label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    id="ann-email-copy"
+                    type="checkbox"
+                    checked={sendEmailCopy}
+                    onChange={(e) => setSendEmailCopy(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-[#800020] focus:ring-[#800020]"
+                  />
+                  <Label htmlFor="ann-email-copy" className="cursor-pointer select-none text-xs sm:text-sm font-semibold text-[#800020]">
+                    Send email copy to all active hosts via ZeptoMail
+                  </Label>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 border-t pt-4">

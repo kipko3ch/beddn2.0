@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/server";
-import { hostApprovedEmail, hostRejectedEmail } from "@/lib/email/templates";
+import { hostApprovedEmail, hostRejectedEmail, listingVerifiedEmail, proTierActivatedEmail } from "@/lib/email/templates";
+import { createHostNotification } from "@/lib/notifications/host-notifications";
 import { ROUTES } from "@/lib/routes";
 import { blockCalendarForBooking, unblockCalendarForBooking } from "@/lib/bookings/server";
 
@@ -81,6 +82,7 @@ interface AdminActionBody {
   // Featured placement fields (feature_listing / extend_feature).
   feature?: {
     placement_type?: string;
+    tier_name?: string | null;
     city?: string | null;
     category?: string | null;
     start_date?: string;
@@ -222,6 +224,28 @@ export async function POST(request: Request) {
       })
       .eq("id", body.id);
     errorMessage = error?.message || null;
+    if (!errorMessage && verified) {
+      void admin.from("listings").select("title, name, host_id").eq("id", body.id).maybeSingle().then(async ({ data: l }) => {
+        if (l?.host_id) {
+          const { data: h } = await admin.from("hosts").select("user_id, name").eq("id", l.host_id).maybeSingle();
+          const title = l.title || l.name || "Your listing";
+          const listingUrl = `${SITE_URL}/property/${body.id}`;
+          await createHostNotification({
+            hostId: l.host_id,
+            userId: h?.user_id,
+            type: "listing_verified",
+            title: `Listing Verified: ${title}`,
+            message: `Congratulations! ${title} has successfully passed Beddn verification and now features the official Verified Trust Badge.`,
+            link: ROUTES.dashboardListings,
+            emailNotification: listingVerifiedEmail({
+              hostName: h?.name || "there",
+              listingName: title,
+              listingUrl,
+            }),
+          });
+        }
+      });
+    }
   }
 
   // --- Lifecycle transitions (listing_status drives public visibility) ---
@@ -292,8 +316,10 @@ export async function POST(request: Request) {
 
     const now = new Date();
     const status = start <= now && end >= now ? "active" : "scheduled";
+    const tierName = f.tier_name || (placement === "homepage_featured" ? "Featured" : "Pro");
     const { error } = await admin.from("featured_listings").insert({
       listing_id: body.id,
+      tier_name: tierName,
       placement_type: placement,
       city: f.city || null,
       category: f.category || null,
@@ -307,6 +333,29 @@ export async function POST(request: Request) {
       created_by: data.user.id,
     });
     errorMessage = error?.message || null;
+    if (!errorMessage) {
+      void admin.from("listings").select("title, name, host_id").eq("id", body.id).maybeSingle().then(async ({ data: l }) => {
+        if (l?.host_id) {
+          const { data: h } = await admin.from("hosts").select("user_id, name").eq("id", l.host_id).maybeSingle();
+          const title = l.title || l.name || "Your listing";
+          await createHostNotification({
+            hostId: l.host_id,
+            userId: h?.user_id,
+            type: "pro_activated",
+            title: `${tierName} Activated: ${title}`,
+            message: `Your ${tierName} promotion for ${title} is now active until ${end.toLocaleDateString()}. Enjoy boosted visibility!`,
+            link: ROUTES.dashboard,
+            emailNotification: proTierActivatedEmail({
+              hostName: h?.name || "there",
+              listingName: title,
+              tierName,
+              expiresAt: end.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }),
+              dashboardUrl: `${SITE_URL}${ROUTES.dashboard}`,
+            }),
+          });
+        }
+      });
+    }
   }
 
   if (body.action === "cancel_feature") {

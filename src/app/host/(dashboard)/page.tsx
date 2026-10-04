@@ -3,131 +3,272 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  Building2,
+  CalendarCheck,
+  Eye,
+  MessageSquare,
+  ShieldCheck,
+  Star,
+  Zap,
+  Crown,
+  Sparkles,
+  ArrowRight,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Check,
+  Phone,
+  BarChart3,
+  TrendingUp,
+  Filter,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/icon";
-import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
 import { ROUTES } from "@/lib/routes";
+import { MetricCard } from "@/components/dashboard/metric-card";
+import { PerformanceChart, type ChartDataPoint } from "@/components/dashboard/performance-chart";
+import { StatusDonut } from "@/components/dashboard/status-donut";
+import { ProUpgradeModal } from "@/components/dashboard/pro-upgrade-modal";
+import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
-type Stat = {
-  label: string;
-  value: string | number;
-  icon: string;
-  href: string;
-  tone?: "brand" | "warning" | "muted";
-};
-
-type HostStatus = {
+type HostProfile = {
   id: string;
   name?: string | null;
   is_verified: boolean;
   verification_status: string;
-} | null;
+  status: string;
+};
 
-type Announcement = {
+type ListingItem = {
   id: string;
-  title: string;
-  message: string;
-  priority: "normal" | "important" | "urgent";
-  is_mandatory: boolean;
-  expires_at: string | null;
+  title?: string | null;
+  name?: string | null;
+  city?: string | null;
+  is_active: boolean;
+  is_verified?: boolean;
+  listing_status?: string | null;
+  photos?: string[];
+  description?: string | null;
+  price_per_night?: number | null;
+  hourly_rate?: number | null;
+};
+
+type BookingItem = {
+  id: string;
+  status: string;
+  total_amount?: number;
+  currency?: string;
+  created_at: string;
+  listing_id: string;
+};
+
+type InquiryItem = {
+  id: string;
+  status: string;
+  created_at: string;
+  listing_id: string;
+};
+
+type EventItem = {
+  event_type: string;
+  listing_id: string | null;
   created_at: string;
 };
 
-const QUICK_ACTIONS = [
-  { label: "Create listing", description: "Add a new place or experience", href: ROUTES.newListing, icon: "line-md:plus" },
-  { label: "Inquiries", description: "See and reply to leads", href: ROUTES.dashboardInquiries, icon: "line-md:bell" },
-  { label: "Calendar", description: "Block dates and see demand", href: ROUTES.dashboardCalendar, icon: "line-md:calendar" },
-  { label: "Feedback", description: "See what guests said", href: ROUTES.dashboardFeedback, icon: "line-md:star" },
-];
+type DateRange = "7d" | "30d" | "90d" | "all";
 
-function StatCard({ label, value, icon, href, tone }: Stat) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-2xl border bg-white p-4 transition-shadow hover:shadow-md sm:p-5"
-    >
-      <div className="flex items-start justify-between">
-        <span
-          className={`flex size-10 items-center justify-center rounded-xl ${
-            tone === "brand"
-              ? "bg-[#f8eef2] text-crimson"
-              : tone === "warning"
-              ? "bg-amber-50 text-amber-700"
-              : "bg-[#f5f1f2] text-[#6f6568]"
-          }`}
-        >
-          <Icon icon={icon} className="h-5 w-5" />
-        </span>
-        <Icon icon="line-md:chevron-right" className="h-4 w-4 text-[#d8c8cd] transition-colors group-hover:text-crimson" />
-      </div>
-      <p className="mt-4 text-2xl font-bold text-[#2b000a]">{value}</p>
-      <p className="mt-0.5 text-sm text-muted-foreground">{label}</p>
-    </Link>
-  );
-}
-
-export default function DashboardPage() {
+export default function HostDashboardPage() {
   const supabase = useMemo(() => createClient(), []);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [host, setHost] = useState<HostStatus>(null);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [submittingVerification, setSubmittingVerification] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
-  const [stats, setStats] = useState<Stat[]>([]);
-  const [pendingBookingsCount, setPendingBookingsCount] = useState(0);
-  const [newInquiriesCount, setNewInquiriesCount] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  const [inquiryBannerDismissed, setInquiryBannerDismissed] = useState(false);
-  const [verifiedDismissed, setVerifiedDismissed] = useState(false);
+  const [host, setHost] = useState<HostProfile | null>(null);
+  const [listings, setListings] = useState<ListingItem[]>([]);
+  const [bookings, setBookings] = useState<BookingItem[]>([]);
+  const [inquiries, setInquiries] = useState<InquiryItem[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [activeTier, setActiveTier] = useState<string | null>(null);
+  const [tierExpiry, setTierExpiry] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange>("30d");
+  const [submittingVerification, setSubmittingVerification] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (
-      localStorage.getItem("beddn_verified_dismissed") === "true" ||
-      (host?.id && localStorage.getItem(`beddn_verified_dismissed_${host.id}`) === "true")
-    ) {
-      setVerifiedDismissed(true);
-    }
-    if (
-      localStorage.getItem("beddn_inquiry_dismissed") === "true" ||
-      (host?.id && localStorage.getItem(`beddn_inquiry_dismissed_${host.id}`) === "true")
-    ) {
-      setInquiryBannerDismissed(true);
-    }
-  }, [host?.id]);
-
-  function dismissInquiries() {
-    setInquiryBannerDismissed(true);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("beddn_inquiry_dismissed", "true");
-      if (host?.id) {
-        localStorage.setItem(`beddn_inquiry_dismissed_${host.id}`, "true");
+    async function loadData() {
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) {
+        setLoading(false);
+        return;
       }
-    }
-  }
+      setUserEmail(authData.user.email ?? "");
 
-  function dismissVerified() {
-    setVerifiedDismissed(true);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("beddn_verified_dismissed", "true");
-      if (host?.id) {
-        localStorage.setItem(`beddn_verified_dismissed_${host.id}`, "true");
+      // 1. Fetch host profile
+      const { data: hostData } = await supabase
+        .from("hosts")
+        .select("id, name, is_verified, verification_status, status")
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+
+      if (!hostData) {
+        setLoading(false);
+        return;
       }
+      setHost(hostData as HostProfile);
+
+      // 2. Fetch listings for this host
+      const { data: listingData } = await supabase
+        .from("listings")
+        .select("id, title, name, city, is_active, is_verified, listing_status, photos, description, price_per_night, hourly_rate")
+        .eq("host_id", hostData.id);
+
+      const hostListings = (listingData as ListingItem[]) || [];
+      setListings(hostListings);
+      const listingIds = hostListings.map((l) => l.id);
+
+      // 3. Parallel fetch of Bookings, Inquiries, Listing Events, and Pro Tiers
+      const [bookingsRes, inquiriesRes, eventsRes, featuredRes] = await Promise.all([
+        supabase
+          .from("bookings")
+          .select("id, status, total_amount, currency, created_at, listing_id")
+          .eq("host_id", hostData.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("inquiries")
+          .select("id, status, created_at, listing_id")
+          .eq("host_id", hostData.id)
+          .order("created_at", { ascending: false }),
+        listingIds.length > 0
+          ? supabase
+              .from("listing_events")
+              .select("event_type, listing_id, created_at")
+              .in("listing_id", listingIds)
+              .limit(5000)
+          : Promise.resolve({ data: [] }),
+        supabase
+          .from("featured_listings")
+          .select("tier_name, end_date, status")
+          .eq("host_id", hostData.id)
+          .eq("status", "active")
+          .gt("end_date", new Date().toISOString())
+          .order("end_date", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      setBookings((bookingsRes.data as BookingItem[]) || []);
+      setInquiries((inquiriesRes.data as InquiryItem[]) || []);
+      setEvents((eventsRes.data as EventItem[]) || []);
+
+      if (featuredRes.data) {
+        setActiveTier(featuredRes.data.tier_name || "Pro");
+        setTierExpiry(
+          featuredRes.data.end_date
+            ? new Date(featuredRes.data.end_date).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : null
+        );
+      }
+
+      setLoading(false);
     }
+
+    loadData();
+  }, [supabase]);
+
+  // Date range filter cutoff
+  const filterCutoff = useMemo(() => {
+    if (dateRange === "all") return null;
+    const now = Date.now();
+    const days = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : 90;
+    return new Date(now - days * 24 * 60 * 60 * 1000);
+  }, [dateRange]);
+
+  const filteredEvents = useMemo(() => {
+    if (!filterCutoff) return events;
+    return events.filter((e) => new Date(e.created_at) >= filterCutoff);
+  }, [events, filterCutoff]);
+
+  const filteredInquiries = useMemo(() => {
+    if (!filterCutoff) return inquiries;
+    return inquiries.filter((i) => new Date(i.created_at) >= filterCutoff);
+  }, [inquiries, filterCutoff]);
+
+  const filteredBookings = useMemo(() => {
+    if (!filterCutoff) return bookings;
+    return bookings.filter((b) => new Date(b.created_at) >= filterCutoff);
+  }, [bookings, filterCutoff]);
+
+  // Counts
+  const viewsCount = filteredEvents.filter((e) => e.event_type === "LISTING_VIEW").length;
+  const whatsappClicks = filteredEvents.filter((e) => e.event_type === "WHATSAPP_CLICK").length;
+  const inquiriesCount = filteredInquiries.length;
+  const totalLeads = inquiriesCount + whatsappClicks;
+
+  const pendingBookings = bookings.filter((b) => b.status === "requested" || b.status === "paid_pending_host");
+  const confirmedBookings = bookings.filter((b) => b.status === "confirmed");
+  const activeListingsCount = listings.filter((l) => l.is_active || l.listing_status === "active").length;
+
+  // Chart data: daily grouping over the chosen period
+  const chartData = useMemo(() => {
+    const days = dateRange === "7d" ? 7 : dateRange === "30d" ? 14 : 12;
+    const points: ChartDataPoint[] = [];
+    const now = new Date();
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i * (dateRange === "90d" ? 7 : 1));
+      const dateStr = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+      const dayEvents = filteredEvents.filter((e) => {
+        const itemDate = new Date(e.created_at);
+        return (
+          itemDate.getDate() === d.getDate() &&
+          itemDate.getMonth() === d.getMonth() &&
+          itemDate.getFullYear() === d.getFullYear()
+        );
+      });
+
+      points.push({
+        label: dateStr,
+        value: dayEvents.filter((e) => e.event_type === "LISTING_VIEW").length,
+      });
+    }
+
+    return points;
+  }, [filteredEvents, dateRange]);
+
+  // Listing completeness calculator
+  function computeCompleteness(l: ListingItem) {
+    let score = 0;
+    const tips: string[] = [];
+
+    if (l.title || l.name) score += 20;
+    else tips.push("Add a descriptive property title");
+
+    if (l.description && l.description.length > 50) score += 20;
+    else tips.push("Write a detailed description (50+ words)");
+
+    if (l.photos && l.photos.length >= 4) score += 30;
+    else if (l.photos && l.photos.length > 0) {
+      score += 15;
+      tips.push(`Add ${4 - l.photos.length} more photos`);
+    } else {
+      tips.push("Upload at least 4 high-quality photos");
+    }
+
+    if (l.price_per_night || l.hourly_rate) score += 20;
+    else tips.push("Set overnight or hourly pricing");
+
+    if (l.is_verified) score += 10;
+    else tips.push("Complete verification badge review");
+
+    return { score, tips };
   }
 
-  async function handleDismissAnnouncement(annId: string) {
-    if (!host) return;
-    setAnnouncements((prev) => prev.filter((a) => a.id !== annId));
-    await supabase.from("host_announcement_dismissals").insert({
-      announcement_id: annId,
-      host_id: host.id,
-    });
-  }
-
+  // Submit host verification action
   async function handleSubmitVerification() {
     if (!host) return;
     setSubmittingVerification(true);
@@ -136,461 +277,467 @@ export default function DashboardPage() {
       .update({ verification_status: "under_review" })
       .eq("id", host.id);
     setSubmittingVerification(false);
+
     if (error) {
       alert("Failed to submit verification: " + error.message);
     } else {
-      setHost((prev) => prev ? { ...prev, verification_status: "under_review" } : null);
+      setHost((prev) => (prev ? { ...prev, verification_status: "under_review" } : null));
     }
   }
-
-  useEffect(() => {
-    async function load() {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        setLoading(false);
-        return;
-      }
-      setUserEmail(user.user.email ?? "");
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", user.user.id)
-        .single();
-
-      const admin = profile?.is_admin ?? false;
-      setIsAdmin(admin);
-
-      if (admin) {
-        const [
-          pendingHosts,
-          pendingListings,
-          paidBookings,
-          disputes,
-          withdrawals,
-          feedback,
-          demand,
-          payments,
-        ] = await Promise.all([
-          supabase.from("hosts").select("id", { count: "exact", head: true }).eq("is_verified", false),
-          supabase
-            .from("listings")
-            .select("id", { count: "exact", head: true })
-            .or("is_verified.eq.false,verification_status.eq.pending"),
-          supabase
-            .from("bookings")
-            .select("id", { count: "exact", head: true })
-            .in("status", ["paid_pending_host", "confirmed"]),
-          supabase
-            .from("bookings")
-            .select("id", { count: "exact", head: true })
-            .in("status", ["disputed", "rejected"]),
-          supabase
-            .from("withdrawals")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "requested"),
-          supabase.from("feedback").select("id", { count: "exact", head: true }),
-          supabase.from("search_demand").select("id", { count: "exact", head: true }),
-          supabase
-            .from("payments")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "initialized"),
-        ]);
-
-        setStats([
-          { label: "Host badges pending", value: pendingHosts.count ?? 0, icon: "line-md:account", href: ROUTES.adminHosts, tone: "warning" },
-          { label: "Listing badges pending", value: pendingListings.count ?? 0, icon: "line-md:home", href: ROUTES.adminListings, tone: "warning" },
-          { label: "Active paid bookings", value: paidBookings.count ?? 0, icon: "line-md:calendar", href: ROUTES.adminBookings, tone: "brand" },
-          { label: "Disputes / rejected", value: disputes.count ?? 0, icon: "line-md:bell", href: ROUTES.adminDisputes, tone: "warning" },
-          { label: "Withdrawal requests", value: withdrawals.count ?? 0, icon: "line-md:briefcase", href: ROUTES.adminWithdrawals, tone: "brand" },
-          { label: "Feedback items", value: feedback.count ?? 0, icon: "line-md:star", href: ROUTES.adminFeedback },
-          { label: "Demand searches", value: demand.count ?? 0, icon: "line-md:search", href: ROUTES.adminDemand },
-          { label: "Open payments", value: payments.count ?? 0, icon: "line-md:check-all", href: ROUTES.adminPayments },
-        ]);
-        setLoading(false);
-        return;
-      }
-
-      const { data: hostData } = await supabase
-        .from("hosts")
-        .select("id, name, is_verified, verification_status")
-        .eq("user_id", user.user.id)
-        .maybeSingle();
-
-      setHost((hostData as HostStatus) ?? null);
-      if (!hostData) {
-        setStats([]);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch active announcements and dismissals for this host
-      const [announcementsRes, dismissalsRes] = await Promise.all([
-        supabase
-          .from("host_announcements")
-          .select("*")
-          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
-        supabase
-          .from("host_announcement_dismissals")
-          .select("announcement_id")
-          .eq("host_id", hostData.id),
-      ]);
-
-      const dismissedIds = new Set((dismissalsRes.data ?? []).map((d: any) => d.announcement_id));
-      const visible = (announcementsRes.data ?? []).filter(
-        (a: any) => !dismissedIds.has(a.id)
-      );
-      setAnnouncements(visible);
-
-      const { data: listingRows } = await supabase
-        .from("listings")
-        .select("id, is_active, listing_status")
-        .eq("host_id", hostData.id);
-      const listingIds = (listingRows ?? []).map((listing: { id: string }) => listing.id);
-      const activeListings = (listingRows ?? []).filter(
-        (listing: { is_active?: boolean; listing_status?: string | null }) =>
-          listing.is_active || listing.listing_status === "active"
-      ).length;
-
-      // Demand proof: views, availability checks, inquiries, WhatsApp clicks, and pending booking requests.
-      const [pendingBookingsRes, totalInquiries, newInquiries, eventRowsRes] = await Promise.all([
-        supabase
-          .from("bookings")
-          .select("id", { count: "exact", head: true })
-          .eq("host_id", hostData.id)
-          .in("status", ["requested", "paid_pending_host"]),
-        supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("host_id", hostData.id),
-        supabase
-          .from("inquiries")
-          .select("id", { count: "exact", head: true })
-          .eq("host_id", hostData.id)
-          .eq("status", "NEW"),
-        listingIds.length
-          ? supabase.from("listing_events").select("event_type").in("listing_id", listingIds).limit(5000)
-          : Promise.resolve({ data: [] as { event_type: string }[] }),
-      ]);
-
-      const events = (eventRowsRes.data ?? []) as { event_type: string }[];
-      const countEvent = (type: string) => events.filter((e) => e.event_type === type).length;
-
-      const pBookings = pendingBookingsRes.count ?? 0;
-      const nInquiries = newInquiries.count ?? 0;
-      setPendingBookingsCount(pBookings);
-      setNewInquiriesCount(nInquiries);
-
-      setStats([
-        { label: "Listing views", value: countEvent("LISTING_VIEW"), icon: "line-md:home", href: ROUTES.dashboardListings },
-        { label: "Availability checks", value: countEvent("AVAILABILITY_CHECKED"), icon: "line-md:calendar", href: ROUTES.dashboardCalendar },
-        { label: "Inquiries", value: totalInquiries.count ?? 0, icon: "line-md:bell", href: ROUTES.dashboardInquiries, tone: "brand" },
-        { label: "New inquiries", value: nInquiries, icon: "line-md:bell", href: ROUTES.dashboardInquiries, tone: nInquiries > 0 ? "warning" : "muted" },
-        { label: "WhatsApp clicks", value: countEvent("WHATSAPP_CLICK"), icon: "line-md:account", href: ROUTES.dashboardInquiries },
-        { label: "Active listings", value: activeListings, icon: "line-md:check-all", href: ROUTES.dashboardListings, tone: "brand" },
-      ]);
-      setLoading(false);
-    }
-    load();
-  }, [supabase]);
-
-  const badge = isAdmin
-    ? "Admin workspace"
-    : host?.is_verified
-    ? "Verified host"
-    : host
-    ? "Verification badge pending"
-    : "Guest account";
-
-  const greetingName = host?.name?.split(" ")[0] || userEmail.split("@")[0] || "there";
 
   if (loading) {
     return <DashboardOverviewSkeleton />;
   }
 
-  // No host profile yet — invite them to create one.
-  if (!isAdmin && !host) {
+  // Not a host yet
+  if (!host) {
     return (
-      <div className="overflow-hidden rounded-3xl border bg-white">
-        <div className="grid items-center gap-6 p-6 sm:grid-cols-[1fr_auto] sm:p-10">
-          <div>
-            <Badge className="mb-4 rounded-full bg-[#fbf7f8] text-[#800020] hover:bg-[#fbf7f8]">
-              {badge}
-            </Badge>
-            <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">Become a Beddn host</h1>
-            <p className="mt-3 max-w-md text-sm text-muted-foreground">
-              This account{userEmail ? ` (${userEmail})` : ""} isn&apos;t linked to a host profile yet.
-              Create one and list hourly stays, overnight stays, or experiences in minutes.
-            </p>
-            <Link
-              href={ROUTES.newListing}
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-[#6b1029]"
-            >
-              Create host profile <Icon icon="line-md:chevron-right" className="h-4 w-4" />
-            </Link>
-          </div>
-          <Image
-            src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029370/empty-host-needed_vum5fe.png"
-            alt=""
-            width={220}
-            height={180}
-            className="mx-auto h-auto w-[180px] sm:w-[220px]"
-            aria-hidden
-          />
+      <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white p-8 text-center sm:p-12 shadow-sm">
+        <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-[#fdf2f4] text-[#800020] mb-4">
+          <Building2 className="size-8" />
         </div>
+        <h2 className="font-brand text-3xl font-bold text-[#181113]">Become a Beddn Host</h2>
+        <p className="mt-2 text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
+          List your spare room, apartment, conference hall, or unique space across East Africa and start receiving verified guests.
+        </p>
+        <Link
+          href={ROUTES.newListing}
+          className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-7 text-sm font-bold text-white shadow-md hover:bg-[#68001a] transition"
+        >
+          <span>Create Host Listing</span>
+          <ArrowRight className="size-4" />
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Greeting */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="space-y-8">
+      {/* ========================================================================= */}
+      {/* 1. Header Toolbar: Title, Host Status & Period Filters                    */}
+      {/* ========================================================================= */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-stone-200/80 pb-5">
         <div>
-          <Badge className="mb-2 rounded-full bg-[#fbf7f8] text-[#800020] hover:bg-[#fbf7f8]">
-            {badge}
-          </Badge>
-          <h1 className="font-brand text-3xl text-[#2b000a] sm:text-4xl">
-            {isAdmin ? "Admin overview" : `Welcome back, ${greetingName}`}
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            {isAdmin
-              ? "Monitor verification badges, payments, disputes, withdrawals, feedback, and demand."
-              : "Here’s how your hosting is going."}
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-brand text-2xl sm:text-3xl font-black text-[#181113] tracking-tight">
+              Host Overview
+            </h2>
+            {host.is_verified ? (
+              <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold gap-1 px-2.5 py-0.5">
+                <CheckCircle2 className="size-3" /> Verified Host
+              </Badge>
+            ) : host.verification_status === "under_review" ? (
+              <Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold gap-1 px-2.5 py-0.5">
+                <Clock className="size-3" /> Under Review
+              </Badge>
+            ) : (
+              <Badge className="rounded-full bg-stone-100 text-stone-600 border border-stone-200 text-xs font-bold gap-1 px-2.5 py-0.5">
+                Verification Pending
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-stone-500 mt-1">
+            Real-time performance and actionable recommendations for your properties.
           </p>
+        </div>
+
+        {/* Date Range Selector (matching screenshot) */}
+        <div className="flex items-center gap-1.5 rounded-full border border-stone-200/80 bg-white p-1 shadow-2xs self-start sm:self-auto">
+          {(["7d", "30d", "90d", "all"] as DateRange[]).map((period) => (
+            <button
+              key={period}
+              type="button"
+              onClick={() => setDateRange(period)}
+              className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                dateRange === period
+                  ? "bg-[#800020] text-white shadow-2xs"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              {period === "7d" ? "7 Days" : period === "30d" ? "30 Days" : period === "90d" ? "90 Days" : "All Time"}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Needs attention: Only show when there are actual pending booking requests waiting for host confirmation */}
-      {!isAdmin && pendingBookingsCount > 0 && (
-        <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors">
-          <Link
-            href={ROUTES.dashboardInquiries}
-            className="flex flex-1 items-center gap-3 hover:opacity-80 transition-opacity"
-          >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-              <Icon icon="line-md:bell" className="h-4 w-4" />
-            </span>
-            <p className="text-sm font-semibold text-amber-900">
-              {pendingBookingsCount} booking request{pendingBookingsCount === 1 ? "" : "s"} waiting for your response
+      {/* ========================================================================= */}
+      {/* 2. Top Summary KPI Cards                                                  */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          label="Total Views"
+          value={viewsCount.toLocaleString()}
+          icon={<Eye className="size-5" />}
+          tone="burgundy"
+          trend={{ value: `${viewsCount} total`, isPositive: viewsCount > 0, label: "property impressions" }}
+          subtitle="Real guest views"
+        />
+
+        <MetricCard
+          label="Inquiries & WhatsApp"
+          value={totalLeads.toLocaleString()}
+          icon={<MessageSquare className="size-5" />}
+          tone="rose"
+          href={ROUTES.dashboardInquiries}
+          trend={{ value: `${inquiriesCount} in-app · ${whatsappClicks} WhatsApp`, isPositive: totalLeads > 0 }}
+          subtitle="Direct guest interest"
+        />
+
+        <MetricCard
+          label="Booking Requests"
+          value={bookings.length.toLocaleString()}
+          icon={<CalendarCheck className="size-5" />}
+          tone="emerald"
+          href={ROUTES.dashboardBookings}
+          trend={{
+            value: `${pendingBookings.length} pending · ${confirmedBookings.length} confirmed`,
+            isPositive: pendingBookings.length > 0,
+          }}
+          subtitle="Reservation pipeline"
+        />
+
+        <MetricCard
+          label="Active Properties"
+          value={`${activeListingsCount} / ${listings.length}`}
+          icon={<Building2 className="size-5" />}
+          tone="amber"
+          href={ROUTES.dashboardListings}
+          trend={{
+            value: activeTier ? `${activeTier} Tier Active` : "Free Tier",
+            isNeutral: !activeTier,
+            isPositive: Boolean(activeTier),
+          }}
+          subtitle="Published spaces"
+        />
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. Performance Chart & Status Donut (Inspired by the Reference Image)      */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Bar Chart (2 columns) */}
+        <div className="lg:col-span-2">
+          <PerformanceChart
+            title="Listing Views & Guest Engagement"
+            subtitle={`Guest traffic across your properties (${dateRange === "7d" ? "Last 7 days" : dateRange === "30d" ? "Last 30 days" : "Selected period"})`}
+            data={chartData}
+            metricLabel="views"
+            summaryPills={[
+              { label: "Total Views", value: viewsCount.toLocaleString() },
+              { label: "Total Inquiries", value: inquiriesCount.toLocaleString() },
+              {
+                label: "Conversion Rate",
+                value: viewsCount > 0 ? `${((totalLeads / viewsCount) * 100).toFixed(1)}%` : "0%",
+              },
+            ]}
+          />
+        </div>
+
+        {/* Status Breakdown Donut (1 column) */}
+        <div>
+          <StatusDonut
+            title="Property Breakdown"
+            subtitle="Current status of your listings"
+            totalLabel="Listings"
+            segments={[
+              {
+                label: "Active Listings",
+                count: activeListingsCount,
+                color: "#059669",
+              },
+              {
+                label: "Pending Verification",
+                count: listings.filter((l) => !l.is_verified && (l.is_active || l.listing_status === "active")).length,
+                color: "#d97706",
+              },
+              {
+                label: "Pro / Featured",
+                count: activeTier ? activeListingsCount : 0,
+                color: "#800020",
+              },
+              {
+                label: "Drafts / Inactive",
+                count: listings.filter((l) => !l.is_active && l.listing_status !== "active").length,
+                color: "#a8a29e",
+              },
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4. Actionable "What should I do next?" Section                             */}
+      {/* ========================================================================= */}
+      <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+          <div>
+            <h3 className="font-brand text-xl font-bold text-[#181113]">
+              What should I do next?
+            </h3>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Actionable steps to maximize your bookings and visibility on Beddn.
             </p>
-            <Icon icon="line-md:chevron-right" className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
-          </Link>
-          <button
-            type="button"
-            onClick={dismissInquiries}
-            className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition-colors"
-            aria-label="Dismiss"
-          >
-            <Icon icon="line-md:close" className="h-3.5 w-3.5" />
-          </button>
+          </div>
+          <span className="rounded-full bg-[#fdf2f4] px-3 py-1 text-xs font-bold text-[#800020] border border-[#f9c8d4]">
+            Host Checklist
+          </span>
         </div>
-      )}
 
-      {/* New WhatsApp inquiries banner (dismissible, and only when there are no urgent booking requests) */}
-      {!isAdmin && pendingBookingsCount === 0 && newInquiriesCount > 0 && !inquiryBannerDismissed && (
-        <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition-colors">
-          <Link
-            href={ROUTES.dashboardInquiries}
-            className="flex flex-1 items-center gap-3 hover:opacity-80 transition-opacity"
-          >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-              <Icon icon="line-md:bell" className="h-4 w-4" />
-            </span>
-            <p className="text-sm font-semibold text-amber-900">
-              {newInquiriesCount} new WhatsApp inquiry{newInquiriesCount === 1 ? "" : "ies"} received
-            </p>
-            <Icon icon="line-md:chevron-right" className="ml-auto h-4 w-4 shrink-0 text-amber-700" />
-          </Link>
-          <button
-            type="button"
-            onClick={dismissInquiries}
-            className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-600 hover:bg-amber-100 hover:text-amber-800 transition-colors"
-            aria-label="Dismiss"
-          >
-            <Icon icon="line-md:close" className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
-
-      {/* Announcements */}
-      {!isAdmin && announcements.length > 0 && (
-        <div className="space-y-3">
-          {announcements.map((ann) => {
-            const isUrgent = ann.priority === "urgent";
-            const isImportant = ann.priority === "important";
-            return (
-              <div
-                key={ann.id}
-                className={`flex gap-3 rounded-2xl border px-4 py-3.5 shadow-sm ${
-                  isUrgent
-                    ? "bg-red-50 border-red-200 text-red-900"
-                    : isImportant
-                    ? "bg-amber-50 border-amber-200 text-amber-900"
-                    : "bg-blue-50 border-blue-200 text-blue-900"
-                }`}
-              >
-                <span
-                  className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
-                    isUrgent
-                      ? "bg-red-100 text-red-700"
-                      : isImportant
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
-                >
-                  <Icon icon="line-md:bell" className="h-4 w-4" />
-                </span>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-sm leading-snug">{ann.title}</p>
-                    {ann.is_mandatory && (
-                      <Badge className="bg-red-200 text-red-900 border-none text-[10px] uppercase font-extrabold px-1.5 py-0.5">
-                        Mandatory
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-black/75 whitespace-pre-wrap">{ann.message}</p>
-                </div>
-                {!ann.is_mandatory && (
-                  <button
-                    onClick={() => handleDismissAnnouncement(ann.id)}
-                    className="ml-auto flex size-6 shrink-0 items-center justify-center rounded-full text-black/40 hover:bg-black/5 hover:text-black/75 transition-colors"
-                  >
-                    <Icon icon="line-md:close" className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Verification alerts */}
-      {!isAdmin && host && (
-        <>
-          {(host.verification_status === "not_started" || !host.verification_status) && (
-            <div className="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <Image
-                  src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029380/spot-verified_anp2nf.png"
-                  alt=""
-                  width={44}
-                  height={40}
-                  className="h-auto w-[40px] shrink-0 grayscale opacity-80"
-                  aria-hidden
-                />
-                <div>
-                  <h3 className="font-bold text-[#2b000a] text-sm">Action Required: Complete verification</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                    Submit your profile details for verification to receive your Verified Host badge.
-                    For help, contact admins: Tanzania +255748962145 or +255743607369;
-                    Kenya +254727993661.
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={handleSubmitVerification}
-                disabled={submittingVerification}
-                className="h-9 shrink-0 rounded-full bg-[#800020] text-white font-bold hover:bg-[#6b1029] text-xs px-4"
-              >
-                {submittingVerification ? "Submitting..." : "Submit for Verification"}
-              </Button>
-            </div>
-          )}
-
-          {host.verification_status === "under_review" && (
-            <div className="flex items-center gap-3 rounded-2xl border border-[#f1e6ea] bg-[#fbf7f8] p-4">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-crimson">
-                <Icon icon="line-md:loading-twotone-loop" className="h-4 w-4 animate-spin" />
-              </span>
-              <div>
-                <p className="font-bold text-[#2b000a] text-sm">Verification is in progress</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  If you feel stuck, contact the Beddn verification team on WhatsApp:
-                  Tanzania +255748962145 or +255743607369; Kenya +254727993661.
-                  Once approved, your Verified Host badge will be assigned automatically.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {(host.verification_status === "verified" || host.is_verified) && !verifiedDismissed && (
-            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                <Icon icon="line-md:check-all" className="h-4 w-4" />
-              </span>
-              <div className="flex-1">
-                <p className="font-bold text-emerald-950 text-sm">Verification approved</p>
-                <p className="text-xs text-emerald-800 mt-0.5">
-                  Your profile is verified. The Verified Host badge is now active on your profile and listings.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={dismissVerified}
-                className="flex size-7 shrink-0 items-center justify-center rounded-full text-emerald-600 hover:bg-emerald-100 hover:text-emerald-800 transition-colors"
-                aria-label="Dismiss"
-              >
-                <Icon icon="line-md:close" className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Demand intro + quick actions (hosts only) */}
-      {!isAdmin && host && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <div className="flex flex-col justify-between rounded-3xl border bg-white p-6 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Card A: Verification */}
+          <div className="flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-[#fcfafb] p-5">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-cranberry">
-                Beddn demand
-              </p>
-              <p className="mt-2 font-brand text-2xl leading-snug text-[#2b000a]">
-                Organized leads, not random WhatsApp messages.
-              </p>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Beddn tracks views, availability checks, inquiries, and WhatsApp clicks. Guests
-                can continue directly to your WhatsApp after an inquiry, and payments are agreed
-                outside Beddn for now.
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                <ShieldCheck className="size-4 text-[#800020]" />
+                <span>Host Trust &amp; Verification</span>
+              </div>
+              <h4 className="font-bold text-sm text-stone-900">
+                {host.is_verified
+                  ? "Your Host Account is Verified"
+                  : host.verification_status === "under_review"
+                  ? "Verification Under Review"
+                  : "Submit Host Verification"}
+              </h4>
+              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                {host.is_verified
+                  ? "Your listings proudly feature the Beddn Verified Trust Badge, boosting guest confidence."
+                  : host.verification_status === "under_review"
+                  ? "Our team is currently reviewing your application. You will be notified via email upon approval."
+                  : "Verified hosts receive up to 3x more inquiries. Submit your national ID or business permit."}
               </p>
             </div>
+
+            <div className="mt-4 pt-3 border-t border-stone-200/60">
+              {!host.is_verified && host.verification_status !== "under_review" ? (
+                <Button
+                  size="sm"
+                  onClick={handleSubmitVerification}
+                  disabled={submittingVerification}
+                  className="w-full rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a]"
+                >
+                  {submittingVerification ? "Submitting..." : "Submit for Verification"}
+                </Button>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+                  <Check className="size-4" />
+                  <span>{host.is_verified ? "Badge Active" : "Review in Progress"}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card B: Pending Bookings / Inquiries */}
+          <div className="flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-[#fcfafb] p-5">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                <Clock className="size-4 text-amber-600" />
+                <span>Pending Guest Leads</span>
+              </div>
+              <h4 className="font-bold text-sm text-stone-900">
+                {pendingBookings.length > 0
+                  ? `${pendingBookings.length} Booking Request${pendingBookings.length > 1 ? "s" : ""} Awaiting Confirmation`
+                  : inquiriesCount > 0
+                  ? `${inquiriesCount} Guest Inquiries Received`
+                  : "All Inquiries Up to Date"}
+              </h4>
+              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                {pendingBookings.length > 0
+                  ? "Guests are waiting for your check-in confirmation. Confirming promptly locks the dates on your calendar."
+                  : inquiriesCount > 0
+                  ? "Follow up with potential guests on WhatsApp to answer questions and finalize check-in times."
+                  : "You're all caught up! New inquiries will notify you via in-app notification, SMS, and email."}
+              </p>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-stone-200/60">
+              <Link
+                href={pendingBookings.length > 0 ? ROUTES.dashboardBookings : ROUTES.dashboardInquiries}
+                className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-full border border-stone-300 bg-white text-xs font-bold text-stone-800 hover:border-[#800020] hover:text-[#800020] transition shadow-2xs"
+              >
+                <span>{pendingBookings.length > 0 ? "Review Requests" : "Open Inquiries"}</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card C: Pro Visibility Boost */}
+          <div className="flex flex-col justify-between rounded-2xl border border-[#f9c8d4] bg-gradient-to-b from-[#fdf2f4]/60 to-white p-5">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#a3193d] mb-2">
+                <Crown className="size-4 text-amber-500" />
+                <span>Marketplace Promotion</span>
+              </div>
+              <h4 className="font-bold text-sm text-[#181113]">
+                {activeTier ? `${activeTier} Tier is Active` : "Upgrade to Beddn Pro"}
+              </h4>
+              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                {activeTier
+                  ? `Your listings enjoy priority ranking and verified Pro badges across search results (Expires ${tierExpiry || "soon"}).`
+                  : "Boost your listings to the top of city searches and homepage carousels for higher guest discovery."}
+              </p>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-[#f9c8d4]/60">
+              <ProUpgradeModal
+                hostName={host.name || userEmail}
+                activeTier={activeTier}
+                expiresAt={tierExpiry}
+                trigger={
+                  <button className="flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-2xs transition">
+                    <Sparkles className="size-3.5" />
+                    <span>{activeTier ? "Manage Promotion" : "Upgrade to Pro"}</span>
+                  </button>
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 5. Individual Listing Performance & Completeness (Section 13, 14, 15)      */}
+      {/* ========================================================================= */}
+      <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-stone-100 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-brand text-xl font-bold text-[#181113]">
+                Individual Property Performance
+              </h3>
+              <Badge className="rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold">
+                Analytics — Beta
+              </Badge>
+            </div>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Detailed view tracking, guest inquiries, and completeness score per property.
+            </p>
+          </div>
+
+          <Link
+            href={ROUTES.newListing}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-xs font-bold text-white hover:bg-[#68001a] transition self-start sm:self-auto"
+          >
+            <span>+ Add New Listing</span>
+          </Link>
+        </div>
+
+        {listings.length === 0 ? (
+          <div className="py-12 text-center">
+            <Building2 className="size-12 text-stone-300 mx-auto mb-3" />
+            <p className="text-sm font-bold text-stone-700">No properties added yet</p>
+            <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
+              Create your first listing to start receiving views, guest inquiries, and bookings.
+            </p>
             <Link
-              href={ROUTES.dashboardInquiries}
-              className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full bg-[#800020] px-5 text-sm font-bold text-white transition-colors hover:bg-[#6b1029]"
+              href={ROUTES.newListing}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-5 py-2 text-xs font-bold text-white"
             >
-              <Icon icon="line-md:bell" className="h-4 w-4" /> View inquiries
+              List your space
             </Link>
           </div>
+        ) : (
+          <div className="divide-y divide-stone-100 overflow-x-auto">
+            {listings.map((l) => {
+              const { score, tips } = computeCompleteness(l);
+              const lViews = events.filter((e) => e.listing_id === l.id && e.event_type === "LISTING_VIEW").length;
+              const lInquiries = inquiries.filter((i) => i.listing_id === l.id).length;
+              const lBookings = bookings.filter((b) => b.listing_id === l.id).length;
 
-          <div className="grid grid-cols-2 gap-3">
-            {QUICK_ACTIONS.map(({ label, description, href, icon }) => (
-              <Link
-                key={label}
-                href={href}
-                className="group flex flex-col justify-between rounded-2xl border bg-white p-4 transition-shadow hover:shadow-md"
-              >
-                <span className="flex size-9 items-center justify-center rounded-xl bg-[#fbf7f8] text-[#800020]">
-                  <Icon icon={icon} className="h-4 w-4" />
-                </span>
-                <div className="mt-3">
-                  <p className="text-sm font-bold text-[#2b000a]">{label}</p>
-                  <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">{description}</p>
+              return (
+                <div key={l.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  {/* Left: Thumbnail & Details */}
+                  <div className="flex items-center gap-3.5 min-w-0 md:w-1/3">
+                    <div className="relative size-14 shrink-0 overflow-hidden rounded-2xl bg-stone-100 border border-stone-200">
+                      {l.photos && l.photos[0] ? (
+                        <Image
+                          src={l.photos[0]}
+                          alt={l.title || "Listing"}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-stone-400">
+                          <Building2 className="size-6" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="truncate text-sm font-bold text-stone-900 leading-tight">
+                          {l.title || l.name || "Untitled space"}
+                        </p>
+                        {l.is_verified && (
+                          <span title="Verified">
+                            <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
+                          </span>
+                        )}
+                      </div>
+                      <p className="truncate text-xs text-stone-500 mt-0.5">
+                        {l.city || "East Africa"} · {l.price_per_night ? `KES ${l.price_per_night}/night` : l.hourly_rate ? `KES ${l.hourly_rate}/hr` : "No price set"}
+                      </p>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <span
+                          className={`inline-block size-2 rounded-full ${
+                            l.is_active ? "bg-emerald-500" : "bg-stone-300"
+                          }`}
+                        />
+                        <span className="text-[11px] font-semibold text-stone-600">
+                          {l.is_active ? "Active" : "Inactive / Draft"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle: Real Performance Metrics */}
+                  <div className="flex items-center gap-6 text-xs text-stone-600">
+                    <div className="text-center">
+                      <span className="font-mono font-bold text-sm text-stone-900 block">{lViews}</span>
+                      <span className="text-[11px] text-stone-400">views</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="font-mono font-bold text-sm text-[#800020] block">{lInquiries}</span>
+                      <span className="text-[11px] text-stone-400">inquiries</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="font-mono font-bold text-sm text-emerald-700 block">{lBookings}</span>
+                      <span className="text-[11px] text-stone-400">bookings</span>
+                    </div>
+                  </div>
+
+                  {/* Right: Completeness Score & Recommendations */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:w-1/3 justify-end">
+                    <div className="min-w-32">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="font-medium text-stone-600">Completeness</span>
+                        <strong className="font-bold text-[#800020]">{score}%</strong>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-stone-100 overflow-hidden">
+                        <div
+                          style={{ width: `${score}%` }}
+                          className={`h-full rounded-full transition-all ${
+                            score >= 80 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-[#800020]"
+                          }`}
+                        />
+                      </div>
+                      {tips.length > 0 && (
+                        <p className="text-[10px] text-stone-500 truncate mt-1">
+                          Tip: {tips[0]}
+                        </p>
+                      )}
+                    </div>
+
+                    <Link
+                      href={ROUTES.dashboardListings}
+                      className="inline-flex h-8 items-center justify-center rounded-full border border-stone-200 px-3 text-xs font-semibold text-stone-700 hover:border-[#800020] hover:text-[#800020] transition"
+                    >
+                      Manage
+                    </Link>
+                  </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
-        </div>
-      )}
-
-      {/* Stats */}
-      <div>
-        <p className="mb-3 text-sm font-bold uppercase tracking-wide text-[#a08b92]">
-          {isAdmin ? "Platform activity" : "Your activity"}
-        </p>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <StatCard key={stat.label} {...stat} />
-          ))}
-        </div>
+        )}
       </div>
     </div>
   );

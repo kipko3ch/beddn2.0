@@ -27,12 +27,32 @@ export default async function HostLayout({
 
   const admin = createAdminClient();
   const [{ data: profile }, { data: host }] = await Promise.all([
-    admin.from('profiles').select('is_admin').eq('id', user.id).maybeSingle(),
-    admin.from('hosts').select('id, status').eq('user_id', user.id).maybeSingle(),
+    admin.from('profiles').select('is_admin, full_name').eq('id', user.id).maybeSingle(),
+    admin.from('hosts').select('id, status, name').eq('user_id', user.id).maybeSingle(),
   ]);
 
   const isAdmin = Boolean(profile?.is_admin);
   const hostStatus = (host?.status as string | undefined) ?? null;
+  const userName = host?.name || profile?.full_name || (user.user_metadata?.full_name as string | undefined) || null;
+
+  // Check if host has an active Pro / Featured tier
+  let activeTier: string | null = null;
+  let activeTierExpires: string | null = null;
+  if (host?.id) {
+    const { data: featured } = await admin
+      .from('featured_listings')
+      .select('tier_name, end_date')
+      .eq('host_id', host.id)
+      .eq('status', 'active')
+      .gt('end_date', new Date().toISOString())
+      .order('end_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (featured) {
+      activeTier = featured.tier_name || 'Pro';
+      activeTierExpires = featured.end_date ? new Date(featured.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+    }
+  }
 
   // A host who exists but isn't approved sees a clear status screen instead of
   // the dashboard. Only a *pending* host (still awaiting the first review) can
@@ -46,7 +66,15 @@ export default async function HostLayout({
   }
 
   return (
-    <HostShell email={user.email ?? ''} isAdmin={isAdmin} isHost={Boolean(host)}>
+    <HostShell
+      email={user.email ?? ''}
+      userName={userName}
+      hostId={host?.id}
+      isAdmin={isAdmin}
+      isHost={Boolean(host)}
+      activeTier={activeTier}
+      activeTierExpires={activeTierExpires}
+    >
       {children}
     </HostShell>
   );

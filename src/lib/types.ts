@@ -120,6 +120,8 @@ export interface ListingImage {
 export interface FeaturedListing {
   id: string;
   listing_id: string;
+  host_id?: string | null;
+  tier_name?: string | null;
   placement_type: FeaturedPlacementType;
   city: string | null;
   category: string | null;
@@ -130,6 +132,7 @@ export interface FeaturedListing {
   amount: number;
   currency: string;
   priority: number;
+  notes?: string | null;
   created_by?: string | null;
   created_at: string;
   updated_at: string;
@@ -294,13 +297,17 @@ export interface GuestInstruction {
 }
 
 export type ListingEventType =
+  | "LISTING_IMPRESSION"
   | "LISTING_VIEW"
+  | "LISTING_CLICK"
   | "CALENDAR_DATE_SELECTED"
   | "AVAILABILITY_CHECKED"
   | "INQUIRY_STARTED"
   | "LOGIN_REQUIRED_FOR_CONTACT"
   | "INQUIRY_SUBMITTED"
   | "WHATSAPP_CLICK"
+  | "BOOKING_REQUESTED"
+  | "BOOKING_CONFIRMED"
   | "EXPERIENCE_LINK_CLICK"
   | "GROUP_LINK_CLICK";
 
@@ -322,7 +329,37 @@ export interface SearchDemand {
   latitude: number | null;
   longitude: number | null;
   category: string | null;
+  check_in?: string | null;
+  check_out?: string | null;
+  guests?: number | null;
+  budget?: number | null;
+  property_type?: string | null;
+  status?: "matched" | "unmatched" | "fulfilled" | string | null;
   results_count: number;
+  created_at: string;
+}
+
+export type HostNotificationType =
+  | "listing_verified"
+  | "listing_rejected"
+  | "booking_requested"
+  | "booking_confirmed"
+  | "inquiry_new"
+  | "pro_activated"
+  | "pro_expiring"
+  | "announcement"
+  | "action_required";
+
+export interface HostNotification {
+  id: string;
+  host_id: string;
+  user_id?: string | null;
+  type: HostNotificationType;
+  title: string;
+  message: string;
+  link?: string | null;
+  is_read: boolean;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 

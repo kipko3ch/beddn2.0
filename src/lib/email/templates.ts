@@ -252,3 +252,170 @@ export function reviewReminderEmail(input: ReviewReminderInput): { subject: stri
   });
   return { subject: `How was ${input.listingName}? Leave a review`, html };
 }
+
+export interface BookingRequestedGuestInput {
+  guestName: string;
+  listingName: string;
+  bookingCode: string;
+  dates: string;
+  guestsCount: number;
+  totalAmount?: number;
+  currency?: string;
+  bookingUrl: string;
+  whatsappUrl?: string | null;
+}
+
+/** Sent to guest when they submit a booking request. */
+export function bookingRequestedGuestEmail(input: BookingRequestedGuestInput): { subject: string; html: string } {
+  const first = (input.guestName || "there").split(" ")[0];
+  const html = shell({
+    title: "Booking Request Sent — Beddn",
+    preheader: `Your booking request for ${input.listingName} has been submitted (Ref: ${input.bookingCode}).`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Request sent to host, ${first} ✨</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Your booking request for <strong style="color:${INK};">${input.listingName}</strong> has been submitted. The host has been notified to confirm availability.
+      </p>
+      <div style="background:#fdf2f4;border:1px solid #f9c8d4;border-radius:14px;padding:18px 20px;margin:16px 0 20px;">
+        <table role="presentation" width="100%" cellpadding="4" cellspacing="0" style="font-size:14px;color:${INK};">
+          <tr><td><strong>Reference:</strong></td><td><code style="background:#fff;padding:2px 6px;border-radius:4px;border:1px solid #f9c8d4;color:${BRAND};font-weight:bold;">${input.bookingCode}</code></td></tr>
+          <tr><td><strong>Dates / Time:</strong></td><td>${input.dates}</td></tr>
+          <tr><td><strong>Guests:</strong></td><td>${input.guestsCount}</td></tr>
+          ${input.totalAmount ? `<tr><td><strong>Estimated total:</strong></td><td><strong>${input.currency || "KES"} ${input.totalAmount.toLocaleString()}</strong> (Pay upon arrival)</td></tr>` : ""}
+        </table>
+      </div>
+      <p style="margin:0 0 20px;">${button(input.bookingUrl, "View your booking status")}</p>
+      ${input.whatsappUrl ? `<p style="margin:0 0 16px;"><a href="${input.whatsappUrl}" style="color:#25D366;font-weight:bold;text-decoration:none;font-size:14px;">💬 Connect with Host on WhatsApp</a></p>` : ""}
+      <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
+        Payment is made upon arrival once the host confirms your check-in.
+      </p>
+    `,
+  });
+  return { subject: `Booking Request Sent: ${input.listingName} (${input.bookingCode})`, html };
+}
+
+export interface BookingRequestedHostInput {
+  hostName: string;
+  guestName: string;
+  listingName: string;
+  bookingCode: string;
+  dates: string;
+  guestsCount: number;
+  note?: string | null;
+  dashboardUrl: string;
+}
+
+/** Sent to host when a guest makes a booking request. */
+export function bookingRequestedHostEmail(input: BookingRequestedHostInput): { subject: string; html: string } {
+  const first = (input.hostName || "there").split(" ")[0];
+  const html = shell({
+    title: "New Booking Request on Beddn",
+    preheader: `New request from ${input.guestName} for ${input.listingName} (Ref: ${input.bookingCode}).`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">New booking request, ${first} 🛎️</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
+        <strong style="color:${INK};">${input.guestName}</strong> submitted a booking request for your property <strong style="color:${INK};">${input.listingName}</strong>.
+      </p>
+      <div style="background:#fbf7f8;border-left:3px solid ${BRAND};padding:16px 18px;margin:16px 0 20px;">
+        <p style="margin:0 0 6px;font-size:14px;color:${INK};"><strong>Booking Ref:</strong> ${input.bookingCode}</p>
+        <p style="margin:0 0 6px;font-size:14px;color:${INK};"><strong>Dates / Time:</strong> ${input.dates}</p>
+        <p style="margin:0 0 6px;font-size:14px;color:${INK};"><strong>Guests:</strong> ${input.guestsCount}</p>
+        ${input.note ? `<p style="margin:0;font-size:14px;color:${INK};"><strong>Guest Note:</strong> "${input.note}"</p>` : ""}
+      </div>
+      <p style="margin:0 0 16px;">${button(input.dashboardUrl, "Review request in dashboard")}</p>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
+        Responding promptly helps maintain your search visibility and guest rating.
+      </p>
+    `,
+  });
+  return { subject: `🛎️ New Booking Request: ${input.listingName} (${input.guestName})`, html };
+}
+
+export interface ListingVerifiedInput {
+  hostName: string;
+  listingName: string;
+  listingUrl: string;
+}
+
+/** Sent when a listing is verified by admin. */
+export function listingVerifiedEmail(input: ListingVerifiedInput): { subject: string; html: string } {
+  const first = (input.hostName || "there").split(" ")[0];
+  const html = shell({
+    title: "Your Listing is Verified on Beddn",
+    preheader: `${input.listingName} now has the official Beddn verified trust badge.`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Your property is verified, ${first}! 🛡️</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Congratulations! <strong style="color:${INK};">${input.listingName}</strong> has been verified by the Beddn team and now proudly displays the official <strong>Verified Badge</strong>.
+      </p>
+      <div style="background:#fdf2f4;border:1px solid #f9c8d4;border-radius:12px;padding:16px 20px;margin:16px 0 20px;">
+        <p style="margin:0;font-size:14px;color:${BRAND};font-weight:bold;">
+          ✓ Verified badge active · Priority in search results · Higher guest booking conversion
+        </p>
+      </div>
+      <p style="margin:0 0 16px;">${button(input.listingUrl, "View your verified listing")}</p>
+    `,
+  });
+  return { subject: `🛡️ Verified Badge Approved: ${input.listingName}`, html };
+}
+
+export interface ProTierActivatedInput {
+  hostName: string;
+  listingName: string;
+  tierName: string;
+  expiresAt: string;
+  dashboardUrl: string;
+}
+
+/** Sent when admin activates a Pro / Featured tier for a listing. */
+export function proTierActivatedEmail(input: ProTierActivatedInput): { subject: string; html: string } {
+  const first = (input.hostName || "there").split(" ")[0];
+  const html = shell({
+    title: `${input.tierName} Tier Activated — Beddn`,
+    preheader: `${input.listingName} is now promoted as ${input.tierName}. Active until ${input.expiresAt}.`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">${input.tierName} is active, ${first}! ⭐</h1>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
+        Your promotion tier <strong>${input.tierName}</strong> for <strong style="color:${INK};">${input.listingName}</strong> has been activated.
+      </p>
+      <div style="background:#fdf2f4;border:1px solid #f9c8d4;border-radius:12px;padding:16px 20px;margin:16px 0 20px;">
+        <p style="margin:0 0 4px;font-size:13px;color:${MUTED};text-transform:uppercase;letter-spacing:1px;font-weight:bold;">Promotion Details</p>
+        <p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:${BRAND};">${input.tierName} Placement</p>
+        <p style="margin:0;font-size:13px;color:${INK};"><strong>Valid until:</strong> ${input.expiresAt}</p>
+      </div>
+      <p style="margin:0 0 16px;">${button(input.dashboardUrl, "Open Host Dashboard")}</p>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
+        You can track your views, clicks, and inquiries in real time on your dashboard analytics.
+      </p>
+    `,
+  });
+  return { subject: `⭐ ${input.tierName} Promotion Activated: ${input.listingName}`, html };
+}
+
+export interface HostAnnouncementEmailInput {
+  hostName: string;
+  title: string;
+  message: string;
+  dashboardUrl: string;
+}
+
+/** Sent when admin broadcasts an announcement to registered hosts. */
+export function hostAnnouncementEmail(input: HostAnnouncementEmailInput): { subject: string; html: string } {
+  const first = (input.hostName || "there").split(" ")[0];
+  const html = shell({
+    title: input.title,
+    preheader: input.title,
+    bodyHtml: `
+      <h1 style="margin:0 0 14px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">${input.title}</h1>
+      <p style="margin:0 0 16px;font-size:14px;color:${MUTED};">Hello ${first},</p>
+      <div style="font-size:15px;line-height:1.7;color:${INK};margin:0 0 24px;white-space:pre-line;">
+        ${input.message}
+      </div>
+      <p style="margin:0 0 16px;">${button(input.dashboardUrl, "Visit Host Dashboard")}</p>
+      <p style="margin:0;font-size:12px;color:${MUTED};">
+        You received this notification because you are a registered host on Beddn.
+      </p>
+    `,
+  });
+  return { subject: `📢 Beddn Host Update: ${input.title}`, html };
+}

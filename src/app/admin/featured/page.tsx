@@ -154,6 +154,11 @@ export default function AdminFeaturedPage() {
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${STATUS_STYLES[eff]}`}>
                         {eff}
                       </span>
+                      {row.tier_name ? (
+                        <span className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+                          ⭐ {row.tier_name}
+                        </span>
+                      ) : null}
                       <span className="rounded-full bg-[#fff4e5] px-2.5 py-0.5 text-xs font-semibold text-[#9a5b00]">
                         {row.placement_type.replace("_", " ")}
                       </span>

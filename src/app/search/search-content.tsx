@@ -144,12 +144,17 @@ export function SearchContent() {
     setListings(results);
     setLoading(false);
 
-    // Log demand in the background — never block showing results on this write.
+    // Log demand in the background — captures supply gaps and guest requirements
     void supabase.from("search_demand").insert({
       query: q || null,
       latitude: lat ? parseFloat(lat) : null,
       longitude: lng ? parseFloat(lng) : null,
       category: category || null,
+      check_in: checkIn || null,
+      check_out: checkOut || null,
+      guests: guests > 0 ? guests : null,
+      property_type: propertyType || null,
+      status: results.length === 0 ? "unmatched" : "matched",
       results_count: results.length,
     });
   }, [q, lat, lng, category, propertyType, checkIn, checkOut, startTime, guests]);

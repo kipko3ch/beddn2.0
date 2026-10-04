@@ -9,6 +9,10 @@ import {
   type ReservationInput,
 } from "@/lib/bookings/shared";
 import { sendSms, sendAdminSms } from "@/lib/notifications/server";
+import { sendEmail } from "@/lib/email/server";
+import { bookingRequestedGuestEmail, bookingRequestedHostEmail } from "@/lib/email/templates";
+import { createHostNotification } from "@/lib/notifications/host-notifications";
+import { ROUTES } from "@/lib/routes";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import type { Listing, ListingCategory } from "@/lib/types";
 
@@ -125,7 +129,84 @@ export async function POST(request: Request) {
     const code = booking.booking_token || booking.token || "BEDDN";
     const title = listingTitle(listing);
 
-    // Tell the host they have a request to act on.
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://beddn.com").replace(/\/$/, "");
+    const bookingUrl = `${siteUrl}/booking/${code}`;
+    const dashboardUrl = `${siteUrl}${ROUTES.dashboardBookings}`;
+    const dateRangeStr =
+      input.category === "hourly"
+        ? `${input.checkIn} at ${input.startTime || "10:00"} (${input.durationHours || 2} hrs)`
+        : `${input.checkIn} to ${input.checkOut || input.checkIn}`;
+
+    // 1. In-app host notification
+    if (listing.host_id) {
+      void createHostNotification({
+        hostId: listing.host_id,
+        userId: listing.host?.user_id,
+        type: "booking_requested",
+        title: `New Booking Request: ${title}`,
+        message: `${input.guestName} submitted a booking request (${code}) for ${dateRangeStr}. Review and confirm.`,
+        link: ROUTES.dashboardBookings,
+      });
+    }
+
+    // 2. Log analytics event
+    void admin.from("listing_events").insert({
+      listing_id: listing.id,
+      user_id: user.id,
+      event_type: "BOOKING_REQUESTED",
+      metadata: {
+        booking_code: code,
+        guest_name: input.guestName,
+        total_amount: amounts.totalAmount,
+        currency: amounts.currency,
+      },
+    });
+
+    // 3. Email to Guest
+    if (input.guestEmail) {
+      const guestEmailContent = bookingRequestedGuestEmail({
+        guestName: input.guestName,
+        listingName: title,
+        bookingCode: code,
+        dates: dateRangeStr,
+        guestsCount: input.guestsCount,
+        totalAmount: amounts.totalAmount,
+        currency: amounts.currency,
+        bookingUrl,
+      });
+      void sendEmail({
+        to: input.guestEmail,
+        subject: guestEmailContent.subject,
+        html: guestEmailContent.html,
+        eventType: "booking_requested",
+      });
+    }
+
+    // 4. Email to Host
+    if (listing.host?.user_id) {
+      void admin.auth.admin.getUserById(listing.host.user_id).then(({ data: hostUser }) => {
+        if (hostUser?.user?.email) {
+          const hostEmailContent = bookingRequestedHostEmail({
+            hostName: (listing as any).host?.name || "there",
+            guestName: input.guestName,
+            listingName: title,
+            bookingCode: code,
+            dates: dateRangeStr,
+            guestsCount: input.guestsCount,
+            note: input.note,
+            dashboardUrl,
+          });
+          void sendEmail({
+            to: hostUser.user.email,
+            subject: hostEmailContent.subject,
+            html: hostEmailContent.html,
+            eventType: "booking_requested",
+          });
+        }
+      });
+    }
+
+    // 5. SMS alerts
     await Promise.allSettled([
       listing.host?.phone
         ? sendSms({
