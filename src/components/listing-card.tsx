@@ -5,19 +5,23 @@ import Link from "next/link";
 import { Heart, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCurrency } from "@/components/currency-provider";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import type { Listing } from "@/lib/types";
 
 export function ListingCardSkeleton() {
   return (
-    <div className="animate-pulse">
-      <div className="aspect-square rounded-2xl bg-muted" />
-      <div className="mt-3 h-4 w-3/4 rounded bg-muted" />
-      <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
-      <div className="mt-3 flex gap-1.5">
-        <div className="h-4 w-14 rounded-full bg-muted" />
-        <div className="h-4 w-14 rounded-full bg-muted" />
+    <div className="animate-pulse space-y-2">
+      <div className="aspect-[4/3] rounded-2xl bg-stone-100 dark:bg-stone-800" />
+      <div className="flex items-center justify-between pt-1">
+        <div className="h-4 w-3/5 rounded-md bg-stone-200/80 dark:bg-stone-700" />
+        <div className="h-3 w-10 rounded-md bg-stone-200/60 dark:bg-stone-700" />
       </div>
-      <div className="mt-3 h-4 w-1/3 rounded bg-muted" />
+      <div className="h-3 w-2/5 rounded-md bg-stone-100 dark:bg-stone-800" />
+      <div className="flex gap-1.5 pt-1">
+        <div className="h-5 w-16 rounded-full bg-stone-100 dark:bg-stone-800" />
+        <div className="h-5 w-14 rounded-full bg-stone-100 dark:bg-stone-800" />
+      </div>
+      <div className="h-4 w-28 rounded-md bg-stone-200/70 dark:bg-stone-700 pt-1" />
     </div>
   );
 }
@@ -107,9 +111,8 @@ export function ListingCard({
         )}
 
         {(listing.is_verified || listing.host?.is_verified) && (
-          <div className="absolute left-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[9px] font-bold text-[#800020] shadow-2xs border border-[#f3cfd9]">
-            <span className="flex size-3 items-center justify-center rounded-full bg-[#800020] text-white text-[8px]">✓</span>
-            {listing.is_verified ? "Verified" : "Verified"}
+          <div className="absolute left-2.5 top-2.5 z-10">
+            <VerifiedBadge text="Verified" size="xs" className="bg-white/95 backdrop-blur-xs shadow-xs border-[#f9a8d4]/70" />
           </div>
         )}
       </div>

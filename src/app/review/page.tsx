@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/header";
+import ReviewLoading from "./loading";
 import { AuthDialog } from "@/components/auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -907,78 +908,197 @@ function ReviewInner() {
         )}
       </div>
 
-      {/* Community Impact Modal Dialog */}
+      {/* Community Impact Modal Dialog — Redesigned with 3-Card Inspo & Beddn Palette */}
       <Dialog open={impactOpen} onOpenChange={setImpactOpen}>
-        <DialogContent className="max-w-md rounded-3xl p-6 sm:p-7 bg-white text-left">
-          <DialogHeader>
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] mb-2">
-              <Icon icon="solar:users-group-rounded-bold-duotone" className="h-6 w-6" />
+        <DialogContent className="max-w-4xl lg:max-w-5xl rounded-3xl p-6 sm:p-8 bg-white text-left max-h-[92vh] overflow-y-auto">
+          <DialogHeader className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#fdf2f4] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#800020] border border-[#f9a8d4]/70 w-fit">
+              <Sparkles className="size-3 text-[#800020]" />
+              Community Impact
             </div>
-            <DialogTitle className="font-brand text-2xl text-[#181113]">
+            <DialogTitle className="font-brand text-2xl sm:text-3xl font-extrabold text-[#2b000a] tracking-tight">
               Community Impact at Beddn
             </DialogTitle>
-            <DialogDescription className="text-xs text-neutral-500">
-              How authentic reviews elevate hospitality across East Africa
+            <DialogDescription className="text-xs sm:text-sm text-stone-500 max-w-xl">
+              How authentic reviews elevate hospitality, boost local host livelihoods, and build trusted travel across East Africa.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-4 space-y-3.5">
-            <div className="flex gap-3.5 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-3.5">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-                <Icon icon="solar:star-bold-duotone" className="h-4 w-4" />
-              </div>
+          {/* 3 Modern Cards Side by Side (Design Inspo in Beddn Palette) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 mt-6 items-stretch">
+            {/* Card 1: 100% Genuine, Verified Stays (Dual-tone stacked bars) */}
+            <div className="flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md">
               <div>
-                <p className="text-xs font-bold text-[#181113]">100% Genuine, Verified Stays</p>
-                <p className="mt-0.5 text-[11px] text-neutral-500 leading-relaxed">
+                <p className="font-mono text-[11px] font-bold tracking-wider uppercase text-stone-400">
+                  STAYS
+                </p>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span className="font-brand text-3xl font-black text-[#2b000a]">100%</span>
+                  <span className="text-xs font-mono text-stone-400">genuine</span>
+                </div>
+                <h4 className="mt-3 font-brand font-bold text-sm text-stone-900">
+                  100% Genuine, Verified Stays
+                </h4>
+                <p className="mt-1 text-xs text-stone-500 leading-relaxed">
                   Only travelers with confirmed bookings can post reviews. No paid endorsements or manipulated boosts.
                 </p>
               </div>
+
+              {/* Dual-Tone Stacked Bar Chart */}
+              <div className="mt-6 pt-4 border-t border-stone-100">
+                <div className="flex items-end justify-between gap-1.5 h-32 px-1">
+                  {[
+                    { label: "JAN", top: "200k", topH: "40%", botH: "50%" },
+                    { label: "FEB", top: "210k", topH: "48%", botH: "52%" },
+                    { label: "MAR", top: "200k", topH: "40%", botH: "45%" },
+                    { label: "APR", top: "180k", topH: "28%", botH: "50%" },
+                    { label: "MAY", top: "190k", topH: "36%", botH: "46%" },
+                    { label: "JUN", top: "205k", topH: "46%", botH: "54%" },
+                  ].map((bar, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center h-full justify-end">
+                      <span className="text-[9px] font-mono text-stone-400 mb-1">{bar.top}</span>
+                      <div className="w-full flex flex-col gap-1 items-center">
+                        <div
+                          style={{ height: bar.topH }}
+                          className="w-full rounded-md bg-[#800020] transition-colors hover:bg-[#68001a]"
+                        />
+                        <div
+                          style={{ height: bar.botH }}
+                          className="w-full rounded-md bg-[#fbcfe8] transition-colors"
+                        />
+                      </div>
+                      <span className="mt-2 text-[9px] font-mono text-stone-400 uppercase">{bar.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-3.5 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-3.5">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                <Icon icon="solar:shop-2-bold-duotone" className="h-4 w-4" />
-              </div>
+            {/* Card 2: Supporting Local Entrepreneurs (Matrix of icons/nodes) */}
+            <div className="flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md">
               <div>
-                <p className="text-xs font-bold text-[#181113]">Supporting Local Entrepreneurs</p>
-                <p className="mt-0.5 text-[11px] text-neutral-500 leading-relaxed">
+                <p className="font-mono text-[11px] font-bold tracking-wider uppercase text-stone-400">
+                  LOCAL IMPACT
+                </p>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span className="font-brand text-3xl font-black text-[#2b000a]">3.4x</span>
+                  <span className="text-xs font-mono text-stone-400">/ earnings</span>
+                </div>
+                <h4 className="mt-3 font-brand font-bold text-sm text-stone-900">
+                  Supporting Local Entrepreneurs
+                </h4>
+                <p className="mt-1 text-xs text-stone-500 leading-relaxed">
                   High ratings directly boost host earnings and help local operators build sustainable hospitality businesses.
                 </p>
               </div>
+
+              {/* Droplet / Node Matrix Grid */}
+              <div className="mt-6 pt-4 border-t border-stone-100">
+                <div className="grid grid-cols-7 gap-2 place-items-center py-1">
+                  {Array.from({ length: 35 }).map((_, idx) => {
+                    const isFilled = idx >= 10;
+                    return (
+                      <div
+                        key={idx}
+                        className={`size-4 rounded-full transition-transform hover:scale-125 flex items-center justify-center ${
+                          isFilled
+                            ? "bg-[#800020] text-white shadow-2xs"
+                            : "bg-[#fce7ec] text-transparent"
+                        }`}
+                      >
+                        <span className="text-[7px]">★</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-center font-mono text-[10px] text-stone-400 mt-2.5">
+                  84% high-trust booking conversions
+                </p>
+              </div>
             </div>
 
-            <div className="flex gap-3.5 rounded-2xl border border-neutral-100 bg-[#fcfbfa] p-3.5">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-[#800020]">
-                <Icon icon="solar:chat-round-check-bold-duotone" className="h-4 w-4" />
-              </div>
+            {/* Card 3: Actionable Feedback Loop (Deep Burgundy Card with Speedometer) */}
+            <div className="flex flex-col justify-between rounded-3xl border border-[#4a0014] bg-gradient-to-b from-[#3b000e] via-[#2b000a] to-[#1a0006] p-5 text-white shadow-lg relative overflow-hidden">
               <div>
-                <p className="text-xs font-bold text-[#181113]">Actionable Feedback Loop</p>
-                <p className="mt-0.5 text-[11px] text-neutral-500 leading-relaxed">
+                <p className="font-mono text-[11px] font-bold tracking-wider uppercase text-rose-300/80">
+                  FEEDBACK LOOP
+                </p>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span className="font-brand text-3xl font-black text-white">48h</span>
+                  <span className="text-xs font-mono text-rose-200/70">/ resolution</span>
+                </div>
+                <h4 className="mt-3 font-brand font-bold text-sm text-white">
+                  Actionable Feedback Loop
+                </h4>
+                <p className="mt-1 text-xs text-rose-100/75 leading-relaxed">
                   Your feedback helps hosts quickly upgrade amenities, Wi-Fi, and check-in smoothness for the next traveler.
                 </p>
+              </div>
+
+              {/* Arched Speedometer Gauge */}
+              <div className="mt-6 pt-2 relative flex flex-col items-center">
+                <svg viewBox="0 0 200 115" className="w-full max-w-[210px] overflow-visible">
+                  {/* Gauge Arc Track */}
+                  <path
+                    d="M 20 100 A 80 80 0 0 1 180 100"
+                    fill="none"
+                    stroke="#590016"
+                    strokeWidth="14"
+                    strokeLinecap="round"
+                  />
+                  {/* Gauge Filled Progress Arc */}
+                  <path
+                    d="M 20 100 A 80 80 0 0 1 168 56"
+                    fill="none"
+                    stroke="#ff70a6"
+                    strokeWidth="14"
+                    strokeLinecap="round"
+                  />
+                  {/* Graduation Tick Numbers */}
+                  <text x="20" y="112" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">40</text>
+                  <text x="40" y="60" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">60</text>
+                  <text x="75" y="30" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">80</text>
+                  <text x="125" y="30" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">100</text>
+                  <text x="160" y="60" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">120</text>
+                  <text x="180" y="112" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">140</text>
+
+                  {/* Central Value */}
+                  <text x="100" y="78" fill="#ffffff" fontSize="17" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">104.2</text>
+                  <text x="100" y="93" fill="#fbcfe8" fontSize="8" textAnchor="middle" fontFamily="monospace">SATISFACTION</text>
+
+                  {/* Center Needle Pivot */}
+                  <circle cx="100" cy="100" r="5" fill="#ffffff" />
+                  <line x1="100" y1="100" x2="116" y2="44" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col gap-2.5">
-            <button
-              type="button"
-              onClick={() => {
-                setImpactOpen(false);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-                setTimeout(() => searchInputRef.current?.focus(), 300);
-              }}
-              className="inline-flex h-11 w-full items-center justify-center rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-neutral-800 transition"
-            >
-              Write a review now
-            </button>
-            <button
-              type="button"
-              onClick={() => setImpactOpen(false)}
-              className="inline-flex h-9 w-full items-center justify-center rounded-full border border-neutral-200 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition"
-            >
-              Close
-            </button>
+          {/* Action Footer */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 pt-5 border-t border-stone-100">
+            <span className="text-xs text-stone-500">
+              Beddn verified community feedback across Kenya, Uganda, Rwanda, and Tanzania.
+            </span>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setImpactOpen(false)}
+                className="flex-1 sm:flex-none inline-flex h-10 items-center justify-center rounded-full border border-stone-200 px-5 text-xs font-semibold text-stone-600 hover:bg-stone-50 transition"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setImpactOpen(false);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  setTimeout(() => searchInputRef.current?.focus(), 300);
+                }}
+                className="flex-1 sm:flex-none inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-6 text-xs font-bold text-white hover:bg-[#68001a] shadow-xs transition"
+              >
+                Write a review now
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -990,7 +1110,7 @@ export default function ReviewPage() {
   return (
     <>
       <Header />
-      <Suspense fallback={null}>
+      <Suspense fallback={<ReviewLoading />}>
         <ReviewInner />
       </Suspense>
     </>

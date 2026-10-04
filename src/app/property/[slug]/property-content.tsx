@@ -43,6 +43,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/empty-state";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { Calendar } from "@/components/ui/calendar";
 import { AuthDialog } from "@/components/auth-dialog";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
@@ -537,10 +538,10 @@ export function PropertyContent({
               );
             })}
             {(listing.is_verified || listing.host?.is_verified) && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                <BadgeCheck className="h-3.5 w-3.5" />
-                {listing.is_verified ? "Beddn verified" : "Verified host"}
-              </span>
+              <VerifiedBadge
+                text={listing.is_verified ? "Beddn verified" : "Verified host"}
+                size="sm"
+              />
             )}
           </div>
         </div>
@@ -712,9 +713,7 @@ export function PropertyContent({
                   </div>
                 </div>
                 {listing.host?.is_verified && (
-                  <Badge className="w-fit gap-1 rounded-full bg-crimson/15 px-3 py-1 text-crimson hover:bg-crimson/15">
-                    <BadgeCheck className="h-3.5 w-3.5" /> Verified host
-                  </Badge>
+                  <VerifiedBadge text="Verified host" size="sm" />
                 )}
               </div>
               {listing.host?.bio && (

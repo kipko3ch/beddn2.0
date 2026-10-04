@@ -8,6 +8,7 @@ import { AuthDialog } from "@/components/auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import type { User } from "@supabase/supabase-js";
 import {
   ArrowLeft,
@@ -331,10 +332,9 @@ export function PropertyReviewClient({ listing }: { listing: ListingProps }) {
                   className="object-cover"
                 />
                 {listing.is_verified && (
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/60 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-white">
-                    <ShieldCheck className="h-3 w-3 text-[#1a7f46]" />
-                    Verified Stay
-                  </span>
+                  <div className="absolute left-3 top-3">
+                    <VerifiedBadge text="Verified Stay" size="xs" className="bg-white/95 backdrop-blur-xs shadow-xs" />
+                  </div>
                 )}
               </div>
 

@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/dashboard", destination: "/host", permanent: true },
       { source: "/dashboard/:path*", destination: "/host/:path*", permanent: true },
+      { source: "/reviews", destination: "/review", permanent: false },
+      { source: "/reviews/:path*", destination: "/review", permanent: false },
     ];
   },
 };

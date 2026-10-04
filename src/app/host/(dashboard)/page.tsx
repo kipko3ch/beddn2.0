@@ -32,6 +32,7 @@ import { ProUpgradeModal } from "@/components/dashboard/pro-upgrade-modal";
 import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 
 type HostProfile = {
   id: string;
@@ -323,9 +324,7 @@ export default function HostDashboardPage() {
               Host Overview
             </h2>
             {host.is_verified ? (
-              <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold gap-1 px-2.5 py-0.5">
-                <CheckCircle2 className="size-3" /> Verified Host
-              </Badge>
+              <VerifiedBadge text="Verified Host" size="sm" />
             ) : host.verification_status === "under_review" ? (
               <Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold gap-1 px-2.5 py-0.5">
                 <Clock className="size-3" /> Under Review
@@ -518,9 +517,15 @@ export default function HostDashboardPage() {
                   {submittingVerification ? "Submitting..." : "Submit for Verification"}
                 </Button>
               ) : (
-                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
-                  <Check className="size-4" />
-                  <span>{host.is_verified ? "Badge Active" : "Review in Progress"}</span>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700">
+                  {host.is_verified ? (
+                    <VerifiedBadge text="Badge Active" size="xs" />
+                  ) : (
+                    <span className="flex items-center gap-1 text-amber-700">
+                      <Clock className="size-3.5" />
+                      Review in Progress
+                    </span>
+                  )}
                 </div>
               )}
             </div>
