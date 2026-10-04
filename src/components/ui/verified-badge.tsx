@@ -2,7 +2,9 @@
 
 import React from "react";
 import Image from "next/image";
+import { Clock, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 
 export interface VerifiedBadgeProps {
   text?: string;
@@ -97,6 +99,60 @@ export function VerifiedBadge({
         className={cn("object-contain shrink-0 drop-shadow-2xs", iconClassName)}
       />
       {text && <span className="leading-none">{text}</span>}
+    </div>
+  );
+}
+
+/**
+ * Pending Verification Badge with direct WhatsApp and Call contact options.
+ * Displayed when verification is under review or stuck on pending so hosts can expedite review.
+ */
+export function PendingVerificationBadge({
+  listingTitle,
+  listingId,
+  showContact = true,
+  className,
+}: {
+  listingTitle?: string;
+  listingId?: string;
+  showContact?: boolean;
+  className?: string;
+}) {
+  const msg = encodeURIComponent(
+    listingTitle
+      ? `Hello Beddn Admin, my listing "${listingTitle}"${listingId ? ` (ID: ${listingId})` : ""} is stuck on verification pending. Please help expedite review.`
+      : `Hello Beddn Admin, my host verification is stuck on pending. Please help expedite my account review.`
+  );
+
+  return (
+    <div className={cn("inline-flex items-center gap-1.5 flex-wrap", className)}>
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 px-2.5 py-0.5 text-[11px] font-bold">
+        <Clock className="size-3 text-amber-600" />
+        <span>Verification pending</span>
+      </span>
+
+      {showContact && (
+        <div className="inline-flex items-center gap-1">
+          <a
+            href={`https://wa.me/254727993661?text=${msg}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white px-2.5 py-0.5 text-[10px] font-bold shadow-2xs transition"
+            title="Fast-track with Admin on WhatsApp"
+          >
+            <WhatsAppIcon className="size-2.5" />
+            <span>WhatsApp Admin</span>
+          </a>
+          <a
+            href="tel:+254727993661"
+            className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 px-2 py-0.5 text-[10px] font-bold shadow-2xs transition"
+            title="Call Admin Directly"
+          >
+            <Phone className="size-2.5 text-[#800020]" />
+            <span>Call</span>
+          </a>
+        </div>
+      )}
     </div>
   );
 }

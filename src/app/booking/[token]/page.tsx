@@ -14,6 +14,7 @@ import {
   MapPin,
   Phone,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 
 interface BookingData {
   id: string;
@@ -263,8 +264,12 @@ export default function BookingPage({
                 </div>
               </div>
             )}
-            <Button onClick={openWhatsApp} className="w-full gap-2" variant="outline">
-              <ExternalLink className="h-4 w-4" /> Message host on WhatsApp
+            <Button
+              onClick={openWhatsApp}
+              className="w-full gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white border-none font-bold shadow-xs transition"
+            >
+              <WhatsAppIcon className="h-4.5 w-4.5" />
+              <span>Message host on WhatsApp</span>
             </Button>
           </div>
         ) : (
@@ -298,10 +303,10 @@ export default function BookingPage({
               href="https://wa.me/254727993661"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition"
+              className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition shadow-2xs"
               title="WhatsApp Kenya Support"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <WhatsAppIcon className="h-3.5 w-3.5" />
             </a>
           </div>
           <div className="flex items-center justify-between rounded-xl bg-white border border-[#f3cfd9] p-2.5 shadow-2xs">
@@ -315,10 +320,10 @@ export default function BookingPage({
               href="https://wa.me/255743607361"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition"
+              className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition shadow-2xs"
               title="WhatsApp Tanzania Support"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <WhatsAppIcon className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>

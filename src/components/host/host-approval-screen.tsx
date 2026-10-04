@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Phone } from "lucide-react";
 import { Icon } from "@/components/icon";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { ROUTES } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/client";
 
@@ -71,14 +73,30 @@ export function HostApprovalScreen({ status }: { status: string }) {
           {status === "pending" && (
             <Link
               href={ROUTES.dashboardProfile}
-              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot"
+              className="inline-flex h-11 items-center rounded-full bg-[#800020] px-6 text-sm font-bold text-white hover:bg-merlot shadow-xs transition"
             >
               Complete your profile
             </Link>
           )}
+          <a
+            href="https://wa.me/254727993661?text=Hi%20Beddn%20Admin,%20my%20host%20account%20is%20pending%20review.%20Please%20assist%20with%20verification."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#25D366] hover:bg-[#128C7E] px-5 text-sm font-bold text-white shadow-xs transition"
+          >
+            <WhatsAppIcon className="size-4" />
+            <span>WhatsApp Admin</span>
+          </a>
+          <a
+            href="tel:+254727993661"
+            className="inline-flex h-11 items-center gap-2 rounded-full border border-stone-200 bg-white px-5 text-sm font-semibold text-stone-700 hover:bg-stone-50 shadow-2xs transition"
+          >
+            <Phone className="size-4 text-[#800020]" />
+            <span>Call Admin</span>
+          </a>
           <Link
             href={ROUTES.search}
-            className="inline-flex h-11 items-center rounded-full border px-6 text-sm font-semibold hover:bg-white"
+            className="inline-flex h-11 items-center rounded-full border border-stone-200 bg-white px-6 text-sm font-semibold text-stone-700 hover:bg-stone-50 shadow-2xs transition"
           >
             Explore stays
           </Link>
@@ -86,7 +104,7 @@ export function HostApprovalScreen({ status }: { status: string }) {
             type="button"
             disabled={signingOut}
             onClick={handleSignOut}
-            className="inline-flex h-11 items-center rounded-full border border-red-200 bg-red-50 px-6 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-55 cursor-pointer"
+            className="inline-flex h-11 items-center rounded-full border border-red-200 bg-red-50 px-6 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-55 cursor-pointer transition"
           >
             {signingOut ? "Signing out..." : "Sign out"}
           </button>

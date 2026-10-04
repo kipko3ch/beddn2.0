@@ -75,11 +75,7 @@ export function NotificationPopover({
       });
     }
     setOpen(false);
-    if (item.link) {
-      router.push(item.link);
-    } else {
-      router.push(`/host/notifications?id=${item.id}`);
-    }
+    router.push(`/host/notifications?id=${item.id}`);
   }
 
   function getIcon(type: string) {
@@ -124,7 +120,13 @@ export function NotificationPopover({
       >
         <div className="flex items-center justify-between border-b border-stone-100 bg-[#fbf7f8] px-4 py-3">
           <div className="flex items-center gap-2">
-            <span className="font-brand text-base font-bold text-[#2b000a]">Notifications</span>
+            <Link
+              href="/host/notifications"
+              onClick={() => setOpen(false)}
+              className="font-brand text-base font-bold text-[#2b000a] hover:text-[#800020] transition"
+            >
+              Notifications
+            </Link>
             {unreadCount > 0 && (
               <span className="rounded-full bg-[#fdf2f4] px-2 py-0.5 text-[10px] font-bold text-[#800020] border border-[#f9a8d4]">
                 {unreadCount} new

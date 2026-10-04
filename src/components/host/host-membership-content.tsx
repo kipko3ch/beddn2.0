@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check, ArrowRight, Star, Sparkles, MessageCircle, ArrowLeft } from "lucide-react";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 
 type BillingPeriod = "daily" | "monthly";
 type CurrencyCode = "KES" | "USD" | "EUR" | "GBP" | "UGX" | "TZS" | "RWF";
@@ -300,6 +301,7 @@ export function HostMembershipContent({
               rel="noopener noreferrer"
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-[#800020] bg-white px-5 text-sm font-bold text-[#800020] hover:bg-[#fdf2f4] transition shadow-xs"
             >
+              <WhatsAppIcon className="size-4.5 text-[#25D366] shrink-0" />
               <span>Request Pro Tier via WhatsApp</span>
               <ArrowRight className="size-4" />
             </a>
@@ -383,6 +385,7 @@ export function HostMembershipContent({
               rel="noopener noreferrer"
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#800020] to-[#590016] hover:from-[#68001a] hover:to-[#400010] text-white px-5 text-sm font-bold shadow-md hover:shadow-lg transition active:scale-[0.99]"
             >
+              <WhatsAppIcon className="size-4.5 text-[#25D366] shrink-0" />
               <span>Request Pro Plus via WhatsApp</span>
               <ArrowRight className="size-4" />
             </a>

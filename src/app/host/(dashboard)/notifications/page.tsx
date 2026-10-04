@@ -55,6 +55,19 @@ export default function HostNotificationsPage() {
     loadNotifications();
   }, []);
 
+  // Smoothly scroll to highlighted notification if navigated from popover
+  useEffect(() => {
+    if (highlightId && !loading) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`notif-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightId, loading]);
+
   async function handleMarkAsRead(id: string, currentReadState: boolean) {
     setProcessingId(id);
     const newRead = !currentReadState;
@@ -266,6 +279,7 @@ export default function HostNotificationsPage() {
             return (
               <article
                 key={item.id}
+                id={`notif-${item.id}`}
                 className={`group relative rounded-3xl border p-5 sm:p-6 transition-all duration-300 ${
                   isHighlighted
                     ? "ring-2 ring-[#800020] border-[#800020] bg-[#fdf2f4]/30 shadow-md"

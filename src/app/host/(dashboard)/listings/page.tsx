@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
 import { Icon } from "@/components/icon";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { VerifiedBadge, PendingVerificationBadge } from "@/components/ui/verified-badge";
 import type { Listing } from "@/lib/types";
 
 const STATUS_TEXT: Record<string, string> = {
@@ -169,9 +169,10 @@ export default function ListingsPage() {
                       {listing.is_verified ? (
                         <VerifiedBadge text="Verified" size="xs" />
                       ) : (
-                        <Badge variant="outline" className="text-xs">
-                          Verification pending
-                        </Badge>
+                        <PendingVerificationBadge
+                          listingTitle={listing.title || listing.name}
+                          listingId={listing.id}
+                        />
                       )}
                     </div>
                   </div>

@@ -32,7 +32,8 @@ import { ProUpgradeModal } from "@/components/dashboard/pro-upgrade-modal";
 import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { VerifiedBadge, PendingVerificationBadge } from "@/components/ui/verified-badge";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 
 type HostProfile = {
   id: string;
@@ -325,14 +326,8 @@ export default function HostDashboardPage() {
             </h2>
             {host.is_verified ? (
               <VerifiedBadge text="Verified Host" size="sm" />
-            ) : host.verification_status === "under_review" ? (
-              <Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold gap-1 px-2.5 py-0.5">
-                <Clock className="size-3" /> Under Review
-              </Badge>
             ) : (
-              <Badge className="rounded-full bg-stone-100 text-stone-600 border border-stone-200 text-xs font-bold gap-1 px-2.5 py-0.5">
-                Verification Pending
-              </Badge>
+              <PendingVerificationBadge />
             )}
           </div>
           <p className="text-xs text-stone-500 mt-1">
@@ -517,14 +512,43 @@ export default function HostDashboardPage() {
                   {submittingVerification ? "Submitting..." : "Submit for Verification"}
                 </Button>
               ) : (
-                <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700">
+                <div className="w-full space-y-2">
                   {host.is_verified ? (
-                    <VerifiedBadge text="Badge Active" size="xs" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700">
+                      <VerifiedBadge text="Badge Active" size="xs" />
+                    </div>
                   ) : (
-                    <span className="flex items-center gap-1 text-amber-700">
-                      <Clock className="size-3.5" />
-                      Review in Progress
-                    </span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-amber-700">
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-3.5 text-amber-600" />
+                          Review in Progress
+                        </span>
+                        <span className="text-[11px] text-stone-400 font-normal">Pending approval</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 leading-tight">
+                        Verification taking longer than usual? Reach admin directly:
+                      </p>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <a
+                          href="https://wa.me/254727993661?text=Hi%20Beddn%20Admin,%20my%20host%20verification%20is%20pending.%20Please%20help%20verify%20my%20account."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white px-3 py-1.5 text-xs font-bold shadow-2xs transition"
+                        >
+                          <WhatsAppIcon className="size-3.5" />
+                          <span>WhatsApp Admin</span>
+                        </a>
+                        <a
+                          href="tel:+254727993661"
+                          className="inline-flex items-center justify-center gap-1 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 px-3 py-1.5 text-xs font-bold shadow-2xs transition"
+                          title="Call Admin Directly"
+                        >
+                          <Phone className="size-3 text-[#800020]" />
+                          <span>Call</span>
+                        </a>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}

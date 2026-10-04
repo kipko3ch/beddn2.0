@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { LOGO_SRC } from "@/lib/assets";
 import { ReserveSkeleton } from "@/components/reserve-skeleton";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import type { User } from "@supabase/supabase-js";
 import type { Listing, ListingCategory, Review } from "@/lib/types";
 
@@ -311,8 +312,8 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   rel="noopener noreferrer"
                   className="inline-flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#25D366] px-7 text-sm font-bold text-white hover:bg-[#128C7E] shadow-sm transition"
                 >
-                  <Icon icon="solar:chat-round-dots-bold-duotone" className="h-4 w-4" />
-                  Continue on WhatsApp
+                  <WhatsAppIcon className="h-4.5 w-4.5" />
+                  <span>Continue on WhatsApp</span>
                 </a>
               )}
               {submittedCode !== "sent" && (
@@ -868,7 +869,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       title="WhatsApp Kenya support"
                       className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition shadow-2xs"
                     >
-                      <Icon icon="solar:chat-round-dots-bold-duotone" className="h-3.5 w-3.5" />
+                      <WhatsAppIcon className="h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>
@@ -901,7 +902,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       title="WhatsApp Tanzania support"
                       className="flex size-7 items-center justify-center rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] transition shadow-2xs"
                     >
-                      <Icon icon="solar:chat-round-dots-bold-duotone" className="h-3.5 w-3.5" />
+                      <WhatsAppIcon className="h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>
