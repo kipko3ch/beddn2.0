@@ -16,6 +16,9 @@ import {
   Compass,
   LayoutDashboard,
   CheckCircle2,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
 } from "lucide-react";
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +28,8 @@ import { RoleSwitchTransition } from "@/components/role-switch-transition";
 import { NotificationPopover } from "@/components/dashboard/notification-popover";
 import { ProUpgradeModal } from "@/components/dashboard/pro-upgrade-modal";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 export interface NavItem {
   href: string;
@@ -42,6 +47,7 @@ export interface DashboardShellProps {
   role: "host" | "admin";
   userEmail: string;
   userName?: string | null;
+  avatarUrl?: string | null;
   hostId?: string;
   isAdmin?: boolean;
   isHost?: boolean;
@@ -56,6 +62,7 @@ export function DashboardShell({
   role,
   userEmail,
   userName,
+  avatarUrl,
   hostId,
   isAdmin = false,
   isHost = false,
@@ -67,13 +74,56 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [switching, setSwitching] = useState<{ to: string; mode: "host" | "traveler" } | null>(null);
+  const [resolvedAvatar, setResolvedAvatar] = useState<string | null>(avatarUrl || null);
   const supabase = createClient();
+
+  // Load collapsed preference from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("beddn_sidebar_collapsed");
+      if (saved === "true") {
+        setIsCollapsed(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("beddn_sidebar_collapsed", String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   // Close mobile drawer on route changes
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  // Resolve avatar if not passed via SSR props
+  useEffect(() => {
+    if (avatarUrl) {
+      setResolvedAvatar(avatarUrl);
+      return;
+    }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const meta =
+          (user.user_metadata?.avatar_url as string | undefined) ||
+          (user.user_metadata?.picture as string | undefined) ||
+          null;
+        if (meta) setResolvedAvatar(meta);
+      }
+    });
+  }, [avatarUrl, supabase]);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -85,6 +135,13 @@ export function DashboardShell({
   const greeting = currentHour < 12 ? "Good Morning" : currentHour < 17 ? "Good Afternoon" : "Good Evening";
   const displayName = userName || userEmail.split("@")[0] || (role === "admin" ? "Admin" : "Host");
   const formattedDate = format(new Date(), "EEEE, MMMM d, yyyy");
+  const initials = (displayName || "B")
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "B";
 
   function isActive(href: string) {
     if (href === ROUTES.dashboard || href === ROUTES.adminHome) {
@@ -94,67 +151,140 @@ export function DashboardShell({
   }
 
   // Navigation Items Renderer
-  const renderNavList = (onNavigate?: () => void) => (
-    <nav className="flex-1 space-y-6 overflow-y-auto px-4 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+  const renderNavList = (onNavigate?: () => void, isShrunk = false) => (
+    <nav
+      className={cn(
+        "flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        isShrunk ? "px-2.5 py-3 space-y-4" : "px-4 py-4 space-y-6"
+      )}
+    >
       {/* Top Action Button (e.g. + New Listing / + Action) */}
-      {actionButton && (
-        <div className="pb-1" onClick={onNavigate}>
-          {actionButton}
+      {isShrunk ? (
+        <div className="flex justify-center pb-1">
+          <Link
+            href={role === "admin" ? ROUTES.adminAnnouncements : ROUTES.newListing}
+            title={role === "admin" ? "New Announcement" : "New Listing"}
+            className="flex size-11 items-center justify-center rounded-2xl bg-[#800020] text-white shadow-xs hover:bg-[#68001a] active:scale-95 transition"
+          >
+            <Plus className="size-5" />
+          </Link>
         </div>
+      ) : (
+        actionButton && (
+          <div className="pb-1" onClick={onNavigate}>
+            {actionButton}
+          </div>
+        )
       )}
 
-      {sections.map((section, sIdx) => (
-        <div key={sIdx} className="space-y-1">
-          {section.title && (
-            <p className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-stone-400">
-              {section.title}
-            </p>
-          )}
-          <div className="space-y-1">
-            {section.items.map(({ href, label, icon, badge }) => {
-              const active = isActive(href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={onNavigate}
-                  className={`group flex items-center justify-between rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
-                    active
-                      ? "bg-[#f4eee8] text-stone-900 shadow-2xs font-bold"
-                      : "text-stone-600 hover:bg-stone-50 hover:text-stone-900 font-medium"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Icon
-                      icon={icon}
-                      className={`h-4.5 w-4.5 shrink-0 transition-colors ${
-                        active ? "text-[#800020]" : "text-stone-400 group-hover:text-stone-700"
-                      }`}
-                    />
-                    <span className="truncate">{label}</span>
-                  </div>
-                  {badge !== undefined && (
-                    <span
-                      className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+      {sections.map((section, sIdx) => {
+        if (isShrunk) {
+          return (
+            <div key={sIdx} className="space-y-2">
+              {sIdx > 0 && <div className="my-2 h-px w-8 bg-stone-200/70 mx-auto" />}
+              <div className="flex flex-col items-center space-y-2">
+                {section.items.map(({ href, label, icon, badge }) => {
+                  const active = isActive(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={onNavigate}
+                      title={label}
+                      className={cn(
+                        "group relative flex size-12 items-center justify-center rounded-2xl transition-all mx-auto",
                         active
-                          ? "bg-[#800020] text-white"
-                          : "bg-stone-100 text-stone-600 group-hover:bg-stone-200"
-                      }`}
+                          ? "bg-[#f4eee8] text-[#800020] shadow-2xs font-bold"
+                          : "text-stone-500 hover:bg-stone-100 hover:text-stone-900 font-medium"
+                      )}
                     >
-                      {badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+                      <Icon
+                        icon={icon}
+                        className={cn(
+                          "size-5.5 transition-colors",
+                          active ? "text-[#800020]" : "text-stone-500 group-hover:text-stone-800"
+                        )}
+                      />
+                      {badge !== undefined && (
+                        <span className="absolute -top-1 -right-1 flex min-w-4.5 h-4.5 items-center justify-center rounded-full bg-[#800020] px-1 text-[9px] font-bold text-white shadow-xs">
+                          {badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div key={sIdx} className="space-y-1">
+            {section.title && (
+              <p className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-stone-400">
+                {section.title}
+              </p>
+            )}
+            <div className="space-y-1">
+              {section.items.map(({ href, label, icon, badge }) => {
+                const active = isActive(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={onNavigate}
+                    className={`group flex items-center justify-between rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
+                      active
+                        ? "bg-[#f4eee8] text-stone-900 shadow-2xs font-bold"
+                        : "text-stone-600 hover:bg-stone-50 hover:text-stone-900 font-medium"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Icon
+                        icon={icon}
+                        className={`h-4.5 w-4.5 shrink-0 transition-colors ${
+                          active ? "text-[#800020]" : "text-stone-400 group-hover:text-stone-700"
+                        }`}
+                      />
+                      <span className="truncate">{label}</span>
+                    </div>
+                    {badge !== undefined && (
+                      <span
+                        className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          active
+                            ? "bg-[#800020] text-white"
+                            : "bg-stone-100 text-stone-600 group-hover:bg-stone-200"
+                        }`}
+                      >
+                        {badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </nav>
   );
 
-  // Bottom Sidebar Card (Clean minimal on-brand Pro upgrade card)
-  const renderSidebarBottomCard = () => {
+  // Bottom Sidebar Card (Clean minimal on-brand Pro upgrade card or compact icon button)
+  const renderSidebarBottomCard = (isShrunk = false) => {
+    if (isShrunk) {
+      return (
+        <div className="p-2 flex justify-center">
+          <Link
+            href={ROUTES.dashboardPro}
+            title="Beddn Pro Membership"
+            className="group relative flex size-11 items-center justify-center rounded-2xl bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4]/70 hover:bg-[#800020] hover:text-white transition shadow-2xs"
+          >
+            <Sparkles className="size-5" />
+          </Link>
+        </div>
+      );
+    }
+
     return (
       <div className="p-3 pt-1">
         <div className="rounded-2xl border border-stone-200/80 bg-[#fdf2f4]/60 p-3.5 text-stone-900 shadow-2xs">
@@ -169,7 +299,7 @@ export function DashboardShell({
           </p>
           <div className="mt-3">
             <Link
-              href="/host/pro"
+              href={ROUTES.dashboardPro}
               className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] transition active:scale-98"
             >
               <span>Upgrade to Pro</span>
@@ -182,92 +312,215 @@ export function DashboardShell({
   };
 
   // User Profile & Switcher Footer
-  const renderSidebarFooter = (onNavigate?: () => void) => (
-    <div className="border-t border-stone-100 p-3 bg-stone-50/50">
-      {/* Role Switcher Pill */}
-      {isAdmin && role === "host" && (
-        <Link
-          href={ROUTES.adminHome}
-          onClick={onNavigate}
-          className="mb-2 flex w-full items-center justify-between rounded-xl bg-white border border-stone-200/80 px-3 py-2 text-xs font-bold text-[#800020] hover:bg-[#fdf2f4] transition"
-        >
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="size-3.5 text-[#800020]" />
-            Switch to Admin
-          </span>
-          <ArrowRight className="size-3 text-stone-400" />
-        </Link>
-      )}
+  const renderSidebarFooter = (onNavigate?: () => void, isShrunk = false) => {
+    if (isShrunk) {
+      return (
+        <div className="border-t border-stone-200/80 p-2.5 flex flex-col items-center gap-2.5 bg-stone-50/50">
+          {/* Switch to Admin if applicable */}
+          {isAdmin && role === "host" && (
+            <Link
+              href={ROUTES.adminHome}
+              title="Switch to Admin"
+              className="flex size-9 items-center justify-center rounded-xl bg-white border border-stone-200/80 text-[#800020] hover:bg-[#fdf2f4] transition"
+            >
+              <ShieldCheck className="size-4 text-[#800020]" />
+            </Link>
+          )}
 
-      {isAdmin && role === "admin" && (
-        <Link
-          href={ROUTES.dashboard}
-          onClick={onNavigate}
-          className="mb-2 flex w-full items-center justify-between rounded-xl bg-white border border-stone-200/80 px-3 py-2 text-xs font-bold text-stone-700 hover:bg-[#fdf2f4] hover:text-[#800020] transition"
-        >
-          <span className="flex items-center gap-1.5">
-            <LayoutDashboard className="size-3.5 text-stone-500" />
-            Switch to Host
-          </span>
-          <ArrowRight className="size-3 text-stone-400" />
-        </Link>
-      )}
+          {/* Switch to Host if applicable */}
+          {isAdmin && role === "admin" && (
+            <Link
+              href={ROUTES.dashboard}
+              title="Switch to Host"
+              className="flex size-9 items-center justify-center rounded-xl bg-white border border-stone-200/80 text-stone-700 hover:text-[#800020] transition"
+            >
+              <LayoutDashboard className="size-4" />
+            </Link>
+          )}
 
-      <button
-        type="button"
-        onClick={() => {
-          onNavigate?.();
-          setSwitching({ to: ROUTES.home, mode: "traveler" });
-        }}
-        className="flex w-full items-center justify-between rounded-xl px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-100 transition"
-      >
-        <span className="flex items-center gap-2">
-          <Compass className="size-3.5 text-stone-400" />
-          Browse as Traveler
-        </span>
-        <ArrowRight className="size-3 text-stone-300" />
-      </button>
+          {/* Browse as traveler */}
+          <button
+            type="button"
+            onClick={() => {
+              onNavigate?.();
+              setSwitching({ to: ROUTES.home, mode: "traveler" });
+            }}
+            title="Browse as Traveler"
+            className="flex size-9 items-center justify-center rounded-xl text-stone-500 hover:bg-stone-200/60 transition"
+          >
+            <Compass className="size-4" />
+          </button>
 
-      {/* User profile card */}
-      <div className="mt-2 flex items-center justify-between gap-2 rounded-2xl bg-white p-2.5 border border-stone-200/70 shadow-2xs">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-bold text-stone-900">{displayName}</p>
-          <p className="truncate text-[10px] text-stone-400">{userEmail}</p>
+          {/* Circular user avatar matching reference */}
+          <Link
+            href={ROUTES.dashboardProfile}
+            title={`${displayName} (${userEmail})`}
+            className="group relative my-0.5"
+          >
+            <Avatar size="lg" className="size-10 rounded-full ring-2 ring-stone-200/80 group-hover:ring-[#800020] transition shadow-2xs">
+              <AvatarImage src={resolvedAvatar || ""} alt={displayName} />
+              <AvatarFallback className="bg-[#800020] text-white font-bold text-xs uppercase">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+
+          {/* Expand sidebar button */}
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            title="Expand sidebar"
+            className="flex size-8 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 transition"
+            aria-label="Expand sidebar"
+          >
+            <PanelLeftOpen className="size-4" />
+          </button>
+
+          {/* Sign out */}
+          <button
+            type="button"
+            onClick={handleSignOut}
+            title="Sign out"
+            className="flex size-8 items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 hover:text-rose-600 transition"
+          >
+            <LogOut className="size-3.5" />
+          </button>
         </div>
+      );
+    }
+
+    return (
+      <div className="border-t border-stone-100 p-3 bg-stone-50/50">
+        {/* Role Switcher Pill */}
+        {isAdmin && role === "host" && (
+          <Link
+            href={ROUTES.adminHome}
+            onClick={onNavigate}
+            className="mb-2 flex w-full items-center justify-between rounded-xl bg-white border border-stone-200/80 px-3 py-2 text-xs font-bold text-[#800020] hover:bg-[#fdf2f4] transition"
+          >
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-[#800020]" />
+              Switch to Admin
+            </span>
+            <ArrowRight className="size-3 text-stone-400" />
+          </Link>
+        )}
+
+        {isAdmin && role === "admin" && (
+          <Link
+            href={ROUTES.dashboard}
+            onClick={onNavigate}
+            className="mb-2 flex w-full items-center justify-between rounded-xl bg-white border border-stone-200/80 px-3 py-2 text-xs font-bold text-stone-700 hover:bg-[#fdf2f4] hover:text-[#800020] transition"
+          >
+            <span className="flex items-center gap-1.5">
+              <LayoutDashboard className="size-3.5 text-stone-500" />
+              Switch to Host
+            </span>
+            <ArrowRight className="size-3 text-stone-400" />
+          </Link>
+        )}
+
         <button
           type="button"
-          onClick={handleSignOut}
-          title="Sign out"
-          className="flex size-7 items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 hover:text-rose-600 transition"
+          onClick={() => {
+            onNavigate?.();
+            setSwitching({ to: ROUTES.home, mode: "traveler" });
+          }}
+          className="flex w-full items-center justify-between rounded-xl px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-100 transition"
         >
-          <LogOut className="size-3.5" />
+          <span className="flex items-center gap-2">
+            <Compass className="size-3.5 text-stone-400" />
+            Browse as Traveler
+          </span>
+          <ArrowRight className="size-3 text-stone-300" />
+        </button>
+
+        {/* User profile card */}
+        <div className="mt-2 flex items-center justify-between gap-2 rounded-2xl bg-white p-2.5 border border-stone-200/70 shadow-2xs">
+          <Link
+            href={ROUTES.dashboardProfile}
+            className="flex items-center gap-2.5 min-w-0 flex-1 group"
+          >
+            <Avatar size="default" className="size-8 rounded-full ring-1 ring-stone-200 group-hover:ring-[#800020] transition">
+              <AvatarImage src={resolvedAvatar || ""} alt={displayName} />
+              <AvatarFallback className="bg-[#800020] text-white font-bold text-[10px] uppercase">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-bold text-stone-900 group-hover:text-[#800020] transition">{displayName}</p>
+              <p className="truncate text-[10px] text-stone-400">{userEmail}</p>
+            </div>
+          </Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            title="Sign out"
+            className="flex size-7 items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 hover:text-rose-600 transition"
+          >
+            <LogOut className="size-3.5" />
+          </button>
+        </div>
+
+        {/* Shrink sidebar toggle button at bottom */}
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          title="Shrink sidebar (show icons only)"
+          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-stone-200/80 bg-white py-1.5 text-[11px] font-semibold text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition"
+        >
+          <PanelLeftClose className="size-3.5" />
+          <span>Shrink sidebar</span>
         </button>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex min-h-screen bg-[#fcfafb] font-sans text-stone-900 antialiased">
       {/* Desktop Left Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-stone-200/80 bg-white md:flex">
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-stone-200/80 bg-white transition-all duration-300 ease-in-out md:flex",
+          isCollapsed ? "w-20" : "w-64"
+        )}
+      >
         {/* Brand Header */}
-        <div className="flex h-18 items-center justify-between border-b border-stone-100 px-6">
-          <Link href={ROUTES.home} className="flex items-center gap-2">
-            <span className="font-brand text-2xl font-bold tracking-tight text-[#2b000a]">Beddn</span>
-          </Link>
-          <span className="rounded-full bg-[#fdf2f4] px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-[#800020] border border-[#f9c8d4]">
-            {role === "admin" ? "Admin" : "Host"}
-          </span>
-        </div>
+        {isCollapsed ? (
+          <div className="flex h-18 flex-col items-center justify-center border-b border-stone-100 px-2 py-3">
+            <Link
+              href={ROUTES.home}
+              title="Beddn Home"
+              className="group relative flex size-11 items-center justify-center rounded-2xl bg-stone-900 text-white shadow-xs transition hover:scale-105 active:scale-95"
+            >
+              <span className="font-brand text-xl font-black tracking-tight text-white">B</span>
+            </Link>
+          </div>
+        ) : (
+          <div className="flex h-18 items-center justify-between border-b border-stone-100 px-5">
+            <Link href={ROUTES.home} className="flex items-center gap-2">
+              <span className="font-brand text-2xl font-bold tracking-tight text-[#2b000a]">Beddn</span>
+            </Link>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Shrink sidebar (show icons only)"
+              className="flex size-8 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition active:scale-95"
+              aria-label="Shrink sidebar"
+            >
+              <PanelLeftClose className="size-4" />
+            </button>
+          </div>
+        )}
 
         {/* Navigation List */}
-        {renderNavList()}
+        {renderNavList(undefined, isCollapsed)}
 
         {/* Pro Banner Card */}
-        {renderSidebarBottomCard()}
+        {renderSidebarBottomCard(isCollapsed)}
 
         {/* Footer Profile & Switcher */}
-        {renderSidebarFooter()}
+        {renderSidebarFooter(undefined, isCollapsed)}
       </aside>
 
       {/* Mobile Drawer */}
@@ -278,20 +531,22 @@ export function DashboardShell({
               <SheetTitle className="font-brand text-2xl font-bold text-[#2b000a]">
                 Beddn
               </SheetTitle>
-              <span className="rounded-full bg-[#fdf2f4] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#800020]">
-                {role === "admin" ? "Admin" : "Host"}
-              </span>
             </div>
             <SheetDescription className="sr-only">Dashboard Navigation</SheetDescription>
           </SheetHeader>
-          {renderNavList(() => setMobileMenuOpen(false))}
-          {renderSidebarBottomCard()}
-          {renderSidebarFooter(() => setMobileMenuOpen(false))}
+          {renderNavList(() => setMobileMenuOpen(false), false)}
+          {renderSidebarBottomCard(false)}
+          {renderSidebarFooter(() => setMobileMenuOpen(false), false)}
         </SheetContent>
       </Sheet>
 
       {/* Main Content Area */}
-      <div className="flex min-w-0 flex-1 flex-col md:pl-64">
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col transition-all duration-300 ease-in-out",
+          isCollapsed ? "md:pl-20" : "md:pl-64"
+        )}
+      >
         {/* Top Greeting Banner with Mesh Gradient Background */}
         <header className="relative overflow-hidden bg-gradient-to-r from-[#1f0007] via-[#480014] to-[#780022] px-4 py-6 sm:px-8 sm:py-7 text-white shadow-md">
           {/* Animated Mesh Gradient Background in Beddn Burgundy Theme */}

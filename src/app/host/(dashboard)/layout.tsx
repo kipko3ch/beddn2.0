@@ -27,13 +27,19 @@ export default async function HostLayout({
 
   const admin = createAdminClient();
   const [{ data: profile }, { data: host }] = await Promise.all([
-    admin.from('profiles').select('is_admin, full_name').eq('id', user.id).maybeSingle(),
-    admin.from('hosts').select('id, status, name').eq('user_id', user.id).maybeSingle(),
+    admin.from('profiles').select('is_admin, full_name, avatar_url').eq('id', user.id).maybeSingle(),
+    admin.from('hosts').select('id, status, name, avatar_url').eq('user_id', user.id).maybeSingle(),
   ]);
 
   const isAdmin = Boolean(profile?.is_admin);
   const hostStatus = (host?.status as string | undefined) ?? null;
   const userName = host?.name || profile?.full_name || (user.user_metadata?.full_name as string | undefined) || null;
+  const avatarUrl =
+    (host?.avatar_url as string | undefined) ||
+    (profile?.avatar_url as string | undefined) ||
+    (user.user_metadata?.avatar_url as string | undefined) ||
+    (user.user_metadata?.picture as string | undefined) ||
+    null;
 
   // Check if host has an active Pro / Featured tier
   let activeTier: string | null = null;
@@ -69,6 +75,7 @@ export default async function HostLayout({
     <HostShell
       email={user.email ?? ''}
       userName={userName}
+      avatarUrl={avatarUrl}
       hostId={host?.id}
       isAdmin={isAdmin}
       isHost={Boolean(host)}

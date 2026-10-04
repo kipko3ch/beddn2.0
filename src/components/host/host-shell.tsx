@@ -38,6 +38,7 @@ const HOST_SECTIONS: NavSection[] = [
 export function HostShell({
   email,
   userName,
+  avatarUrl,
   hostId,
   isAdmin = false,
   isHost = true,
@@ -47,6 +48,7 @@ export function HostShell({
 }: {
   email: string;
   userName?: string | null;
+  avatarUrl?: string | null;
   hostId?: string;
   isAdmin: boolean;
   isHost: boolean;
@@ -69,6 +71,7 @@ export function HostShell({
       role="host"
       userEmail={email}
       userName={userName}
+      avatarUrl={avatarUrl}
       hostId={hostId}
       isAdmin={isAdmin}
       isHost={isHost}
