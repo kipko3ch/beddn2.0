@@ -7,6 +7,7 @@ import { Globe, HelpCircle, ChevronRight, LogOut, Compass, ShieldCheck, Heart, S
 import { Icon } from "@/components/icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AuthDialog } from "@/components/auth-dialog";
+import { useCurrency } from "@/components/currency-provider";
 import { ROUTES } from "@/lib/routes";
 
 interface FloatingNavMenuProps {
@@ -26,8 +27,10 @@ export function FloatingNavMenu({
   isAdmin,
   onSignOut,
   onSwitch,
+  trigger,
 }: FloatingNavMenuProps) {
   const [open, setOpen] = useState(false);
+  const { display, setDisplay } = useCurrency();
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -72,37 +75,54 @@ export function FloatingNavMenu({
 
   return (
     <div className="relative inline-block text-left" ref={menuRef}>
-      {/* Trigger Button: Clean Pill with Hamburger & User Icon (Airbnb style matching Image 2) */}
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-label="Main navigation menu"
-        className="flex h-10 items-center gap-2.5 rounded-full border border-stone-200/90 bg-white px-3.5 py-1 text-stone-800 shadow-2xs outline-none transition-all hover:border-stone-300 hover:shadow-xs focus-visible:ring-2 focus-visible:ring-crimson"
-      >
-        <Icon icon="line-md:menu" className="h-4.5 w-4.5 text-stone-700" />
-        {user ? (
-          <Avatar className="size-6.5 border border-stone-200">
-            <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
-            <AvatarFallback className="bg-[#800020] text-[10px] font-bold text-white">
-              {getInitials(user)}
-            </AvatarFallback>
-          </Avatar>
-        ) : (
-          <div className="flex size-6.5 items-center justify-center rounded-full bg-stone-100 text-stone-600">
-            <Icon icon="line-md:account" className="h-4 w-4" />
-          </div>
-        )}
-      </button>
+      {/* Trigger Button */}
+      {trigger ? (
+        <div onClick={() => setOpen(!open)} role="button" tabIndex={0} className="cursor-pointer">
+          {trigger}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label="Main navigation menu"
+          className="flex h-10 items-center gap-2.5 rounded-full border border-stone-200/90 bg-white px-3.5 py-1 text-stone-800 shadow-2xs outline-none transition-all hover:border-stone-300 hover:shadow-xs focus-visible:ring-2 focus-visible:ring-crimson"
+        >
+          <Icon icon="line-md:menu" className="h-4.5 w-4.5 text-stone-700" />
+          {user ? (
+            <Avatar className="size-6.5 border border-stone-200">
+              <AvatarImage src={avatarUrl} alt={user.email ?? "Profile"} />
+              <AvatarFallback className="bg-[#800020] text-[10px] font-bold text-white">
+                {getInitials(user)}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <div className="flex size-6.5 items-center justify-center rounded-full bg-stone-100 text-stone-600">
+              <Icon icon="line-md:account" className="h-4 w-4" />
+            </div>
+          )}
+        </button>
+      )}
 
       {/* Floating Dropdown Card (matching Image 2) */}
       {open && (
         <div className="absolute right-0 top-full mt-2.5 w-76 sm:w-80 origin-top-right rounded-3xl border border-stone-200/90 bg-white p-3 shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-150 z-50 text-stone-800">
           {/* Top Options: Languages & Currency, Help Center */}
           <div className="space-y-0.5">
-            <div className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer">
-              <Globe className="h-4 w-4 text-stone-600 shrink-0" />
-              <span>Languages & currency</span>
+            <div
+              onClick={() => {
+                const next = display === "KES" ? "USD" : display === "USD" ? "TZS" : "KES";
+                setDisplay(next);
+              }}
+              className="flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <Globe className="h-4 w-4 text-stone-600 shrink-0" />
+                <span>Languages &amp; currency</span>
+              </div>
+              <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-bold text-stone-700">
+                {display === "AUTO" ? "KES" : display} · EN
+              </span>
             </div>
             <Link
               href={ROUTES.review}
@@ -233,15 +253,25 @@ export function FloatingNavMenu({
 
           {/* Bottom Section: Log in or Sign up / Sign out */}
           {!user ? (
-            <div className="p-1">
-              <AuthDialog>
+            <div className="space-y-1.5 p-1">
+              <AuthDialog mode="signin">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[#800020] hover:bg-[#fdf2f4] transition"
+                  className="flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-50 transition"
                 >
-                  <span>Log in or sign up</span>
-                  <ChevronRight className="h-4 w-4 text-[#800020]/60" />
+                  <span>Log in</span>
+                  <ChevronRight className="h-4 w-4 text-stone-400" />
+                </button>
+              </AuthDialog>
+              <AuthDialog mode="signup">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="flex w-full items-center justify-between rounded-2xl bg-[#800020] px-3.5 py-2.5 text-sm font-bold text-white hover:bg-[#68001a] transition shadow-2xs"
+                >
+                  <span>Sign up</span>
+                  <ChevronRight className="h-4 w-4 text-white/70" />
                 </button>
               </AuthDialog>
             </div>

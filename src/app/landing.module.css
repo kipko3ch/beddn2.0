@@ -457,8 +457,9 @@
 
 @media (max-width: 768px) {
   .header {
-    display: grid;
-    grid-template-columns: 44px 1fr 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px 16px;
     width: 100%;
     min-height: 58px;
@@ -468,25 +469,17 @@
   }
   .mobileMenuButton,
   .mobileProfileButton {
-    display: inline-flex;
-    width: 38px;
-    height: 38px;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    color: #181113;
-    box-shadow: none;
+    display: none;
   }
   .mobileProfileSlot {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    gap: 8px;
   }
   .logoArea {
-    justify-content: center;
-    font-size: 23px;
-    text-align: center;
+    justify-content: flex-start;
+    font-size: 24px;
+    text-align: left;
   }
   .title {
     font-size: 30px;

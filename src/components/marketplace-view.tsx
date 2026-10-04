@@ -5,8 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Home,
-  Menu,
   Bus,
   Waves,
   Dumbbell,
@@ -24,14 +22,7 @@ import { PopularDestinations, CityRails, FeaturedRail, Rail } from '@/components
 import { SearchPill, type SearchPillValues } from '@/components/search-pill';
 import { AuthDialog } from '@/components/auth-dialog';
 import { CurrencySwitcher } from '@/components/currency-switcher';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { FloatingNavMenu } from '@/components/floating-nav-menu';
 import { ROUTES } from '@/lib/routes';
 import type { Listing } from '@/lib/types';
 
@@ -94,7 +85,6 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
 
   // Personalized location and permissions states
   const [permissionState, setPermissionState] = useState<"granted" | "denied" | "prompt" | null>(null);
@@ -334,89 +324,24 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   return (
     <div className={styles.container}>
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
-        <Sheet open={navOpen} onOpenChange={setNavOpen}>
-          <SheetTrigger
-            render={
-              <button type="button" className={styles.mobileMenuButton} aria-label="Open menu" />
-            }
-          >
-            {user ? (
-              <Image
-                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
-                alt=""
-                width={32}
-                height={32}
-                style={{ borderRadius: '50%' }}
-              />
-            ) : (
-              <Menu size={20} />
-            )}
-          </SheetTrigger>
-          <SheetContent side="left" className="flex w-[min(82vw,320px)] flex-col gap-0 bg-white p-0">
-            <SheetHeader className="border-b p-5">
-              <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
-                Beddn
-              </SheetTitle>
-              <SheetDescription className="sr-only">Navigate Beddn</SheetDescription>
-            </SheetHeader>
-            <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.home}>
-                Browse all
-              </a>
-              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.review}>
-                Review a stay
-              </a>
-              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.saved}>
-                Saved trips
-              </a>
-              {!user && (
-                <AuthDialog defaultHostIntent>
-                  <button className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-3 text-sm font-bold text-white hover:bg-merlot">
-                    <Home className="h-4 w-4" /> Become a host
-                  </button>
-                </AuthDialog>
-              )}
-              {user && canHost && (
-                <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.dashboard}>
-                  Host dashboard
-                </a>
-              )}
-              {isAdmin && (
-                <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.adminListings}>
-                  Admin dashboard
-                </a>
-              )}
-            </nav>
-            <div className="mt-auto space-y-1 border-t p-4">
-              <a className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground hover:bg-muted" href={ROUTES.terms}>
-                Terms
-              </a>
-              <a className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground hover:bg-muted" href={ROUTES.privacy}>
-                Privacy
-              </a>
-              {user && (
-                <button
-                  onClick={handleSignOut}
-                  className="block w-full rounded-2xl px-4 py-3 text-left text-sm text-crimson hover:bg-muted"
-                >
-                  Sign out
-                </button>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
-
         <Link href={ROUTES.home} className={styles.logoArea} aria-label="Beddn home">
           Beddn
         </Link>
 
-        {/* Third grid column on mobile — otherwise this is an empty 44px gap
-            and the currency switcher only exists inside .navRight, which is
-            hidden entirely below the 768px breakpoint. */}
-        <div className={styles.mobileProfileSlot}>
+        {/* Mobile controls: Currency switcher + Floating nav menu */}
+        <div className="flex md:hidden items-center gap-2">
           <CurrencySwitcher />
+          <FloatingNavMenu
+            user={user}
+            avatarUrl={user?.user_metadata?.avatar_url}
+            showHostWorkspace={canHost}
+            isAdmin={isAdmin}
+            onSignOut={handleSignOut}
+            onSwitch={(to) => router.push(to)}
+          />
         </div>
 
+        {/* Desktop controls */}
         <nav className={styles.navRight}>
           <a href={ROUTES.home} className={styles.navItem}>Browse</a>
           <a href={ROUTES.review} className={styles.navItem}>Review</a>
@@ -434,27 +359,14 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             </AuthDialog>
           )}
           <CurrencySwitcher />
-          {/* One control: the avatar itself when signed in, a hamburger when
-              signed out. Opens the same sheet as the mobile trigger above —
-              no separate account dropdown. */}
-          <button
-            type="button"
-            aria-label="Open menu"
-            onClick={() => setNavOpen(true)}
-            className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-crimson"
-          >
-            {user ? (
-              <Image
-                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
-                alt=""
-                width={32}
-                height={32}
-                style={{ borderRadius: '50%' }}
-              />
-            ) : (
-              <Menu size={18} />
-            )}
-          </button>
+          <FloatingNavMenu
+            user={user}
+            avatarUrl={user?.user_metadata?.avatar_url}
+            showHostWorkspace={canHost}
+            isAdmin={isAdmin}
+            onSignOut={handleSignOut}
+            onSwitch={(to) => router.push(to)}
+          />
         </nav>
       </header>
 
