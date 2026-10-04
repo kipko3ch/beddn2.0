@@ -18,13 +18,20 @@ import {
 import { Icon } from '@/components/icon';
 import styles from '../app/landing.module.css';
 import { createClient } from '@/lib/supabase/client';
-import { useAvatarUrl, useSavedListings, useUserRole } from '@/lib/hooks';
+import { useSavedListings, useUserRole } from '@/lib/hooks';
 import { ListingCard, ListingCardSkeleton } from '@/components/listing-card';
 import { PopularDestinations, CityRails, FeaturedRail, Rail } from '@/components/home-sections';
 import { SearchPill, type SearchPillValues } from '@/components/search-pill';
 import { AuthDialog } from '@/components/auth-dialog';
 import { CurrencySwitcher } from '@/components/currency-switcher';
-import { HangingMenu } from '@/components/hanging-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { ROUTES } from '@/lib/routes';
 import type { Listing } from '@/lib/types';
 
@@ -87,6 +94,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
 
   // Personalized location and permissions states
   const [permissionState, setPermissionState] = useState<"granted" | "denied" | "prompt" | null>(null);
@@ -101,7 +109,6 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { user, isHost, isAdmin } = useUserRole();
-  const avatarUrl = useAvatarUrl(user);
   const canHost = isHost || isAdmin;
   const { savedIds, toggle } = useSavedListings();
 
@@ -327,105 +334,131 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   return (
     <div className={styles.container}>
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
-        {/* Mobile Left: Hanging Menu Trigger */}
-        <div className="flex items-center md:hidden">
-          <HangingMenu
-            user={user}
-            avatarUrl={avatarUrl}
-            showHostWorkspace={Boolean(canHost)}
-            isAdmin={Boolean(isAdmin)}
-            onSignOut={handleSignOut}
-            align="start"
-          />
-        </div>
+        <Sheet open={navOpen} onOpenChange={setNavOpen}>
+          <SheetTrigger
+            render={
+              <button type="button" className={styles.mobileMenuButton} aria-label="Open menu" />
+            }
+          >
+            {user ? (
+              <Image
+                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                alt=""
+                width={32}
+                height={32}
+                style={{ borderRadius: '50%' }}
+              />
+            ) : (
+              <Menu size={20} />
+            )}
+          </SheetTrigger>
+          <SheetContent side="left" className="flex w-[min(82vw,320px)] flex-col gap-0 bg-white p-0">
+            <SheetHeader className="border-b p-5">
+              <SheetTitle className="font-brand text-3xl font-normal leading-none text-[#2b000a]">
+                Beddn
+              </SheetTitle>
+              <SheetDescription className="sr-only">Navigate Beddn</SheetDescription>
+            </SheetHeader>
+            <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.home}>
+                Browse all
+              </a>
+              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.review}>
+                Review a stay
+              </a>
+              <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.saved}>
+                Saved trips
+              </a>
+              {!user && (
+                <AuthDialog defaultHostIntent>
+                  <button className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-3 text-sm font-bold text-white hover:bg-merlot">
+                    <Home className="h-4 w-4" /> Become a host
+                  </button>
+                </AuthDialog>
+              )}
+              {user && canHost && (
+                <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.dashboard}>
+                  Host dashboard
+                </a>
+              )}
+              {isAdmin && (
+                <a className="block rounded-2xl px-4 py-3 text-sm hover:bg-muted" href={ROUTES.adminListings}>
+                  Admin dashboard
+                </a>
+              )}
+            </nav>
+            <div className="mt-auto space-y-1 border-t p-4">
+              <a className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground hover:bg-muted" href={ROUTES.terms}>
+                Terms
+              </a>
+              <a className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground hover:bg-muted" href={ROUTES.privacy}>
+                Privacy
+              </a>
+              {user && (
+                <button
+                  onClick={handleSignOut}
+                  className="block w-full rounded-2xl px-4 py-3 text-left text-sm text-crimson hover:bg-muted"
+                >
+                  Sign out
+                </button>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
 
-        {/* Center Logo */}
         <Link href={ROUTES.home} className={styles.logoArea} aria-label="Beddn home">
           Beddn
         </Link>
 
-        {/* Mobile Right: Quick Sign up & Currency */}
-        <div className="flex items-center gap-1.5 md:hidden">
-          {!user && (
-            <AuthDialog mode="signup">
-              <button
-                type="button"
-                className="h-8.5 rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] px-3.5 text-xs font-bold text-white shadow-xs hover:opacity-95 transition active:scale-95"
-              >
-                Sign up
-              </button>
-            </AuthDialog>
-          )}
+        {/* Third grid column on mobile — otherwise this is an empty 44px gap
+            and the currency switcher only exists inside .navRight, which is
+            hidden entirely below the 768px breakpoint. */}
+        <div className={styles.mobileProfileSlot}>
           <CurrencySwitcher />
         </div>
 
-        {/* Desktop Navigation */}
         <nav className={styles.navRight}>
           <a href={ROUTES.home} className={styles.navItem}>Browse</a>
           <a href={ROUTES.review} className={styles.navItem}>Review</a>
-
           {!user && (
-            <>
-              <AuthDialog mode="signin">
-                <button
-                  type="button"
-                  className={`${styles.navItem} font-semibold text-stone-700 hover:text-[#800020] hover:bg-[#fdf2f4]`}
-                >
-                  Sign in
-                </button>
-              </AuthDialog>
-
-              <AuthDialog mode="signup">
-                <button
-                  type="button"
-                  className="rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] px-5 py-2.5 text-sm font-bold text-white shadow-xs hover:opacity-95 transition active:scale-95"
-                >
-                  Sign up
-                </button>
-              </AuthDialog>
-
-              <AuthDialog defaultHostIntent>
-                <button
-                  type="button"
-                  className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-800 hover:border-[#800020] hover:bg-[#fdf2f4] transition"
-                >
-                  Become a host
-                </button>
-              </AuthDialog>
-            </>
+            <AuthDialog>
+              <button className={styles.navItem}>Login</button>
+            </AuthDialog>
           )}
-
           {user && !canHost && (
-            <a href={ROUTES.newListing} className={styles.navItem}>
-              Become a host
-            </a>
+            <a href={ROUTES.newListing} className={styles.navItem}>Become a host</a>
           )}
-
-          {user && canHost && (
-            <a href={ROUTES.dashboard} className={styles.navItem}>
-              Host dashboard
-            </a>
+          {!user && (
+            <AuthDialog defaultHostIntent>
+              <button className={styles.signInBtn}>Become a host</button>
+            </AuthDialog>
           )}
-
           <CurrencySwitcher />
-
-          {/* Hanging Dropdown Popover Menu */}
-          <HangingMenu
-            user={user}
-            avatarUrl={avatarUrl}
-            showHostWorkspace={Boolean(canHost)}
-            isAdmin={Boolean(isAdmin)}
-            onSignOut={handleSignOut}
-            align="end"
-          />
+          {/* One control: the avatar itself when signed in, a hamburger when
+              signed out. Opens the same sheet as the mobile trigger above —
+              no separate account dropdown. */}
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setNavOpen(true)}
+            className="ml-1 inline-flex size-9 items-center justify-center rounded-full border text-[#181113] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-crimson"
+          >
+            {user ? (
+              <Image
+                src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+                alt=""
+                width={32}
+                height={32}
+                style={{ borderRadius: '50%' }}
+              />
+            ) : (
+              <Menu size={18} />
+            )}
+          </button>
         </nav>
       </header>
 
       <main className={styles.main}>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#fdf2f4] px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#a3193d] border border-[#f9c8d4] shadow-xs">
-          <span className="size-2 rounded-full bg-[#e8547b] animate-pulse" />
-          Flexible stays &amp; hourly spaces
-        </div>
         <h1 className={styles.title}>{currentData.title}</h1>
 
         <div className={styles.tabs}>
@@ -703,22 +736,18 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
       {/* Become a Host CTA — at the bottom of the page */}
       {!search && (
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <div className="relative overflow-hidden rounded-3xl border border-[#f9c8d4]/80 bg-gradient-to-r from-[#fdf2f4] via-[#fbf0f3] to-[#fff5f7] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] shadow-sm transition-all hover:border-[#e8547b]/40 hover:shadow-md">
+          <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-[#fbf7f4] p-6 md:p-8 flex items-center justify-between min-h-[140px] md:min-h-[180px] transition-all hover:border-black/10">
             <div className="max-w-[60%] space-y-2 z-10 flex flex-col items-start justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-[#a3193d] border border-[#f9c8d4] shadow-2xs">
-                <span className="size-1.5 rounded-full bg-[#e8547b]" />
-                Earn with Beddn
-              </span>
               <h2 className="font-brand text-xl md:text-2xl font-bold text-[#2b000a] tracking-tight">
-                Got a spare room or event space?
+                Got a spare room?
               </h2>
               <p className="text-xs md:text-sm text-[#6f6568] leading-tight font-medium">
-                Turn your empty space into steady income with verified guests.
+                Turn your empty space into extra cash.
               </p>
               <div className="pt-1">
                 <button
                   onClick={() => router.push(ROUTES.newListing)}
-                  className="rounded-full bg-gradient-to-r from-[#800020] to-[#a3193d] px-5 py-2.5 text-xs md:text-sm font-bold text-white hover:opacity-95 transition-all shadow-sm active:scale-95"
+                  className="rounded-full bg-[#800020] px-5 py-2 text-xs md:text-sm font-bold text-white hover:bg-merlot transition-colors shadow-sm"
                 >
                   List my space
                 </button>

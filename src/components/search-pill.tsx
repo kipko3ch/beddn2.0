@@ -531,7 +531,7 @@ export function SearchPill({
           <button
             type="submit"
             aria-label="Search"
-            className="my-1.5 flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] text-white shadow-md shadow-rose-950/20 transition-all hover:opacity-95 hover:shadow-lg hover:shadow-pink-300/30 active:scale-95"
+            className="my-1.5 flex size-12 shrink-0 items-center justify-center rounded-full bg-[#800020] text-white transition-colors hover:bg-merlot"
           >
             <Search className="h-5 w-5" />
           </button>
@@ -546,13 +546,11 @@ export function SearchPill({
           setMobileSection("where");
           setMobileOpen(true);
         }}
-        className="flex w-full items-center gap-3 rounded-full border border-[#f9c8d4]/70 bg-white px-3.5 py-2.5 text-left shadow-[0_3px_14px_rgba(232,84,123,0.08)] md:hidden hover:border-[#e8547b]/40 transition"
+        className="flex w-full items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-3 text-left shadow-[0_3px_12px_rgba(0,0,0,0.08)] md:hidden"
       >
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4]/60 shadow-2xs">
-          <Search className="size-4" />
-        </div>
+        <Search className="h-5 w-5 shrink-0 text-[#2b000a]" />
         <span className="min-w-0">
-          <span className="block truncate text-sm font-bold text-[#181113]">
+          <span className="block truncate text-sm font-semibold">
             {query || (isExperience ? "Find an experience" : "Where to?")}
           </span>
           <span className="block truncate text-xs text-muted-foreground">
@@ -723,7 +721,7 @@ export function SearchPill({
             <button
               type="button"
               onClick={() => submit()}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] px-6 py-3 text-sm font-bold text-white shadow-md shadow-rose-950/20 hover:opacity-95 active:scale-95 transition"
+              className="flex items-center gap-2 rounded-full bg-[#800020] px-6 py-3 text-sm font-bold text-white"
             >
               <Search className="h-4 w-4" /> Search
             </button>
