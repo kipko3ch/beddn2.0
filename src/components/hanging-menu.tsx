@@ -39,6 +39,16 @@ export function HangingMenu({
   align?: "start" | "center" | "end";
 }) {
   const [open, setOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authHostIntent, setAuthHostIntent] = useState(false);
+
+  const openAuth = (mode: "signin" | "signup", hostIntent = false) => {
+    setAuthMode(mode);
+    setAuthHostIntent(hostIntent);
+    setAuthOpen(true);
+    setOpen(false);
+  };
 
   const fullName =
     user?.user_metadata?.full_name ||
@@ -75,7 +85,8 @@ export function HangingMenu({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={trigger || defaultTrigger} />
       <PopoverContent
         align={align}
@@ -201,16 +212,14 @@ export function HangingMenu({
               )}
 
               {/* Account Switcher option */}
-              <AuthDialog mode="signin">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-stone-700 transition hover:bg-[#fdf2f4] hover:text-[#800020]"
-                >
-                  <Icon icon="solar:user-plus-bold-duotone" className="size-5 text-stone-400" />
-                  <span>Switch Account</span>
-                </button>
-              </AuthDialog>
+              <button
+                type="button"
+                onClick={() => openAuth("signin", false)}
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-stone-700 transition hover:bg-[#fdf2f4] hover:text-[#800020]"
+              >
+                <Icon icon="solar:user-plus-bold-duotone" className="size-5 text-stone-400" />
+                <span>Switch Account</span>
+              </button>
             </div>
 
             {/* Logout button */}
@@ -235,25 +244,21 @@ export function HangingMenu({
             <div className="p-4 space-y-2 bg-gradient-to-b from-[#fdf2f4]/60 to-white">
               <p className="font-brand text-xl text-[#2b000a] leading-none mb-1">Welcome to Beddn</p>
               <p className="text-xs text-stone-500 mb-3">Sign in or create an account to start booking.</p>
-              <AuthDialog mode="signup">
-                <Button
-                  onClick={() => setOpen(false)}
-                  className="w-full h-11 rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] hover:opacity-95 text-white font-bold text-sm shadow-md transition"
-                >
-                  <Icon icon="solar:user-plus-bold" className="mr-2 size-4" />
-                  Sign up
-                </Button>
-              </AuthDialog>
-              <AuthDialog mode="signin">
-                <Button
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                  className="w-full h-11 rounded-full border-stone-300 text-stone-800 font-bold text-sm hover:border-[#800020] hover:bg-[#fdf2f4] hover:text-[#800020] transition"
-                >
-                  <Icon icon="solar:login-2-bold" className="mr-2 size-4" />
-                  Sign in
-                </Button>
-              </AuthDialog>
+              <Button
+                onClick={() => openAuth("signup", false)}
+                className="w-full h-11 rounded-full bg-gradient-to-r from-[#800020] via-[#a3193d] to-[#e8547b] hover:opacity-95 text-white font-bold text-sm shadow-md transition"
+              >
+                <Icon icon="solar:user-plus-bold" className="mr-2 size-4" />
+                Sign up
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => openAuth("signin", false)}
+                className="w-full h-11 rounded-full border-stone-300 text-stone-800 font-bold text-sm hover:border-[#800020] hover:bg-[#fdf2f4] hover:text-[#800020] transition"
+              >
+                <Icon icon="solar:login-2-bold" className="mr-2 size-4" />
+                Sign in
+              </Button>
             </div>
 
             {/* Navigation links */}
@@ -286,16 +291,14 @@ export function HangingMenu({
 
             {/* Host CTA & Support */}
             <div className="p-2 space-y-0.5">
-              <AuthDialog defaultHostIntent>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-stone-700 transition hover:bg-[#fdf2f4] hover:text-[#800020]"
-                >
-                  <Icon icon="solar:crown-star-bold-duotone" className="size-5 text-[#800020]" />
-                  <span>Become a host</span>
-                </button>
-              </AuthDialog>
+              <button
+                type="button"
+                onClick={() => openAuth("signin", true)}
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-stone-700 transition hover:bg-[#fdf2f4] hover:text-[#800020]"
+              >
+                <Icon icon="solar:crown-star-bold-duotone" className="size-5 text-[#800020]" />
+                <span>Become a host</span>
+              </button>
               <a
                 href="https://wa.me/254727993661"
                 target="_blank"
@@ -324,5 +327,12 @@ export function HangingMenu({
         )}
       </PopoverContent>
     </Popover>
+    <AuthDialog
+      open={authOpen}
+      onOpenChange={setAuthOpen}
+      mode={authMode}
+      defaultHostIntent={authHostIntent}
+    />
+    </>
   );
 }

@@ -44,6 +44,20 @@ export function AuthDialog({
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    setAuthMode(mode);
+  }, [mode]);
+
+  useEffect(() => {
+    if (!open) {
+      setSent(false);
+      setEmail("");
+      setSentEmail("");
+      setError("");
+      setWorking(false);
+    }
+  }, [open]);
+
   function publicBaseUrl() {
     return (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
   }

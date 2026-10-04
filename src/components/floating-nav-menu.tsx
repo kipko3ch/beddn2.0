@@ -30,8 +30,18 @@ export function FloatingNavMenu({
   trigger,
 }: FloatingNavMenuProps) {
   const [open, setOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authHostIntent, setAuthHostIntent] = useState(false);
   const { display, setDisplay } = useCurrency();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const openAuthModal = (mode: "signin" | "signup", hostIntent = false) => {
+    setAuthMode(mode);
+    setAuthHostIntent(hostIntent);
+    setAuthOpen(true);
+    setOpen(false);
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -156,22 +166,21 @@ export function FloatingNavMenu({
                   </div>
                 </Link>
               ) : (
-                <AuthDialog defaultHostIntent>
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="group flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-[#fdf2f4] to-[#fce4eb] p-3 text-left text-stone-900 border border-[#f9c8d4]/70 transition hover:shadow-xs"
-                  >
-                    <div className="min-w-0 pr-2">
-                      <p className="font-bold text-sm text-[#2b000a]">Become a host</p>
-                      <p className="text-xs text-stone-600 leading-snug mt-0.5">
-                        It&apos;s easy to start hosting and earn extra income.
-                      </p>
-                    </div>
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-2xs text-[#800020]">
-                      <Building2 className="h-5 w-5" />
-                    </div>
-                  </button>
-                </AuthDialog>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("signin", true)}
+                  className="group flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-[#fdf2f4] to-[#fce4eb] p-3 text-left text-stone-900 border border-[#f9c8d4]/70 transition hover:shadow-xs"
+                >
+                  <div className="min-w-0 pr-2">
+                    <p className="font-bold text-sm text-[#2b000a]">Become a host</p>
+                    <p className="text-xs text-stone-600 leading-snug mt-0.5">
+                      It&apos;s easy to start hosting and earn extra income.
+                    </p>
+                  </div>
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-2xs text-[#800020]">
+                    <Building2 className="h-5 w-5" />
+                  </div>
+                </button>
               )}
             </div>
           ) : (
@@ -254,26 +263,22 @@ export function FloatingNavMenu({
           {/* Bottom Section: Log in or Sign up / Sign out */}
           {!user ? (
             <div className="space-y-1.5 p-1">
-              <AuthDialog mode="signin">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-50 transition"
-                >
-                  <span>Log in</span>
-                  <ChevronRight className="h-4 w-4 text-stone-400" />
-                </button>
-              </AuthDialog>
-              <AuthDialog mode="signup">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full items-center justify-between rounded-2xl bg-[#800020] px-3.5 py-2.5 text-sm font-bold text-white hover:bg-[#68001a] transition shadow-2xs"
-                >
-                  <span>Sign up</span>
-                  <ChevronRight className="h-4 w-4 text-white/70" />
-                </button>
-              </AuthDialog>
+              <button
+                type="button"
+                onClick={() => openAuthModal("signin", false)}
+                className="flex w-full items-center justify-between rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-50 transition"
+              >
+                <span>Log in</span>
+                <ChevronRight className="h-4 w-4 text-stone-400" />
+              </button>
+              <button
+                type="button"
+                onClick={() => openAuthModal("signup", false)}
+                className="flex w-full items-center justify-between rounded-2xl bg-[#800020] px-3.5 py-2.5 text-sm font-bold text-white hover:bg-[#68001a] transition shadow-2xs"
+              >
+                <span>Sign up</span>
+                <ChevronRight className="h-4 w-4 text-white/70" />
+              </button>
             </div>
           ) : (
             <div className="space-y-1 p-1">
@@ -295,6 +300,14 @@ export function FloatingNavMenu({
           )}
         </div>
       )}
+
+      {/* Controlled Auth Dialog rendered outside the dropdown so closing the dropdown doesn't unmount it */}
+      <AuthDialog
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        mode={authMode}
+        defaultHostIntent={authHostIntent}
+      />
     </div>
   );
 }
