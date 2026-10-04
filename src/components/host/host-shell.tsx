@@ -26,8 +26,10 @@ const HOST_SECTIONS: NavSection[] = [
     ],
   },
   {
-    title: "Account",
+    title: "Account & Updates",
     items: [
+      { href: ROUTES.dashboardNotifications, label: "Notifications", icon: "solar:bell-bold-duotone" },
+      { href: ROUTES.dashboardPro, label: "Host Membership", icon: "solar:crown-star-bold-duotone" },
       { href: ROUTES.dashboardProfile, label: "Profile & Settings", icon: "solar:user-circle-bold-duotone" },
     ],
   },
