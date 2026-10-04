@@ -177,128 +177,60 @@ export function AuthDialog({
           <X className="h-5 w-5" />
         </button>
         <div className="px-8 pb-8 pt-12 sm:px-11 sm:pb-10">
-          <div className="mb-8">
-            <p className="mb-6 font-brand text-3xl leading-none text-[#2b000a]">Beddn</p>
-            <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
-              {defaultHostIntent
-                ? "Start hosting on Beddn."
-                : authMode === "signup"
-                ? "Create your Beddn account."
-                : "Welcome back to Beddn."}
-            </DialogTitle>
-            <DialogDescription className="mt-3 max-w-sm">
-              {defaultHostIntent
-                ? "Create your account, then set up your host profile and publish your first listing."
-                : authMode === "signup"
-                ? "Sign up in seconds to save stays, reserve faster, and connect with verified hosts."
-                : "Sign in to access your saved trips, manage bookings, and contact hosts."}
-            </DialogDescription>
-          </div>
-
-          <div className="space-y-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={continueWithGoogle}
-              disabled={working}
-              className="h-14 w-full rounded-full border-[#2b000a] text-base font-bold"
-            >
-              <Image
-                src="/google.svg"
-                alt=""
-                width={24}
-                height={24}
-                className="mr-4 size-6"
-                aria-hidden="true"
-              />
-              Continue with Google
-            </Button>
-
-            {/* Direct Email Input Form */}
-            {!sent ? (
-              <div className="space-y-4 pt-1">
-                <div className="relative flex items-center justify-center">
-                  <div className="w-full border-t border-stone-200" />
-                  <span className="absolute bg-white px-3 text-xs text-stone-400 font-medium uppercase tracking-wider">
-                    or
-                  </span>
-                </div>
-
-                <form onSubmit={continueWithEmail} className="space-y-3">
-                  <div>
-                    <Input
-                      type="email"
-                      required
-                      autoFocus={false}
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        setError("");
-                      }}
-                      placeholder="Enter your email address"
-                      className="h-13 rounded-full border-stone-300 bg-white px-5 text-sm text-[#181113] placeholder:text-stone-400 focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
-                    />
-                  </div>
-
-                  {error && <p className="px-2 text-xs font-semibold text-rose-600">{error}</p>}
-
-                  <Button
-                    type="submit"
-                    disabled={working}
-                    className="h-13 w-full rounded-full bg-[#800020] hover:bg-[#68001a] text-base font-bold text-white shadow-sm transition active:scale-[0.99]"
-                  >
-                    {working ? "Sending link..." : "Continue with email"}
-                  </Button>
-                </form>
+          {sent ? (
+            /* --- DEDICATED OVERLAY: "Check your email" (Clean minimal white, styled like main) --- */
+            <div>
+              <div className="mb-6">
+                <p className="mb-6 font-brand text-3xl leading-none text-[#2b000a]">Beddn</p>
+                <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
+                  Check your email.
+                </DialogTitle>
+                <DialogDescription className="mt-3 max-w-sm text-sm text-stone-600 leading-relaxed">
+                  We sent a sign-in link and verification code to{" "}
+                  <strong className="font-semibold text-stone-900">{sentEmail}</strong>.
+                  Tap the link in your email, or enter your 6-digit code below:
+                </DialogDescription>
               </div>
-            ) : (
-              <div className="space-y-4 rounded-2xl bg-[#fdf2f4]/60 p-5 text-sm border border-[#f9c8d4]">
-                <div>
-                  <p className="font-bold text-[#2b000a] text-base">Check your email</p>
-                  <p className="mt-1 text-xs text-stone-600 leading-relaxed">
-                    We sent a sign-in link to <span className="font-semibold text-[#800020]">{sentEmail}</span>. Tap the link in your email, or enter your 6-digit code below:
-                  </p>
+
+              {/* 6-Digit OTP Form - clean minimal white without colored box */}
+              <form onSubmit={verifyOtpCode} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                    Enter 6-digit code
+                  </label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    autoFocus
+                    value={otpCode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                      setOtpCode(val);
+                      setError("");
+                    }}
+                    placeholder="• • • • • •"
+                    className="h-14 rounded-2xl border-stone-300 bg-white text-center font-mono text-2xl font-bold tracking-[10px] text-[#2b000a] focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
+                  />
                 </div>
 
-                {/* 6-digit OTP code entry */}
-                <form onSubmit={verifyOtpCode} className="space-y-3 pt-1">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#a3193d]">
-                      Enter 6-digit code
-                    </label>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "").slice(0, 6);
-                        setOtpCode(val);
-                        setError("");
-                      }}
-                      placeholder="• • • • • •"
-                      className="h-12 rounded-xl border-[#800020]/30 bg-white text-center font-mono text-xl font-bold tracking-[8px] text-[#2b000a] focus:border-[#800020]"
-                    />
-                  </div>
+                {error && <p className="px-1 text-xs font-semibold text-rose-600">{error}</p>}
 
-                  {error && <p className="text-xs text-red-700 font-medium">{error}</p>}
-
-                  <Button
-                    type="submit"
-                    disabled={verifyingOtp || otpCode.length < 6}
-                    className="h-11 w-full rounded-full bg-gradient-to-r from-[#800020] to-[#a3193d] font-bold text-white shadow-sm hover:opacity-95 disabled:opacity-50"
-                  >
-                    {verifyingOtp ? "Verifying code..." : "Sign in with code"}
-                  </Button>
-                </form>
+                <Button
+                  type="submit"
+                  disabled={verifyingOtp || otpCode.length < 6}
+                  className="h-13 w-full rounded-full bg-[#800020] hover:bg-[#68001a] text-base font-bold text-white shadow-sm transition active:scale-[0.99] disabled:opacity-50"
+                >
+                  {verifyingOtp ? "Verifying code..." : "Sign in with code"}
+                </Button>
 
                 <div className="flex items-center justify-between pt-1 text-xs">
                   <button
                     type="button"
                     onClick={sendMagicLink}
                     disabled={working}
-                    className="font-bold text-[#800020] underline-offset-4 hover:underline disabled:opacity-60"
+                    className="font-bold text-[#800020] hover:underline disabled:opacity-60"
                   >
                     {working ? "Resending..." : "Resend email"}
                   </button>
@@ -314,64 +246,182 @@ export function AuthDialog({
                     Change email
                   </button>
                 </div>
-              </div>
-            )}
+              </form>
 
-            {defaultHostIntent && (
-              <div className="rounded-2xl border bg-[#fbf7f8] p-4 text-sm">
-                <span className="font-bold text-[#2b000a]">After you sign in</span>
-                <span className="mt-1 block text-muted-foreground">
-                  We&apos;ll take you straight to host setup. Verification only controls the badge — your listing can go live right away.
-                </span>
-              </div>
-            )}
-          </div>
+              {/* Clean social login at the bottom */}
+              <div className="mt-8 space-y-4">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-full border-t border-stone-200" />
+                  <span className="absolute bg-white px-3 text-xs text-stone-400 font-medium uppercase tracking-wider">
+                    or
+                  </span>
+                </div>
 
-          {!defaultHostIntent && (
-            <div className="mt-5 text-center text-xs text-muted-foreground">
-              {authMode === "signup" ? (
-                <p>
-                  Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("signin");
-                      setError("");
-                    }}
-                    className="font-bold text-[#800020] underline-offset-4 hover:underline"
-                  >
-                    Sign in
-                  </button>
-                </p>
-              ) : (
-                <p>
-                  Don&apos;t have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("signup");
-                      setError("");
-                    }}
-                    className="font-bold text-[#800020] underline-offset-4 hover:underline"
-                  >
-                    Sign up
-                  </button>
-                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={continueWithGoogle}
+                  disabled={working}
+                  className="h-13 w-full rounded-full border-stone-300 text-sm font-bold text-stone-800 hover:bg-stone-50 transition"
+                >
+                  <Image
+                    src="/google.svg"
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="mr-3 size-5"
+                    aria-hidden="true"
+                  />
+                  Continue with Google
+                </Button>
+              </div>
+
+              <p className="mt-6 text-center text-xs text-muted-foreground">
+                By proceeding, you agree to our{" "}
+                <Link href={ROUTES.terms} className="underline">
+                  Terms of Use
+                </Link>{" "}
+                and confirm you have read our{" "}
+                <Link href={ROUTES.privacy} className="underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </div>
+          ) : (
+            /* --- DEFAULT VIEW: Welcome / Sign in / Google + Direct Email --- */
+            <div>
+              <div className="mb-8">
+                <p className="mb-6 font-brand text-3xl leading-none text-[#2b000a]">Beddn</p>
+                <DialogTitle className="max-w-sm text-3xl font-bold leading-tight text-[#2b000a]">
+                  {defaultHostIntent
+                    ? "Start hosting on Beddn."
+                    : authMode === "signup"
+                    ? "Create your Beddn account."
+                    : "Welcome back to Beddn."}
+                </DialogTitle>
+                <DialogDescription className="mt-3 max-w-sm">
+                  {defaultHostIntent
+                    ? "Create your account, then set up your host profile and publish your first listing."
+                    : authMode === "signup"
+                    ? "Sign up in seconds to save stays, reserve faster, and connect with verified hosts."
+                    : "Sign in to access your saved trips, manage bookings, and contact hosts."}
+                </DialogDescription>
+              </div>
+
+              <div className="space-y-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={continueWithGoogle}
+                  disabled={working}
+                  className="h-14 w-full rounded-full border-[#2b000a] text-base font-bold"
+                >
+                  <Image
+                    src="/google.svg"
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="mr-4 size-6"
+                    aria-hidden="true"
+                  />
+                  Continue with Google
+                </Button>
+
+                {/* Direct Email Input Form */}
+                <div className="space-y-4 pt-1">
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-full border-t border-stone-200" />
+                    <span className="absolute bg-white px-3 text-xs text-stone-400 font-medium uppercase tracking-wider">
+                      or
+                    </span>
+                  </div>
+
+                  <form onSubmit={continueWithEmail} className="space-y-3">
+                    <div>
+                      <Input
+                        type="email"
+                        required
+                        autoFocus={false}
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          setError("");
+                        }}
+                        placeholder="Enter your email address"
+                        className="h-13 rounded-full border-stone-300 bg-white px-5 text-sm text-[#181113] placeholder:text-stone-400 focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/20"
+                      />
+                    </div>
+
+                    {error && <p className="px-2 text-xs font-semibold text-rose-600">{error}</p>}
+
+                    <Button
+                      type="submit"
+                      disabled={working}
+                      className="h-13 w-full rounded-full bg-[#800020] hover:bg-[#68001a] text-base font-bold text-white shadow-sm transition active:scale-[0.99]"
+                    >
+                      {working ? "Sending link..." : "Continue with email"}
+                    </Button>
+                  </form>
+                </div>
+
+                {defaultHostIntent && (
+                  <div className="rounded-2xl border bg-[#fbf7f8] p-4 text-sm">
+                    <span className="font-bold text-[#2b000a]">After you sign in</span>
+                    <span className="mt-1 block text-muted-foreground">
+                      We&apos;ll take you straight to host setup. Verification only controls the badge — your listing can go live right away.
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {!defaultHostIntent && (
+                <div className="mt-5 text-center text-xs text-muted-foreground">
+                  {authMode === "signup" ? (
+                    <p>
+                      Already have an account?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode("signin");
+                          setError("");
+                        }}
+                        className="font-bold text-[#800020] underline-offset-4 hover:underline"
+                      >
+                        Sign in
+                      </button>
+                    </p>
+                  ) : (
+                    <p>
+                      Don&apos;t have an account?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode("signup");
+                          setError("");
+                        }}
+                        className="font-bold text-[#800020] underline-offset-4 hover:underline"
+                      >
+                        Sign up
+                      </button>
+                    </p>
+                  )}
+                </div>
               )}
+
+              <p className="mt-8 text-center text-xs text-muted-foreground">
+                By proceeding, you agree to our{" "}
+                <Link href={ROUTES.terms} className="underline">
+                  Terms of Use
+                </Link>{" "}
+                and confirm you have read our{" "}
+                <Link href={ROUTES.privacy} className="underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
             </div>
           )}
-
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            By proceeding, you agree to our{" "}
-            <Link href={ROUTES.terms} className="underline">
-              Terms of Use
-            </Link>{" "}
-            and confirm you have read our{" "}
-            <Link href={ROUTES.privacy} className="underline">
-              Privacy Policy
-            </Link>
-            .
-          </p>
         </div>
       </DialogContent>
     </Dialog>

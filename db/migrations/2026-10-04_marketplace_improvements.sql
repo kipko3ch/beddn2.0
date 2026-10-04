@@ -51,3 +51,8 @@ CREATE INDEX IF NOT EXISTS idx_featured_listings_active
 -- ---------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_listing_events_type_listing
   ON listing_events (event_type, listing_id, created_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- 5. Host Announcements
+-- ---------------------------------------------------------------------------
+ALTER TABLE host_announcements ADD COLUMN IF NOT EXISTS created_by uuid;

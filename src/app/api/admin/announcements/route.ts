@@ -42,7 +42,6 @@ export async function POST(request: Request) {
       priority,
       is_mandatory: Boolean(is_mandatory),
       expires_at: expires_at ? new Date(expires_at).toISOString() : null,
-      created_by: data.user.id,
     })
     .select("id")
     .single();
