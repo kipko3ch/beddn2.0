@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ token: string }> }
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { token } = await params;
-  if (!token) {
-    return NextResponse.json({ error: "Missing token" }, { status: 400 });
+  const { id } = await params;
+  if (!id) {
+    return NextResponse.json({ error: "Missing booking identifier" }, { status: 400 });
   }
 
-  const cleanToken = token.trim();
+  const cleanToken = id.trim();
   const admin = createAdminClient();
 
   const { data: booking, error } = await admin
