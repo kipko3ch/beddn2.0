@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/currency-provider";
+import { ToastProvider } from "@/components/ui/toast";
 
 const kualine = localFont({
   src: "../../gc-kualine-font/GC-Kualine-Demo-BF688b24f63a0c2.ttf",
@@ -68,7 +69,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <CurrencyProvider>{children}</CurrencyProvider>
+        <CurrencyProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </CurrencyProvider>
       </body>
     </html>
   );

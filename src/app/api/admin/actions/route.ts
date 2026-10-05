@@ -177,6 +177,17 @@ export async function POST(request: Request) {
       })
       .eq("id", body.id);
     errorMessage = error?.message || null;
+
+    if (!errorMessage && verified) {
+      // Automatically verify all existing listings belonging to this host
+      await admin
+        .from("listings")
+        .update({
+          is_verified: true,
+          verification_status: "verified",
+        })
+        .eq("host_id", body.id);
+    }
   }
 
   // --- Host approval lifecycle (governs whether a host can operate) ---

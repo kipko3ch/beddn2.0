@@ -2,14 +2,13 @@
 
 import React from "react";
 import Image from "next/image";
-import { Clock, Phone } from "lucide-react";
+import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WhatsAppIcon } from "@/components/whatsapp-icon";
 
 export interface VerifiedBadgeProps {
   text?: string;
   size?: "xs" | "sm" | "md" | "lg";
-  variant?: "pill" | "icon" | "minimal";
+  variant?: "minimal" | "pill" | "icon";
   className?: string;
   iconClassName?: string;
 }
@@ -17,30 +16,34 @@ export interface VerifiedBadgeProps {
 const sizeMap = {
   xs: {
     icon: 14,
+    text: "text-[11px] gap-1",
     pill: "px-2 py-0.5 text-[10px] gap-1",
   },
   sm: {
     icon: 16,
+    text: "text-xs gap-1.5",
     pill: "px-2.5 py-0.5 text-xs gap-1.5",
   },
   md: {
-    icon: 20,
-    pill: "px-3 py-1 text-xs gap-2 font-bold",
+    icon: 18,
+    text: "text-sm gap-2 font-semibold",
+    pill: "px-3 py-1 text-xs gap-2 font-semibold",
   },
   lg: {
-    icon: 24,
+    icon: 22,
+    text: "text-base gap-2.5 font-bold",
     pill: "px-3.5 py-1.5 text-sm gap-2.5 font-bold",
   },
 };
 
 /**
- * Pink Palette Verified Badge Component
- * Displays the Beddn pink checkmark rosette seal with matching pink/burgundy styling.
+ * Verified Badge Component
+ * Clean, minimal typography-first design without heavy or cheap pill wrappers.
  */
 export function VerifiedBadge({
   text = "Verified Host",
   size = "sm",
-  variant = "pill",
+  variant = "minimal",
   className,
   iconClassName,
 }: VerifiedBadgeProps) {
@@ -63,11 +66,12 @@ export function VerifiedBadge({
     );
   }
 
-  if (variant === "minimal") {
+  if (variant === "pill") {
     return (
-      <span
+      <div
         className={cn(
-          "inline-flex items-center gap-1.5 font-bold text-[#800020]",
+          "inline-flex items-center rounded-full bg-stone-50 border border-stone-200/80 text-stone-800 font-medium shadow-2xs transition-colors",
+          currentSize.pill,
           className
         )}
       >
@@ -78,16 +82,17 @@ export function VerifiedBadge({
           height={currentSize.icon}
           className={cn("object-contain shrink-0 drop-shadow-2xs", iconClassName)}
         />
-        {text && <span>{text}</span>}
-      </span>
+        {text && <span className="leading-none">{text}</span>}
+      </div>
     );
   }
 
+  // Default: Clean & minimal inline presentation (no clunky pill container)
   return (
-    <div
+    <span
       className={cn(
-        "inline-flex items-center rounded-full bg-[#fdf2f4] border border-[#f9a8d4]/70 text-[#800020] font-bold shadow-2xs transition-colors",
-        currentSize.pill,
+        "inline-flex items-center font-semibold text-[#800020] leading-none shrink-0",
+        currentSize.text,
         className
       )}
     >
@@ -98,14 +103,15 @@ export function VerifiedBadge({
         height={currentSize.icon}
         className={cn("object-contain shrink-0 drop-shadow-2xs", iconClassName)}
       />
-      {text && <span className="leading-none">{text}</span>}
-    </div>
+      {text && <span>{text}</span>}
+    </span>
   );
 }
 
 /**
- * Pending Verification Badge with direct WhatsApp and Call contact options.
- * Displayed when verification is under review or stuck on pending so hosts can expedite review.
+ * Pending Verification notice with clean, minimal inline typography.
+ * Replaces bulky pill buttons with clean text:
+ * "Verification pending · Taking too long? Contact admin directly"
  */
 export function PendingVerificationBadge({
   listingTitle,
@@ -125,33 +131,27 @@ export function PendingVerificationBadge({
   );
 
   return (
-    <div className={cn("inline-flex items-center gap-1.5 flex-wrap", className)}>
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/90 px-2.5 py-0.5 text-[11px] font-bold">
-        <Clock className="size-3 text-amber-600" />
+    <div className={cn("inline-flex items-center gap-1.5 flex-wrap text-xs text-stone-600", className)}>
+      <span className="inline-flex items-center gap-1 font-medium text-amber-700">
+        <Clock className="size-3.5 text-amber-600 shrink-0" />
         <span>Verification pending</span>
       </span>
 
       {showContact && (
-        <div className="inline-flex items-center gap-1">
-          <a
-            href={`https://wa.me/254727993661?text=${msg}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white px-2.5 py-0.5 text-[10px] font-bold shadow-2xs transition"
-            title="Fast-track with Admin on WhatsApp"
-          >
-            <WhatsAppIcon className="size-2.5" />
-            <span>WhatsApp Admin</span>
-          </a>
-          <a
-            href="tel:+254727993661"
-            className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 px-2 py-0.5 text-[10px] font-bold shadow-2xs transition"
-            title="Call Admin Directly"
-          >
-            <Phone className="size-2.5 text-[#800020]" />
-            <span>Call</span>
-          </a>
-        </div>
+        <>
+          <span className="text-stone-300 select-none">·</span>
+          <span className="text-stone-500">
+            Taking too long?{" "}
+            <a
+              href={`https://wa.me/254727993661?text=${msg}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#800020] hover:text-[#5c0017] underline underline-offset-2 transition-colors inline-flex items-center gap-0.5"
+            >
+              Contact admin directly
+            </a>
+          </span>
+        </>
       )}
     </div>
   );

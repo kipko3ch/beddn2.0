@@ -1,50 +1,53 @@
 "use client";
 
-import * as React from "react";
-import {
-  MeshGradient,
-  type MeshGradientProps,
-} from "@/components/ui/mesh-gradient";
+import { useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { toastManager, ToastProvider } from "@/components/ui/toast";
 
-export interface MeshGradientDemoProps extends MeshGradientProps {}
+export default function ToastTimeoutDemo() {
+  const persistentIdRef = useRef<string | null>(null);
 
-export default function Demo({
-  color1 = "#800020",
-  color2 = "#4a0014",
-  color3 = "#1f0007",
-  color4 = "#2b000a",
-  colors,
-  speed = 1,
-  distortion = 1,
-  swirl = 0.57,
-  swirlIterations = 7.4,
-  softness = 1,
-  proportion = 0,
-  shape = "edge",
-  shapeScale = 0.59,
-  scale = 1.45,
-  rotation = 120,
-}: MeshGradientDemoProps) {
+  function showPersistent() {
+    if (persistentIdRef.current) return;
+    persistentIdRef.current = toastManager.add({
+      actionProps: {
+        children: "Dismiss",
+        onClick: () => {
+          if (persistentIdRef.current) {
+            toastManager.close(persistentIdRef.current);
+            persistentIdRef.current = null;
+          }
+        },
+      },
+      description: "This toast stays until you dismiss it manually.",
+      timeout: 0,
+      title: "Persistent notification",
+      type: "warning",
+    });
+  }
+
+  function showTimed(ms: number) {
+    toastManager.add({
+      description: `This toast auto-dismisses after ${ms / 1000}s.`,
+      timeout: ms,
+      title: `Auto-dismiss in ${ms / 1000}s`,
+      type: "info",
+    });
+  }
+
   return (
-    <div className="relative size-full min-h-96 h-dvh overflow-hidden">
-      <MeshGradient
-        className="absolute inset-0"
-        color1={color1}
-        color2={color2}
-        color3={color3}
-        color4={color4}
-        colors={colors}
-        speed={speed}
-        distortion={distortion}
-        swirl={swirl}
-        swirlIterations={swirlIterations}
-        softness={softness}
-        proportion={proportion}
-        shape={shape}
-        shapeScale={shapeScale}
-        scale={scale}
-        rotation={rotation}
-      />
-    </div>
+    <ToastProvider>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button onClick={() => showTimed(3000)} variant="outline">
+          3s toast
+        </Button>
+        <Button onClick={() => showTimed(8000)} variant="outline">
+          8s toast
+        </Button>
+        <Button onClick={showPersistent} variant="outline">
+          Persistent toast
+        </Button>
+      </div>
+    </ToastProvider>
   );
 }

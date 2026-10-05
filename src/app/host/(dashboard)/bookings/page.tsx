@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
+import { toastManager } from "@/components/ui/toast";
 import type { Booking } from "@/lib/types";
 
 type BookingWithListing = Booking & {
@@ -55,8 +56,19 @@ export default function BookingsPage() {
       }
 
       const { data } = await query;
-      setBookings((data as BookingWithListing[]) ?? []);
+      const items = (data as BookingWithListing[]) ?? [];
+      setBookings(items);
       setLoading(false);
+
+      const actionCount = items.filter((b) => needsAction(b.status)).length;
+      if (actionCount > 0) {
+        toastManager.add({
+          title: "Confirmation Required",
+          description: `You have ${actionCount} booking request${actionCount > 1 ? "s" : ""} waiting for your response.`,
+          type: "warning",
+          timeout: 7000,
+        });
+      }
     }
     load();
   }, []);
@@ -81,7 +93,11 @@ export default function BookingsPage() {
     });
 
     if (!response.ok) {
-      alert("Could not update booking.");
+      toastManager.add({
+        title: "Action Failed",
+        description: "Could not update booking status.",
+        type: "error",
+      });
       setWorkingId(null);
       return;
     }
@@ -92,6 +108,11 @@ export default function BookingsPage() {
         booking.id === id ? { ...booking, status: result.status } : booking
       )
     );
+    toastManager.add({
+      title: action === "accept" ? "Booking Confirmed" : action === "reject" ? "Booking Rejected" : "Booking Completed",
+      description: action === "accept" ? "The guest has been notified and dates are reserved." : undefined,
+      type: action === "reject" ? "info" : "success",
+    });
     setWorkingId(null);
   }
 

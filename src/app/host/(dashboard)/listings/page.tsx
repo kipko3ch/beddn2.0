@@ -162,7 +162,7 @@ export default function ListingsPage() {
                     <p className="text-sm text-muted-foreground">
                       {listing.area}, {listing.city}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap gap-1">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       <Badge className={`text-xs ${STATUS_BADGE[status] ?? "bg-muted text-muted-foreground"}`}>
                         {STATUS_TEXT[status] ?? status}
                       </Badge>

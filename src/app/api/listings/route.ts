@@ -78,7 +78,7 @@ async function resolveContext(userId: string) {
     // would otherwise make maybeSingle() error and look like "no host".
     admin
       .from("hosts")
-      .select("id")
+      .select("id, is_verified, verification_status")
       .eq("user_id", userId)
       .order("created_at", { ascending: true })
       .limit(1),
@@ -224,6 +224,15 @@ export async function POST(request: Request) {
     row.listing_status = row.listing_status === "draft" ? "draft" : "pending_review";
   }
 
+  // If host is verified, automatically mark any listing they create as verified
+  const isHostVerified = Boolean(
+    host && ((host as any).is_verified === true || (host as any).verification_status === "verified")
+  );
+  if (isHostVerified) {
+    row.is_verified = true;
+    row.verification_status = "verified";
+  }
+
   const publishError = validatePublishable(row, body.imageUrls);
   if (publishError) {
     return NextResponse.json({ error: publishError }, { status: 400 });
@@ -303,6 +312,15 @@ export async function PATCH(request: Request) {
     } else {
       row.listing_status = "pending_review";
     }
+  }
+
+  // If host is verified, automatically maintain/mark listing as verified on update
+  const isHostVerified = Boolean(
+    host && ((host as any).is_verified === true || (host as any).verification_status === "verified")
+  );
+  if (isHostVerified) {
+    row.is_verified = true;
+    row.verification_status = "verified";
   }
 
   const publishError = validatePublishable(row, body.imageUrls);

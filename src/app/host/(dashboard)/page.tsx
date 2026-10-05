@@ -20,6 +20,7 @@ import { StatusDonut } from "@/components/dashboard/status-donut";
 import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge, PendingVerificationBadge } from "@/components/ui/verified-badge";
+import { toastManager } from "@/components/ui/toast";
 
 type HostProfile = {
   id: string;
@@ -142,9 +143,29 @@ export default function HostDashboardPage() {
           .maybeSingle(),
       ]);
 
-      setBookings((bookingsRes.data as BookingItem[]) || []);
+      const bookingData = (bookingsRes.data as BookingItem[]) || [];
+      setBookings(bookingData);
       setInquiries((inquiriesRes.data as InquiryItem[]) || []);
       setEvents((eventsRes.data as EventItem[]) || []);
+
+      // If action is required (e.g. pending bookings awaiting host confirmation), alert with toast
+      const pendingCount = bookingData.filter(
+        (b) => b.status === "pending" || b.status === "requested" || (b.status as string) === "paid_pending_host"
+      ).length;
+      if (pendingCount > 0) {
+        toastManager.add({
+          title: "Action Required: Booking Request",
+          description: `You have ${pendingCount} booking request${pendingCount > 1 ? "s" : ""} awaiting your confirmation.`,
+          type: "warning",
+          timeout: 9000,
+          actionProps: {
+            children: "Review Bookings",
+            onClick: () => {
+              window.location.href = "/host/bookings";
+            },
+          },
+        });
+      }
 
       if (featuredRes.data) {
         setActiveTier(featuredRes.data.tier_name || "Pro");
@@ -288,7 +309,7 @@ export default function HostDashboardPage() {
       {/* ========================================================================= */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-stone-200/80 pb-5">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <h2 className="font-brand text-2xl sm:text-3xl font-black text-[#181113] tracking-tight">
               Host Overview
             </h2>

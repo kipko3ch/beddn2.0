@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -525,23 +525,28 @@ export function PropertyContent({
               </>
             )}
           </div>
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            {categories.map((cat) => {
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-medium text-stone-600">
+            {categories.map((cat, idx) => {
               const Icon = cat === "hourly" ? Clock : cat === "overnight" ? Moon : Compass;
               return (
-                <span
-                  key={cat}
-                  className="inline-flex items-center gap-1 rounded-full bg-[#fbf0f3] border border-[#f3cfd9] px-2.5 py-1 text-xs font-semibold capitalize text-[#800020]"
-                >
-                  <Icon className="h-3.5 w-3.5" /> {cat}
-                </span>
+                <Fragment key={cat}>
+                  {idx > 0 && <span className="text-stone-300 select-none">·</span>}
+                  <span className="inline-flex items-center gap-1 capitalize text-stone-700 font-medium">
+                    <Icon className="h-3.5 w-3.5 text-stone-400 shrink-0" />
+                    <span>{cat}</span>
+                  </span>
+                </Fragment>
               );
             })}
             {(listing.is_verified || listing.host?.is_verified) && (
-              <VerifiedBadge
-                text={listing.is_verified ? "Beddn verified" : "Verified host"}
-                size="sm"
-              />
+              <>
+                {categories.length > 0 && <span className="text-stone-300 select-none">·</span>}
+                <VerifiedBadge
+                  text={listing.is_verified ? "Beddn verified" : "Verified host"}
+                  size="sm"
+                  variant="minimal"
+                />
+              </>
             )}
           </div>
         </div>
@@ -704,17 +709,19 @@ export function PropertyContent({
                     )}
                   </span>
                   <div>
-                    <p className="font-bold text-[#181113]">
-                      Hosted by {listing.host?.name || "a Beddn host"}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-[#181113]">
+                        Hosted by {listing.host?.name || "a Beddn host"}
+                      </p>
+                      {listing.host?.is_verified && (
+                        <VerifiedBadge text="Verified host" size="sm" variant="minimal" />
+                      )}
+                    </div>
                     <p className="mt-1 text-sm text-muted-foreground">
                       Host details and exact directions unlock after your booking is confirmed.
                     </p>
                   </div>
                 </div>
-                {listing.host?.is_verified && (
-                  <VerifiedBadge text="Verified host" size="sm" />
-                )}
               </div>
               {listing.host?.bio && (
                 <p className="whitespace-pre-line text-sm leading-relaxed text-[#181113]">
