@@ -1,5 +1,21 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { HostMembershipContent } from "@/components/host/host-membership-content";
+
+export const metadata: Metadata = {
+  title: "Beddn Pro | Host Membership & Growth Tools",
+  description:
+    "Grow your rental bookings with Beddn Pro. Access priority placement, search boosts, zero-commission perks, and advanced host tools in Kenya and Tanzania.",
+  alternates: {
+    canonical: "https://beddn.com/pro",
+  },
+  openGraph: {
+    title: "Beddn Pro | Host Membership & Growth Tools",
+    description:
+      "Grow your rental bookings with Beddn Pro. Access priority placement, search boosts, zero-commission perks, and advanced host tools in Kenya and Tanzania.",
+    url: "https://beddn.com/pro",
+  },
+};
 
 export default function PublicProPage() {
   return (

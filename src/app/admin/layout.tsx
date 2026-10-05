@@ -1,8 +1,18 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROUTES } from "@/lib/routes";
 import { AdminShell } from "@/components/admin/admin-shell";
+
+export const metadata: Metadata = {
+  title: "Beddn Admin",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 
 // Server-rendered admin gate. Only a confirmed admin ever loads the console —
 // no client-side "checking access…" flash, no dashboard visible before redirect.

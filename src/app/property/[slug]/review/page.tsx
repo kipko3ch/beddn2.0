@@ -1,9 +1,19 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/header";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PropertyReviewClient } from "./property-review-client";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Write a Review",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 
 export default async function PropertyReviewPage({
   params,

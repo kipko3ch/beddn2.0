@@ -22,9 +22,39 @@ const tripSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Beddn — Discover Unique Homes, Hourly Stays, & Local Experiences",
-  description: "Book flexible hourly stays, overnight getaways, and unique local experiences. Become a host and start earning today.",
+  metadataBase: new URL("https://beddn.com"),
+  title: {
+    default: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+    template: "%s | Beddn",
+  },
+  description:
+    "Book hourly stays, overnight getaways and furnished homes across Kenya and Tanzania. Hosts, list your property on Beddn and start earning.",
+  openGraph: {
+    siteName: "Beddn",
+    locale: "en_KE",
+    type: "website",
+    url: "https://beddn.com",
+    title: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+    description:
+      "Book hourly stays, overnight getaways and furnished homes across Kenya and Tanzania. Hosts, list your property on Beddn and start earning.",
+    images: [
+      {
+        url: "/images/cat-all.png",
+        width: 1200,
+        height: 630,
+        alt: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+    description:
+      "Book hourly stays, overnight getaways and furnished homes across Kenya and Tanzania. Hosts, list your property on Beddn and start earning.",
+    images: ["/images/cat-all.png"],
+  },
 };
+
 
 export default function RootLayout({
   children,

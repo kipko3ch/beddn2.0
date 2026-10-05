@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Learn how Beddn collects, uses, and safeguards your personal data, phone number, and booking information across Kenya and Tanzania.",
+  alternates: {
+    canonical: "https://beddn.com/privacy",
+  },
+};
 
 const sections = [
   {

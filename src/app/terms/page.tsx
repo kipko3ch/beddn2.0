@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "Review the terms and conditions for booking hourly stays, overnight rentals, and experiences on Beddn in Kenya and Tanzania.",
+  alternates: {
+    canonical: "https://beddn.com/terms",
+  },
+};
 
 const sections = [
   {
