@@ -9,31 +9,17 @@ import {
   Eye,
   MessageSquare,
   ShieldCheck,
-  Star,
-  Zap,
-  Crown,
-  Sparkles,
   ArrowRight,
   CheckCircle2,
-  AlertTriangle,
-  Clock,
-  Check,
-  Phone,
-  BarChart3,
-  TrendingUp,
-  Filter,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { PerformanceChart, type ChartDataPoint } from "@/components/dashboard/performance-chart";
 import { StatusDonut } from "@/components/dashboard/status-donut";
-import { ProUpgradeModal } from "@/components/dashboard/pro-upgrade-modal";
 import { DashboardOverviewSkeleton } from "@/components/dashboard-skeletons";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge, PendingVerificationBadge } from "@/components/ui/verified-badge";
-import { WhatsAppIcon } from "@/components/whatsapp-icon";
 
 type HostProfile = {
   id: string;
@@ -93,7 +79,6 @@ export default function HostDashboardPage() {
   const [tierExpiry, setTierExpiry] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState("");
   const [dateRange, setDateRange] = useState<DateRange>("30d");
-  const [submittingVerification, setSubmittingVerification] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -270,23 +255,6 @@ export default function HostDashboardPage() {
     return { score, tips };
   }
 
-  // Submit host verification action
-  async function handleSubmitVerification() {
-    if (!host) return;
-    setSubmittingVerification(true);
-    const { error } = await supabase
-      .from("hosts")
-      .update({ verification_status: "under_review" })
-      .eq("id", host.id);
-    setSubmittingVerification(false);
-
-    if (error) {
-      alert("Failed to submit verification: " + error.message);
-    } else {
-      setHost((prev) => (prev ? { ...prev, verification_status: "under_review" } : null));
-    }
-  }
-
   if (loading) {
     return <DashboardOverviewSkeleton />;
   }
@@ -355,36 +323,36 @@ export default function HostDashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. Top Summary KPI Cards                                                  */}
+      {/* 2. Top Summary KPI Cards (2x2 on Mobile, 4 Cols on Large Screens)         */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <MetricCard
           label="Total Views"
           value={viewsCount.toLocaleString()}
-          icon={<Eye className="size-5" />}
+          icon={<Eye className="size-4 sm:size-5" />}
           tone="burgundy"
-          trend={{ value: `${viewsCount} total`, isPositive: viewsCount > 0, label: "property impressions" }}
+          trend={{ value: `${viewsCount} total`, isPositive: viewsCount > 0, label: "impressions" }}
           subtitle="Real guest views"
         />
 
         <MetricCard
           label="Inquiries & WhatsApp"
           value={totalLeads.toLocaleString()}
-          icon={<MessageSquare className="size-5" />}
+          icon={<MessageSquare className="size-4 sm:size-5" />}
           tone="rose"
           href={ROUTES.dashboardInquiries}
-          trend={{ value: `${inquiriesCount} in-app · ${whatsappClicks} WhatsApp`, isPositive: totalLeads > 0 }}
+          trend={{ value: `${inquiriesCount} in-app · ${whatsappClicks} WA`, isPositive: totalLeads > 0 }}
           subtitle="Direct guest interest"
         />
 
         <MetricCard
           label="Booking Requests"
           value={bookings.length.toLocaleString()}
-          icon={<CalendarCheck className="size-5" />}
+          icon={<CalendarCheck className="size-4 sm:size-5" />}
           tone="emerald"
           href={ROUTES.dashboardBookings}
           trend={{
-            value: `${pendingBookings.length} pending · ${confirmedBookings.length} confirmed`,
+            value: `${pendingBookings.length} pending · ${confirmedBookings.length} ok`,
             isPositive: pendingBookings.length > 0,
           }}
           subtitle="Reservation pipeline"
@@ -393,11 +361,11 @@ export default function HostDashboardPage() {
         <MetricCard
           label="Active Properties"
           value={`${activeListingsCount} / ${listings.length}`}
-          icon={<Building2 className="size-5" />}
+          icon={<Building2 className="size-4 sm:size-5" />}
           tone="amber"
           href={ROUTES.dashboardListings}
           trend={{
-            value: activeTier ? `${activeTier} Tier Active` : "Free Tier",
+            value: activeTier ? `${activeTier} Tier` : "Free Tier",
             isNeutral: !activeTier,
             isPositive: Boolean(activeTier),
           }}
@@ -460,163 +428,40 @@ export default function HostDashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 4. Actionable "What should I do next?" Section                             */}
+      {/* 4. Actionable "What should I do next?" Banner -> Links to Checklist Page   */}
       {/* ========================================================================= */}
-      <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl sm:rounded-3xl border border-stone-200/90 bg-gradient-to-br from-[#fdf2f4]/80 via-white to-[#fbf7f8] p-4 sm:p-6 shadow-xs">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-2xl bg-[#800020] text-white shadow-2xs">
+            <CheckCircle2 className="size-5 sm:size-6" />
+          </div>
           <div>
-            <h3 className="font-brand text-xl font-bold text-[#181113]">
-              What should I do next?
-            </h3>
-            <p className="text-xs text-stone-500 mt-0.5">
-              Actionable steps to maximize your bookings and visibility on Beddn.
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-brand text-base sm:text-lg font-bold text-[#181113]">
+                What should I do next?
+              </h3>
+              <span className="rounded-full bg-[#800020]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#800020] border border-[#800020]/20">
+                Host Checklist
+              </span>
+            </div>
+            <p className="text-xs text-stone-500 mt-1 max-w-xl leading-relaxed">
+              {host.is_verified ? "Badge active · " : "Verification pending · "}
+              {pendingBookings.length > 0
+                ? `${pendingBookings.length} booking request awaiting confirmation`
+                : "Inquiries up to date"}
+              {" · "}
+              {activeTier ? `${activeTier} active` : "Pro boost available"}
             </p>
           </div>
-          <span className="rounded-full bg-[#fdf2f4] px-3 py-1 text-xs font-bold text-[#800020] border border-[#f9c8d4]">
-            Host Checklist
-          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Card A: Verification */}
-          <div className="flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-[#fcfafb] p-5">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-                <ShieldCheck className="size-4 text-[#800020]" />
-                <span>Host Trust &amp; Verification</span>
-              </div>
-              <h4 className="font-bold text-sm text-stone-900">
-                {host.is_verified
-                  ? "Your Host Account is Verified"
-                  : host.verification_status === "under_review"
-                  ? "Verification Under Review"
-                  : "Submit Host Verification"}
-              </h4>
-              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                {host.is_verified
-                  ? "Your listings proudly feature the Beddn Verified Trust Badge, boosting guest confidence."
-                  : host.verification_status === "under_review"
-                  ? "Our team is currently reviewing your application. You will be notified via email upon approval."
-                  : "Verified hosts receive up to 3x more inquiries. Submit your national ID or business permit."}
-              </p>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-stone-200/60">
-              {!host.is_verified && host.verification_status !== "under_review" ? (
-                <Button
-                  size="sm"
-                  onClick={handleSubmitVerification}
-                  disabled={submittingVerification}
-                  className="w-full rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a]"
-                >
-                  {submittingVerification ? "Submitting..." : "Submit for Verification"}
-                </Button>
-              ) : (
-                <div className="w-full space-y-2">
-                  {host.is_verified ? (
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700">
-                      <VerifiedBadge text="Badge Active" size="xs" />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs font-bold text-amber-700">
-                        <span className="flex items-center gap-1">
-                          <Clock className="size-3.5 text-amber-600" />
-                          Review in Progress
-                        </span>
-                        <span className="text-[11px] text-stone-400 font-normal">Pending approval</span>
-                      </div>
-                      <p className="text-[11px] text-stone-500 leading-tight">
-                        Verification taking longer than usual? Reach admin directly:
-                      </p>
-                      <div className="flex items-center gap-2 pt-0.5">
-                        <a
-                          href="https://wa.me/254727993661?text=Hi%20Beddn%20Admin,%20my%20host%20verification%20is%20pending.%20Please%20help%20verify%20my%20account."
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white px-3 py-1.5 text-xs font-bold shadow-2xs transition"
-                        >
-                          <WhatsAppIcon className="size-3.5" />
-                          <span>WhatsApp Admin</span>
-                        </a>
-                        <a
-                          href="tel:+254727993661"
-                          className="inline-flex items-center justify-center gap-1 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 px-3 py-1.5 text-xs font-bold shadow-2xs transition"
-                          title="Call Admin Directly"
-                        >
-                          <Phone className="size-3 text-[#800020]" />
-                          <span>Call</span>
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card B: Pending Bookings / Inquiries */}
-          <div className="flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-[#fcfafb] p-5">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-                <Clock className="size-4 text-amber-600" />
-                <span>Pending Guest Leads</span>
-              </div>
-              <h4 className="font-bold text-sm text-stone-900">
-                {pendingBookings.length > 0
-                  ? `${pendingBookings.length} Booking Request${pendingBookings.length > 1 ? "s" : ""} Awaiting Confirmation`
-                  : inquiriesCount > 0
-                  ? `${inquiriesCount} Guest Inquiries Received`
-                  : "All Inquiries Up to Date"}
-              </h4>
-              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                {pendingBookings.length > 0
-                  ? "Guests are waiting for your check-in confirmation. Confirming promptly locks the dates on your calendar."
-                  : inquiriesCount > 0
-                  ? "Follow up with potential guests on WhatsApp to answer questions and finalize check-in times."
-                  : "You're all caught up! New inquiries will notify you via in-app notification, SMS, and email."}
-              </p>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-stone-200/60">
-              <Link
-                href={pendingBookings.length > 0 ? ROUTES.dashboardBookings : ROUTES.dashboardInquiries}
-                className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-full border border-stone-300 bg-white text-xs font-bold text-stone-800 hover:border-[#800020] hover:text-[#800020] transition shadow-2xs"
-              >
-                <span>{pendingBookings.length > 0 ? "Review Requests" : "Open Inquiries"}</span>
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Card C: Pro Visibility Boost */}
-          <div className="flex flex-col justify-between rounded-2xl border border-[#f9c8d4] bg-gradient-to-b from-[#fdf2f4]/60 to-white p-5">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#a3193d] mb-2">
-                <Crown className="size-4 text-amber-500" />
-                <span>Marketplace Promotion</span>
-              </div>
-              <h4 className="font-bold text-sm text-[#181113]">
-                {activeTier ? `${activeTier} Tier is Active` : "Upgrade to Beddn Pro"}
-              </h4>
-              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                {activeTier
-                  ? `Your listings enjoy priority ranking and verified Pro badges across search results (Expires ${tierExpiry || "soon"}).`
-                  : "Boost your listings to the top of city searches and homepage carousels for higher guest discovery."}
-              </p>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-[#f9c8d4]/60">
-              <Link
-                href="/host/pro"
-                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-2xs transition"
-              >
-                <Sparkles className="size-3.5" />
-                <span>{activeTier ? "Manage Promotion" : "Upgrade to Pro"}</span>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <Link
+          href={ROUTES.dashboardChecklist}
+          className="inline-flex h-9 sm:h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-[#800020] px-4 sm:px-5 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] active:scale-98 transition self-start sm:self-auto"
+        >
+          <span>Open Checklist</span>
+          <ArrowRight className="size-3.5" />
+        </Link>
       </div>
 
       {/* ========================================================================= */}

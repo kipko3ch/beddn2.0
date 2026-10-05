@@ -19,6 +19,7 @@ const HOST_SECTIONS: NavSection[] = [
   {
     title: "Performance & Growth",
     items: [
+      { href: ROUTES.dashboardChecklist, label: "Host Checklist", icon: "solar:checklist-minimalistic-bold-duotone" },
       { href: `${ROUTES.dashboard}#analytics`, label: "Analytics — Beta", icon: "solar:chart-2-bold-duotone" },
       { href: ROUTES.dashboardDemand, label: "Marketplace Demand", icon: "solar:magnifer-bold-duotone" },
       { href: ROUTES.dashboardFeedback, label: "Guest Feedback", icon: "solar:star-bold-duotone" },

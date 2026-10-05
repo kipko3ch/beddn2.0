@@ -78,61 +78,61 @@ export function MetricCard({
   const config = TONE_CONFIG[tone] || TONE_CONFIG.burgundy;
 
   const content = (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:border-[#800020]/30 hover:shadow-md">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-3.5 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:border-[#800020]/30 hover:shadow-md">
       {/* Top Row: Icon container + Label */}
-      <div className="flex items-center gap-2.5">
-        <div className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${config.iconBg} shadow-2xs transition group-hover:scale-105`}>
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className={`flex size-7 sm:size-8 shrink-0 items-center justify-center rounded-lg sm:rounded-xl ${config.iconBg} shadow-2xs transition group-hover:scale-105`}>
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-semibold text-stone-600">{label}</p>
+          <p className="truncate text-[11px] sm:text-xs font-semibold text-stone-600">{label}</p>
         </div>
         {href && (
-          <div className="text-stone-300 transition group-hover:text-[#800020] group-hover:translate-x-0.5">
-            <ArrowUpRight className="size-4" />
+          <div className="text-stone-300 transition group-hover:text-[#800020] group-hover:translate-x-0.5 shrink-0">
+            <ArrowUpRight className="size-3.5 sm:size-4" />
           </div>
         )}
       </div>
 
       {/* Middle Row: Big Bold Metric Value */}
-      <div className="mt-4 flex items-baseline gap-1.5">
+      <div className="mt-2.5 sm:mt-4 flex items-baseline gap-1 sm:gap-1.5">
         {prefix && (
-          <span className="text-xs font-bold uppercase tracking-wider text-stone-400">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-400">
             {prefix}
           </span>
         )}
-        <p className="font-brand text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
+        <p className="font-brand text-xl sm:text-3xl font-extrabold text-stone-900 tracking-tight truncate">
           {value}
         </p>
       </div>
 
       {/* Bottom Row: Trend Percentage on Left + Smooth Area Wave Sparkline on Right */}
-      <div className="mt-3 flex items-end justify-between gap-2">
+      <div className="mt-2 sm:mt-3 flex items-end justify-between gap-1.5 sm:gap-2">
         {trend ? (
-          <div className="flex items-center gap-1 text-xs font-bold">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-bold min-w-0 flex-1">
             <span
-              className={
+              className={`truncate ${
                 trend.isNeutral
                   ? "text-stone-500"
                   : trend.isPositive
                   ? "text-emerald-600"
                   : "text-rose-600"
-              }
+              }`}
             >
               {trend.value}
             </span>
             {trend.label && (
-              <span className="text-[10px] font-normal text-stone-400 truncate max-w-[120px]">
+              <span className="text-[9px] sm:text-[10px] font-normal text-stone-400 truncate">
                 {trend.label}
               </span>
             )}
           </div>
         ) : subtitle ? (
-          <p className="text-[11px] text-stone-400 truncate">{subtitle}</p>
-        ) : <div />}
+          <p className="text-[10px] sm:text-[11px] text-stone-400 truncate flex-1">{subtitle}</p>
+        ) : <div className="flex-1" />}
 
-        {/* Smooth Area Wave Sparkline (matching Image 3) */}
-        <div className="relative -mb-1 -mr-2 h-9 w-24 shrink-0 overflow-hidden">
+        {/* Smooth Area Wave Sparkline */}
+        <div className="relative -mb-1 -mr-1 sm:-mr-2 h-6 sm:h-9 w-12 sm:w-24 shrink-0 overflow-hidden opacity-75 sm:opacity-100">
           <svg className="h-full w-full" viewBox="0 0 100 40" preserveAspectRatio="none">
             <defs>
               <linearGradient id={config.gradientId} x1="0" y1="0" x2="0" y2="1">

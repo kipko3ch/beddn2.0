@@ -19,6 +19,7 @@ export const ROUTES = {
   dashboardFeatures: "/host/features",
   dashboardNotifications: "/host/notifications",
   dashboardPro: "/host/pro",
+  dashboardChecklist: "/host/checklist",
   newListing: "/host/listings/new",
   terms: "/terms",
   privacy: "/privacy",

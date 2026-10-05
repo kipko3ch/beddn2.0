@@ -176,17 +176,17 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. Top 4 Metric KPI Cards (Real Marketplace Operations Data)               */}
+      {/* 2. Top 4 Metric KPI Cards (2x2 on Mobile, 4 Cols on Large Screens)         */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
         <MetricCard
           label="Active listings"
           value={activeListings.toLocaleString()}
-          icon={<Building2 className="size-4" />}
+          icon={<Building2 className="size-3.5 sm:size-4" />}
           tone="burgundy"
           href={ROUTES.adminListings}
           trend={{
-            value: `${totalListings} total listings`,
+            value: `${totalListings} total`,
             isPositive: true,
           }}
           subtitle={`${pendingListings} pending review`}
@@ -195,11 +195,11 @@ export default function AdminOverviewPage() {
         <MetricCard
           label="Registered hosts"
           value={totalHosts.toLocaleString()}
-          icon={<Users className="size-4" />}
+          icon={<Users className="size-3.5 sm:size-4" />}
           tone="burgundy"
           href={ROUTES.adminHosts}
           trend={{
-            value: `${verifiedHosts} verified hosts`,
+            value: `${verifiedHosts} verified`,
             isPositive: true,
           }}
           subtitle={`${pendingHosts} pending verification`}
@@ -208,11 +208,11 @@ export default function AdminOverviewPage() {
         <MetricCard
           label="Booking requests"
           value={totalBookings.toLocaleString()}
-          icon={<CalendarCheck className="size-4" />}
+          icon={<CalendarCheck className="size-3.5 sm:size-4" />}
           tone="burgundy"
           href={ROUTES.adminBookings}
           trend={{
-            value: `${pendingBookings} awaiting confirmation`,
+            value: `${pendingBookings} awaiting`,
             isNeutral: pendingBookings === 0,
             isPositive: pendingBookings > 0,
           }}
@@ -222,7 +222,7 @@ export default function AdminOverviewPage() {
         <MetricCard
           label="Search demand"
           value={totalDemand.toLocaleString()}
-          icon={<TrendingUp className="size-4" />}
+          icon={<TrendingUp className="size-3.5 sm:size-4" />}
           tone="burgundy"
           href={ROUTES.adminDemand}
           trend={{
