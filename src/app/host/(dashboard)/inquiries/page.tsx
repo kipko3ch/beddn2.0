@@ -58,7 +58,7 @@ export default function HostRequestsPage() {
     const isAdmin = profile?.is_admin ?? false;
     const hostId = hostData?.id;
 
-    if (!isAdmin && !hostId) {
+    if (!hostId) {
       setPending([]);
       setConfirmed([]);
       setLeads([]);
@@ -66,23 +66,19 @@ export default function HostRequestsPage() {
       return;
     }
 
-    let query = supabase
+    const { data: bookings } = await supabase
       .from("bookings")
       .select("*, listing:listings(name, title, city)")
       .in("status", ["requested", "paid_pending_host", "confirmed"])
+      .eq("host_id", hostId)
       .order("created_at", { ascending: false });
 
-    if (!isAdmin) {
-      query = query.eq("host_id", hostId);
-    }
-
-    const { data: bookings } = await query;
     const rows = (bookings as BookingRow[]) ?? [];
     setPending(rows.filter((b) => b.status === "requested" || b.status === "paid_pending_host"));
     setConfirmed(rows.filter((b) => b.status === "confirmed"));
 
     try {
-      const res = await fetch("/api/inquiries");
+      const res = await fetch("/api/inquiries?scope=personal");
       const json: { inquiries?: InquiryRow[] } = res.ok ? await res.json() : {};
       setLeads(json.inquiries ?? []);
       if (typeof window !== "undefined") {

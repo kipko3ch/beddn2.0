@@ -168,3 +168,42 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true });
 }
+
+// Admin: delete a review (strictly admin-only).
+export async function DELETE(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile?.is_admin) {
+    return NextResponse.json(
+      { error: "Forbidden: only admins can delete reviews." },
+      { status: 403 }
+    );
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "Missing review id." }, { status: 400 });
+  }
+
+  const { error } = await admin.from("reviews").delete().eq("id", id);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+

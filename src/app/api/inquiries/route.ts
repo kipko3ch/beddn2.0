@@ -217,8 +217,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ inquiryId: inserted.id, whatsappUrl });
 }
 
-// Host/admin: list inquiries for the caller's listings (or all, if admin).
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -226,6 +225,9 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { searchParams } = new URL(request.url);
+  const scope = searchParams.get("scope");
 
   const admin = createAdminClient();
   const { data: profile } = await admin
@@ -240,7 +242,7 @@ export async function GET() {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  if (!profile?.is_admin) {
+  if (!profile?.is_admin || scope === "personal") {
     const { data: host } = await admin
       .from("hosts")
       .select("id")

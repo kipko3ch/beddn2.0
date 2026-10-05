@@ -31,16 +31,10 @@ import {
   Tag,
   ThumbsDown,
   ThumbsUp,
+  Trash2,
   UserRound,
   X,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const TAGS = [
   { value: "clean", label: "Clean", icon: "solar:magic-stick-3-bold-duotone" },
@@ -119,11 +113,39 @@ function ReviewInner() {
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const [communityReviews, setCommunityReviews] = useState<PublicReview[]>([]);
-  const [impactOpen, setImpactOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      if (data.user) {
+        supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            setIsAdmin(Boolean(profile?.is_admin));
+          });
+      }
+    });
   }, [supabase]);
+
+  async function handleDeleteReview(reviewId: string) {
+    if (!window.confirm("Are you sure you want to delete this review?")) return;
+    try {
+      const res = await fetch(`/api/reviews?id=${encodeURIComponent(reviewId)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setCommunityReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      } else {
+        alert("Could not delete review.");
+      }
+    } catch {
+      alert("Error deleting review.");
+    }
+  }
 
   // Fetch community reviews for showcase
   useEffect(() => {
@@ -741,13 +763,10 @@ function ReviewInner() {
 
           {/* Right Column: TripAdvisor Promo & Missing Place Cards */}
           <div className="space-y-6">
-            {/* Interactive Impact Promo Card */}
-            <div
-              onClick={() => setImpactOpen(true)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && setImpactOpen(true)}
-              className="group cursor-pointer overflow-hidden rounded-3xl border border-[#f3cfd9]/80 bg-white shadow-xs hover:border-[#800020]/60 hover:shadow-md transition text-left"
+            {/* Community Impact Story Card (Navigates to dedicated page) */}
+            <Link
+              href="/community-impact"
+              className="group block overflow-hidden rounded-3xl border border-[#f3cfd9]/80 bg-white shadow-xs hover:border-[#800020]/60 hover:shadow-md transition text-left"
             >
               <div className="relative h-44 w-full bg-neutral-800">
                 <Image
@@ -781,7 +800,7 @@ function ReviewInner() {
                   </span>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Is Beddn missing a place? Card */}
             <div className="rounded-3xl border border-[#f3cfd9]/80 bg-white p-6 shadow-xs text-center">
@@ -849,16 +868,29 @@ function ReviewInner() {
                           </div>
                         </div>
 
-                        {/* Stars */}
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-3.5 w-3.5 ${
-                                i < (rev.rating || 5) ? "fill-[#800020] text-[#800020]" : "text-neutral-200"
-                              }`}
-                            />
-                          ))}
+                        {/* Stars & Admin Delete Action */}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3.5 w-3.5 ${
+                                  i < (rev.rating || 5) ? "fill-[#800020] text-[#800020]" : "text-neutral-200"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteReview(rev.id)}
+                              className="ml-1 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-red-600 hover:bg-red-50 transition border border-red-200"
+                              title="Delete review (Admin)"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -907,201 +939,6 @@ function ReviewInner() {
           </section>
         )}
       </div>
-
-      {/* Community Impact Modal Dialog — Redesigned with 3-Card Inspo & Beddn Palette */}
-      <Dialog open={impactOpen} onOpenChange={setImpactOpen}>
-        <DialogContent className="max-w-4xl lg:max-w-5xl rounded-3xl p-6 sm:p-8 bg-white text-left max-h-[92vh] overflow-y-auto">
-          <DialogHeader className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#fdf2f4] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#800020] border border-[#f9a8d4]/70 w-fit">
-              <Sparkles className="size-3 text-[#800020]" />
-              Community Impact
-            </div>
-            <DialogTitle className="font-brand text-2xl sm:text-3xl font-extrabold text-[#2b000a] tracking-tight">
-              Community Impact at Beddn
-            </DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm text-stone-500 max-w-xl">
-              How authentic reviews elevate hospitality, boost local host livelihoods, and build trusted travel across East Africa.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* 3 Modern Cards Side by Side (Design Inspo in Beddn Palette) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 mt-6 items-stretch">
-            {/* Card 1: 100% Genuine, Verified Stays (Dual-tone stacked bars) */}
-            <div className="flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md">
-              <div>
-                <p className="font-mono text-[11px] font-bold tracking-wider uppercase text-stone-400">
-                  STAYS
-                </p>
-                <div className="mt-1 flex items-baseline gap-1.5">
-                  <span className="font-brand text-3xl font-black text-[#2b000a]">100%</span>
-                  <span className="text-xs font-mono text-stone-400">genuine</span>
-                </div>
-                <h4 className="mt-3 font-brand font-bold text-sm text-stone-900">
-                  100% Genuine, Verified Stays
-                </h4>
-                <p className="mt-1 text-xs text-stone-500 leading-relaxed">
-                  Only travelers with confirmed bookings can post reviews. No paid endorsements or manipulated boosts.
-                </p>
-              </div>
-
-              {/* Dual-Tone Stacked Bar Chart */}
-              <div className="mt-6 pt-4 border-t border-stone-100">
-                <div className="flex items-end justify-between gap-1.5 h-32 px-1">
-                  {[
-                    { label: "JAN", top: "200k", topH: "40%", botH: "50%" },
-                    { label: "FEB", top: "210k", topH: "48%", botH: "52%" },
-                    { label: "MAR", top: "200k", topH: "40%", botH: "45%" },
-                    { label: "APR", top: "180k", topH: "28%", botH: "50%" },
-                    { label: "MAY", top: "190k", topH: "36%", botH: "46%" },
-                    { label: "JUN", top: "205k", topH: "46%", botH: "54%" },
-                  ].map((bar, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center h-full justify-end">
-                      <span className="text-[9px] font-mono text-stone-400 mb-1">{bar.top}</span>
-                      <div className="w-full flex flex-col gap-1 items-center">
-                        <div
-                          style={{ height: bar.topH }}
-                          className="w-full rounded-md bg-[#800020] transition-colors hover:bg-[#68001a]"
-                        />
-                        <div
-                          style={{ height: bar.botH }}
-                          className="w-full rounded-md bg-[#fbcfe8] transition-colors"
-                        />
-                      </div>
-                      <span className="mt-2 text-[9px] font-mono text-stone-400 uppercase">{bar.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2: Supporting Local Entrepreneurs (Matrix of icons/nodes) */}
-            <div className="flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md">
-              <div>
-                <p className="font-mono text-[11px] font-bold tracking-wider uppercase text-stone-400">
-                  LOCAL IMPACT
-                </p>
-                <div className="mt-1 flex items-baseline gap-1.5">
-                  <span className="font-brand text-3xl font-black text-[#2b000a]">3.4x</span>
-                  <span className="text-xs font-mono text-stone-400">/ earnings</span>
-                </div>
-                <h4 className="mt-3 font-brand font-bold text-sm text-stone-900">
-                  Supporting Local Entrepreneurs
-                </h4>
-                <p className="mt-1 text-xs text-stone-500 leading-relaxed">
-                  High ratings directly boost host earnings and help local operators build sustainable hospitality businesses.
-                </p>
-              </div>
-
-              {/* Droplet / Node Matrix Grid */}
-              <div className="mt-6 pt-4 border-t border-stone-100">
-                <div className="grid grid-cols-7 gap-2 place-items-center py-1">
-                  {Array.from({ length: 35 }).map((_, idx) => {
-                    const isFilled = idx >= 10;
-                    return (
-                      <div
-                        key={idx}
-                        className={`size-4 rounded-full transition-transform hover:scale-125 flex items-center justify-center ${
-                          isFilled
-                            ? "bg-[#800020] text-white shadow-2xs"
-                            : "bg-[#fce7ec] text-transparent"
-                        }`}
-                      >
-                        <span className="text-[7px]">★</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="text-center font-mono text-[10px] text-stone-400 mt-2.5">
-                  84% high-trust booking conversions
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3: Actionable Feedback Loop (Deep Burgundy Card with Speedometer) */}
-            <div className="flex flex-col justify-between rounded-3xl border border-[#4a0014] bg-gradient-to-b from-[#3b000e] via-[#2b000a] to-[#1a0006] p-5 text-white shadow-lg relative overflow-hidden">
-              <div>
-                <p className="font-mono text-[11px] font-bold tracking-wider uppercase text-rose-300/80">
-                  FEEDBACK LOOP
-                </p>
-                <div className="mt-1 flex items-baseline gap-1.5">
-                  <span className="font-brand text-3xl font-black text-white">48h</span>
-                  <span className="text-xs font-mono text-rose-200/70">/ resolution</span>
-                </div>
-                <h4 className="mt-3 font-brand font-bold text-sm text-white">
-                  Actionable Feedback Loop
-                </h4>
-                <p className="mt-1 text-xs text-rose-100/75 leading-relaxed">
-                  Your feedback helps hosts quickly upgrade amenities, Wi-Fi, and check-in smoothness for the next traveler.
-                </p>
-              </div>
-
-              {/* Arched Speedometer Gauge */}
-              <div className="mt-6 pt-2 relative flex flex-col items-center">
-                <svg viewBox="0 0 200 115" className="w-full max-w-[210px] overflow-visible">
-                  {/* Gauge Arc Track */}
-                  <path
-                    d="M 20 100 A 80 80 0 0 1 180 100"
-                    fill="none"
-                    stroke="#590016"
-                    strokeWidth="14"
-                    strokeLinecap="round"
-                  />
-                  {/* Gauge Filled Progress Arc */}
-                  <path
-                    d="M 20 100 A 80 80 0 0 1 168 56"
-                    fill="none"
-                    stroke="#ff70a6"
-                    strokeWidth="14"
-                    strokeLinecap="round"
-                  />
-                  {/* Graduation Tick Numbers */}
-                  <text x="20" y="112" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">40</text>
-                  <text x="40" y="60" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">60</text>
-                  <text x="75" y="30" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">80</text>
-                  <text x="125" y="30" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">100</text>
-                  <text x="160" y="60" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">120</text>
-                  <text x="180" y="112" fill="#fda4af" fontSize="8" textAnchor="middle" fontFamily="monospace">140</text>
-
-                  {/* Central Value */}
-                  <text x="100" y="78" fill="#ffffff" fontSize="17" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">104.2</text>
-                  <text x="100" y="93" fill="#fbcfe8" fontSize="8" textAnchor="middle" fontFamily="monospace">SATISFACTION</text>
-
-                  {/* Center Needle Pivot */}
-                  <circle cx="100" cy="100" r="5" fill="#ffffff" />
-                  <line x1="100" y1="100" x2="116" y2="44" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Footer */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 pt-5 border-t border-stone-100">
-            <span className="text-xs text-stone-500">
-              Beddn verified community feedback across Kenya, Uganda, Rwanda, and Tanzania.
-            </span>
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => setImpactOpen(false)}
-                className="flex-1 sm:flex-none inline-flex h-10 items-center justify-center rounded-full border border-stone-200 px-5 text-xs font-semibold text-stone-600 hover:bg-stone-50 transition"
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setImpactOpen(false);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                  setTimeout(() => searchInputRef.current?.focus(), 300);
-                }}
-                className="flex-1 sm:flex-none inline-flex h-10 items-center justify-center rounded-full bg-[#800020] px-6 text-xs font-bold text-white hover:bg-[#68001a] shadow-xs transition"
-              >
-                Write a review now
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

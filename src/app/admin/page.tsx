@@ -123,12 +123,29 @@ export default function AdminOverviewPage() {
 
       setTopSupplyGaps(topGaps);
 
-      // 6-month timeline matching Image 3 (Jan, Feb, Mar, Apr, May, Jun)
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-      const baseValues = [24850, 4220, 15100, 6450, 21300, 14180];
-      const points: ChartDataPoint[] = months.map((m, idx) => ({
-        label: m,
-        value: baseValues[idx],
+      // Dynamically compute 6-month timeline from real search_demand records
+      const now = new Date();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const last6Months = Array.from({ length: 6 }).map((_, i) => {
+        const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+        return {
+          year: d.getFullYear(),
+          month: d.getMonth(),
+          label: monthNames[d.getMonth()],
+          count: 0,
+        };
+      });
+
+      demandRows.forEach((row) => {
+        if (!row.created_at) return;
+        const d = new Date(row.created_at);
+        const match = last6Months.find((m) => m.year === d.getFullYear() && m.month === d.getMonth());
+        if (match) match.count += 1;
+      });
+
+      const points: ChartDataPoint[] = last6Months.map((m) => ({
+        label: m.label,
+        value: m.count,
       }));
       setChartData(points);
 
@@ -298,35 +315,43 @@ export default function AdminOverviewPage() {
             </Link>
           </div>
 
-          <div className="mt-4 divide-y divide-stone-100">
-            {topSupplyGaps.map((item, idx) => (
-              <div key={idx} className="py-3 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-8 items-center justify-center rounded-xl bg-[#fdf2f4] text-[#800020] font-bold">
-                    <MapPin className="size-4" />
+          {topSupplyGaps.length === 0 ? (
+            <div className="py-8 text-center text-xs text-stone-500">
+              <MapPin className="mx-auto size-6 text-stone-300 mb-2" />
+              <p className="font-semibold text-stone-700">No supply shortages recorded</p>
+              <p className="mt-0.5 text-stone-400">Guest searches with 0 matching properties will appear here.</p>
+            </div>
+          ) : (
+            <div className="mt-4 divide-y divide-stone-100">
+              {topSupplyGaps.map((item, idx) => (
+                <div key={idx} className="py-3 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-8 items-center justify-center rounded-xl bg-[#fdf2f4] text-[#800020] font-bold">
+                      <MapPin className="size-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-stone-900">{item.query}</p>
+                      <p className="text-stone-400 text-[11px]">{item.total} guest searches recorded</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-sm text-stone-900">{item.query}</p>
-                    <p className="text-stone-400 text-[11px]">{item.total} guest searches recorded</p>
+                  <div className="flex items-center gap-4 text-right">
+                    <div>
+                      <span className="font-mono font-black text-rose-600 text-sm block">
+                        {item.unmatched} unmatched
+                      </span>
+                      <span className="text-[10px] text-stone-400">supply shortage</span>
+                    </div>
+                    <Link
+                      href={`${ROUTES.adminHosts}?recruitCity=${encodeURIComponent(item.query)}`}
+                      className="hidden sm:inline-flex h-8 items-center rounded-full bg-stone-100 px-3 text-[11px] font-bold text-stone-700 hover:bg-[#800020] hover:text-white transition"
+                    >
+                      Recruit Hosts
+                    </Link>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-right">
-                  <div>
-                    <span className="font-mono font-black text-rose-600 text-sm block">
-                      {item.unmatched} unmatched
-                    </span>
-                    <span className="text-[10px] text-stone-400">supply shortage</span>
-                  </div>
-                  <Link
-                    href={`${ROUTES.adminHosts}?recruitCity=${encodeURIComponent(item.query)}`}
-                    className="hidden sm:inline-flex h-8 items-center rounded-full bg-stone-100 px-3 text-[11px] font-bold text-stone-700 hover:bg-[#800020] hover:text-white transition"
-                  >
-                    Recruit Hosts
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right: Priority Admin Actions (4 columns) */}

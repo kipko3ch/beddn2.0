@@ -272,6 +272,9 @@ export function DashboardShell({
 
   // Bottom Sidebar Card (Clean minimal on-brand Pro upgrade card or compact icon button)
   const renderSidebarBottomCard = (isShrunk = false) => {
+    // Admin is already the administrator of the system — no need to prompt upgrade to Pro
+    if (role === "admin") return null;
+
     if (isShrunk) {
       return (
         <div className="p-2 flex justify-center">
@@ -280,7 +283,7 @@ export function DashboardShell({
             title="Beddn Pro Membership"
             className="group relative flex size-11 items-center justify-center rounded-2xl bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4]/70 hover:bg-[#800020] hover:text-white transition shadow-2xs"
           >
-            <Sparkles className="size-5" />
+            <Crown className="size-5" />
           </Link>
         </div>
       );
@@ -291,7 +294,7 @@ export function DashboardShell({
         <div className="rounded-2xl border border-stone-200/80 bg-[#fdf2f4]/60 p-3.5 text-stone-900 shadow-2xs">
           <div className="flex items-center gap-2 mb-1.5">
             <div className="flex size-6 items-center justify-center rounded-lg bg-[#800020] text-white">
-              <Sparkles className="size-3.5" />
+              <Crown className="size-3.5" />
             </div>
             <span className="text-xs font-bold text-[#2b000a]">Beddn Pro</span>
           </div>

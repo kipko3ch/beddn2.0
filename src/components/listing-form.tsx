@@ -946,8 +946,8 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   });
 
   steps.push({
-    title: "Add photos",
-    subtitle: "Great photos get more bookings. Add as many as you like.",
+    title: "Add photos (Required)",
+    subtitle: "At least one clear photo is required before publishing your listing.",
     valid: imageList.length > 0,
     content: (
       <div className="space-y-4">
@@ -1227,8 +1227,8 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
         return;
       }
       if (imageList.length === 0) {
-        goToStep("Add photos");
-        alert("Oops, add at least one photo before publishing. Photos help guests trust the listing.");
+        goToStep("Add photos (Required)");
+        alert("Photos are strictly required before publishing. Please upload at least one photo of your place.");
         return;
       }
     }

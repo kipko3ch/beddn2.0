@@ -71,6 +71,20 @@ export async function GET(request: Request) {
 
   let listings = (data ?? []) as { id: string }[];
 
+  // Log real search demand reliably in the background
+  if (q) {
+    void admin
+      .from("search_demand")
+      .insert({
+        query: q,
+        category: category || null,
+        property_type: type && type !== "all" ? type : null,
+        status: (data?.length || 0) === 0 ? "unmatched" : "matched",
+        results_count: data?.length || 0,
+      })
+      .then(() => undefined, () => undefined);
+  }
+
   // Search boost: any active search_boost placement on a listing already in the
   // result set floats it to the top by priority. We only reorder (never inject
   // or duplicate), so boosted listings still appear once and mixed naturally.

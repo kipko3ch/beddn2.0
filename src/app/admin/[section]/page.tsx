@@ -18,6 +18,7 @@ const SECTION_TABLE: Record<string, string> = {
   withdrawals: "withdrawals",
   disputes: "bookings",
   feedback: "feedback",
+  reviews: "reviews",
   demand: "search_demand",
   notifications: "notification_logs",
   inquiries: "inquiries",
@@ -38,6 +39,7 @@ const SECTION_COLUMNS: Record<string, string[]> = {
   withdrawals: ["amount", "currency", "status", "payout_method", "created_at"],
   disputes: ["guest_name", "status", "booking_token", "created_at"],
   feedback: ["rating", "issue_reported", "issue_type", "comment", "created_at"],
+  reviews: ["rating", "comment", "tags", "created_at"],
   demand: ["query", "category", "results_count", "created_at"],
   notifications: ["event_type", "recipient", "message", "status", "created_at"],
   inquiries: ["guest_name", "guest_whatsapp", "category", "check_in", "guests_count", "availability_status", "status", "source", "created_at"],
@@ -52,6 +54,7 @@ const SECTION_TITLE: Record<string, string> = {
   withdrawals: "Withdrawals",
   disputes: "Disputes",
   feedback: "Feedback",
+  reviews: "Reviews",
   demand: "Search demand",
   notifications: "Notifications",
   inquiries: "Inquiries",
@@ -187,6 +190,20 @@ export default function AdminSectionPage() {
                             Reject
                           </Button>
                         </>
+                      )}
+                      {section === "reviews" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-200 text-red-700 hover:bg-red-50"
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to delete this review?")) {
+                              action("delete_review", row.id);
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
                       )}
                     </div>
                   </td>

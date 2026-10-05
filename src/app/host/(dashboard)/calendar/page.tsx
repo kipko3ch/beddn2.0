@@ -78,13 +78,16 @@ export default function CalendarPage() {
     const isAdmin = profile?.is_admin ?? false;
     const hostId = hostData?.id;
 
-    if (!isAdmin && !hostId) return;
-
-    let listingsQuery = supabase.from("listings").select("*").order("created_at", { ascending: false });
-    if (!isAdmin) {
-      listingsQuery = listingsQuery.eq("host_id", hostId);
+    if (!hostId) {
+      setListings([]);
+      return;
     }
-    const { data: listingsData } = await listingsQuery;
+
+    const { data: listingsData } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("host_id", hostId)
+      .order("created_at", { ascending: false });
     const listingsList = (listingsData as Listing[]) ?? [];
     setListings(listingsList);
     setListingId((current) =>

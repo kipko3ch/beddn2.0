@@ -51,9 +51,7 @@ export default function BookingsPage() {
         .select("*, listing:listings(name, title, slug)")
         .order("created_at", { ascending: false });
 
-      if (!isAdmin) {
-        query = query.eq("host_id", hostId);
-      }
+      query = query.eq("host_id", hostId);
 
       const { data } = await query;
       const items = (data as BookingWithListing[]) ?? [];

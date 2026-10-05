@@ -76,7 +76,8 @@ interface AdminActionBody {
     | "flag_image"
     | "unflag_image"
     | "set_feature_status"
-    | "reset_host_pin";
+    | "reset_host_pin"
+    | "delete_review";
   id: string;
   reason?: string;
   // Featured placement fields (feature_listing / extend_feature).
@@ -257,6 +258,12 @@ export async function POST(request: Request) {
         }
       });
     }
+  }
+
+  // --- Review Moderation (Admin only) ---
+  if (body.action === "delete_review") {
+    const { error } = await admin.from("reviews").delete().eq("id", body.id);
+    errorMessage = error?.message || null;
   }
 
   // --- Lifecycle transitions (listing_status drives public visibility) ---

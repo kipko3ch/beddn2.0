@@ -70,19 +70,17 @@ export default function ListingsPage() {
       .select("*, listing_images(*), host:hosts(name)")
       .order("created_at", { ascending: false });
 
-    if (!profile?.is_admin) {
-      const { data: host } = await supabase
-        .from("hosts")
-        .select("id")
-        .eq("user_id", user.user.id)
-        .maybeSingle();
-      if (host) {
-        query = query.eq("host_id", host.id);
-      } else {
-        setListings([]);
-        setLoading(false);
-        return;
-      }
+    const { data: host } = await supabase
+      .from("hosts")
+      .select("id")
+      .eq("user_id", user.user.id)
+      .maybeSingle();
+    if (host) {
+      query = query.eq("host_id", host.id);
+    } else {
+      setListings([]);
+      setLoading(false);
+      return;
     }
 
     const { data } = await query;

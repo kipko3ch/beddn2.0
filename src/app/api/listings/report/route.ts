@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const VALID_REASONS = ["spam", "inaccurate", "safety", "scam", "inappropriate", "other"];
 
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Sign in to report a listing." }, { status: 401 });
+    return NextResponse.json({ error: "Please sign in to report a listing." }, { status: 401 });
   }
 
   const body = (await request.json().catch(() => ({}))) as {
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
 
   if (!listingId || !reason) {
     return NextResponse.json(
-      { error: "listingId and reason are required." },
+      { error: "Listing id and reason are required." },
       { status: 400 }
     );
   }
@@ -35,8 +36,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const admin = createAdminClient();
+
   // Check if the user already has a pending report for this listing
-  const { data: existing } = await supabase
+  const { data: existing } = await admin
     .from("listing_reports")
     .select("id")
     .eq("listing_id", listingId)
@@ -51,7 +54,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error } = await supabase.from("listing_reports").insert({
+  const { error } = await admin.from("listing_reports").insert({
     listing_id: listingId,
     user_id: user.id,
     reason,
@@ -59,6 +62,7 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    console.error("Failed to insert listing_report:", error);
     return NextResponse.json(
       { error: "Could not submit your report. Please try again." },
       { status: 500 }

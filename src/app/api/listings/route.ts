@@ -163,7 +163,7 @@ function validatePublishable(row: AnyRecord, imageUrls: string[] | undefined) {
   if (status === "draft") return null;
   const categories = Array.isArray(row.categories) ? (row.categories as string[]) : [];
   const urls = (imageUrls ?? []).map((url) => url.trim()).filter(Boolean);
-  if (urls.length === 0) return "Oops, add at least one photo before publishing.";
+  if (urls.length === 0) return "Oops, photos are required before publishing. Please add at least one photo.";
   if (!row.property_type) return "Oops, choose what kind of place this is.";
   if (!row.country || !row.city || !row.area) return "Oops, add the public area guests will see.";
   if (!row.private_address) return "Oops, add the private address before publishing.";
@@ -218,10 +218,14 @@ export async function POST(request: Request) {
     updated_at: new Date().toISOString(),
   };
 
-  // Hosts can't publish themselves live — anything but a draft enters review.
-  // (is_active is derived from listing_status by a DB trigger.)
-  if (!isAdmin) {
-    row.listing_status = row.listing_status === "draft" ? "draft" : "pending_review";
+  // When ready to go live, don't wait for admin confirmation — publish directly live.
+  // Admin only controls verification (is_verified).
+  if (row.listing_status === "draft") {
+    row.listing_status = "draft";
+    row.is_active = false;
+  } else {
+    row.listing_status = "active";
+    row.is_active = true;
   }
 
   // If host is verified, automatically mark any listing they create as verified
@@ -301,16 +305,14 @@ export async function PATCH(request: Request) {
     updated_at: new Date().toISOString(),
   };
 
-  // Hosts can't flip their own visibility. Keep an already-live listing live on
-  // edit; otherwise a non-draft save enters review. Admins control status via
-  // the admin dashboard, not this field.
-  if (!isAdmin && "listing_status" in row) {
+  // When ready to go live, publish directly live without waiting for admin confirmation.
+  if ("listing_status" in row) {
     if (row.listing_status === "draft") {
       row.listing_status = "draft";
-    } else if (existing.listing_status === "active") {
-      row.listing_status = "active";
+      row.is_active = false;
     } else {
-      row.listing_status = "pending_review";
+      row.listing_status = "active";
+      row.is_active = true;
     }
   }
 
