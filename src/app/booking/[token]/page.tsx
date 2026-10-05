@@ -64,14 +64,37 @@ export default function BookingPage({
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.rpc("get_booking_by_token", {
-        booking_token: token,
-      });
-      setBooking(data as BookingData);
-      setLoading(false);
+      try {
+        // 1. First attempt secure API lookup via admin client
+        const res = await fetch(`/api/bookings/${encodeURIComponent(token)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.id) {
+            setBooking(json as BookingData);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("API booking lookup failed, trying RPC:", e);
+      }
+
+      // 2. Fallback to RPC
+      try {
+        const { data } = await supabase.rpc("get_booking_by_token", {
+          booking_token: token,
+        });
+        if (data) {
+          setBooking(data as BookingData);
+        }
+      } catch (err) {
+        console.error("RPC booking lookup failed:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
-  }, [token]);
+  }, [token, supabase]);
 
   function copyToken() {
     navigator.clipboard.writeText(booking?.token ?? "");
@@ -82,7 +105,7 @@ export default function BookingPage({
   function openWhatsApp() {
     if (!booking?.host_phone) return;
     const msg = encodeURIComponent(
-      `Hi ${booking.host_name}, I have a booking at ${booking.listing.name} (ref: ${booking.token}) on ${booking.check_in}. Confirming my reservation.`
+      `Hi ${booking.host_name}, I have a booking request at ${booking.listing.name} (ref: ${booking.token}) on ${booking.check_in}. Confirming my reservation.`
     );
     window.open(`https://wa.me/${booking.host_phone.replace(/\D/g, "")}?text=${msg}`);
   }
@@ -124,13 +147,23 @@ export default function BookingPage({
   if (!booking) {
     return (
       <div className="max-w-lg mx-auto px-4 py-20 text-center">
-        <p className="text-muted-foreground">Booking not found</p>
+        <p className="text-lg font-bold text-[#2b000a] mb-2">Booking request</p>
+        <p className="text-muted-foreground mb-6">
+          We couldn&apos;t load this booking record online right now, but your reference was sent to the host.
+        </p>
+        <div className="inline-flex flex-col gap-2 text-sm text-stone-600">
+          <p>Need urgent help? Call or WhatsApp Beddn 24/7:</p>
+          <a href="https://wa.me/254727993661" className="font-bold text-[#800020] hover:underline">
+            💬 WhatsApp Concierge: +254 727 993 661
+          </a>
+        </div>
       </div>
     );
   }
 
   const isConfirmed = booking.status === "confirmed" || booking.status === "completed";
   const isPendingHost = booking.status === "paid_pending_host";
+  const isRequested = booking.status === "requested";
 
   return (
     <main className="max-w-lg mx-auto px-4 py-8">
@@ -143,7 +176,7 @@ export default function BookingPage({
         <h1 className="text-xl font-bold">
           {isConfirmed
             ? "Booking confirmed"
-            : isPendingHost
+            : isPendingHost || isRequested
             ? "Awaiting host confirmation"
             : "Booking pending payment"}
         </h1>

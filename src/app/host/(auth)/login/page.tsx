@@ -19,8 +19,25 @@ export default function HostLoginPage() {
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [sentAt, setSentAt] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
+
+  // 10-minute countdown timer for OTP / magic link
+  useEffect(() => {
+    if (!sent || !sentAt) {
+      setTimeLeft(null);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.max(0, 600 - Math.floor((Date.now() - sentAt) / 1000));
+      setTimeLeft(remaining);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [sent, sentAt]);
 
   // Already signed in? Go straight to the dashboard (if not rejected).
   useEffect(() => {
@@ -80,7 +97,7 @@ export default function HostLoginPage() {
       typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    document.cookie = `beddn_auth_flow=${flowId}; path=/; max-age=1800; SameSite=Lax`;
+    document.cookie = `beddn_auth_flow=${flowId}; path=/; max-age=600; SameSite=Lax`;
 
     let failed = "";
     try {
@@ -102,6 +119,7 @@ export default function HostLoginPage() {
       return;
     }
     setSentEmail(normalizedEmail);
+    setSentAt(Date.now());
     setSent(true);
   }
 
@@ -112,6 +130,12 @@ export default function HostLoginPage() {
       setError("Please enter the 6-digit code from your email.");
       return;
     }
+
+    if (sentAt && Date.now() - sentAt > 10 * 60 * 1000) {
+      setError("This code has expired (valid for 10 minutes). Please click 'Resend email' below.");
+      return;
+    }
+
     setError("");
     setVerifyingOtp(true);
     const { error: otpError } = await supabase.auth.verifyOtp({
@@ -188,9 +212,18 @@ export default function HostLoginPage() {
 
               <form onSubmit={verifyOtpCode} className="space-y-3 pt-1">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#a3193d]">
-                    Enter 6-digit code
-                  </label>
+                  <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#a3193d]">
+                    <span>Enter 6-digit code</span>
+                    {timeLeft !== null && timeLeft > 0 ? (
+                      <span className="text-amber-800 font-semibold lowercase tracking-normal">
+                        expires in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
+                      </span>
+                    ) : timeLeft === 0 ? (
+                      <span className="text-red-700 font-semibold lowercase tracking-normal">
+                        expired (10m)
+                      </span>
+                    ) : null}
+                  </div>
                   <Input
                     type="text"
                     inputMode="numeric"

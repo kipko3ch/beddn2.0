@@ -103,12 +103,15 @@ export interface MagicLinkInput {
  * instead of Supabase's built-in email so it actually reaches the inbox. */
 export function magicLinkEmail(input: MagicLinkInput): { subject: string; html: string } {
   const html = shell({
-    title: "Your Beddn sign-in link",
+    title: "Your Beddn sign-in code",
     preheader: input.code
-      ? `Your Beddn verification code is ${input.code}. Tap to sign in.`
-      : "Tap to sign in to Beddn — this link expires shortly.",
+      ? `Your Beddn verification code is ${input.code}. Valid for 10 minutes.`
+      : "Tap to sign in to Beddn — this link expires in 10 minutes.",
     bodyHtml: `
       <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Sign in to Beddn</h1>
+      <div style="display:inline-block;background:#fef2f2;border:1px solid #fee2e2;border-radius:8px;padding:6px 12px;margin:0 0 16px;font-size:13px;color:#991b1b;font-weight:700;">
+        ⏱️ Code &amp; link expire in 10 minutes
+      </div>
       <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${MUTED};">
         Tap the button below to finish signing in automatically on this device:
       </p>
@@ -124,17 +127,17 @@ export function magicLinkEmail(input: MagicLinkInput): { subject: string; html: 
           ${input.code}
         </div>
         <p style="margin:0;font-size:13px;line-height:1.5;color:${MUTED};">
-          If you requested this on your computer or another device, enter this code there to complete sign-in.
+          Valid for <strong>10 minutes</strong>. If you requested this on your computer or another device, enter this code there to complete sign-in.
         </p>
       </div>`
           : ""
       }
       <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
-        If you didn't request this, you can safely ignore this email.
+        For your security, this sign-in link and verification code expire in 10 minutes. If you didn't request this, you can safely ignore this email.
       </p>
     `,
   });
-  return { subject: "Your Beddn sign-in link", html };
+  return { subject: "Your Beddn sign-in code (valid for 10 mins)", html };
 }
 
 export interface HostApprovedInput {
@@ -261,16 +264,21 @@ export interface BookingRequestedGuestInput {
   guestsCount: number;
   totalAmount?: number;
   currency?: string;
-  bookingUrl: string;
+  bookingUrl?: string;
+  hostName?: string | null;
+  hostPhone?: string | null;
+  callUrl?: string | null;
   whatsappUrl?: string | null;
 }
 
 /** Sent to guest when they submit a booking request. */
 export function bookingRequestedGuestEmail(input: BookingRequestedGuestInput): { subject: string; html: string } {
   const first = (input.guestName || "there").split(" ")[0];
+  const hostLabel = input.hostName ? input.hostName : "your host";
+
   const html = shell({
     title: "Booking Request Sent — Beddn",
-    preheader: `Your booking request for ${input.listingName} has been submitted (Ref: ${input.bookingCode}).`,
+    preheader: `Your booking request for ${input.listingName} has been submitted (Ref: ${input.bookingCode}). Call or WhatsApp the host directly.`,
     bodyHtml: `
       <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Request sent to host, ${first} ✨</h1>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
@@ -284,8 +292,49 @@ export function bookingRequestedGuestEmail(input: BookingRequestedGuestInput): {
           ${input.totalAmount ? `<tr><td><strong>Estimated total:</strong></td><td><strong>${input.currency || "KES"} ${input.totalAmount.toLocaleString()}</strong> (Pay upon arrival)</td></tr>` : ""}
         </table>
       </div>
-      <p style="margin:0 0 20px;">${button(input.bookingUrl, "View your booking status")}</p>
-      ${input.whatsappUrl ? `<p style="margin:0 0 16px;"><a href="${input.whatsappUrl}" style="color:#25D366;font-weight:bold;text-decoration:none;font-size:14px;">💬 Connect with Host on WhatsApp</a></p>` : ""}
+
+      <!-- Call & WhatsApp Action Buttons replacing status button -->
+      <div style="margin:24px 0 20px;">
+        <p style="margin:0 0 12px;font-size:15px;font-weight:bold;color:${INK};">
+          Contact ${hostLabel} directly:
+        </p>
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:0 0 12px;">
+          <tr>
+            ${
+              input.whatsappUrl
+                ? `<td style="padding-right:12px;padding-bottom:10px;">
+                    <a href="${input.whatsappUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#25D366;color:#ffffff;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;line-height:44px;text-align:center;text-decoration:none;padding:0 22px;border-radius:10px;box-shadow:0 2px 4px rgba(37,211,102,0.25);">
+                      💬 WhatsApp Host
+                    </a>
+                  </td>`
+                : ""
+            }
+            ${
+              input.callUrl
+                ? `<td style="padding-bottom:10px;">
+                    <a href="${input.callUrl}" style="display:inline-block;background:${BRAND};color:#ffffff;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;line-height:44px;text-align:center;text-decoration:none;padding:0 22px;border-radius:10px;">
+                      📞 Call Host
+                    </a>
+                  </td>`
+                : ""
+            }
+          </tr>
+        </table>
+        ${
+          input.hostPhone
+            ? `<p style="margin:4px 0 0;font-size:13px;color:${MUTED};">Direct phone: <strong style="color:${INK};">${input.hostPhone}</strong></p>`
+            : ""
+        }
+      </div>
+
+      ${
+        input.bookingUrl
+          ? `<p style="margin:16px 0 16px;font-size:13px;color:${MUTED};">
+              <a href="${input.bookingUrl}" style="color:${BRAND};text-decoration:underline;">View booking details online →</a>
+            </p>`
+          : ""
+      }
+
       <p style="margin:0;font-size:13px;line-height:1.6;color:${MUTED};">
         Payment is made upon arrival once the host confirms your check-in.
       </p>

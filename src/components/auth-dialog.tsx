@@ -41,6 +41,8 @@ export function AuthDialog({
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [sentAt, setSentAt] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
 
@@ -53,10 +55,27 @@ export function AuthDialog({
       setSent(false);
       setEmail("");
       setSentEmail("");
+      setSentAt(null);
+      setTimeLeft(null);
       setError("");
       setWorking(false);
     }
   }, [open]);
+
+  // 10-minute countdown timer for OTP / magic link
+  useEffect(() => {
+    if (!sent || !sentAt) {
+      setTimeLeft(null);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.max(0, 600 - Math.floor((Date.now() - sentAt) / 1000));
+      setTimeLeft(remaining);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [sent, sentAt]);
 
   function publicBaseUrl() {
     return (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
@@ -122,7 +141,7 @@ export function AuthDialog({
       typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    document.cookie = `beddn_auth_flow=${flowId}; path=/; max-age=1800; SameSite=Lax`;
+    document.cookie = `beddn_auth_flow=${flowId}; path=/; max-age=600; SameSite=Lax`;
 
     let failed = "";
     try {
@@ -144,6 +163,7 @@ export function AuthDialog({
       return;
     }
     setSentEmail(normalizedEmail);
+    setSentAt(Date.now());
     setSent(true);
   }
 
@@ -154,6 +174,12 @@ export function AuthDialog({
       setError("Please enter the 6-digit code from your email.");
       return;
     }
+
+    if (sentAt && Date.now() - sentAt > 10 * 60 * 1000) {
+      setError("This code has expired (valid for 10 minutes). Please click 'Resend email' below.");
+      return;
+    }
+
     setError("");
     setVerifyingOtp(true);
     const { error: otpError } = await supabase.auth.verifyOtp({
@@ -209,9 +235,18 @@ export function AuthDialog({
               {/* 6-Digit OTP Form - clean minimal white without colored box */}
               <form onSubmit={verifyOtpCode} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
-                    Enter 6-digit code
-                  </label>
+                  <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                    <span>Enter 6-digit code</span>
+                    {timeLeft !== null && timeLeft > 0 ? (
+                      <span className="text-amber-700 font-semibold lowercase tracking-normal">
+                        expires in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
+                      </span>
+                    ) : timeLeft === 0 ? (
+                      <span className="text-rose-600 font-semibold lowercase tracking-normal">
+                        expired (10m)
+                      </span>
+                    ) : null}
+                  </div>
                   <Input
                     type="text"
                     inputMode="numeric"

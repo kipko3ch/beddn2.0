@@ -57,10 +57,21 @@ export async function POST(request: Request) {
   }
 
   const emailOtp = data.properties.email_otp || "";
+  const now = Date.now();
+  const expiresAt = now + 10 * 60 * 1000; // Strictly 10 minutes
+  const authSecret = process.env.SUPABASE_SERVICE_ROLE_KEY || "beddn-auth-secret";
+  const crypto = await import("crypto");
+  const signature = crypto
+    .createHmac("sha256", authSecret)
+    .update(`${data.properties.hashed_token}:${expiresAt}`)
+    .digest("hex");
+
   const confirmParams = new URLSearchParams({
     token_hash: data.properties.hashed_token,
     type: "magiclink",
     next,
+    exp: expiresAt.toString(),
+    sig: signature,
   });
   if (flowId) confirmParams.set("flow_id", flowId);
   if (emailOtp) confirmParams.set("code", emailOtp);

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
     const { data: listingData, error: listingError } = await admin
       .from("listings")
-      .select("*, host:hosts(user_id, phone)")
+      .select("*, host:hosts(user_id, phone, name)")
       .eq("id", input.listingId)
       .single();
 
@@ -63,7 +63,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Listing not found" }, { status: 404 });
     }
 
-    const listing = listingData as Listing & { host?: { user_id?: string; phone?: string } | null };
+    const listing = listingData as Listing & {
+      host?: { user_id?: string; phone?: string; name?: string } | null;
+    };
     if (!listing.is_active) {
       return NextResponse.json({ error: "This listing is not accepting requests right now." }, { status: 400 });
     }
@@ -162,8 +164,33 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Email to Guest
+    // 3. Email to Guest with direct WhatsApp and Call buttons
     if (input.guestEmail) {
+      const rawHostPhone = listing.host?.phone?.trim() || null;
+      const hostName = listing.host?.name?.trim() || null;
+
+      let whatsappUrl: string | null = null;
+      let callUrl: string | null = null;
+      let displayPhone = rawHostPhone;
+
+      if (rawHostPhone) {
+        const cleanPhone = rawHostPhone.replace(/[^\d+]/g, "").replace(/^0/, "254");
+        const digitsOnly = cleanPhone.replace(/[^\d]/g, "");
+        const waText = encodeURIComponent(
+          `Hi ${hostName || "Host"}, I have submitted a booking request on Beddn for ${title} (Ref: ${code}) from ${dateRangeStr}. Let's connect!`
+        );
+        whatsappUrl = `https://wa.me/${digitsOnly}?text=${waText}`;
+        callUrl = `tel:${cleanPhone}`;
+      } else {
+        // Fallback to Beddn 24/7 Concierge Support
+        displayPhone = "+254 727 993 661 (Beddn Concierge)";
+        const waText = encodeURIComponent(
+          `Hi Beddn, I requested a booking for ${title} (Ref: ${code}). Please assist in connecting me with the host.`
+        );
+        whatsappUrl = `https://wa.me/254727993661?text=${waText}`;
+        callUrl = "tel:+254727993661";
+      }
+
       const guestEmailContent = bookingRequestedGuestEmail({
         guestName: input.guestName,
         listingName: title,
@@ -173,6 +200,10 @@ export async function POST(request: Request) {
         totalAmount: amounts.totalAmount,
         currency: amounts.currency,
         bookingUrl,
+        hostName,
+        hostPhone: displayPhone,
+        callUrl,
+        whatsappUrl,
       });
       void sendEmail({
         to: input.guestEmail,

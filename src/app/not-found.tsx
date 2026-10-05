@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/header";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Page Not Found",
@@ -32,12 +32,15 @@ export default function NotFound() {
           This listing may have been unlisted, moved, or the link might be broken.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Button asChild className="bg-[#800020] hover:bg-[#600018] text-white">
-            <Link href="/">Back to Home</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/search">Browse All Stays</Link>
-          </Button>
+          <Link
+            href="/"
+            className={buttonVariants({ className: "bg-[#800020] hover:bg-[#600018] text-white" })}
+          >
+            Back to Home
+          </Link>
+          <Link href="/search" className={buttonVariants({ variant: "outline" })}>
+            Browse All Stays
+          </Link>
         </div>
       </main>
     </>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { Check, Copy, ArrowRight, ShieldCheck, Laptop, Smartphone } from "lucide-react";
+import { Check, Copy, ArrowRight, ShieldCheck, Laptop, Smartphone, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 
@@ -14,8 +14,25 @@ function VerifyCodeContent() {
   const tokenHash = searchParams.get("token_hash") || "";
   const next = searchParams.get("next") || "/";
   const type = searchParams.get("type") || "magiclink";
+  const exp = searchParams.get("exp") || "";
+  const sig = searchParams.get("sig") || "";
 
   const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number | null>(() => {
+    if (!exp) return null;
+    const diff = Math.max(0, Math.floor((Number(exp) - Date.now()) / 1000));
+    return isNaN(diff) ? null : diff;
+  });
+
+  useEffect(() => {
+    if (!exp) return;
+    const timer = setInterval(() => {
+      const diff = Math.max(0, Math.floor((Number(exp) - Date.now()) / 1000));
+      setTimeLeft(diff);
+      if (diff <= 0) clearInterval(timer);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [exp]);
 
   function copyCode() {
     if (navigator.clipboard) {
@@ -25,11 +42,19 @@ function VerifyCodeContent() {
     }
   }
 
-  const forceLoginUrl = tokenHash
+  const isExpired = timeLeft !== null && timeLeft <= 0;
+
+  const forceLoginUrl = tokenHash && !isExpired
     ? `/api/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(
         type
-      )}&force=1&next=${encodeURIComponent(next)}`
+      )}&force=1&next=${encodeURIComponent(next)}${exp ? `&exp=${encodeURIComponent(exp)}` : ""}${
+        sig ? `&sig=${encodeURIComponent(sig)}` : ""
+      }`
     : "";
+
+  const minutes = timeLeft !== null ? Math.floor(timeLeft / 60) : 0;
+  const seconds = timeLeft !== null ? timeLeft % 60 : 0;
+  const formattedTime = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#fdf2f4]/60 via-[#fcfafb] to-white px-4 py-12">
@@ -106,12 +131,30 @@ function VerifyCodeContent() {
             </Button>
           </div>
 
-          <p className="mt-4 text-xs text-stone-500">
-            Enter these 6 digits on your original screen to finish signing in immediately.
-          </p>
+          {/* 10-Minute Expiry Countdown Indicator */}
+          {isExpired ? (
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+              <div className="flex items-center justify-center gap-1.5 font-bold">
+                <AlertTriangle className="size-4 text-red-600" />
+                This code has expired
+              </div>
+              <p className="mt-1 text-[11px] text-red-600">
+                For security, codes are only valid for 10 minutes. Please go back and request a fresh code.
+              </p>
+            </div>
+          ) : timeLeft !== null ? (
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 border border-amber-200">
+              <Clock className="size-3.5 text-amber-600" />
+              Expires in {formattedTime} (10m limit)
+            </div>
+          ) : (
+            <p className="mt-4 text-xs text-stone-500">
+              Enter these 6 digits on your original screen to finish signing in immediately.
+            </p>
+          )}
 
           {/* Alternative: Continue on this device */}
-          {forceLoginUrl && (
+          {forceLoginUrl && !isExpired && (
             <div className="mt-6 border-t border-stone-100 pt-5">
               <p className="text-xs text-stone-500 mb-2">Want to use this device instead?</p>
               <a
@@ -121,6 +164,17 @@ function VerifyCodeContent() {
                 Sign in on this device
                 <ArrowRight className="size-4" />
               </a>
+            </div>
+          )}
+
+          {isExpired && (
+            <div className="mt-6 border-t border-stone-100 pt-5">
+              <Link
+                href={ROUTES.home}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#800020] px-5 text-sm font-bold text-white shadow-sm hover:bg-[#6b1029] transition"
+              >
+                Request a new sign-in code
+              </Link>
             </div>
           )}
         </div>

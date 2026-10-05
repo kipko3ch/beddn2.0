@@ -28,6 +28,28 @@ export async function GET(request: Request) {
     (forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin)
   ).replace(/\/$/, "");
 
+  const expParam = searchParams.get("exp");
+  const sigParam = searchParams.get("sig");
+
+  // Validate 10-minute expiration if exp & sig are present
+  if (tokenHash && expParam && sigParam) {
+    const crypto = await import("crypto");
+    const authSecret = process.env.SUPABASE_SERVICE_ROLE_KEY || "beddn-auth-secret";
+    const expectedSig = crypto
+      .createHmac("sha256", authSecret)
+      .update(`${tokenHash}:${expParam}`)
+      .digest("hex");
+
+    const isSigValid = expectedSig === sigParam;
+    const isExpired = Date.now() > Number(expParam);
+
+    if (!isSigValid || isExpired) {
+      return NextResponse.redirect(
+        `${baseUrl}/auth/auth-code-error?reason=${isExpired ? "expired" : "invalid"}`
+      );
+    }
+  }
+
   // Cross-device check: If a flow_id was registered and this device does not
   // carry the matching beddn_auth_flow cookie, this click originated from a
   // different device (e.g. phone clicked email while computer started sign-in).
@@ -43,6 +65,8 @@ export async function GET(request: Request) {
       });
       if (tokenHash) verifyParams.set("token_hash", tokenHash);
       if (type) verifyParams.set("type", type);
+      if (expParam) verifyParams.set("exp", expParam);
+      if (sigParam) verifyParams.set("sig", sigParam);
       return NextResponse.redirect(`${baseUrl}/auth/verify-code?${verifyParams.toString()}`);
     }
   }
