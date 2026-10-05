@@ -24,33 +24,33 @@ const tripSans = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://beddn.com"),
   title: {
-    default: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+    default: "Beddn | Book Short Stays & BnBs in Kenya and Tanzania",
     template: "%s | Beddn",
   },
   description:
-    "Book hourly stays, overnight getaways and furnished homes across Kenya and Tanzania. Hosts, list your property on Beddn and start earning.",
+    "Find and book short stays, BnBs and furnished apartments across Kenya and Tanzania. Hosts, list your place on Beddn and start earning.",
   openGraph: {
     siteName: "Beddn",
     locale: "en_KE",
     type: "website",
     url: "https://beddn.com",
-    title: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+    title: "Beddn | Book Short Stays & BnBs in Kenya and Tanzania",
     description:
-      "Book hourly stays, overnight getaways and furnished homes across Kenya and Tanzania. Hosts, list your property on Beddn and start earning.",
+      "Find and book short stays, BnBs and furnished apartments across Kenya and Tanzania. Hosts, list your place on Beddn and start earning.",
     images: [
       {
         url: "/images/cat-all.png",
         width: 1200,
         height: 630,
-        alt: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+        alt: "Beddn | Book Short Stays & BnBs in Kenya and Tanzania",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Beddn | Hourly Stays & Rentals in Kenya and Tanzania",
+    title: "Beddn | Book Short Stays & BnBs in Kenya and Tanzania",
     description:
-      "Book hourly stays, overnight getaways and furnished homes across Kenya and Tanzania. Hosts, list your property on Beddn and start earning.",
+      "Find and book short stays, BnBs and furnished apartments across Kenya and Tanzania. Hosts, list your place on Beddn and start earning.",
     images: ["/images/cat-all.png"],
   },
 };

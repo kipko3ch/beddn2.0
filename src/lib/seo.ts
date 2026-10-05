@@ -4,9 +4,9 @@ import { PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 import { AMENITY_LABEL } from "@/lib/amenities";
 
 export const SITE_URL = "https://beddn.com";
-export const DEFAULT_SITE_TITLE = "Beddn | Hourly Stays & Rentals in Kenya and Tanzania";
+export const DEFAULT_SITE_TITLE = "Beddn | Book Short Stays & BnBs in Kenya and Tanzania";
 export const DEFAULT_SITE_DESCRIPTION =
-  "Book hourly stays, overnight getaways and furnished homes across Kenya and Tanzania. Hosts, list your property on Beddn and start earning.";
+  "Find and book short stays, BnBs and furnished apartments across Kenya and Tanzania. Hosts, list your place on Beddn and start earning.";
 
 const NUMBER_WORDS: Record<string, number> = {
   one: 1,
