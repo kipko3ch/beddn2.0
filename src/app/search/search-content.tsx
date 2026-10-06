@@ -105,7 +105,9 @@ export function SearchContent() {
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [priceMode, setPriceMode] = useState<"hourly" | "overnight">("hourly");
+  const [priceMode, setPriceMode] = useState<"hourly" | "overnight">(
+    category === "hourly" ? "hourly" : "overnight"
+  );
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -363,7 +365,7 @@ export function SearchContent() {
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Show prices</span>
             <div className="inline-flex rounded-full bg-[#f5eef1] p-0.5" role="group">
-              {(["hourly", "overnight"] as const).map((mode) => (
+              {(["overnight", "hourly"] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
@@ -373,7 +375,7 @@ export function SearchContent() {
                     priceMode === mode ? "bg-crimson text-white" : "text-muted-foreground"
                   }`}
                 >
-                  {mode === "hourly" ? "Hourly" : "Nightly"}
+                  {mode === "overnight" ? "Nightly" : "Hourly (Events)"}
                 </button>
               ))}
             </div>
@@ -488,8 +490,8 @@ export function SearchContent() {
             label="Price"
             value={priceMode}
             options={[
-              { value: "hourly", label: "Hourly prices" },
               { value: "overnight", label: "Nightly prices" },
+              { value: "hourly", label: "Hourly (Events & Spaces)" },
             ]}
             onChange={(value) => setPriceMode(value as "hourly" | "overnight")}
           />

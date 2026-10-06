@@ -31,7 +31,7 @@ export function ListingCard({
   onHover,
   isSaved,
   onToggleSave,
-  priceMode = "hourly",
+  priceMode = "overnight",
 }: {
   listing: Listing;
   onHover?: (id: string | null) => void;
@@ -46,19 +46,16 @@ export function ListingCard({
 
   // Show the requested rate when the listing has it, otherwise fall back.
   let price = 0;
-  let priceLabel = "/session";
-  if (priceMode === "overnight" && listing.overnight_price) {
-    price = Number(listing.overnight_price);
-    priceLabel = "/night";
-  } else if (priceMode === "hourly" && listing.hourly_price) {
-    price = Number(listing.hourly_price);
-    priceLabel = "/hr";
-  } else if (listing.hourly_price) {
+  let priceLabel = "/night";
+  if (priceMode === "hourly" && listing.hourly_price) {
     price = Number(listing.hourly_price);
     priceLabel = "/hr";
   } else if (listing.overnight_price) {
     price = Number(listing.overnight_price);
     priceLabel = "/night";
+  } else if (listing.hourly_price) {
+    price = Number(listing.hourly_price);
+    priceLabel = "/hr";
   } else if (listing.experience_price) {
     price = Number(listing.experience_price);
     priceLabel = "/session";

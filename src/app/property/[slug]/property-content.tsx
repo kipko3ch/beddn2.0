@@ -327,14 +327,21 @@ export function PropertyContent({
   const hasHourly = Boolean(listing.hourly_price && Number(listing.hourly_price) > 0);
   const hasOvernight = Boolean(listing.overnight_price && Number(listing.overnight_price) > 0);
   const priceOptions = [
-    hasHourly
-      ? { label: "Hourly", suffix: "/hr", value: Number(listing.hourly_price) }
-      : null,
     hasOvernight
-      ? { label: "Overnight", suffix: "/night", value: Number(listing.overnight_price) }
+      ? { label: "Night stay", suffix: "/night", value: Number(listing.overnight_price) }
+      : null,
+    hasHourly
+      ? { label: "Hourly (Conferences & Events)", suffix: "/hr", value: Number(listing.hourly_price) }
       : null,
   ].filter(Boolean) as { label: string; suffix: string; value: number }[];
-  const primaryPrice = priceOptions[0];
+  const primaryPrice =
+    selectedCategory === "hourly" && hasHourly
+      ? { label: "Hourly", suffix: "/hr", value: Number(listing.hourly_price) }
+      : hasOvernight
+      ? { label: "Night stay", suffix: "/night", value: Number(listing.overnight_price) }
+      : hasHourly
+      ? { label: "Hourly", suffix: "/hr", value: Number(listing.hourly_price) }
+      : priceOptions[0];
   const dateSummary = useMemo(() => {
     const place = listing.city || listing.area || "this stay";
     if (!dateRange?.from) {
@@ -1026,17 +1033,6 @@ export function PropertyContent({
               <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-[#fbf0f3] p-1 border border-[#f3cfd9]/70">
                 <button
                   type="button"
-                  onClick={() => setSelectedCategory("hourly")}
-                  className={`rounded-xl py-2 text-xs font-bold transition ${
-                    selectedCategory === "hourly"
-                      ? "bg-white text-[#800020] shadow-xs"
-                      : "text-neutral-600 hover:text-[#800020]"
-                  }`}
-                >
-                  Hourly
-                </button>
-                <button
-                  type="button"
                   onClick={() => setSelectedCategory("overnight")}
                   className={`rounded-xl py-2 text-xs font-bold transition ${
                     selectedCategory === "overnight"
@@ -1044,7 +1040,18 @@ export function PropertyContent({
                       : "text-neutral-600 hover:text-[#800020]"
                   }`}
                 >
-                  Overnight
+                  Night stay
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory("hourly")}
+                  className={`rounded-xl py-2 text-xs font-bold transition ${
+                    selectedCategory === "hourly"
+                      ? "bg-white text-[#800020] shadow-xs"
+                      : "text-neutral-600 hover:text-[#800020]"
+                  }`}
+                >
+                  Hourly (Events)
                 </button>
               </div>
             )}

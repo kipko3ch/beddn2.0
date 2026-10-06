@@ -35,6 +35,13 @@ import {
   ChevronLeft,
   X,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Icon } from "@iconify/react";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL } from "@/lib/property-types";
 import { AMENITY_LABEL } from "@/lib/amenities";
 import { EXPERIENCE_GROUPS, EXPERIENCE_LABEL } from "@/lib/experience-types";
@@ -45,26 +52,30 @@ import type { Listing, ListingCategory } from "@/lib/types";
 const CATEGORY_OPTIONS: {
   value: "hourly" | "overnight" | "both";
   label: string;
+  badge?: string;
   description: string;
-  icon: ElementType;
+  icon: string;
 }[] = [
-  {
-    value: "hourly",
-    label: "Hourly stay or space",
-    description: "Conferences, halls, event grounds, workspaces, or rooms booked by the hour.",
-    icon: Clock,
-  },
   {
     value: "overnight",
     label: "Night stay",
-    description: "Homes, rooms, or suites guests can book for the night.",
-    icon: Moon,
+    badge: "Recommended for homes",
+    description: "Standard houses, apartments, villas, and suites booked per night.",
+    icon: "solar:moon-stars-bold-duotone",
+  },
+  {
+    value: "hourly",
+    label: "Hourly space",
+    badge: "Conferences & Events only",
+    description: "Conference rooms, meeting halls, event venues, photo studios, or workspaces.",
+    icon: "solar:clock-circle-bold-duotone",
   },
   {
     value: "both",
-    label: "Both",
-    description: "Let guests choose hourly or full-night stays for the same place.",
-    icon: Layers,
+    label: "Both (Night stay + Events)",
+    badge: "Dual-use spaces only",
+    description: "Venues offering overnight accommodation and daytime event/meeting bookings.",
+    icon: "solar:layers-minimalistic-bold-duotone",
   },
 ];
 
@@ -169,6 +180,16 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const [categories, setCategories] = useState<ListingCategory[]>(
     (listing?.categories as ListingCategory[]) ?? (initialCategory ? [initialCategory] : [])
   );
+  const [hourlyConfirmOpen, setHourlyConfirmOpen] = useState(false);
+  const [pendingHourlyChoice, setPendingHourlyChoice] = useState<"hourly" | "both" | null>(null);
+
+  const selectedTypeInfo = useMemo(
+    () => PROPERTY_TYPES.find((p) => p.value === propertyType),
+    [propertyType]
+  );
+  const isResidentialProperty =
+    selectedTypeInfo?.group === "Homes" || selectedTypeInfo?.group === "Rooms";
+
   function bookingChoice() {
     if (categories.includes("hourly") && categories.includes("overnight")) return "both";
     if (categories.includes("overnight")) return "overnight";
@@ -177,7 +198,26 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   }
 
   function handleSelectBookingChoice(choice: "hourly" | "overnight" | "both") {
-    setCategories(choice === "both" ? ["hourly", "overnight"] : [choice]);
+    if (choice === "hourly" || choice === "both") {
+      setPendingHourlyChoice(choice);
+      setHourlyConfirmOpen(true);
+      return;
+    }
+    setCategories(["overnight"]);
+  }
+
+  function confirmHourlyChoice() {
+    if (pendingHourlyChoice) {
+      setCategories(pendingHourlyChoice === "both" ? ["hourly", "overnight"] : [pendingHourlyChoice]);
+    }
+    setPendingHourlyChoice(null);
+    setHourlyConfirmOpen(false);
+  }
+
+  function cancelHourlyChoice() {
+    setCategories(["overnight"]);
+    setPendingHourlyChoice(null);
+    setHourlyConfirmOpen(false);
   }
   const [hourlyPrice, setHourlyPrice] = useState(listing?.hourly_price?.toString() ?? "");
   const [overnightPrice, setOvernightPrice] = useState(
@@ -339,43 +379,93 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     content: (
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-3">
-          {CATEGORY_OPTIONS.map(({ value, label, description, icon: Icon }) => {
+          {CATEGORY_OPTIONS.map(({ value, label, badge, description, icon }) => {
             const selected = bookingChoice() === value;
             return (
               <button
                 key={value}
                 type="button"
                 onClick={() => handleSelectBookingChoice(value)}
-                className={`relative min-h-40 rounded-2xl border p-4 text-left transition ${
+                className={`relative flex flex-col justify-between min-h-44 rounded-2xl border p-4 text-left transition ${
                   selected
-                    ? "border-crimson bg-[#fbf7f8] shadow-sm"
+                    ? "border-[#800020] bg-[#fbf0f3]/60 shadow-sm ring-1 ring-[#800020]/30"
                     : "border-border bg-white hover:border-[#d7a9b7]"
                 }`}
                 aria-pressed={selected}
               >
-                {selected && (
-                  <span className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-crimson text-white">
-                    <Check className="h-3.5 w-3.5" />
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span
+                      className={`inline-flex size-9 items-center justify-center rounded-xl ${
+                        selected ? "bg-[#800020] text-white" : "bg-[#f5eef1] text-[#2b000a]"
+                      }`}
+                    >
+                      <Icon icon={icon} className="h-5 w-5" />
+                    </span>
+                    {selected && (
+                      <span className="flex size-5 items-center justify-center rounded-full bg-[#800020] text-white">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </div>
+                  {badge && (
+                    <div className="mb-2">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          value === "overnight"
+                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            : value === "hourly"
+                            ? "bg-amber-50 text-amber-800 border border-amber-200"
+                            : "bg-purple-50 text-purple-800 border border-purple-200"
+                        }`}
+                      >
+                        {badge}
+                      </span>
+                    </div>
+                  )}
+                  <span className="block text-sm font-bold text-[#181113]">{label}</span>
+                  <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                    {description}
                   </span>
-                )}
-                <span
-                  className={`mb-3 inline-flex size-9 items-center justify-center rounded-full ${
-                    selected ? "bg-crimson text-white" : "bg-muted text-[#2b000a]"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="block text-sm font-bold text-[#181113]">{label}</span>
-                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                  {description}
-                </span>
+                </div>
               </button>
             );
           })}
         </div>
+
+        {isResidentialProperty && categories.includes("hourly") && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-amber-950 shadow-2xs">
+            <div className="flex items-start gap-3">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                <Icon icon="solar:danger-triangle-bold" className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1 space-y-1.5 text-xs">
+                <p className="font-bold text-amber-950 text-sm">
+                  Recommended: Use Night stay for residential homes
+                </p>
+                <p className="leading-relaxed text-amber-900">
+                  You selected <strong className="font-semibold text-amber-950">{selectedTypeInfo?.label || "a residential space"}</strong>. Listing standard houses or apartments by the hour confuses travelers looking for overnight stays and hurts booking rates.
+                </p>
+                <div className="pt-1 flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setCategories(["overnight"])}
+                    className="h-8 rounded-full bg-[#800020] px-4 text-xs font-bold text-white hover:bg-merlot shadow-xs"
+                  >
+                    Switch to Night stay (Recommended)
+                  </Button>
+                  <span className="text-[11px] text-amber-800 font-medium">
+                    Keep hourly only if strictly hosting meetings, workshops, or shoots.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <p className="rounded-xl bg-[#fbf7f8] px-4 py-3 text-xs leading-5 text-muted-foreground">
-          You can change this later. Pricing fields will only appear for the booking types
-          you choose here.
+          Tip: Normal residential houses and apartments should always use <strong>Night stay</strong>. Hourly booking is reserved for conference spaces, event grounds, meeting rooms, and creative studios.
         </p>
       </div>
     ),
@@ -851,34 +941,53 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             estimate — Beddn sets that rate.
           </p>
         </div>
-        {categories.includes("hourly") && (
-          <div>
-            <Label htmlFor="hourlyPrice">Hourly price</Label>
-            <Input
-              id="hourlyPrice"
-              type="number"
-              step="0.01"
-              value={hourlyPrice}
-              onChange={(e) => setHourlyPrice(e.target.value)}
-            />
-            {usdHint(hourlyPrice) && (
-              <p className="mt-1 text-xs text-muted-foreground">{usdHint(hourlyPrice)}</p>
-            )}
-          </div>
-        )}
         {categories.includes("overnight") && (
           <div>
-            <Label htmlFor="overnightPrice">Overnight price</Label>
+            <Label htmlFor="overnightPrice" className="font-bold">
+              Night stay price (Standard)
+            </Label>
             <Input
               id="overnightPrice"
               type="number"
               step="0.01"
               value={overnightPrice}
               onChange={(e) => setOvernightPrice(e.target.value)}
+              placeholder="e.g. 5000"
             />
             {usdHint(overnightPrice) && (
               <p className="mt-1 text-xs text-muted-foreground">{usdHint(overnightPrice)}</p>
             )}
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Rate charged per night for overnight guests.
+            </p>
+          </div>
+        )}
+        {categories.includes("hourly") && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4 sm:col-span-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <Label htmlFor="hourlyPrice" className="text-amber-950 font-bold flex items-center gap-1.5">
+                <Icon icon="solar:clock-circle-bold" className="size-4 text-amber-700" />
+                Hourly price (Conferences & Events only)
+              </Label>
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-200">
+                Spaces & Events
+              </span>
+            </div>
+            <Input
+              id="hourlyPrice"
+              type="number"
+              step="0.01"
+              value={hourlyPrice}
+              onChange={(e) => setHourlyPrice(e.target.value)}
+              className="bg-white"
+              placeholder="e.g. 2500"
+            />
+            {usdHint(hourlyPrice) && (
+              <p className="mt-1 text-xs text-muted-foreground">{usdHint(hourlyPrice)}</p>
+            )}
+            <p className="mt-1.5 text-[11px] text-amber-800">
+              Only charge hourly if this space is rented for conferences, meetings, event halls, photo shoots, or creative workshops.
+            </p>
           </div>
         )}
         {categories.includes("experience") && (
@@ -1314,8 +1423,9 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const percent = Math.round(((step + 1) / steps.length) * 100);
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-6">
-      <div ref={topRef} className="scroll-mt-20" />
+    <>
+      <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-6">
+        <div ref={topRef} className="scroll-mt-20" />
 
       {/* Progress */}
       <div className="mb-6">
@@ -1407,5 +1517,56 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
         </div>
       </div>
     </form>
+
+    <Dialog
+      open={hourlyConfirmOpen}
+      onOpenChange={(open) => {
+        if (!open) cancelHourlyChoice();
+      }}
+    >
+      <DialogContent className="sm:max-w-md p-6 rounded-3xl border border-[#f3cfd9] bg-white text-stone-900 shadow-2xl">
+        <div className="flex flex-col items-center text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] mb-4 border border-[#f3cfd9]">
+            <Icon icon="solar:buildings-3-bold-duotone" className="size-8 text-[#800020]" />
+          </div>
+          <DialogTitle className="text-xl font-bold font-brand text-[#2b000a]">
+            Are you sure you want an hourly listing?
+          </DialogTitle>
+          <DialogDescription className="mt-2 text-xs leading-relaxed text-stone-600 max-w-sm">
+            Hourly booking on Beddn is designed specifically for <strong>conferences, meeting rooms, event halls, photo studios, and workspaces</strong>.
+            <br /><br />
+            Normal houses, villas, and apartments listed by the hour confuse guests browsing for overnight stays and can harm booking rates.
+          </DialogDescription>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3.5 text-xs text-stone-700">
+          <p className="font-semibold text-stone-900 flex items-center gap-1.5 mb-1">
+            <Icon icon="solar:info-circle-bold" className="size-4 text-[#800020]" />
+            Is this a conference hall or event venue?
+          </p>
+          <p className="text-[11px] text-stone-500 leading-normal">
+            If this is a normal residential house or apartment, choose <strong>Night stay</strong> so guests see standard nightly prices.
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-2">
+          <Button
+            type="button"
+            onClick={cancelHourlyChoice}
+            className="w-full h-11 rounded-full bg-[#800020] text-white hover:bg-[#600018] font-bold text-sm shadow-sm"
+          >
+            Use Night stay (Recommended for homes)
+          </Button>
+          <button
+            type="button"
+            onClick={confirmHourlyChoice}
+            className="w-full h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-xs transition-colors"
+          >
+            Yes, this is an Event or Conference space
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }

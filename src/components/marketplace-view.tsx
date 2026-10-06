@@ -79,7 +79,9 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
   ) as TabType || 'All';
 
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
-  const [priceMode, setPriceMode] = useState<'hourly' | 'overnight'>('hourly');
+  const [priceMode, setPriceMode] = useState<'hourly' | 'overnight'>(
+    initialCategory === 'hourly' ? 'hourly' : 'overnight'
+  );
   // Active in-page search (no redirect): results replace the listings grid.
   const [search, setSearch] = useState<SearchPillValues | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -544,16 +546,6 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             <div className={styles.priceToggle} role="group" aria-label="Price view mode">
               <button
                 type="button"
-                onClick={() => setPriceMode('hourly')}
-                className={priceMode === 'hourly' ? styles.priceToggleActive : ''}
-                aria-pressed={priceMode === 'hourly'}
-                title="Hourly rates"
-                aria-label="Hourly rates"
-              >
-                <Clock className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
                 onClick={() => setPriceMode('overnight')}
                 className={priceMode === 'overnight' ? styles.priceToggleActive : ''}
                 aria-pressed={priceMode === 'overnight'}
@@ -561,6 +553,16 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
                 aria-label="Nightly rates"
               >
                 <Moon className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPriceMode('hourly')}
+                className={priceMode === 'hourly' ? styles.priceToggleActive : ''}
+                aria-pressed={priceMode === 'hourly'}
+                title="Hourly rates (Conferences & Events)"
+                aria-label="Hourly rates (Conferences & Events)"
+              >
+                <Clock className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>

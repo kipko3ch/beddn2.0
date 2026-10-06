@@ -56,7 +56,7 @@ function listingPrice(listing: Listing, priceMode: "hourly" | "overnight" | "exp
     ? listing.experience_price
     : priceMode === "hourly" && listing.hourly_price
     ? listing.hourly_price
-    : listing.hourly_price ?? listing.overnight_price ?? listing.experience_price ?? 0;
+    : listing.overnight_price ?? listing.hourly_price ?? listing.experience_price ?? 0;
 }
 
 function listingHref(listing: Listing) {
@@ -190,7 +190,7 @@ export function Map({
   onPinSelect,
   className = "w-full h-full",
   approximate = false,
-  priceMode = "hourly",
+  priceMode = "overnight",
   interactive = true,
   isBroad = true,
 }: MapProps) {

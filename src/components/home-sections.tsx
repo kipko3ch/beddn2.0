@@ -76,7 +76,7 @@ export function FeaturedRail({
   heading,
   savedIds,
   onToggleSave,
-  priceMode = "hourly",
+  priceMode = "overnight",
 }: {
   placement: "homepage_featured" | "city_featured" | "category_featured";
   city?: string;
@@ -196,7 +196,7 @@ export function PopularDestinations() {
 export function CityRails({
   savedIds,
   onToggleSave,
-  priceMode = "hourly",
+  priceMode = "overnight",
   category,
 }: {
   savedIds: Set<string>;
