@@ -212,6 +212,9 @@ function validatePublishable(row: AnyRecord, imageUrls: string[] | undefined) {
   if (!row.property_type) return "Oops, choose what kind of place this is.";
   if (!row.country || !row.city || !row.area) return "Oops, add the public area guests will see.";
   if (!row.private_address) return "Oops, add the private address before publishing.";
+  if (!row.description || String(row.description).trim().length < 10) {
+    return "Oops, please add a description of your space before publishing.";
+  }
   if (categories.includes("hourly") && Number(row.hourly_price ?? 0) <= 0) {
     return "Oops, add an hourly price before publishing.";
   }

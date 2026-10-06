@@ -122,7 +122,8 @@ export default function HostDashboardPage() {
               .from("listing_events")
               .select("event_type, listing_id, created_at")
               .in("listing_id", listingIds)
-              .limit(5000)
+              .order("created_at", { ascending: false })
+              .limit(500)
           : Promise.resolve({ data: [] }),
         supabase
           .from("featured_listings")

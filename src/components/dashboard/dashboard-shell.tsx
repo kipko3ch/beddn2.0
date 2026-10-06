@@ -7,7 +7,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { format } from "date-fns";
 
-import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import { Icon } from "@/components/icon";
@@ -539,24 +538,11 @@ export function DashboardShell({
           isCollapsed ? "md:pl-20" : "md:pl-64"
         )}
       >
-        {/* Top Greeting Banner with Mesh Gradient Background */}
-        <header className="relative overflow-hidden bg-gradient-to-r from-[#1f0007] via-[#480014] to-[#780022] px-4 py-6 sm:px-8 sm:py-7 text-white shadow-md">
-          {/* Animated Mesh Gradient Background in Beddn Burgundy Theme */}
-          <div className="absolute inset-0 pointer-events-none opacity-75">
-            <MeshGradient
-              color1="#800020"
-              color2="#4a0014"
-              color3="#1f0007"
-              color4="#2b000a"
-              speed={0.6}
-              distortion={0.7}
-              swirl={0.35}
-              softness={0.9}
-              shape="wave"
-            />
-          </div>
-          {/* Subtle curved wave background lighting & soft vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_25%,rgba(244,114,182,0.12)_0%,transparent_60%)] pointer-events-none" />
+        {/* Top Greeting Banner with Sleek CSS Gradient (High Performance) */}
+        <header className="relative overflow-hidden bg-gradient-to-r from-[#1f0007] via-[#480014] to-[#780022] px-4 py-5 sm:px-8 sm:py-6 text-white shadow-md">
+          {/* Curved radial ambient lighting & soft vignette */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_25%,rgba(244,114,182,0.18)_0%,transparent_60%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(128,0,32,0.3)_0%,transparent_70%)] pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
           <div className="relative mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -589,11 +575,11 @@ export function DashboardShell({
             <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 lg:justify-end">
               <NotificationPopover hostId={hostId} userEmail={userEmail} />
 
-              {/* Role Switcher Pill */}
+              {/* Role Switcher */}
               {isAdmin && role === "host" && (
                 <Link
                   href={ROUTES.adminHome}
-                  className="inline-flex h-8.5 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
+                  className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
                 >
                   <Icon icon="solar:shield-check-bold-duotone" className="size-3.5 text-white/80" />
                   <span>Admin</span>
@@ -603,7 +589,7 @@ export function DashboardShell({
               {isAdmin && role === "admin" && (
                 <Link
                   href={ROUTES.dashboard}
-                  className="inline-flex h-8.5 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
+                  className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
                 >
                   <Icon icon="solar:widget-2-bold-duotone" className="size-3.5 text-white/80" />
                   <span>Host</span>
@@ -612,7 +598,7 @@ export function DashboardShell({
 
               <Link
                 href={ROUTES.home}
-                className="inline-flex h-8.5 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
+                className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
               >
                 <Icon icon="solar:compass-bold-duotone" className="size-3.5 text-white/80" />
                 <span>Traveler</span>

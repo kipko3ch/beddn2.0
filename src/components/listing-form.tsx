@@ -54,7 +54,7 @@ import { validateAndNormalizePhone } from "@/lib/phone";
 const CATEGORY_OPTIONS: {
   value: "hourly" | "overnight" | "both";
   label: string;
-  badge?: string;
+  tagline?: string;
   description: string;
   icon: string;
   image: string;
@@ -62,7 +62,7 @@ const CATEGORY_OPTIONS: {
   {
     value: "overnight",
     label: "Night stay",
-    badge: "Recommended for homes",
+    tagline: "Recommended for homes",
     description: "Standard houses, apartments, villas, and suites booked per night.",
     icon: "solar:moon-stars-bold-duotone",
     image: "/images/cat-overnight.png",
@@ -70,7 +70,7 @@ const CATEGORY_OPTIONS: {
   {
     value: "hourly",
     label: "Hourly space",
-    badge: "Conferences & Events only",
+    tagline: "Conferences & events only",
     description: "Conference rooms, meeting halls, event venues, photo studios, or workspaces.",
     icon: "solar:clock-circle-bold-duotone",
     image: "/images/cat-hourly.png",
@@ -78,7 +78,7 @@ const CATEGORY_OPTIONS: {
   {
     value: "both",
     label: "Both (Night stay + Events)",
-    badge: "Dual-use spaces only",
+    tagline: "Dual-use spaces only",
     description: "Venues offering overnight accommodation and daytime event/meeting bookings.",
     icon: "solar:layers-minimalistic-bold-duotone",
     image: "/images/cat-all.png",
@@ -589,23 +589,23 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     valid: categories.length > 0,
     content: (
       <div className="space-y-4">
-        <div className="grid gap-3.5 sm:grid-cols-3">
-          {CATEGORY_OPTIONS.map(({ value, label, badge, description, icon, image }) => {
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+          {CATEGORY_OPTIONS.map(({ value, label, tagline, description, icon, image }) => {
             const selected = bookingChoice() === value;
             return (
               <button
                 key={value}
                 type="button"
                 onClick={() => handleSelectBookingChoice(value)}
-                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border text-left transition-all ${
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border text-left transition-all ${
                   selected
-                    ? "border-[#800020] bg-[#fbf0f3]/70 shadow-md ring-2 ring-[#800020]/25"
-                    : "border-border bg-white hover:border-[#d7a9b7] hover:shadow-xs"
+                    ? "border-[#800020] bg-[#fbf0f3]/70 shadow-sm ring-2 ring-[#800020]/25"
+                    : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-2xs"
                 }`}
                 aria-pressed={selected}
               >
                 <div>
-                  <div className="relative h-28 w-full overflow-hidden bg-stone-100">
+                  <div className="relative h-28 sm:h-32 w-full overflow-hidden bg-stone-100">
                     <Image
                       src={image}
                       alt={label}
@@ -613,42 +613,33 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                       sizes="(max-width: 640px) 100vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
                     {selected && (
                       <span className="absolute right-2.5 top-2.5 flex size-6 items-center justify-center rounded-full bg-[#800020] text-white shadow-sm ring-2 ring-white">
                         <Check className="h-3.5 w-3.5" />
                       </span>
                     )}
-                    <span className="absolute bottom-2 left-2.5 flex items-center gap-1.5 text-white text-xs font-bold drop-shadow">
-                      <Icon icon={icon} className="size-4 shrink-0" />
-                      <span className="truncate">{label}</span>
-                    </span>
                   </div>
 
                   <div className="p-3.5">
-                    {badge && (
-                      <div className="mb-2">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            value === "overnight"
-                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                              : value === "hourly"
-                              ? "bg-amber-50 text-amber-800 border border-amber-200"
-                              : "bg-purple-50 text-purple-800 border border-purple-200"
-                          }`}
-                        >
-                          {badge}
-                        </span>
-                      </div>
+                    <p className="font-bold text-sm text-[#2b000a]">{label}</p>
+                    {tagline && (
+                      <p className="text-[11px] font-semibold text-[#800020] mt-0.5">
+                        {tagline}
+                      </p>
                     )}
-                    <span className="block text-xs leading-5 text-stone-600 font-medium">
+                    <p className="mt-1.5 text-xs leading-relaxed text-stone-600">
                       {description}
-                    </span>
+                    </p>
                   </div>
                 </div>
               </button>
             );
           })}
+        </div>
+
+        <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-3 text-xs text-stone-600 leading-relaxed">
+          💡 <strong>Tip:</strong> Normal residential houses and apartments should always use <strong>Night stay</strong>. Hourly booking is reserved for conference spaces, event grounds, meeting rooms, and creative studios.
         </div>
 
         {isResidentialProperty && categories.includes("hourly") && (
@@ -669,7 +660,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                     type="button"
                     size="sm"
                     onClick={() => setCategories(["overnight"])}
-                    className="h-8 rounded-full bg-[#800020] px-4 text-xs font-bold text-white hover:bg-merlot shadow-xs"
+                    className="h-8 rounded-xl bg-[#800020] px-4 text-xs font-semibold text-white hover:bg-merlot shadow-xs"
                   >
                     Switch to Night stay (Recommended)
                   </Button>
@@ -681,10 +672,6 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             </div>
           </div>
         )}
-
-        <p className="rounded-xl bg-[#fbf7f8] px-4 py-3 text-xs leading-5 text-muted-foreground">
-          Tip: Normal residential houses and apartments should always use <strong>Night stay</strong>. Hourly booking is reserved for conference spaces, event grounds, meeting rooms, and creative studios.
-        </p>
       </div>
     ),
   });
@@ -1107,14 +1094,14 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   key={preset.label}
                   type="button"
                   onClick={() => setAvailableDays(preset.days)}
-                  className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-[#2b000a] hover:border-[#d7a9b7] hover:bg-[#fbf7f8] transition"
+                  className="rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 transition"
                 >
                   {preset.label}
                 </button>
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {WEEK_DAYS.map((day) => {
               const selected = availableDays.includes(day.value);
               return (
@@ -1123,7 +1110,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   type="button"
                   onClick={() => toggleAvailableDay(day.value)}
                   aria-pressed={selected}
-                  className={`h-12 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-0.5 ${
+                  className={`h-11 sm:h-12 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-0.5 ${
                     selected
                       ? "border-[#800020] bg-[#800020] text-white shadow-xs"
                       : "border-border bg-stone-50 text-stone-600 hover:border-[#d7a9b7]"
@@ -1140,23 +1127,17 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
           </p>
         </div>
 
-        {/* Visual Calendar Tip Card with illustration */}
-        <div className="rounded-2xl border border-stone-200/80 bg-gradient-to-r from-[#fbf0f3]/50 to-white p-4 flex items-center gap-4">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border border-[#f3cfd9] bg-white">
-            <Image
-              src="/images/empty-calendar.png"
-              alt="Calendar integration"
-              fill
-              className="object-cover"
-            />
+        {/* Crisp, High-Visibility Calendar Integration Note */}
+        <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-xl bg-white border border-stone-200 text-[#800020] shadow-2xs">
+            <Icon icon="solar:calendar-date-bold-duotone" className="size-5 sm:size-6" />
           </div>
           <div className="min-w-0 flex-1 text-xs">
-            <p className="font-bold text-[#2b000a] text-sm flex items-center gap-1.5">
-              <Icon icon="solar:shield-check-bold" className="size-4 text-emerald-600" />
-              Easy calendar management
+            <p className="font-bold text-[#2b000a] text-sm">
+              Calendar Integration (Airbnb & Google Sync)
             </p>
-            <p className="mt-0.5 text-stone-600 leading-relaxed text-[11px]">
-              No complicated date scheduling needed right now. Once your listing goes live, you can import your Airbnb/Google Calendar iCal link or block off dates directly.
+            <p className="mt-1 text-stone-600 leading-relaxed text-xs">
+              No complicated date scheduling needed right now. Once your listing goes live, you can import your Airbnb or Google Calendar iCal link to sync availability automatically, or block custom dates directly in your dashboard.
             </p>
           </div>
         </div>
@@ -1262,18 +1243,26 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   steps.push({
     title: "Describe the space",
-    subtitle: "Tell guests what makes it special. Copy the guide or generate it with ChatGPT.",
-    valid: true,
+    subtitle: "Tell guests what makes it special. A good description helps your listing get booked.",
+    valid: description.trim().length >= 10,
     content: (
       <div>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">
+          Description <span className="text-crimson">*</span>
+        </Label>
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={6}
-          placeholder="Write a warm, honest description…"
+          placeholder="Write a clear, inviting description of your place (at least 10 characters)…"
+          className="mt-1.5 text-sm"
         />
+        {description.trim().length < 10 && (
+          <p className="mt-1 text-[11px] text-stone-500 font-medium">
+            Please enter at least 10 characters ({description.trim().length}/10)
+          </p>
+        )}
         <CopyGuide text={DESCRIPTION_GUIDE} />
         <AiPromptHelper facts={aiFacts} />
       </div>
@@ -1578,6 +1567,11 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
         alert("Oops, add the private address. Guests only see it after a confirmed booking.");
         return;
       }
+      if (!description.trim() || description.trim().length < 10) {
+        goToStep("Describe the space");
+        alert("Oops, please add a description of your space (at least 10 characters) before publishing.");
+        return;
+      }
       if (categories.includes("hourly") && parseFloat(hourlyPrice || "0") <= 0) {
         goToStep("Pricing");
         alert("Oops, add an hourly price before publishing.");
@@ -1709,86 +1703,37 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-6">
+      <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col px-3.5 sm:px-0 pb-28 pt-2 sm:pb-0 sm:pt-6">
         <div ref={topRef} className="scroll-mt-20" />
 
-      {/* High-end Stepper Progress Header */}
-      <div className="mb-6 rounded-3xl border border-[#f3cfd9]/80 bg-gradient-to-br from-white via-white to-[#fdf7f9] p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]">
-              <Icon icon="solar:home-add-bold-duotone" className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] sm:text-xs font-bold text-[#800020] uppercase tracking-wider">
-                {listing ? "Update Listing" : "Host Setup"}
-              </p>
-              <h3 className="text-sm font-bold text-[#2b000a] truncate max-w-[200px] sm:max-w-xs">
-                {current.title}
-              </h3>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-[#fbf0f3] px-3 py-1 text-xs font-bold text-[#800020] border border-[#f3cfd9]">
-              {percent}% complete
-            </span>
-          </div>
+      {/* Minimal, Sleek Step Header — Zero chunky cards, zero pills, zero numbered clutter */}
+      <div className="mb-4 sm:mb-6 px-0.5">
+        <div className="flex items-center justify-between text-xs font-medium text-stone-500 mb-2">
+          <span>Step {step + 1} of {steps.length} · <span className="text-stone-800 font-semibold">{current.title}</span></span>
+          <span className="font-semibold text-stone-700">{percent}%</span>
         </div>
-
-        {/* Animated Smooth Progress Track */}
-        <div className="mt-4 relative h-2.5 w-full overflow-hidden rounded-full bg-[#f3e9ed]">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-stone-100">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#800020] via-[#a6173e] to-[#d6285a] transition-all duration-500 ease-out shadow-xs"
+            className="h-full rounded-full bg-[#800020] transition-all duration-300 ease-out"
             style={{ width: `${percent}%` }}
           />
-        </div>
-
-        {/* Interactive Step Navigator */}
-        <div className="mt-3 flex items-center justify-between gap-1 text-[11px] font-medium text-stone-500">
-          <span>Step {step + 1} of {steps.length}</span>
-          <div className="flex items-center gap-1 overflow-x-auto py-1 max-w-[65%] [scrollbar-width:none]">
-            {steps.map((s, i) => {
-              const isPast = i < step;
-              const isCurrent = i === step;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  disabled={i > step}
-                  onClick={() => i < step && setStep(i)}
-                  title={s.title}
-                  className={`size-6 shrink-0 rounded-full text-[10px] font-bold flex items-center justify-center transition-all ${
-                    isCurrent
-                      ? "bg-[#800020] text-white ring-2 ring-[#800020]/20 scale-110"
-                      : isPast
-                      ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 cursor-pointer"
-                      : "bg-[#f5ecf0] text-stone-400 cursor-not-allowed"
-                  }`}
-                >
-                  {isPast ? <Check className="size-3" /> : i + 1}
-                </button>
-              );
-            })}
-          </div>
         </div>
       </div>
 
       {/* Centered focus area */}
       <div className="flex flex-1 items-start py-1">
-        <div className="relative w-full overflow-hidden rounded-3xl border border-[#f3cfd9] bg-white p-5 shadow-lg shadow-[#800020]/5 sm:p-8">
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 size-48 rounded-full bg-radial from-[#fbf0f3] to-transparent pointer-events-none opacity-80 blur-xl" />
-          
-          <div className="relative z-10 mb-6">
+        <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-stone-200/90 bg-white p-4 sm:p-7 shadow-xs">
+          <div className="relative z-10 mb-5 sm:mb-6">
             <h2 className="font-brand text-2xl font-extrabold text-[#2b000a] sm:text-3xl tracking-tight">
               {current.title}
             </h2>
             {current.subtitle && (
-              <p className="mt-1.5 text-sm leading-relaxed text-stone-600 font-medium">
+              <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-stone-600 font-medium">
                 {current.subtitle}
               </p>
             )}
           </div>
-          <div className="relative z-10 sm:max-h-[62vh] sm:overflow-y-auto sm:pr-2">
+          <div className="relative z-10 sm:max-h-[62vh] sm:overflow-y-auto sm:pr-1">
             {current.content}
           </div>
         </div>
@@ -1797,7 +1742,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       {/* Action bar — sticky to the bottom of the viewport on mobile so the
           primary action is always reachable on long steps. */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-white/95 px-4 py-3 backdrop-blur sm:static sm:mt-6 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-        <div className="mx-auto flex max-w-2xl items-center gap-3">
+        <div className="mx-auto flex max-w-xl items-center gap-2.5 sm:gap-3">
           {step > 0 && (
             <Button
               type="button"
