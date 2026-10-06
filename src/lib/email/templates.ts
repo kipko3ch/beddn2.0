@@ -468,3 +468,153 @@ export function hostAnnouncementEmail(input: HostAnnouncementEmailInput): { subj
   });
   return { subject: `📢 Beddn Host Update: ${input.title}`, html };
 }
+
+// ============================================================================
+// LISTING CLAIM FLOW TEMPLATES
+// ============================================================================
+
+export interface ClaimOtpEmailInput {
+  code: string;
+  listingTitle: string;
+}
+
+export function claimOtpEmail(input: ClaimOtpEmailInput): { subject: string; html: string } {
+  const html = shell({
+    title: "Verify your email to claim listing",
+    preheader: `Your verification code is ${input.code}`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Verify your email address</h1>
+      <p style="margin:0 0 16px;font-size:14px;color:${MUTED};">
+        You are claiming ownership of <strong style="color:${INK};">${input.listingTitle}</strong> on Beddn.
+      </p>
+      <div style="background:#fbf0f3;border:1px solid #f3cfd9;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
+        <span style="display:block;font-size:12px;font-weight:bold;color:${BRAND};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Verification Code</span>
+        <span style="font-family:monospace,Consolas,Courier;font-size:32px;font-weight:bold;letter-spacing:6px;color:${INK};">${input.code}</span>
+      </div>
+      <p style="margin:0 0 12px;font-size:13px;color:${MUTED};">
+        This code expires in <strong>10 minutes</strong>. If you did not make this request, you can safely ignore this email.
+      </p>
+    `,
+  });
+  return { subject: `Your Beddn verification code: ${input.code}`, html };
+}
+
+export interface ClaimSubmittedClaimantEmailInput {
+  claimantName: string;
+  listingTitle: string;
+}
+
+export function claimSubmittedClaimantEmail(input: ClaimSubmittedClaimantEmailInput): { subject: string; html: string } {
+  const first = (input.claimantName || "there").split(" ")[0];
+  const html = shell({
+    title: "Claim received — we're reviewing it",
+    preheader: `We've received your claim for ${input.listingTitle}`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Claim received</h1>
+      <p style="margin:0 0 14px;font-size:14px;color:${MUTED};">Hello ${first},</p>
+      <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:${INK};">
+        Thanks, we've received your claim for <strong style="color:${INK};">${input.listingTitle}</strong>.
+      </p>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${MUTED};">
+        Our team reviews every claim to verify ownership or property management authority. We will review the details and get back to you shortly.
+      </p>
+      <div style="border-left:3px solid ${BRAND};padding-left:14px;margin:20px 0;">
+        <p style="margin:0;font-size:13px;color:${INK};font-style:italic;">
+          The listing will remain live on Beddn under "Hosted by Beddn" until your claim is approved.
+        </p>
+      </div>
+    `,
+  });
+  return { subject: `We received your claim for ${input.listingTitle}`, html };
+}
+
+export interface ClaimSubmittedAdminEmailInput {
+  claimantName: string;
+  claimantEmail: string;
+  relationship: string;
+  listingTitle: string;
+  listingId: string;
+  claimId: string;
+  emailMatchesOwner?: boolean;
+}
+
+export function claimSubmittedAdminEmail(input: ClaimSubmittedAdminEmailInput): { subject: string; html: string } {
+  const claimsUrl = `${SITE_URL}/admin/claims`;
+  const html = shell({
+    title: "New listing claim submitted",
+    preheader: `New claim from ${input.claimantName} for ${input.listingTitle}`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">New Listing Claim</h1>
+      <p style="margin:0 0 16px;font-size:14px;color:${MUTED};">
+        A user has submitted a claim to take over an unclaimed listing.
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;">
+        <tr><td style="padding:6px 0;color:${MUTED};width:120px;">Listing:</td><td style="padding:6px 0;font-weight:bold;color:${INK};">${input.listingTitle}</td></tr>
+        <tr><td style="padding:6px 0;color:${MUTED};">Claimant:</td><td style="padding:6px 0;font-weight:bold;color:${INK};">${input.claimantName} (${input.claimantEmail})</td></tr>
+        <tr><td style="padding:6px 0;color:${MUTED};">Relationship:</td><td style="padding:6px 0;font-weight:bold;color:${INK};text-transform:capitalize;">${input.relationship}</td></tr>
+        ${input.emailMatchesOwner ? `<tr><td style="padding:6px 0;color:${MUTED};">Match status:</td><td style="padding:6px 0;font-weight:bold;color:#128c4b;">🎯 Strong match (email matches private owner email)</td></tr>` : ""}
+      </table>
+      <p style="margin:20px 0;">${button(claimsUrl, "Review Claims in Admin")}</p>
+    `,
+  });
+  return { subject: `🔔 New Claim: ${input.claimantName} for ${input.listingTitle}`, html };
+}
+
+export interface ClaimApprovedEmailInput {
+  claimantName: string;
+  listingTitle: string;
+  manageUrl: string;
+}
+
+export function claimApprovedEmail(input: ClaimApprovedEmailInput): { subject: string; html: string } {
+  const first = (input.claimantName || "there").split(" ")[0];
+  const html = shell({
+    title: "Your listing claim has been approved!",
+    preheader: `You can now manage ${input.listingTitle}`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Congratulations! Claim Approved</h1>
+      <p style="margin:0 0 14px;font-size:14px;color:${MUTED};">Hello ${first},</p>
+      <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:${INK};">
+        Your ownership claim for <strong style="color:${INK};">${input.listingTitle}</strong> has been verified and approved by the Beddn team.
+      </p>
+      <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${MUTED};">
+        The listing is now transferred to your host account. Guests will see your host profile directly, and all future booking inquiries will go straight to you.
+      </p>
+      <p style="margin:20px 0;">${button(input.manageUrl, "Manage Your Listing")}</p>
+      <p style="margin:16px 0 0;font-size:12px;color:${MUTED};">
+        Tip: Make sure to review your nightly prices, house rules, and available calendar days in your host dashboard.
+      </p>
+    `,
+  });
+  return { subject: `🎉 Claim Approved: You now own ${input.listingTitle}`, html };
+}
+
+export interface ClaimRejectedEmailInput {
+  claimantName: string;
+  listingTitle: string;
+  reason: string;
+}
+
+export function claimRejectedEmail(input: ClaimRejectedEmailInput): { subject: string; html: string } {
+  const first = (input.claimantName || "there").split(" ")[0];
+  const html = shell({
+    title: "Update regarding your listing claim",
+    preheader: `Update regarding ${input.listingTitle}`,
+    bodyHtml: `
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Listing Claim Update</h1>
+      <p style="margin:0 0 14px;font-size:14px;color:${MUTED};">Hello ${first},</p>
+      <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:${INK};">
+        We have reviewed your claim for <strong style="color:${INK};">${input.listingTitle}</strong>. Unfortunately, we were unable to approve this claim at this time.
+      </p>
+      <div style="background:#fbf0f3;border:1px solid #f3cfd9;border-radius:12px;padding:16px;margin:18px 0;">
+        <span style="display:block;font-size:11px;font-weight:bold;color:${BRAND};text-transform:uppercase;margin-bottom:4px;">Reason</span>
+        <p style="margin:0;font-size:13px;color:${INK};line-height:1.5;">${input.reason}</p>
+      </div>
+      <p style="margin:0;font-size:13px;color:${MUTED};">
+        If you have questions or additional documentation to establish ownership, please reply to this email or contact Beddn support.
+      </p>
+    `,
+  });
+  return { subject: `Update regarding your claim for ${input.listingTitle}`, html };
+}
+

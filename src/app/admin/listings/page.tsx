@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -116,12 +118,20 @@ export default function AdminListingsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage each listing&apos;s lifecycle and featured placement. Only active listings are
-          visible to the public.
-        </p>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-brand text-3xl text-[#2b000a]">Listings</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage each listing&apos;s lifecycle and featured placement. Only active listings are
+            visible to the public.
+          </p>
+        </div>
+        <Link href="/admin/listings/new">
+          <Button className="rounded-full bg-[#800020] text-white hover:bg-merlot font-bold shadow-xs">
+            <Plus className="mr-1.5 h-4 w-4" />
+            Add listing
+          </Button>
+        </Link>
       </div>
 
       {/* Stays / Experiences tabs */}
@@ -185,6 +195,16 @@ export default function AdminListingsPage() {
                       {listing.is_verified && (
                         <span className="rounded-full bg-cream/60 px-2.5 py-0.5 text-xs font-semibold text-crimson">
                           Verified badge
+                        </span>
+                      )}
+                      {listing.ownership_state === "unclaimed" && (
+                        <span className="rounded-full bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-0.5 text-xs font-semibold">
+                          Hosted by Beddn (Unclaimed)
+                        </span>
+                      )}
+                      {listing.ownership_state === "managed_by_admin" && (
+                        <span className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 text-xs font-semibold">
+                          Managed by Admin
                         </span>
                       )}
                       {featuredPlacement && (
@@ -301,9 +321,9 @@ export default function AdminListingsPage() {
 
 function EditButton({ id }: { id: string }) {
   return (
-    <a href={`/host/listings/${id}/edit`} target="_blank" rel="noopener noreferrer">
+    <Link href={`/admin/listings/${id}`}>
       <Button size="sm" variant="outline">Edit</Button>
-    </a>
+    </Link>
   );
 }
 

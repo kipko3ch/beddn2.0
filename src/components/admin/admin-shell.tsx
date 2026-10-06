@@ -11,6 +11,7 @@ const ADMIN_SECTIONS: NavSection[] = [
     items: [
       { href: ROUTES.adminHome, label: "Overview", icon: "solar:widget-2-bold-duotone" },
       { href: ROUTES.adminListings, label: "Listings", icon: "solar:buildings-3-bold-duotone" },
+      { href: ROUTES.adminClaims, label: "Listing Claims", icon: "solar:diploma-verified-bold-duotone" },
       { href: ROUTES.adminHosts, label: "Hosts", icon: "solar:user-bold-duotone" },
       { href: ROUTES.adminUsers, label: "Guests & Users", icon: "solar:users-group-two-rounded-bold-duotone" },
       { href: ROUTES.adminBookings, label: "Bookings", icon: "solar:calendar-date-bold-duotone" },

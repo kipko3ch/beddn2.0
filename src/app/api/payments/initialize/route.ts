@@ -58,6 +58,13 @@ export async function POST(request: Request) {
     }
 
     const listing = listingData as Listing;
+    if (listing.ownership_state === "unclaimed") {
+      return NextResponse.json(
+        { error: "Online payments are disabled for unclaimed listings." },
+        { status: 400 }
+      );
+    }
+
     const categories = getListingCategories(listing);
     if (!categories.includes(input.category)) {
       return NextResponse.json(

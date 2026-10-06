@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { validateAndNormalizePhone } from "@/lib/phone";
+import { recordAuditLog } from "@/lib/audit";
 
 // Fields a host is allowed to set on their own listing.
 const HOST_FIELDS = [
@@ -46,6 +48,13 @@ const ADMIN_FIELDS = [
   "platform_fee_value",
   "verification_status",
   "is_verified",
+  "owner_id",
+  "ownership_state",
+  "private_owner_name",
+  "private_owner_email",
+  "private_notes",
+  "contact_phone",
+  "contact_name",
 ] as const;
 
 type AnyRecord = Record<string, unknown>;
@@ -113,6 +122,42 @@ async function ensureHostId(
     .select("id")
     .single();
   return { hostId: data?.id as string | undefined, error: error?.message ?? null };
+}
+
+async function resolveHostByUserId(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string
+): Promise<{ id: string }> {
+  const { data: existingHost } = await admin
+    .from("hosts")
+    .select("id")
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingHost) return existingHost;
+
+  const { data: userProfile } = await admin
+    .from("profiles")
+    .select("full_name, email, phone")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const { data: newHost, error } = await admin
+    .from("hosts")
+    .insert({
+      user_id: userId,
+      name: userProfile?.full_name || userProfile?.email?.split("@")[0] || "Beddn Host",
+      phone: userProfile?.phone || "",
+      is_verified: false,
+    })
+    .select("id")
+    .single();
+
+  if (error || !newHost) {
+    throw new Error(`Could not resolve host profile for user: ${error?.message}`);
+  }
+  return newHost;
 }
 
 async function saveImages(
@@ -190,8 +235,6 @@ export async function POST(request: Request) {
   const body = (await request.json()) as ListingRequest;
   const { admin, isAdmin, host, hostError } = await resolveContext(auth.user.id);
 
-  // A query error here means the DB was unreachable — surface it instead of the
-  // misleading "create a host profile" message.
   if (hostError) {
     return NextResponse.json(
       { error: `Could not verify host profile: ${hostError.message}` },
@@ -204,7 +247,7 @@ export async function POST(request: Request) {
     auth.user,
     host
   );
-  if (!hostId) {
+  if (!hostId && !isAdmin) {
     return NextResponse.json(
       { error: hostCreateError ?? "Could not resolve host profile" },
       { status: 400 }
@@ -214,18 +257,61 @@ export async function POST(request: Request) {
   const row: AnyRecord = {
     ...pick(body.payload, HOST_FIELDS),
     ...(isAdmin ? pick(body.payload, ADMIN_FIELDS) : {}),
-    host_id: hostId, // never trust client-supplied host_id
     updated_at: new Date().toISOString(),
   };
 
   // When ready to go live, don't wait for admin confirmation — publish directly live.
-  // Admin only controls verification (is_verified).
   if (row.listing_status === "draft") {
     row.listing_status = "draft";
     row.is_active = false;
   } else {
     row.listing_status = "active";
     row.is_active = true;
+  }
+
+  // Handle ownership assignment
+  let targetOwnershipState: "owned" | "managed_by_admin" | "unclaimed" = "owned";
+  let targetOwnerId: string | null = auth.user.id;
+  let targetHostId: string | null = hostId || null;
+
+  if (isAdmin && body.payload.ownership_state) {
+    const requestedState = body.payload.ownership_state as string;
+    if (requestedState === "unclaimed") {
+      targetOwnershipState = "unclaimed";
+      targetOwnerId = null;
+      targetHostId = null;
+
+      // Unclaimed listing phone validation
+      const rawContactPhone = body.payload.contact_phone;
+      const isPublishing = row.listing_status !== "draft";
+      if (isPublishing || rawContactPhone) {
+        const phoneVal = validateAndNormalizePhone(rawContactPhone);
+        if (!phoneVal.isValid) {
+          return NextResponse.json(
+            { error: phoneVal.error || "A valid contact phone with country code is required for unclaimed listings." },
+            { status: 400 }
+          );
+        }
+        row.contact_phone = phoneVal.normalized;
+      }
+      row.contact_name = (body.payload.contact_name as string)?.trim() || "Beddn";
+    } else if (requestedState === "managed_by_admin") {
+      targetOwnershipState = "managed_by_admin";
+      const assignedUserId = (body.payload.owner_id as string) || auth.user.id;
+      targetOwnerId = assignedUserId;
+      const assignedHost = await resolveHostByUserId(admin, assignedUserId);
+      targetHostId = assignedHost.id;
+      row.contact_phone = null;
+      row.contact_name = null;
+    }
+  }
+
+  row.ownership_state = targetOwnershipState;
+  row.owner_id = targetOwnerId;
+  row.host_id = targetHostId;
+
+  if (isAdmin) {
+    row.created_by_admin_id = auth.user.id;
   }
 
   // If host is verified, automatically mark any listing they create as verified
@@ -253,6 +339,21 @@ export async function POST(request: Request) {
       { error: error?.message ?? "Failed to create listing" },
       { status: 400 }
     );
+  }
+
+  // Audit log for admin created listing
+  if (isAdmin) {
+    await recordAuditLog({
+      actorId: auth.user.id,
+      action: "admin_created_listing",
+      entityType: "listing",
+      entityId: listing.id,
+      details: {
+        ownership_state: targetOwnershipState,
+        owner_id: targetOwnerId,
+        contact_phone: row.contact_phone,
+      },
+    });
   }
 
   await saveImages(admin, listing.id, body.imageUrls);
@@ -288,14 +389,21 @@ export async function PATCH(request: Request) {
 
   const { data: existing } = await admin
     .from("listings")
-    .select("id, host_id, listing_status")
+    .select("id, host_id, owner_id, ownership_state, listing_status")
     .eq("id", body.listingId)
     .maybeSingle();
 
   if (!existing) {
     return NextResponse.json({ error: "Listing not found" }, { status: 404 });
   }
-  if (!isAdmin && (!host || existing.host_id !== host.id)) {
+
+  // Permission check: admin can edit any listing; host can edit if they are owner or host_id matches
+  const isOwner = Boolean(
+    (existing as any).owner_id === auth.user.id ||
+    (host && existing.host_id === host.id)
+  );
+
+  if (!isAdmin && !isOwner) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -313,6 +421,38 @@ export async function PATCH(request: Request) {
     } else {
       row.listing_status = "active";
       row.is_active = true;
+    }
+  }
+
+  // Handle Admin reassign, unassign, or handover
+  if (isAdmin && "ownership_state" in body.payload) {
+    const requestedState = body.payload.ownership_state as string;
+    if (requestedState === "unclaimed") {
+      row.ownership_state = "unclaimed";
+      row.owner_id = null;
+      row.host_id = null;
+
+      const rawContactPhone = body.payload.contact_phone;
+      const isPublishing = (row.listing_status || existing.listing_status) !== "draft";
+      if (isPublishing || rawContactPhone) {
+        const phoneVal = validateAndNormalizePhone(rawContactPhone);
+        if (!phoneVal.isValid) {
+          return NextResponse.json(
+            { error: phoneVal.error || "A valid contact phone with country code is required for unclaimed listings." },
+            { status: 400 }
+          );
+        }
+        row.contact_phone = phoneVal.normalized;
+      }
+      row.contact_name = (body.payload.contact_name as string)?.trim() || "Beddn";
+    } else if (requestedState === "managed_by_admin" || requestedState === "owned") {
+      row.ownership_state = requestedState;
+      const assignedUserId = (body.payload.owner_id as string) || (existing as any).owner_id || auth.user.id;
+      row.owner_id = assignedUserId;
+      const assignedHost = await resolveHostByUserId(admin, assignedUserId);
+      row.host_id = assignedHost.id;
+      row.contact_phone = null;
+      row.contact_name = null;
     }
   }
 
@@ -337,6 +477,19 @@ export async function PATCH(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  if (isAdmin) {
+    await recordAuditLog({
+      actorId: auth.user.id,
+      action: "admin_updated_listing",
+      entityType: "listing",
+      entityId: body.listingId,
+      details: {
+        ownership_state: row.ownership_state || existing.ownership_state,
+        owner_id: row.owner_id,
+      },
+    });
   }
 
   await saveImages(admin, body.listingId, body.imageUrls);

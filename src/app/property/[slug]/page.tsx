@@ -139,14 +139,20 @@ export default async function PropertyPage({
   const { data: auth } = await supabase.auth.getUser();
   const isOwnListing =
     Boolean(auth.user?.id) &&
-    (listingData.host as { user_id?: string } | null | undefined)?.user_id === auth.user?.id;
+    (
+      (listingData as any).owner_id === auth.user?.id ||
+      (listingData.host as { user_id?: string } | null | undefined)?.user_id === auth.user?.id
+    );
 
   const jsonLd = generateListingJsonLd(listingData as Listing, reviews);
 
-  // Never ship private host data to the browser — the exact address and
-  // check-in details unlock only after a confirmed booking.
+  // Never ship private host or owner data to the browser
   delete (listingData as Record<string, unknown>).private_address;
   delete (listingData as Record<string, unknown>).check_in_instructions;
+  delete (listingData as Record<string, unknown>).private_owner_name;
+  delete (listingData as Record<string, unknown>).private_owner_email;
+  delete (listingData as Record<string, unknown>).private_notes;
+  delete (listingData as Record<string, unknown>).created_by_admin_id;
   delete ((listingData.host ?? {}) as Record<string, unknown>).user_id;
 
   return (

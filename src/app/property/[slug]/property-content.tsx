@@ -38,10 +38,13 @@ import {
   Wifi,
   Wind,
   X,
+  Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ClaimListingLink } from "@/components/claims/claim-link";
+import { getTelLink, getWhatsAppLink, formatPhoneDisplay } from "@/lib/phone";
 import { EmptyState } from "@/components/empty-state";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { Calendar } from "@/components/ui/calendar";
@@ -743,38 +746,79 @@ export function PropertyContent({
 
           <section>
             <h2 className="mb-4 text-xl font-bold">Meet your host</h2>
-            <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream text-crimson">
-                    {listing.host?.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={listing.host.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <UserCircle className="h-8 w-8" />
-                    )}
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold text-[#181113]">
-                        Hosted by {listing.host?.name || "a Beddn host"}
+            {listing.ownership_state === "unclaimed" ? (
+              <div className="flex flex-col gap-4 rounded-2xl border bg-white p-5 shadow-xs">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fbf0f3] border border-[#f3cfd9]">
+                      <Image
+                        src={LOGO_SRC}
+                        alt="Beddn"
+                        width={38}
+                        height={38}
+                        className="object-contain"
+                      />
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-[#181113]">Hosted by Beddn</p>
+                        <VerifiedBadge text="Managed by Beddn" size="sm" variant="minimal" />
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        This property is managed directly by Beddn. Contact our support or property team directly for reservations and inquiries.
                       </p>
-                      {listing.host?.is_verified && (
-                        <VerifiedBadge text="Verified host" size="sm" variant="minimal" />
-                      )}
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Host details and exact directions unlock after your booking is confirmed.
-                    </p>
                   </div>
                 </div>
+
+                {/* Claim listing link - strictly for unclaimed listings only */}
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <ClaimListingLink
+                    listingId={listing.id}
+                    listingTitle={listing.title || listing.name}
+                    ownershipState={listing.ownership_state}
+                  />
+                  {listing.contact_phone && (
+                    <span className="text-xs text-muted-foreground">
+                      Contact: {formatPhoneDisplay(listing.contact_phone)}
+                    </span>
+                  )}
+                </div>
               </div>
-              {listing.host?.bio && (
-                <p className="whitespace-pre-line text-sm leading-relaxed text-[#181113]">
-                  {listing.host.bio}
-                </p>
-              )}
-            </div>
+            ) : (
+              <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream text-crimson">
+                      {listing.host?.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={listing.host.avatar_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <UserCircle className="h-8 w-8" />
+                      )}
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-[#181113]">
+                          Hosted by {listing.host?.name || "a Beddn host"}
+                        </p>
+                        {listing.host?.is_verified && (
+                          <VerifiedBadge text="Verified host" size="sm" variant="minimal" />
+                        )}
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Host details and exact directions unlock after your booking is confirmed.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {listing.host?.bio && (
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-[#181113]">
+                    {listing.host.bio}
+                  </p>
+                )}
+              </div>
+            )}
           </section>
 
           <Separator />
@@ -1237,6 +1281,51 @@ export function PropertyContent({
               >
                 Manage listing
               </Link>
+            ) : listing.ownership_state === "unclaimed" ? (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-xl bg-[#fbf0f3] p-3 text-xs text-[#800020] border border-[#f3cfd9]/80">
+                  <p className="font-semibold">Hosted by Beddn</p>
+                  <p className="mt-0.5 text-neutral-600">
+                    Online checkout is paused for this property. Inquire and reserve directly via Call or WhatsApp:
+                  </p>
+                </div>
+
+                {listing.contact_phone ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={getTelLink(listing.contact_phone)}
+                      className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#800020] text-sm font-bold text-white hover:bg-merlot shadow-sm transition"
+                    >
+                      <Phone className="h-4 w-4" />
+                      <span>Call {listing.contact_name || "Beddn"}</span>
+                    </a>
+                    <a
+                      href={getWhatsAppLink(
+                        listing.contact_phone,
+                        `Hello ${listing.contact_name || "Beddn"}, I'm interested in booking "${listing.title || listing.name}" on Beddn.`
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#25D366] text-sm font-bold text-white hover:bg-[#1EBE5D] shadow-sm transition"
+                    >
+                      <Icon icon="logos:whatsapp-icon" className="h-4 w-4" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+                ) : (
+                  <div className="text-center text-xs text-muted-foreground py-2">
+                    Contact details pending
+                  </div>
+                )}
+
+                <div className="pt-2 text-center">
+                  <ClaimListingLink
+                    listingId={listing.id}
+                    listingTitle={listing.title || listing.name}
+                    ownershipState={listing.ownership_state}
+                  />
+                </div>
+              </div>
             ) : hasAvailability ? (
               <div className="mt-4 space-y-2">
                 <RequestToBookButton
@@ -1330,6 +1419,28 @@ export function PropertyContent({
             >
               Manage
             </Link>
+          ) : listing.ownership_state === "unclaimed" && listing.contact_phone ? (
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href={getTelLink(listing.contact_phone)}
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-[#800020] px-4 text-xs font-bold text-white hover:bg-merlot"
+              >
+                <Phone className="h-3.5 w-3.5" />
+                <span>Call</span>
+              </a>
+              <a
+                href={getWhatsAppLink(
+                  listing.contact_phone,
+                  `Hello ${listing.contact_name || "Beddn"}, I'm interested in booking "${listing.title || listing.name}".`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white hover:bg-[#1EBE5D]"
+              >
+                <Icon icon="logos:whatsapp-icon" className="h-3.5 w-3.5" />
+                <span>WhatsApp</span>
+              </a>
+            </div>
           ) : hasAvailability ? (
             <RequestToBookButton
               user={user}

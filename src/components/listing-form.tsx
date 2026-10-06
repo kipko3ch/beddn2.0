@@ -49,6 +49,7 @@ import { EXPERIENCE_GROUPS, EXPERIENCE_LABEL } from "@/lib/experience-types";
 import { useCurrency } from "@/components/currency-provider";
 import { convertAmount, formatMoney } from "@/lib/currency";
 import type { Listing, ListingCategory } from "@/lib/types";
+import { validateAndNormalizePhone } from "@/lib/phone";
 
 const CATEGORY_OPTIONS: {
   value: "hourly" | "overnight" | "both";
@@ -236,6 +237,46 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const [uploadError, setUploadError] = useState("");
   const [propertySearch, setPropertySearch] = useState("");
 
+  // Admin assignment & claim management state
+  const [ownershipState, setOwnershipState] = useState<"managed_by_admin" | "unclaimed">(
+    (listing?.ownership_state as "managed_by_admin" | "unclaimed") || "managed_by_admin"
+  );
+  const [assignedUserId, setAssignedUserId] = useState<string>(listing?.owner_id || "");
+  const [assignedUserLabel, setAssignedUserLabel] = useState<string>(
+    listing?.host?.name || ""
+  );
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState<
+    Array<{ id: string; email: string; full_name?: string }>
+  >([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+
+  const [contactPhone, setContactPhone] = useState(listing?.contact_phone || "");
+  const [contactName, setContactName] = useState(listing?.contact_name || "Beddn");
+  const [privateOwnerName, setPrivateOwnerName] = useState(listing?.private_owner_name || "");
+  const [privateOwnerEmail, setPrivateOwnerEmail] = useState(listing?.private_owner_email || "");
+  const [privateNotes, setPrivateNotes] = useState(listing?.private_notes || "");
+
+  async function searchUsers(q: string) {
+    const trimmed = q.trim();
+    if (!trimmed || trimmed.length < 2) {
+      setUserSearchResults([]);
+      return;
+    }
+    setSearchingUsers(true);
+    try {
+      const res = await fetch(`/api/admin/users/search?q=${encodeURIComponent(trimmed)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUserSearchResults(data.users || []);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSearchingUsers(false);
+    }
+  }
+
   async function handleImageFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setUploadError("");
@@ -325,6 +366,203 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
 
   // --- Wizard steps ---------------------------------------------------------
   const steps: { title: string; subtitle?: string; valid: boolean; content: React.ReactNode }[] = [];
+
+  if (isAdmin) {
+    steps.push({
+      title: "Who is hosting this place?",
+      subtitle: "Assign this listing to an existing host or manage it under Beddn until claimed.",
+      valid:
+        ownershipState === "unclaimed"
+          ? Boolean(contactPhone.trim())
+          : Boolean(assignedUserId),
+      content: (
+        <div className="space-y-6">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setOwnershipState("managed_by_admin")}
+              className={`flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition ${
+                ownershipState === "managed_by_admin"
+                  ? "border-[#800020] bg-[#fbf0f3] ring-2 ring-[#800020]/20"
+                  : "border-stone-200 bg-white hover:border-stone-300"
+              }`}
+            >
+              <div className="flex size-9 items-center justify-center rounded-xl bg-white border border-[#f3cfd9] text-[#800020]">
+                <Icon icon="solar:user-bold-duotone" className="size-5" />
+              </div>
+              <div>
+                <p className="font-bold text-sm text-[#2b000a]">Existing user</p>
+                <p className="text-xs text-stone-500 mt-0.5 leading-relaxed">
+                  Assign to a registered host. They will see &quot;Created for you by Beddn&quot; and can edit anytime.
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setOwnershipState("unclaimed")}
+              className={`flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition ${
+                ownershipState === "unclaimed"
+                  ? "border-[#800020] bg-[#fbf0f3] ring-2 ring-[#800020]/20"
+                  : "border-stone-200 bg-white hover:border-stone-300"
+              }`}
+            >
+              <div className="flex size-9 items-center justify-center rounded-xl bg-white border border-[#f3cfd9] text-[#800020]">
+                <Icon icon="solar:shield-star-bold-duotone" className="size-5" />
+              </div>
+              <div>
+                <p className="font-bold text-sm text-[#2b000a]">No host yet (Hosted by Beddn)</p>
+                <p className="text-xs text-stone-500 mt-0.5 leading-relaxed">
+                  Displays publicly as &quot;Hosted by Beddn&quot; with a support contact number until claimed.
+                </p>
+              </div>
+            </button>
+          </div>
+
+          {ownershipState === "managed_by_admin" ? (
+            <div className="space-y-4 rounded-2xl border border-stone-200 bg-stone-50/50 p-4">
+              <div>
+                <Label htmlFor="user-search">Search Beddn user</Label>
+                <p className="text-xs text-stone-500 mb-2">Find a user by full name or email address</p>
+                <div className="relative">
+                  <Input
+                    id="user-search"
+                    value={userSearchQuery}
+                    onChange={(e) => {
+                      setUserSearchQuery(e.target.value);
+                      searchUsers(e.target.value);
+                    }}
+                    placeholder="Type name or email to search..."
+                    className="h-11 bg-white pl-9"
+                  />
+                  <Search className="absolute left-3 top-3.5 size-4 text-stone-400" />
+                </div>
+              </div>
+
+              {assignedUserId && (
+                <div className="flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900">
+                  <div>
+                    <span className="font-bold">Assigned to:</span> {assignedUserLabel || assignedUserId}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAssignedUserId("");
+                      setAssignedUserLabel("");
+                    }}
+                    className="text-emerald-700 underline font-semibold hover:text-emerald-900"
+                  >
+                    Change
+                  </button>
+                </div>
+              )}
+
+              {searchingUsers && (
+                <p className="text-xs text-stone-500 animate-pulse">Searching users...</p>
+              )}
+
+              {userSearchResults.length > 0 && (
+                <div className="max-h-48 overflow-y-auto rounded-xl border border-stone-200 bg-white divide-y">
+                  {userSearchResults.map((u) => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => {
+                        setAssignedUserId(u.id);
+                        setAssignedUserLabel(`${u.full_name || "User"} (${u.email})`);
+                        setUserSearchResults([]);
+                        setUserSearchQuery("");
+                      }}
+                      className="w-full flex items-center justify-between p-2.5 text-left hover:bg-stone-50 transition-colors text-xs"
+                    >
+                      <div>
+                        <p className="font-semibold text-stone-900">{u.full_name || "No name"}</p>
+                        <p className="text-stone-500 text-[11px]">{u.email}</p>
+                      </div>
+                      <span className="text-[11px] font-bold text-[#800020]">Select</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4 rounded-2xl border border-stone-200 bg-stone-50/50 p-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="contact_phone">
+                    Public contact phone <span className="text-crimson">*</span>
+                  </Label>
+                  <p className="text-[11px] text-stone-500 mb-1">
+                    Number guests call / WhatsApp (e.g. +254712345678)
+                  </p>
+                  <Input
+                    id="contact_phone"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    placeholder="+254700000000"
+                    className="h-11 bg-white font-mono text-sm"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="contact_name">Contact display name</Label>
+                  <p className="text-[11px] text-stone-500 mb-1">
+                    Label for Call/WhatsApp (e.g. Beddn Support)
+                  </p>
+                  <Input
+                    id="contact_name"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    placeholder="Beddn Support"
+                    className="h-11 bg-white text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-stone-200 pt-3">
+                <p className="text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
+                  Private Owner Info (Admin-only · Never public)
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor="private_owner_name">Owner / Property name</Label>
+                    <Input
+                      id="private_owner_name"
+                      value={privateOwnerName}
+                      onChange={(e) => setPrivateOwnerName(e.target.value)}
+                      placeholder="e.g. John Kamau"
+                      className="mt-1 h-10 bg-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="private_owner_email">Owner email (for claim auto-match)</Label>
+                    <Input
+                      id="private_owner_email"
+                      type="email"
+                      value={privateOwnerEmail}
+                      onChange={(e) => setPrivateOwnerEmail(e.target.value)}
+                      placeholder="e.g. john@example.com"
+                      className="mt-1 h-10 bg-white text-xs"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Label htmlFor="private_notes">Private admin notes</Label>
+                  <Textarea
+                    id="private_notes"
+                    value={privateNotes}
+                    onChange={(e) => setPrivateNotes(e.target.value)}
+                    placeholder="Internal property notes, keys/gate arrangements, commission agreements..."
+                    className="mt-1 bg-white text-xs"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+    });
+  }
 
   steps.push({
     title: "What's the name of your place?",
@@ -1360,6 +1598,22 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
         alert("Photos are strictly required before publishing. Please upload at least one photo of your place.");
         return;
       }
+      if (isAdmin) {
+        if (ownershipState === "unclaimed") {
+          const phoneCheck = validateAndNormalizePhone(contactPhone);
+          if (!phoneCheck.isValid) {
+            goToStep("Who is hosting this place?");
+            alert(`Oops: ${phoneCheck.error || "Please enter a valid public contact phone with country code."}`);
+            return;
+          }
+        } else if (ownershipState === "managed_by_admin") {
+          if (!assignedUserId) {
+            goToStep("Who is hosting this place?");
+            alert("Oops, please select an existing user to assign this listing to.");
+            return;
+          }
+        }
+      }
     }
     if (submitting || savingDraft) return;
     if (asDraft) setSavingDraft(true);
@@ -1404,6 +1658,20 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       house_rules: houseRules || null,
       is_active: active,
       is_verified: isAdmin ? isVerified : listing?.is_verified ?? false,
+      ...(isAdmin
+        ? {
+            ownership_state: ownershipState,
+            owner_id: ownershipState === "managed_by_admin" ? (assignedUserId || null) : null,
+            contact_phone:
+              ownershipState === "unclaimed"
+                ? (validateAndNormalizePhone(contactPhone).normalized || contactPhone)
+                : null,
+            contact_name: ownershipState === "unclaimed" ? (contactName.trim() || "Beddn") : null,
+            private_owner_name: ownershipState === "unclaimed" ? (privateOwnerName.trim() || null) : null,
+            private_owner_email: ownershipState === "unclaimed" ? (privateOwnerEmail.trim() || null) : null,
+            private_notes: ownershipState === "unclaimed" ? (privateNotes.trim() || null) : null,
+          }
+        : {}),
     };
 
     const availabilitySlots: any[] = [];
@@ -1429,7 +1697,11 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       return;
     }
 
-    router.push("/host/listings");
+    if (isAdmin) {
+      router.push("/admin/listings");
+    } else {
+      router.push("/host/listings");
+    }
     router.refresh();
   }
 

@@ -29,6 +29,7 @@ export const ROUTES = {
   adminPayments: "/admin/payments",
   adminHosts: "/admin/hosts",
   adminListings: "/admin/listings",
+  adminClaims: "/admin/claims",
   adminWithdrawals: "/admin/withdrawals",
   adminDisputes: "/admin/disputes",
   adminFeedback: "/admin/feedback",

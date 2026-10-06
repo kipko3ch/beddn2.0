@@ -70,6 +70,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "This listing is not accepting requests right now." }, { status: 400 });
     }
 
+    if (listing.ownership_state === "unclaimed") {
+      return NextResponse.json(
+        { error: "Online booking requests are disabled for unclaimed listings. Please contact the property directly via phone or WhatsApp." },
+        { status: 400 }
+      );
+    }
+
     const categories = getListingCategories(listing);
     if (!categories.includes(input.category)) {
       return NextResponse.json({ error: "This booking type is not available for this listing" }, { status: 400 });

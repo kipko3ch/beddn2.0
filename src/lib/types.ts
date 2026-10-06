@@ -58,9 +58,21 @@ export interface Host {
   created_at: string;
 }
 
+export type OwnershipState = "owned" | "managed_by_admin" | "unclaimed";
+export type ClaimRelationship = "owner" | "manager" | "caretaker";
+export type ClaimStatus = "pending" | "approved" | "rejected" | "withdrawn";
+
 export interface Listing {
   id: string;
-  host_id: string;
+  host_id?: string | null;
+  owner_id?: string | null;
+  created_by_admin_id?: string | null;
+  ownership_state?: OwnershipState;
+  private_owner_name?: string | null;
+  private_owner_email?: string | null;
+  private_notes?: string | null;
+  contact_phone?: string | null;
+  contact_name?: string | null;
   slug: string;
   title?: string | null;
   name: string;
@@ -105,9 +117,43 @@ export interface Listing {
   created_at: string;
   updated_at: string;
   // Joined
-  host?: Host;
+  host?: Host | null;
   listing_images?: ListingImage[];
   reviews?: Review[];
+}
+
+export interface ListingClaim {
+  id: string;
+  listing_id: string;
+  user_id: string;
+  full_name: string;
+  relationship: ClaimRelationship;
+  message?: string | null;
+  status: ClaimStatus;
+  email_verified: boolean;
+  email_matches_owner: boolean;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  rejection_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  listing?: Listing;
+  claimant?: {
+    id: string;
+    email: string;
+    full_name?: string | null;
+  };
+}
+
+export interface AuditLog {
+  id: string;
+  actor_id?: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  details?: Record<string, unknown>;
+  created_at: string;
 }
 
 export interface ListingImage {

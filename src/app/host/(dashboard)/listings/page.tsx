@@ -65,22 +65,21 @@ export default function ListingsPage() {
       .eq("id", user.user.id)
       .maybeSingle();
 
-    let query = supabase
-      .from("listings")
-      .select("*, listing_images(*), host:hosts(name)")
-      .order("created_at", { ascending: false });
-
     const { data: host } = await supabase
       .from("hosts")
       .select("id")
       .eq("user_id", user.user.id)
       .maybeSingle();
+
+    let query = supabase
+      .from("listings")
+      .select("*, listing_images(*), host:hosts(name)")
+      .order("created_at", { ascending: false });
+
     if (host) {
-      query = query.eq("host_id", host.id);
+      query = query.or(`host_id.eq.${host.id},owner_id.eq.${user.user.id}`);
     } else {
-      setListings([]);
-      setLoading(false);
-      return;
+      query = query.eq("owner_id", user.user.id);
     }
 
     const { data } = await query;
@@ -160,10 +159,20 @@ export default function ListingsPage() {
                     <p className="text-sm text-muted-foreground">
                       {listing.area}, {listing.city}
                     </p>
+                    {listing.ownership_state === "managed_by_admin" && (
+                      <p className="mt-1 text-xs text-[#800020] font-medium">
+                        Created for you by Beddn · You can take over editing and customize anytime.
+                      </p>
+                    )}
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       <Badge className={`text-xs ${STATUS_BADGE[status] ?? "bg-muted text-muted-foreground"}`}>
                         {STATUS_TEXT[status] ?? status}
                       </Badge>
+                      {listing.ownership_state === "managed_by_admin" && (
+                        <span className="rounded-full bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9] px-2.5 py-0.5 text-xs font-semibold">
+                          Created by Beddn
+                        </span>
+                      )}
                       {listing.is_verified ? (
                         <VerifiedBadge text="Verified" size="xs" />
                       ) : (
