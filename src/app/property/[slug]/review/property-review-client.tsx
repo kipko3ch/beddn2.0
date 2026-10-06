@@ -348,23 +348,38 @@ export function PropertyReviewClient({ listing }: { listing: ListingProps }) {
                   <span className="truncate">{listingLocation || "Kenya"}</span>
                 </div>
 
-                {listing.host?.name && (
-                  <div className="mt-2 flex items-center gap-2 pt-2 border-t border-stone-100 text-xs text-stone-600">
-                    <div className="relative h-5 w-5 overflow-hidden rounded-full bg-stone-200">
-                      {listing.host.avatar_url ? (
-                        <Image
-                          src={listing.host.avatar_url}
-                          alt={listing.host.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <Users className="h-3 w-3 m-auto text-stone-400" />
-                      )}
+                {(() => {
+                  const isBeddn = !listing.host?.name || listing.host.name.toLowerCase().includes("beddn");
+                  return (
+                    <div className="mt-2 flex items-center gap-2 pt-2 border-t border-stone-100 text-xs text-stone-600">
+                      <div className="relative h-5 w-5 overflow-hidden rounded-full bg-[#fbf0f3] border border-[#f3cfd9] shrink-0 flex items-center justify-center">
+                        {isBeddn ? (
+                          <Image
+                            src="/images/logo.png"
+                            alt="Beddn"
+                            fill
+                            className="object-contain p-0.5"
+                          />
+                        ) : listing.host?.avatar_url ? (
+                          <Image
+                            src={listing.host.avatar_url}
+                            alt={listing.host.name || ""}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <Users className="h-3 w-3 m-auto text-stone-400" />
+                        )}
+                      </div>
+                      <span>
+                        Hosted by{" "}
+                        <strong className="font-semibold text-stone-800">
+                          {isBeddn ? "Beddn" : listing.host?.name}
+                        </strong>
+                      </span>
                     </div>
-                    <span>Hosted by <strong className="font-semibold text-stone-800">{listing.host.name}</strong></span>
-                  </div>
-                )}
+                  );
+                })()}
 
                 <div className="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between text-xs">
                   <span className="text-stone-400">Not the right place?</span>

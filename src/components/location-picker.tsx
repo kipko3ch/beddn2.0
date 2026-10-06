@@ -232,12 +232,15 @@ export function LocationPicker({
     setGeoError("");
     try {
       const res = await fetch(`/api/geocode?q=${encodeURIComponent(geoQuery.trim())}`);
-      if (!res.ok) throw new Error("Area not found");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || "Area not found. Try entering your neighborhood or dragging the red pin.");
+      }
       const data: {
         center?: [number, number];
         address?: { country?: string; region?: string; area?: string };
       } = await res.json();
-      if (!data.center) throw new Error("Area not found");
+      if (!data.center) throw new Error("Area not found. Try dragging the red pin.");
       const [lng, lat] = data.center;
       flyTo(lat, lng, 15);
       onCoordsChange(lat, lng);

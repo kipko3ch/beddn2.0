@@ -34,11 +34,50 @@ const NOMINATIM_HEADERS = {
   "User-Agent": "Beddn MVP",
 };
 
+async function searchWithGooglePlaces(query: string, apiKey: string) {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?${new URLSearchParams({
+      query,
+      key: apiKey,
+    }).toString()}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== "OK" || !data.results?.[0]) return null;
+    const first = data.results[0];
+    const { lat, lng } = first.geometry.location;
+
+    const parts = (first.formatted_address || "").split(",").map((s: string) => s.trim());
+    const country = parts.length > 0 ? parts[parts.length - 1] : "";
+    const city = parts.length > 1 ? parts[parts.length - 2] : "";
+    const area = first.name || (parts.length > 2 ? parts[parts.length - 3] : "");
+
+    return {
+      center: [Number(lng), Number(lat)] as [number, number],
+      label: `${first.name ? `${first.name}, ` : ""}${first.formatted_address || query}`,
+      isBroad: false,
+      address: {
+        country: country || "Kenya",
+        city: city || "Nairobi",
+        region: city || "Nairobi",
+        area: area || first.name || "",
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Resolves location using Google Geocoding / Places API if an API key is configured.
+ * Resolves location using Google Places / Geocoding API if an API key is configured.
  * Keeps costs at $0 under Google's $200/mo credit by only running on host landmark search.
  */
 async function geocodeWithGoogle(query: string, apiKey: string) {
+  // 1. Try Google Places Text Search (optimized for landmarks, malls, estates, and points of interest)
+  const placeResult = await searchWithGooglePlaces(query, apiKey);
+  if (placeResult) return placeResult;
+
+  // 2. Fall back to Google Geocoding API (best for street addresses and administrative areas)
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?${new URLSearchParams({
       address: query,
@@ -206,6 +245,10 @@ export async function GET(request: Request) {
     if (googleResult) {
       return NextResponse.json(googleResult);
     }
+  } else {
+    console.warn(
+      "[/api/geocode] Warning: No GOOGLE_MAPS_API_KEY set in .env.local. Falling back to OpenStreetMap Nominatim."
+    );
   }
 
   // Fallback: OpenStreetMap / Nominatim

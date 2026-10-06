@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ElementType } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { uploadListingImage } from "@/lib/upload-image";
 import { InstructionsManager } from "@/components/instructions-manager";
 import { Button } from "@/components/ui/button";
@@ -256,6 +257,91 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const [privateOwnerName, setPrivateOwnerName] = useState(listing?.private_owner_name || "");
   const [privateOwnerEmail, setPrivateOwnerEmail] = useState(listing?.private_owner_email || "");
   const [privateNotes, setPrivateNotes] = useState(listing?.private_notes || "");
+
+  // Existing listings for 1-click address & location reuse
+  interface ExistingListingSummary {
+    id: string;
+    name?: string;
+    title?: string;
+    country?: string;
+    city?: string;
+    area?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    private_address?: string | null;
+    check_in_instructions?: string | null;
+  }
+  const [existingLocations, setExistingLocations] = useState<ExistingListingSummary[]>([]);
+  const [selectedExistingListingId, setSelectedExistingListingId] = useState<string>("");
+  const [copiedAddressNotice, setCopiedAddressNotice] = useState<string>("");
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchHostExistingListings() {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        let query = supabase
+          .from("listings")
+          .select(
+            "id, name, title, country, city, area, latitude, longitude, private_address, check_in_instructions"
+          )
+          .order("created_at", { ascending: false });
+
+        if (assignedUserId) {
+          query = query.eq("owner_id", assignedUserId);
+        } else if (hostId) {
+          query = query.or(`host_id.eq.${hostId},owner_id.eq.${user.id}`);
+        } else if (!isAdmin) {
+          query = query.eq("owner_id", user.id);
+        } else {
+          query = query.limit(50);
+        }
+
+        const { data } = await query;
+        if (isMounted && data) {
+          const valid = (data as ExistingListingSummary[]).filter(
+            (l) => l.id !== listing?.id && Boolean(l.area || l.city || l.private_address)
+          );
+          setExistingLocations(valid);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    fetchHostExistingListings();
+    return () => {
+      isMounted = false;
+    };
+  }, [hostId, isAdmin, assignedUserId, listing?.id]);
+
+  function handleApplyExistingListingAddress(listingId: string | null) {
+    if (!listingId) return;
+    const chosen = existingLocations.find((item) => item.id === listingId);
+    if (!chosen) return;
+    setSelectedExistingListingId(listingId);
+
+    if (chosen.country) setCountry(chosen.country);
+    if (chosen.city) setCity(chosen.city);
+    if (chosen.area) setArea(chosen.area);
+    if (chosen.latitude != null && chosen.longitude != null) {
+      setLatitude(Number(chosen.latitude));
+      setLongitude(Number(chosen.longitude));
+    }
+    if (chosen.private_address) {
+      setPrivateAddress(chosen.private_address);
+    }
+    if (chosen.check_in_instructions) {
+      setCheckInInstructions(chosen.check_in_instructions);
+    }
+    setCopiedAddressNotice(
+      `Copied from "${chosen.name || chosen.title || "existing listing"}" (Area, pin coordinates, address, and instructions)`
+    );
+  }
 
   async function searchUsers(q: string) {
     const trimmed = q.trim();
@@ -839,21 +925,64 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     subtitle: "Choose the public area guests will recognize. They will not see your exact address here.",
     valid: country.trim().length > 0 && city.trim().length > 0 && area.trim().length > 0,
     content: (
-      <LocationPicker
-        mode="area"
-        latitude={latitude}
-        longitude={longitude}
-        initialCountryCode={undefined}
-        onPlaceChange={(place) => {
-          if (place.country) setCountry(place.country);
-          setCity(place.region || "");
-          setArea(place.village || place.district || "");
-        }}
-        onCoordsChange={(lat, lng) => {
-          setLatitude(lat);
-          setLongitude(lng);
-        }}
-      />
+      <div className="space-y-4">
+        {existingLocations.length > 0 && (
+          <div className="rounded-2xl border border-[#f3cfd9] bg-[#fbf7f8] p-4 text-[#181113]">
+            <div className="flex items-start gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white border border-[#f3cfd9] text-[#800020] shadow-xs">
+                <Icon icon="solar:buildings-2-bold-duotone" className="size-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm text-[#2b000a]">
+                  Do you have another listing hosted at this same address?
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  Save time: select an existing place to automatically copy the area, map pin coordinates, private building address, and arrival instructions.
+                </p>
+                <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2.5">
+                  <Select
+                    value={selectedExistingListingId}
+                    onValueChange={handleApplyExistingListingAddress}
+                  >
+                    <SelectTrigger className="h-10 bg-white text-xs w-full sm:w-80 border-stone-200">
+                      <SelectValue placeholder="Choose an existing listing to copy from…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {existingLocations.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name || item.title || "Untitled"} ({[item.area, item.city].filter(Boolean).join(", ")})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {copiedAddressNotice && (
+                    <span className="text-xs font-semibold text-emerald-700 flex items-center gap-1.5">
+                      <Check className="size-4 shrink-0 text-emerald-600" />
+                      <span>{copiedAddressNotice}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <LocationPicker
+          mode="area"
+          latitude={latitude}
+          longitude={longitude}
+          initialCountryCode={undefined}
+          onPlaceChange={(place) => {
+            if (place.country) setCountry(place.country);
+            setCity(place.region || "");
+            setArea(place.village || place.district || "");
+          }}
+          onCoordsChange={(lat, lng) => {
+            setLatitude(lat);
+            setLongitude(lng);
+          }}
+        />
+      </div>
     ),
   });
 
@@ -886,6 +1015,14 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     valid: privateAddress.trim().length > 0,
     content: (
       <div className="space-y-4">
+        {copiedAddressNotice && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-xs text-emerald-900 flex items-center gap-2">
+            <Check className="size-4 shrink-0 text-emerald-600" />
+            <span>
+              Address & arrival details were copied from your previous listing. You can adjust the specific apartment or unit number below.
+            </span>
+          </div>
+        )}
         <div>
           <Label htmlFor="privateAddress">Private address</Label>
           <Input

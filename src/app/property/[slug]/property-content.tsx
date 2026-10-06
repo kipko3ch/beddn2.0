@@ -467,6 +467,13 @@ export function PropertyContent({
     return cancelDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
   }, [dateRange?.from]);
 
+  const isHostedByBeddn =
+    listing.ownership_state === "unclaimed" ||
+    listing.ownership_state === "managed_by_admin" ||
+    !listing.host ||
+    !listing.host?.name ||
+    listing.host?.name?.toLowerCase().includes("beddn");
+
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`;
 
   return (
@@ -746,7 +753,7 @@ export function PropertyContent({
 
           <section>
             <h2 className="mb-4 text-xl font-bold">Meet your host</h2>
-            {listing.ownership_state === "unclaimed" ? (
+            {isHostedByBeddn ? (
               <div className="flex flex-col gap-4 rounded-2xl border bg-white p-5 shadow-xs">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
@@ -765,25 +772,33 @@ export function PropertyContent({
                         <VerifiedBadge text="Managed by Beddn" size="sm" variant="minimal" />
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        This property is managed directly by Beddn. Contact our support or property team directly for reservations and inquiries.
+                        {listing.host?.bio ||
+                          "This property is managed directly by Beddn. Contact our support or property team directly for reservations and inquiries."}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Claim listing link - strictly for unclaimed listings only */}
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <ClaimListingLink
-                    listingId={listing.id}
-                    listingTitle={listing.title || listing.name}
-                    ownershipState={listing.ownership_state}
-                  />
-                  {listing.contact_phone && (
-                    <span className="text-xs text-muted-foreground">
-                      Contact: {formatPhoneDisplay(listing.contact_phone)}
-                    </span>
-                  )}
-                </div>
+                {listing.ownership_state === "unclaimed" ? (
+                  <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                    <ClaimListingLink
+                      listingId={listing.id}
+                      listingTitle={listing.title || listing.name}
+                      ownershipState={listing.ownership_state}
+                    />
+                    {listing.contact_phone && (
+                      <span className="text-xs text-muted-foreground">
+                        Contact: {formatPhoneDisplay(listing.contact_phone)}
+                      </span>
+                    )}
+                  </div>
+                ) : listing.contact_phone ? (
+                  <div className="pt-3 border-t border-neutral-100 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Beddn Support</span>
+                    <span>Contact: {formatPhoneDisplay(listing.contact_phone)}</span>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4">

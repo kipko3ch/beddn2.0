@@ -421,13 +421,21 @@ export function ExperienceContent({
 
           {/* Host Card */}
           <div className="flex gap-5 items-center bg-cream/10 p-6 rounded-3xl border border-cream">
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-full border border-cream bg-zinc-50 shadow-sm">
+            <div className="relative size-20 shrink-0 overflow-hidden rounded-full border border-cream bg-zinc-50 shadow-sm flex items-center justify-center">
               {listing.host?.avatar_url ? (
                 <Image
                   src={listing.host.avatar_url}
                   alt={listing.host.name || ""}
                   fill
                   className="object-cover"
+                />
+              ) : (!listing.host?.name || listing.host.name.toLowerCase().includes("beddn") || listing.ownership_state === "unclaimed" || listing.ownership_state === "managed_by_admin") ? (
+                <Image
+                  src="/images/logo.png"
+                  alt="Beddn"
+                  width={52}
+                  height={52}
+                  className="object-contain"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-cream text-2xl font-bold text-crimson">
