@@ -75,73 +75,99 @@ export default function AdminHostsPage() {
     const status = host.status ?? "approved";
     const vStatus = host.verification_status || (host.is_verified ? "verified" : "not_started");
     const busy = busyId === host.id;
+    const initials = (host.name || "H")
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
 
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="font-semibold text-[#2b000a]">{host.name || "Unnamed host"}</p>
-            <Badge className={`text-xs capitalize ${STATUS_BADGE[status] ?? "bg-muted"}`}>{status}</Badge>
-            <Badge className={`text-xs capitalize gap-1 ${VERIFICATION_BADGE[vStatus] ?? "bg-zinc-100"}`}>
-              {vStatus === "verified" && <ShieldCheck className="h-3 w-3 text-emerald-600" />}
-              {vStatus === "under_review" ? "Under Review" : vStatus === "verified" ? "Verified" : "Not Verified"}
-            </Badge>
+      <div className="rounded-2xl border border-stone-200/90 bg-white p-4 sm:p-5 shadow-xs hover:border-[#f3cfd9] hover:shadow-sm transition">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-start gap-3.5 min-w-0">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#800020] to-[#590016] text-white font-bold text-sm shadow-xs">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-bold text-[#2b000a] text-base">{host.name || "Unnamed host"}</p>
+                <Badge className={`text-xs capitalize ${STATUS_BADGE[status] ?? "bg-muted"}`}>{status}</Badge>
+                <Badge className={`text-xs capitalize gap-1 ${VERIFICATION_BADGE[vStatus] ?? "bg-zinc-100"}`}>
+                  {vStatus === "verified" && <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />}
+                  {vStatus === "under_review" ? "Under Review" : vStatus === "verified" ? "Verified" : "Not Verified"}
+                </Badge>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground flex flex-wrap items-center gap-2">
+                <span>{host.phone || "No phone recorded"}</span>
+                {host.national_id && (
+                  <>
+                    <span>·</span>
+                    <span className="font-mono bg-stone-100 px-2 py-0.5 rounded-md text-stone-700">
+                      ID: {host.national_id}
+                    </span>
+                  </>
+                )}
+                {host.created_at && (
+                  <>
+                    <span>·</span>
+                    <span>Joined {new Date(host.created_at).toLocaleDateString()}</span>
+                  </>
+                )}
+              </p>
+            </div>
           </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {host.phone || "No phone"}
-            {host.national_id ? ` · ID: ${host.national_id}` : ""}
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {busy && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          
-          {/* Toggle Verification Badge */}
-          {host.is_verified ? (
+          <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t border-stone-100 sm:border-0">
+            {busy && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            
+            {/* Toggle Verification Badge */}
+            {host.is_verified ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => act(host, "unverify_host")}
+                className="gap-1 rounded-full text-red-700 hover:bg-red-50 hover:text-red-800 text-xs h-8"
+              >
+                <X className="h-3.5 w-3.5" /> Remove Badge
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => act(host, "verify_host")}
+                className="gap-1 rounded-full text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 text-xs h-8"
+              >
+                <ShieldCheck className="h-3.5 w-3.5" /> Verify Host
+              </Button>
+            )}
+
+            {/* Suspend / Reinstate */}
+            {status === "approved" ? (
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => act(host, "suspend_host")} className="gap-1 rounded-full text-xs h-8">
+                <Pause className="h-3.5 w-3.5" /> Suspend
+              </Button>
+            ) : (
+              <Button size="sm" disabled={busy} onClick={() => act(host, "approve_host")} className="gap-1 rounded-full bg-[#128c4b] hover:bg-[#0f7a41] text-xs h-8">
+                <Play className="h-3.5 w-3.5" /> Reinstate
+              </Button>
+            )}
+
             <Button
               size="sm"
               variant="outline"
               disabled={busy}
-              onClick={() => act(host, "unverify_host")}
-              className="gap-1 rounded-full text-red-700 hover:bg-red-50 hover:text-red-800"
+              onClick={() => {
+                if (!confirm(`Reset ${host.name || "this host"}'s Extranet PIN? They'll set a new one next time they open /host.`)) return;
+                act(host, "reset_host_pin");
+              }}
+              className="gap-1 rounded-full text-xs h-8"
             >
-              <X className="h-4 w-4" /> Remove Verification
+              <KeyRound className="h-3.5 w-3.5" /> Reset PIN
             </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={busy}
-              onClick={() => act(host, "verify_host")}
-              className="gap-1 rounded-full text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
-            >
-              <ShieldCheck className="h-4 w-4" /> Verify Host
-            </Button>
-          )}
-
-          {/* Suspend / Reinstate */}
-          {status === "approved" ? (
-            <Button size="sm" variant="outline" disabled={busy} onClick={() => act(host, "suspend_host")} className="gap-1 rounded-full">
-              <Pause className="h-4 w-4" /> Suspend
-            </Button>
-          ) : (
-            <Button size="sm" disabled={busy} onClick={() => act(host, "approve_host")} className="gap-1 rounded-full bg-[#128c4b] hover:bg-[#0f7a41]">
-              <Play className="h-4 w-4" /> Reinstate
-            </Button>
-          )}
-
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={busy}
-            onClick={() => {
-              if (!confirm(`Reset ${host.name || "this host"}'s Extranet PIN? They'll set a new one next time they open /host.`)) return;
-              act(host, "reset_host_pin");
-            }}
-            className="gap-1 rounded-full"
-          >
-            <KeyRound className="h-4 w-4" /> Reset PIN
-          </Button>
+          </div>
         </div>
       </div>
     );
@@ -161,14 +187,16 @@ export default function AdminHostsPage() {
       ) : (
         <div className="space-y-6">
           <section>
-            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-[#a08b92]">All hosts</h2>
-            <div className="divide-y rounded-2xl border bg-white">
-              {hosts.length === 0 ? (
-                <p className="p-4 text-sm text-muted-foreground">No hosts yet.</p>
-              ) : (
-                hosts.map((host) => <Row key={host.id} host={host} />)
-              )}
-            </div>
+            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-[#a08b92]">All hosts ({hosts.length})</h2>
+            {hosts.length === 0 ? (
+              <div className="rounded-2xl border bg-white p-8 text-center text-sm text-muted-foreground">
+                No hosts registered yet.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {hosts.map((host) => <Row key={host.id} host={host} />)}
+              </div>
+            )}
           </section>
         </div>
       )}

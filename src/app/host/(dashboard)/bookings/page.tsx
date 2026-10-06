@@ -116,8 +116,23 @@ export default function BookingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Bookings</h1>
-      {loading ? <DashboardListSkeleton rows={4} /> : bookings.length === 0 ? (
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 className="font-brand text-2xl sm:text-3xl font-extrabold text-[#2b000a]">Bookings</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your incoming guest reservations, arrival dates, and payment states.
+          </p>
+        </div>
+        {bookings.length > 0 && (
+          <span className="text-xs font-bold text-[#800020] bg-[#fbf0f3] border border-[#f3cfd9] px-3 py-1 rounded-full w-fit">
+            {bookings.length} total booking{bookings.length === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
+
+      {loading ? (
+        <DashboardListSkeleton rows={4} />
+      ) : bookings.length === 0 ? (
         <EmptyState
           image="/images/empty-bookings.png"
           title="No bookings yet"
@@ -125,63 +140,108 @@ export default function BookingsPage() {
           size="sm"
         />
       ) : (
-        <div className="border rounded-lg divide-y">
-          {bookings.map((booking) => (
-            <div
-              key={booking.id}
-              className="flex items-center justify-between gap-4 p-4 hover:bg-muted/50 transition-colors"
-            >
-              <Link href={`/booking/${booking.booking_token || booking.token}`} className="min-w-0">
-                <p className="font-medium">{booking.guest_name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {booking.listing?.title || booking.listing?.name} ·{" "}
-                  {booking.check_in || booking.start_datetime?.slice(0, 10)}
-                </p>
-                <code className="text-xs text-muted-foreground">
-                  {booking.booking_token || booking.token}
-                </code>
-              </Link>
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                <span className="text-sm font-medium">
-                  {booking.currency || "$"}{" "}
-                  {Number(booking.deposit_amount || booking.total_amount).toLocaleString()}
-                </span>
-                <Badge className={statusColor[booking.status] ?? ""}>
-                  {booking.status.replaceAll("_", " ")}
-                </Badge>
-                {needsAction(booking.status) && (
-                  <>
-                    <Button
-                      size="sm"
-                      className="bg-[#128c4b] hover:bg-[#0f7a41]"
-                      onClick={() => bookingAction(booking.id, "accept")}
-                      disabled={workingId === booking.id}
-                    >
-                      Confirm
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => bookingAction(booking.id, "reject")}
-                      disabled={workingId === booking.id}
-                    >
-                      Decline
-                    </Button>
-                  </>
-                )}
-                {booking.status === "confirmed" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => bookingAction(booking.id, "complete")}
-                    disabled={workingId === booking.id}
-                  >
-                    Mark completed
-                  </Button>
-                )}
+        <div className="space-y-3.5">
+          {bookings.map((booking) => {
+            const token = booking.booking_token || booking.token;
+            const dates = booking.check_in
+              ? `${booking.check_in}${booking.check_out ? ` → ${booking.check_out}` : ""}`
+              : booking.start_datetime?.slice(0, 10) || "Flexible";
+
+            return (
+              <div
+                key={booking.id}
+                className="rounded-2xl border border-stone-200/90 bg-white p-4.5 sm:p-5 shadow-xs hover:border-[#f3cfd9] hover:shadow-sm transition"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-start gap-3.5 min-w-0">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9] font-bold text-sm">
+                      {(booking.guest_name || "G")[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          href={`/booking/${token}`}
+                          className="font-bold text-base text-[#2b000a] hover:text-[#800020] hover:underline transition truncate"
+                        >
+                          {booking.guest_name || "Guest"}
+                        </Link>
+                        <Badge className={`text-xs capitalize font-bold ${statusColor[booking.status] ?? "bg-stone-100"}`}>
+                          {booking.status.replaceAll("_", " ")}
+                        </Badge>
+                      </div>
+
+                      <p className="mt-1 text-sm font-medium text-stone-700 truncate">
+                        {booking.listing?.title || booking.listing?.name || "Listing space"}
+                      </p>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          📅 {dates}
+                        </span>
+                        <span>·</span>
+                        <code className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[11px] text-stone-600">
+                          {token}
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:items-end justify-between gap-3 pt-3 sm:pt-0 border-t border-stone-100 sm:border-0">
+                    <div className="text-left sm:text-right">
+                      <span className="text-xs uppercase font-bold tracking-wider text-stone-400 block">Total</span>
+                      <span className="text-base font-extrabold text-[#2b000a]">
+                        {booking.currency || "KES"}{" "}
+                        {Number(booking.deposit_amount || booking.total_amount || 0).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/booking/${token}`}
+                        className="inline-flex h-8 items-center rounded-full border border-stone-200 bg-stone-50 px-3 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition"
+                      >
+                        Details
+                      </Link>
+
+                      {needsAction(booking.status) && (
+                        <>
+                          <Button
+                            size="sm"
+                            className="h-8 rounded-full bg-[#128c4b] hover:bg-[#0f7a41] text-xs font-bold"
+                            onClick={() => bookingAction(booking.id, "accept")}
+                            disabled={workingId === booking.id}
+                          >
+                            Confirm
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 rounded-full text-xs font-bold"
+                            onClick={() => bookingAction(booking.id, "reject")}
+                            disabled={workingId === booking.id}
+                          >
+                            Decline
+                          </Button>
+                        </>
+                      )}
+
+                      {booking.status === "confirmed" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 rounded-full text-xs font-bold border-[#800020]/30 text-[#800020] hover:bg-[#fbf0f3]"
+                          onClick={() => bookingAction(booking.id, "complete")}
+                          disabled={workingId === booking.id}
+                        >
+                          Mark completed
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { ROUTES } from "@/lib/routes";
 import { ShieldCheck } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { DashboardTableSkeleton } from "@/components/dashboard-skeletons";
 
 type UserRow = {
@@ -112,123 +113,146 @@ export default function AdminUsersPage() {
           size="sm"
         />
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="p-3 text-left font-medium">User</th>
-                <th className="p-3 text-left font-medium">Roles</th>
-                <th className="p-3 text-left font-medium">Status</th>
-                <th className="p-3 text-left font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {filtered.map((u) => {
-                const busy = busyId === u.id;
-                const isHost = hostIds.has(u.id);
-                return (
-                  <tr key={u.id}>
-                    <td className="p-3">
-                      <Link href={ROUTES.adminUser(u.id)} className="font-medium text-[#2b000a] hover:underline">
-                        {u.full_name || u.email}
-                      </Link>
-                      <div className="text-xs text-muted-foreground">{u.email}</div>
-                      {u.phone && <div className="text-xs text-muted-foreground">{u.phone}</div>}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex flex-wrap gap-1">
+        <div className="grid gap-3 sm:gap-4">
+          {filtered.map((u) => {
+            const busy = busyId === u.id;
+            const isHost = hostIds.has(u.id);
+            const initials = (u.full_name || u.email || "U")
+              .split(" ")
+              .map((w: string) => w[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2);
+
+            return (
+              <div
+                key={u.id}
+                className="group rounded-2xl border border-stone-200/90 bg-white p-4 sm:p-5 shadow-xs hover:border-[#d7a9b7] hover:shadow-md transition-all"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  {/* Left: User identity & info */}
+                  <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fbf0f3] to-[#f4dbe2] text-[#800020] font-extrabold text-sm border border-[#f3cfd9]">
+                      {initials}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          href={ROUTES.adminUser(u.id)}
+                          className="font-bold text-base text-[#2b000a] hover:text-[#800020] hover:underline truncate"
+                        >
+                          {u.full_name || u.email}
+                        </Link>
+                        {u.suspended ? (
+                          <Badge className="rounded-full bg-red-100 text-red-700 hover:bg-red-100 text-[10px] font-bold border-0">
+                            Suspended
+                          </Badge>
+                        ) : (
+                          <Badge className="rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50 text-[10px] font-bold border border-emerald-200">
+                            Active
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Icon icon="solar:letter-linear" className="size-3.5 text-stone-400" />
+                          {u.email}
+                        </span>
+                        {u.phone && (
+                          <span className="flex items-center gap-1">
+                            <Icon icon="solar:phone-linear" className="size-3.5 text-stone-400" />
+                            {u.phone}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         {u.is_admin && (
-                          <Badge className="rounded-full bg-crimson hover:bg-crimson">
+                          <Badge className="rounded-full bg-[#800020] text-white hover:bg-[#800020] text-[10px] font-bold px-2 py-0.5">
                             <ShieldCheck className="mr-1 h-3 w-3" /> Admin
                           </Badge>
                         )}
                         {isHost && (
-                          <Badge variant="secondary" className="rounded-full">
+                          <Badge className="rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold px-2 py-0.5">
                             Host
                           </Badge>
                         )}
                         {!u.is_admin && !isHost && (
-                          <span className="text-xs text-muted-foreground">Guest</span>
+                          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-600">
+                            Guest
+                          </span>
                         )}
                       </div>
-                    </td>
-                    <td className="p-3">
-                      {u.suspended ? (
-                        <Badge className="rounded-full bg-red-100 text-red-700 hover:bg-red-100">
-                          Suspended
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="rounded-full bg-green-100 text-green-700 hover:bg-green-100">
-                          Active
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          href={ROUTES.adminUser(u.id)}
-                          className={buttonVariants({ size: "sm", variant: "outline" })}
-                        >
-                          View
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy}
-                          onClick={() => action("send_signin_link", u.id)}
-                        >
-                          Send sign-in link
-                        </Button>
-                        {u.suspended ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={busy}
-                            onClick={() => action("unsuspend_user", u.id)}
-                          >
-                            Unsuspend
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={busy}
-                            className="text-red-700 hover:text-red-700"
-                            onClick={() =>
-                              action("suspend_user", u.id, `Suspend ${u.email}? They will be signed out and blocked from signing in.`)
-                            }
-                          >
-                            Suspend
-                          </Button>
-                        )}
-                        {u.is_admin ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={busy}
-                            onClick={() =>
-                              action("remove_admin", u.id, `Remove admin access from ${u.email}?`)
-                            }
-                          >
-                            Remove admin
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={busy}
-                            onClick={() => action("make_admin", u.id, `Grant admin access to ${u.email}?`)}
-                          >
-                            Make admin
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-100">
+                    <Link
+                      href={ROUTES.adminUser(u.id)}
+                      className={buttonVariants({ size: "sm", variant: "outline", className: "h-8 rounded-full px-3 text-xs font-semibold" })}
+                    >
+                      View
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => action("send_signin_link", u.id)}
+                      className="h-8 rounded-full px-3 text-xs font-semibold"
+                    >
+                      Sign-in link
+                    </Button>
+                    {u.suspended ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => action("unsuspend_user", u.id)}
+                        className="h-8 rounded-full px-3 text-xs font-semibold text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                      >
+                        Unsuspend
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        className="h-8 rounded-full px-3 text-xs font-semibold text-red-700 border-red-200 hover:bg-red-50"
+                        onClick={() =>
+                          action("suspend_user", u.id, `Suspend ${u.email}? They will be signed out and blocked from signing in.`)
+                        }
+                      >
+                        Suspend
+                      </Button>
+                    )}
+                    {u.is_admin ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() =>
+                          action("remove_admin", u.id, `Remove admin access from ${u.email}?`)
+                        }
+                        className="h-8 rounded-full px-3 text-xs font-semibold"
+                      >
+                        Remove admin
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => action("make_admin", u.id, `Grant admin access to ${u.email}?`)}
+                        className="h-8 rounded-full px-3 text-xs font-semibold text-[#800020] border-[#f3cfd9] hover:bg-[#fbf0f3]"
+                      >
+                        Make admin
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

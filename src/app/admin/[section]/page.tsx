@@ -138,79 +138,90 @@ export default function AdminSectionPage() {
           size="sm"
         />
       ) : (
-        <div className="border rounded-lg overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                {visibleKeys.map((key) => (
-                  <th key={key} className="text-left p-3 font-medium">
-                    {key}
-                  </th>
-                ))}
-                <th className="text-left p-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {rows.map((row) => (
-                <tr key={row.id}>
+        <div className="grid gap-3 sm:gap-4">
+          {rows.map((row) => (
+            <div
+              key={row.id}
+              className="rounded-2xl border border-stone-200/90 bg-white p-4 sm:p-5 shadow-xs hover:border-[#d7a9b7] transition-all"
+            >
+              <div className="flex flex-col gap-3">
+                {/* Header row */}
+                <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
+                  <span className="font-mono text-xs font-bold text-[#800020]">
+                    ID: {String(row.id).slice(0, 8)}
+                  </span>
+                  {typeof row.created_at === "string" && (
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      {new Date(row.created_at).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+
+                {/* Key value grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 py-1 text-xs">
                   {visibleKeys.map((key) => (
-                    <td key={key} className="p-3 max-w-48 truncate">
-                      {label(row[key])}
-                    </td>
-                  ))}
-                  <td className="p-3">
-                    <div className="flex flex-wrap gap-2">
-                      {section === "bookings" && (
-                        <>
-                          <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50" onClick={() => action("confirm_booking", row.id)}>
-                            Confirm
-                          </Button>
-                          <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => action("reject_booking", row.id)}>
-                            Reject
-                          </Button>
-                          <Button size="sm" variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-100" onClick={() => action("revoke_booking", row.id)}>
-                            Revoke
-                          </Button>
-                        </>
-                      )}
-                      {section === "hosts" && (
-                        <Button size="sm" variant="outline" onClick={() => action("verify_host", row.id)}>
-                          Verify
-                        </Button>
-                      )}
-                      {section === "withdrawals" && (
-                        <>
-                          <Button size="sm" variant="outline" onClick={() => action("approve_withdrawal", row.id)}>
-                            Approve
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => action("mark_withdrawal_paid", row.id)}>
-                            Paid
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => action("reject_withdrawal", row.id)}>
-                            Reject
-                          </Button>
-                        </>
-                      )}
-                      {section === "reviews" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-red-200 text-red-700 hover:bg-red-50"
-                          onClick={() => {
-                            if (window.confirm("Are you sure you want to delete this review?")) {
-                              action("delete_review", row.id);
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      )}
+                    <div key={key} className="min-w-0">
+                      <span className="block text-[10px] font-bold uppercase tracking-wider text-stone-400 truncate">
+                        {key.replace(/_/g, " ")}
+                      </span>
+                      <span className="mt-0.5 block font-semibold text-stone-800 break-words">
+                        {label(row[key])}
+                      </span>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  ))}
+                </div>
+
+                {/* Actions row */}
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-stone-100">
+                  {section === "bookings" && (
+                    <>
+                      <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 h-8 rounded-full text-xs font-semibold" onClick={() => action("confirm_booking", row.id)}>
+                        Confirm
+                      </Button>
+                      <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 h-8 rounded-full text-xs font-semibold" onClick={() => action("reject_booking", row.id)}>
+                        Reject
+                      </Button>
+                      <Button size="sm" variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-100 h-8 rounded-full text-xs font-semibold" onClick={() => action("revoke_booking", row.id)}>
+                        Revoke
+                      </Button>
+                    </>
+                  )}
+                  {section === "hosts" && (
+                    <Button size="sm" variant="outline" className="h-8 rounded-full text-xs font-semibold text-[#800020] border-[#f3cfd9] hover:bg-[#fbf0f3]" onClick={() => action("verify_host", row.id)}>
+                      Verify
+                    </Button>
+                  )}
+                  {section === "withdrawals" && (
+                    <>
+                      <Button size="sm" variant="outline" className="h-8 rounded-full text-xs font-semibold" onClick={() => action("approve_withdrawal", row.id)}>
+                        Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-8 rounded-full text-xs font-semibold text-green-700 border-green-200 hover:bg-green-50" onClick={() => action("mark_withdrawal_paid", row.id)}>
+                        Paid
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-8 rounded-full text-xs font-semibold text-red-700 border-red-200 hover:bg-red-50" onClick={() => action("reject_withdrawal", row.id)}>
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                  {section === "reviews" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-red-200 text-red-700 hover:bg-red-50 h-8 rounded-full text-xs font-semibold"
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this review?")) {
+                          action("delete_review", row.id);
+                        }
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Icon } from "@iconify/react";
 import { EmptyState } from "@/components/empty-state";
 import type { HostBalance, Withdrawal } from "@/lib/types";
 
@@ -108,7 +110,7 @@ export default function WithdrawalsPage() {
         </Button>
       </form>
 
-      <div className="border rounded-lg divide-y">
+      <div className="space-y-3">
         {withdrawals.length === 0 ? (
           <EmptyState
             image="/images/empty-withdrawals.png"
@@ -117,14 +119,49 @@ export default function WithdrawalsPage() {
             size="sm"
           />
         ) : (
-          withdrawals.map((withdrawal) => (
-            <div key={withdrawal.id} className="p-4 flex items-center justify-between text-sm">
-              <span>
-                {withdrawal.currency} {Number(withdrawal.amount).toLocaleString()} · {withdrawal.payout_method}
-              </span>
-              <span className="text-muted-foreground">{withdrawal.status}</span>
-            </div>
-          ))
+          withdrawals.map((withdrawal) => {
+            const isCompleted = withdrawal.status === "paid";
+            const isPending = withdrawal.status === "requested" || withdrawal.status === "approved";
+            return (
+              <div
+                key={withdrawal.id}
+                className="rounded-2xl border border-stone-200/90 bg-white p-4 sm:p-5 shadow-xs hover:border-[#f3cfd9] hover:shadow-sm transition"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]">
+                      <Icon icon="solar:card-send-bold-duotone" className="size-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-extrabold text-base text-[#2b000a]">
+                          {withdrawal.currency} {Number(withdrawal.amount).toLocaleString()}
+                        </span>
+                        <Badge
+                          className={`text-xs capitalize font-bold ${
+                            isCompleted
+                              ? "bg-emerald-100 text-emerald-800"
+                              : isPending
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-rose-100 text-rose-800"
+                          }`}
+                        >
+                          {withdrawal.status}
+                        </Badge>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-2">
+                        <span>via {withdrawal.payout_method}</span>
+                        {withdrawal.payout_details && <span>· {withdrawal.payout_details}</span>}
+                        {withdrawal.created_at && (
+                          <span>· {new Date(withdrawal.created_at).toLocaleDateString()}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

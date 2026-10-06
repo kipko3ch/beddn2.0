@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ElementType } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { uploadListingImage } from "@/lib/upload-image";
 import { InstructionsManager } from "@/components/instructions-manager";
@@ -55,6 +56,7 @@ const CATEGORY_OPTIONS: {
   badge?: string;
   description: string;
   icon: string;
+  image: string;
 }[] = [
   {
     value: "overnight",
@@ -62,6 +64,7 @@ const CATEGORY_OPTIONS: {
     badge: "Recommended for homes",
     description: "Standard houses, apartments, villas, and suites booked per night.",
     icon: "solar:moon-stars-bold-duotone",
+    image: "/images/cat-overnight.png",
   },
   {
     value: "hourly",
@@ -69,6 +72,7 @@ const CATEGORY_OPTIONS: {
     badge: "Conferences & Events only",
     description: "Conference rooms, meeting halls, event venues, photo studios, or workspaces.",
     icon: "solar:clock-circle-bold-duotone",
+    image: "/images/cat-hourly.png",
   },
   {
     value: "both",
@@ -76,6 +80,7 @@ const CATEGORY_OPTIONS: {
     badge: "Dual-use spaces only",
     description: "Venues offering overnight accommodation and daytime event/meeting bookings.",
     icon: "solar:layers-minimalistic-bold-duotone",
+    image: "/images/cat-all.png",
   },
 ];
 
@@ -94,14 +99,6 @@ const WEEK_DAYS = [
   { value: 5, label: "Fri" },
   { value: 6, label: "Sat" },
 ];
-
-type DateSlot = {
-  id: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  availableUnits: string;
-};
 
 const DESCRIPTION_GUIDE = `Tucked in a quiet corner of [area], this [property type] is perfect for [who it suits — couples, remote workers, families].
 
@@ -171,12 +168,11 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   const [totalUnits, setTotalUnits] = useState(listing?.total_units?.toString() ?? "1");
   const [bookingMode, setBookingMode] = useState(listing?.booking_mode ?? "manual_accept");
   const [minimumHours, setMinimumHours] = useState(listing?.minimum_hours?.toString() ?? "1");
-  const [checkInTime, setCheckInTime] = useState(listing?.check_in_time ?? "");
-  const [checkOutTime, setCheckOutTime] = useState(listing?.check_out_time ?? "");
+  const [checkInTime, setCheckInTime] = useState(listing?.check_in_time || "14:00");
+  const [checkOutTime, setCheckOutTime] = useState(listing?.check_out_time || "11:00");
   const [availableDays, setAvailableDays] = useState<number[]>(
     listing?.available_days?.length ? listing.available_days : [0, 1, 2, 3, 4, 5, 6]
   );
-  const [dateSlots, setDateSlots] = useState<DateSlot[]>([]);
   const [categories, setCategories] = useState<ListingCategory[]>(
     (listing?.categories as ListingCategory[]) ?? (initialCategory ? [initialCategory] : [])
   );
@@ -283,29 +279,6 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     );
   }
 
-  function addDateSlot() {
-    setDateSlots((prev) => [
-      ...prev,
-      {
-        id: `slot-${Date.now()}-${prev.length}`,
-        date: "",
-        startTime: checkInTime || "09:00",
-        endTime: checkOutTime || "17:00",
-        availableUnits: totalUnits || "1",
-      },
-    ]);
-  }
-
-  function updateDateSlot(id: string, patch: Partial<DateSlot>) {
-    setDateSlots((prev) =>
-      prev.map((slot) => (slot.id === id ? { ...slot, ...patch } : slot))
-    );
-  }
-
-  function removeDateSlot(id: string) {
-    setDateSlots((prev) => prev.filter((slot) => slot.id !== id));
-  }
-
   const isExperience = categories.includes("experience");
 
   function generateSlug(value: string): string {
@@ -378,55 +351,62 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
     valid: categories.length > 0,
     content: (
       <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {CATEGORY_OPTIONS.map(({ value, label, badge, description, icon }) => {
+        <div className="grid gap-3.5 sm:grid-cols-3">
+          {CATEGORY_OPTIONS.map(({ value, label, badge, description, icon, image }) => {
             const selected = bookingChoice() === value;
             return (
               <button
                 key={value}
                 type="button"
                 onClick={() => handleSelectBookingChoice(value)}
-                className={`relative flex flex-col justify-between min-h-44 rounded-2xl border p-4 text-left transition ${
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border text-left transition-all ${
                   selected
-                    ? "border-[#800020] bg-[#fbf0f3]/60 shadow-sm ring-1 ring-[#800020]/30"
-                    : "border-border bg-white hover:border-[#d7a9b7]"
+                    ? "border-[#800020] bg-[#fbf0f3]/70 shadow-md ring-2 ring-[#800020]/25"
+                    : "border-border bg-white hover:border-[#d7a9b7] hover:shadow-xs"
                 }`}
                 aria-pressed={selected}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span
-                      className={`inline-flex size-9 items-center justify-center rounded-xl ${
-                        selected ? "bg-[#800020] text-white" : "bg-[#f5eef1] text-[#2b000a]"
-                      }`}
-                    >
-                      <Icon icon={icon} className="h-5 w-5" />
-                    </span>
+                  <div className="relative h-28 w-full overflow-hidden bg-stone-100">
+                    <Image
+                      src={image}
+                      alt={label}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                     {selected && (
-                      <span className="flex size-5 items-center justify-center rounded-full bg-[#800020] text-white">
-                        <Check className="h-3 w-3" />
+                      <span className="absolute right-2.5 top-2.5 flex size-6 items-center justify-center rounded-full bg-[#800020] text-white shadow-sm ring-2 ring-white">
+                        <Check className="h-3.5 w-3.5" />
                       </span>
                     )}
+                    <span className="absolute bottom-2 left-2.5 flex items-center gap-1.5 text-white text-xs font-bold drop-shadow">
+                      <Icon icon={icon} className="size-4 shrink-0" />
+                      <span className="truncate">{label}</span>
+                    </span>
                   </div>
-                  {badge && (
-                    <div className="mb-2">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          value === "overnight"
-                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                            : value === "hourly"
-                            ? "bg-amber-50 text-amber-800 border border-amber-200"
-                            : "bg-purple-50 text-purple-800 border border-purple-200"
-                        }`}
-                      >
-                        {badge}
-                      </span>
-                    </div>
-                  )}
-                  <span className="block text-sm font-bold text-[#181113]">{label}</span>
-                  <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                    {description}
-                  </span>
+
+                  <div className="p-3.5">
+                    {badge && (
+                      <div className="mb-2">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            value === "overnight"
+                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                              : value === "hourly"
+                              ? "bg-amber-50 text-amber-800 border border-amber-200"
+                              : "bg-purple-50 text-purple-800 border border-purple-200"
+                          }`}
+                        >
+                          {badge}
+                        </span>
+                      </div>
+                    )}
+                    <span className="block text-xs leading-5 text-stone-600 font-medium">
+                      {description}
+                    </span>
+                  </div>
                 </div>
               </button>
             );
@@ -706,63 +686,155 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   });
 
   steps.push({
-    title: "Capacity & timing",
-    subtitle: "Set how many separate spaces guests can book, then add arrival times.",
+    title: "Units & arrival times",
+    subtitle: "Specify how many spaces guests can book and your preferred check-in hours.",
     valid: !categories.includes("hourly") || parseInt(minimumHours || "0") >= 1,
     content: (
-      <div className="space-y-4">
-        <div className="rounded-2xl border bg-[#fbf7f8] p-4">
-          <Label htmlFor="units">Separately bookable spaces</Label>
-          <Input
-            id="units"
-            type="number"
-            min="1"
-            value={totalUnits}
-            onChange={(e) => setTotalUnits(e.target.value)}
-            className="mt-2 max-w-32"
-          />
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Count only spaces guests can book independently. A whole 2-bedroom house is
-            <strong className="text-[#2b000a]"> 1 space</strong>, not 2. Use 2 only if you have
-            two separate rooms, houses, or workspaces that different guests can book at the same time.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {categories.includes("hourly") && (
+      <div className="space-y-5">
+        {/* Total Units Counter */}
+        <div className="rounded-2xl border border-[#f3cfd9] bg-white p-5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <Label htmlFor="minimumHours">
-                Minimum hours bookable <span className="text-crimson">*</span>
+              <Label className="text-sm font-bold text-[#181113] flex items-center gap-2">
+                <Icon icon="solar:home-smile-bold-duotone" className="size-5 text-[#800020]" />
+                Bookable units
               </Label>
-              <Input
-                id="minimumHours"
-                type="number"
-                min="1"
-                value={minimumHours}
-                onChange={(e) => setMinimumHours(e.target.value)}
-                placeholder="e.g. 2"
-              />
               <p className="mt-1 text-xs text-muted-foreground">
-                Guests must book at least this many hours per reservation.
+                How many independent listings or spaces can guests reserve?
               </p>
             </div>
-          )}
-          <div>
-            <Label htmlFor="checkInTime">Check-in time</Label>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setTotalUnits(String(Math.max(1, parseInt(totalUnits || "1") - 1)))}
+                disabled={parseInt(totalUnits || "1") <= 1}
+                className="size-10 rounded-full border border-stone-200 bg-stone-50 flex items-center justify-center text-lg font-bold text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:pointer-events-none transition"
+              >
+                -
+              </button>
+              <span className="w-16 text-center text-base font-extrabold text-[#2b000a]">
+                {totalUnits || "1"} {parseInt(totalUnits || "1") === 1 ? "unit" : "units"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setTotalUnits(String(parseInt(totalUnits || "1") + 1))}
+                className="size-10 rounded-full border border-stone-200 bg-stone-50 flex items-center justify-center text-lg font-bold text-stone-700 hover:bg-stone-100 transition"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div className="mt-3 rounded-xl bg-[#fbf7f8] px-3.5 py-2.5 text-[11px] text-stone-600 leading-relaxed">
+            💡 <strong>Tip:</strong> Usually <strong>1</strong> for an entire house, apartment, villa, or single event space. Only increase if you have multiple identical rooms/units under this listing.
+          </div>
+        </div>
+
+        {/* Hourly minimum hours if hourly space */}
+        {categories.includes("hourly") && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="minimumHours" className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                <Icon icon="solar:clock-circle-bold" className="size-5 text-amber-700" />
+                Minimum hours per booking
+              </Label>
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                Hourly spaces only
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {[
+                { label: "1 hour", value: "1" },
+                { label: "2 hours", value: "2" },
+                { label: "4 hours", value: "4" },
+                { label: "8 hours (Full day)", value: "8" },
+              ].map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setMinimumHours(p.value)}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                    minimumHours === p.value
+                      ? "bg-[#800020] text-white shadow-xs"
+                      : "border border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-amber-800">
+              Guests will be required to book at least {minimumHours || "1"} hour{minimumHours === "1" ? "" : "s"}.
+            </p>
+          </div>
+        )}
+
+        {/* Check-in and Check-out Times */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-[#f3cfd9] bg-white p-4">
+            <Label htmlFor="checkInTime" className="text-xs font-bold text-[#2b000a] flex items-center gap-1.5">
+              <Icon icon="solar:login-2-bold-duotone" className="size-4 text-[#800020]" />
+              Check-in time
+            </Label>
+            <div className="mt-2 flex flex-wrap gap-1.5 mb-2.5">
+              {[
+                { label: "12:00 PM", value: "12:00" },
+                { label: "2:00 PM", value: "14:00" },
+                { label: "3:00 PM", value: "15:00" },
+              ].map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => setCheckInTime(preset.value)}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                    checkInTime === preset.value
+                      ? "bg-[#800020] text-white"
+                      : "border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100"
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
             <Input
               id="checkInTime"
               type="time"
-              value={checkInTime}
+              value={checkInTime || "14:00"}
               onChange={(e) => setCheckInTime(e.target.value)}
+              className="h-10 text-xs font-medium"
             />
           </div>
-          <div>
-            <Label htmlFor="checkOutTime">Check-out time</Label>
+
+          <div className="rounded-2xl border border-[#f3cfd9] bg-white p-4">
+            <Label htmlFor="checkOutTime" className="text-xs font-bold text-[#2b000a] flex items-center gap-1.5">
+              <Icon icon="solar:logout-2-bold-duotone" className="size-4 text-[#800020]" />
+              Check-out time
+            </Label>
+            <div className="mt-2 flex flex-wrap gap-1.5 mb-2.5">
+              {[
+                { label: "10:00 AM", value: "10:00" },
+                { label: "11:00 AM", value: "11:00" },
+                { label: "12:00 PM", value: "12:00" },
+              ].map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => setCheckOutTime(preset.value)}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                    checkOutTime === preset.value
+                      ? "bg-[#800020] text-white"
+                      : "border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100"
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
             <Input
               id="checkOutTime"
               type="time"
-              value={checkOutTime}
+              value={checkOutTime || "11:00"}
               onChange={(e) => setCheckOutTime(e.target.value)}
+              className="h-10 text-xs font-medium"
             />
           </div>
         </div>
@@ -771,40 +843,40 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
   });
 
   steps.push({
-    title: "Set your calendar",
-    subtitle: "Start with your normal rhythm. Add special dates only when you need them.",
+    title: "When is your place open?",
+    subtitle: "Select your normal operating days. You can easily block dates later from your dashboard.",
     valid: availableDays.length > 0,
     content: (
       <div className="space-y-5">
-        <div className="rounded-2xl border bg-white p-4">
-          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="rounded-2xl border border-[#f3cfd9] bg-white p-5 shadow-xs">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-crimson" />
+                <Icon icon="solar:calendar-bold-duotone" className="size-5 text-[#800020]" />
                 <p className="text-sm font-bold text-[#181113]">Usual open days</p>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Pick the days guests can normally book. You can block dates later.
+                Guests can book on these days. You can block holidays or dates anytime.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { label: "Every day", days: [0, 1, 2, 3, 4, 5, 6] },
                 { label: "Weekdays", days: [1, 2, 3, 4, 5] },
-                { label: "Weekend", days: [0, 6] },
+                { label: "Weekends", days: [0, 6] },
               ].map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
                   onClick={() => setAvailableDays(preset.days)}
-                  className="rounded-full border px-3 py-1.5 text-xs font-semibold text-[#2b000a] hover:border-[#d7a9b7] hover:bg-[#fbf7f8]"
+                  className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-[#2b000a] hover:border-[#d7a9b7] hover:bg-[#fbf7f8] transition"
                 >
                   {preset.label}
                 </button>
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-7 gap-2">
             {WEEK_DAYS.map((day) => {
               const selected = availableDays.includes(day.value);
               return (
@@ -813,100 +885,41 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
                   type="button"
                   onClick={() => toggleAvailableDay(day.value)}
                   aria-pressed={selected}
-                  className={`h-10 rounded-xl border text-xs font-bold transition ${
+                  className={`h-12 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-0.5 ${
                     selected
-                      ? "border-[#800020] bg-[#800020] text-white"
-                      : "border-border bg-white text-[#6f6568] hover:border-[#d7a9b7]"
+                      ? "border-[#800020] bg-[#800020] text-white shadow-xs"
+                      : "border-border bg-stone-50 text-stone-600 hover:border-[#d7a9b7]"
                   }`}
                 >
-                  {day.label}
+                  <span>{day.label}</span>
+                  <span className={`size-1.5 rounded-full ${selected ? "bg-white" : "bg-transparent"}`} />
                 </button>
               );
             })}
           </div>
-          <p className="mt-3 text-xs font-medium text-cranberry">
-            {availableDays.length} day{availableDays.length === 1 ? "" : "s"} selected
+          <p className="mt-3 text-xs font-semibold text-[#800020]">
+            {availableDays.length} day{availableDays.length === 1 ? "" : "s"} open per week
           </p>
         </div>
 
-        <div className="rounded-2xl border bg-[#fbf7f8] p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-bold text-[#181113]">Date-specific hours</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Add exact hours for a particular date, class, trip, or hourly opening.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={addDateSlot}
-              className="h-10 rounded-full bg-white"
-            >
-              <Plus className="mr-1 h-4 w-4" /> Add date
-            </Button>
+        {/* Visual Calendar Tip Card with illustration */}
+        <div className="rounded-2xl border border-stone-200/80 bg-gradient-to-r from-[#fbf0f3]/50 to-white p-4 flex items-center gap-4">
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border border-[#f3cfd9] bg-white">
+            <Image
+              src="/images/empty-calendar.png"
+              alt="Calendar integration"
+              fill
+              className="object-cover"
+            />
           </div>
-
-          <div className="mt-4 space-y-3">
-            {dateSlots.length === 0 ? (
-              <div className="rounded-xl border border-dashed bg-white px-4 py-5 text-center">
-                <p className="text-sm font-semibold text-[#181113]">No special dates yet</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  That is okay. Beddn will use your usual open days and timing.
-                </p>
-              </div>
-            ) : (
-              dateSlots.map((slot) => (
-                <div key={slot.id} className="grid gap-3 rounded-xl bg-white p-3 sm:grid-cols-[1.2fr_1fr_1fr_0.9fr_auto] sm:items-end">
-                  <div>
-                    <Label className="text-xs">Date</Label>
-                    <Input
-                      type="date"
-                      value={slot.date}
-                      onChange={(event) => updateDateSlot(slot.id, { date: event.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Start</Label>
-                    <Input
-                      type="time"
-                      value={slot.startTime}
-                      onChange={(event) => updateDateSlot(slot.id, { startTime: event.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">End</Label>
-                    <Input
-                      type="time"
-                      value={slot.endTime}
-                      onChange={(event) => updateDateSlot(slot.id, { endTime: event.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">
-                      {isExperience ? "Seats" : "Units"}
-                    </Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={slot.availableUnits}
-                      onChange={(event) =>
-                        updateDateSlot(slot.id, { availableUnits: event.target.value })
-                      }
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => removeDateSlot(slot.id)}
-                    className="h-10 rounded-full px-3"
-                    aria-label="Remove date-specific hours"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))
-            )}
+          <div className="min-w-0 flex-1 text-xs">
+            <p className="font-bold text-[#2b000a] text-sm flex items-center gap-1.5">
+              <Icon icon="solar:shield-check-bold" className="size-4 text-emerald-600" />
+              Easy calendar management
+            </p>
+            <p className="mt-0.5 text-stone-600 leading-relaxed text-[11px]">
+              No complicated date scheduling needed right now. Once your listing goes live, you can import your Airbnb/Google Calendar iCal link or block off dates directly.
+            </p>
           </div>
         </div>
       </div>
@@ -1253,19 +1266,26 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
             outside Beddn for now, so keep your calendar updated after each conversation.
           </p>
         </div>
-        <div className="rounded-xl bg-[#fbf7f8] p-4 text-sm text-[#2b000a]">
-          <p className="font-semibold">Ready to publish?</p>
-          <p className="mt-1 text-muted-foreground">
-            Tap <strong>Go live</strong> below to make this listing visible to guests right
-            after review. Not done yet? <strong>Save draft</strong> keeps it private so you can
-            finish later. Prices and at least one photo are required before publishing.
-          </p>
+        <div className="flex items-center gap-3.5 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-emerald-950">
+          <div className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-white p-1">
+            <Image
+              src="/images/spot-verified.png"
+              alt="Ready to publish"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="min-w-0 text-xs">
+            <p className="font-bold text-emerald-950 text-sm">Ready to go live!</p>
+            <p className="text-emerald-800 leading-relaxed text-[11px]">
+              Tap <strong>Go live</strong> below to publish your place to guests across Beddn. Prices and photos are verified.
+            </p>
+          </div>
         </div>
         <div className="rounded-xl border border-dashed border-[#d7a9b7] p-4 text-sm">
-          <p className="font-semibold text-[#2b000a]">Calendar is included</p>
-          <p className="mt-1 text-muted-foreground">
-            Your open days and date-specific hours will be saved with this listing. You can
-            still sync iCal later from <strong>Dashboard → Calendar</strong>.
+          <p className="font-semibold text-[#2b000a]">Flexible schedule</p>
+          <p className="mt-1 text-muted-foreground text-xs leading-relaxed">
+            Your open days will be saved with this listing. You can block dates or sync iCal anytime from <strong>Dashboard → Calendar</strong>.
           </p>
         </div>
       </div>
@@ -1386,14 +1406,7 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       is_verified: isAdmin ? isVerified : listing?.is_verified ?? false,
     };
 
-    const availabilitySlots = dateSlots
-      .filter((slot) => slot.date && slot.startTime && slot.endTime)
-      .map((slot) => ({
-        startDatetime: `${slot.date}T${slot.startTime}:00`,
-        endDatetime: `${slot.date}T${slot.endTime}:00`,
-        totalUnits: Math.max(1, parseInt(totalUnits || "1")),
-        availableUnits: Math.max(0, parseInt(slot.availableUnits || totalUnits || "1")),
-      }));
+    const availabilitySlots: any[] = [];
 
     const res = await fetch("/api/listings", {
       method: listing ? "PATCH" : "POST",
@@ -1427,47 +1440,85 @@ export function ListingForm({ listing, hostId, isAdmin, initialCategory }: Listi
       <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col pb-28 pt-4 sm:pb-0 sm:pt-6">
         <div ref={topRef} className="scroll-mt-20" />
 
-      {/* Progress */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="uppercase tracking-wide text-cranberry">
-            {listing ? "Edit listing" : "New listing"}
-          </span>
-          <span className="text-muted-foreground">
-            Step {step + 1} of {steps.length} · {percent}%
-          </span>
+      {/* High-end Stepper Progress Header */}
+      <div className="mb-6 rounded-3xl border border-[#f3cfd9]/80 bg-gradient-to-br from-white via-white to-[#fdf7f9] p-4 sm:p-5 shadow-xs">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-[#fbf0f3] text-[#800020] border border-[#f3cfd9]">
+              <Icon icon="solar:home-add-bold-duotone" className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs font-bold text-[#800020] uppercase tracking-wider">
+                {listing ? "Update Listing" : "Host Setup"}
+              </p>
+              <h3 className="text-sm font-bold text-[#2b000a] truncate max-w-[200px] sm:max-w-xs">
+                {current.title}
+              </h3>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-[#fbf0f3] px-3 py-1 text-xs font-bold text-[#800020] border border-[#f3cfd9]">
+              {percent}% complete
+            </span>
+          </div>
         </div>
-        {/* Segmented progress — each completed step fills in. Tap a filled
-            segment to jump back to it. */}
-        <div className="mt-2 flex gap-1">
-          {steps.map((s, i) => {
-            const done = i < step;
-            const isCurrent = i === step;
-            return (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Go to step ${i + 1}: ${s.title}`}
-                disabled={i > step}
-                onClick={() => i < step && setStep(i)}
-                className={`h-1.5 flex-1 overflow-hidden rounded-full transition-colors ${
-                  done || isCurrent ? "bg-[#800020]" : "bg-[#f1e6ea]"
-                } ${i < step ? "cursor-pointer" : "cursor-default"}`}
-              />
-            );
-          })}
+
+        {/* Animated Smooth Progress Track */}
+        <div className="mt-4 relative h-2.5 w-full overflow-hidden rounded-full bg-[#f3e9ed]">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#800020] via-[#a6173e] to-[#d6285a] transition-all duration-500 ease-out shadow-xs"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+
+        {/* Interactive Step Navigator */}
+        <div className="mt-3 flex items-center justify-between gap-1 text-[11px] font-medium text-stone-500">
+          <span>Step {step + 1} of {steps.length}</span>
+          <div className="flex items-center gap-1 overflow-x-auto py-1 max-w-[65%] [scrollbar-width:none]">
+            {steps.map((s, i) => {
+              const isPast = i < step;
+              const isCurrent = i === step;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  disabled={i > step}
+                  onClick={() => i < step && setStep(i)}
+                  title={s.title}
+                  className={`size-6 shrink-0 rounded-full text-[10px] font-bold flex items-center justify-center transition-all ${
+                    isCurrent
+                      ? "bg-[#800020] text-white ring-2 ring-[#800020]/20 scale-110"
+                      : isPast
+                      ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 cursor-pointer"
+                      : "bg-[#f5ecf0] text-stone-400 cursor-not-allowed"
+                  }`}
+                >
+                  {isPast ? <Check className="size-3" /> : i + 1}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Centered focus area, Typeform-style — one step per screen instead of
-          a short card stranded at the top with a wall of empty space below. */}
-      <div className="flex flex-1 items-start py-2">
-        <div className="w-full rounded-2xl border bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-xl font-bold text-[#181113] sm:text-2xl">{current.title}</h2>
-          {current.subtitle && (
-            <p className="mt-2 text-sm text-muted-foreground">{current.subtitle}</p>
-          )}
-          <div className="mt-5 sm:max-h-[62vh] sm:overflow-y-auto sm:pr-1">{current.content}</div>
+      {/* Centered focus area */}
+      <div className="flex flex-1 items-start py-1">
+        <div className="relative w-full overflow-hidden rounded-3xl border border-[#f3cfd9] bg-white p-5 shadow-lg shadow-[#800020]/5 sm:p-8">
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 size-48 rounded-full bg-radial from-[#fbf0f3] to-transparent pointer-events-none opacity-80 blur-xl" />
+          
+          <div className="relative z-10 mb-6">
+            <h2 className="font-brand text-2xl font-extrabold text-[#2b000a] sm:text-3xl tracking-tight">
+              {current.title}
+            </h2>
+            {current.subtitle && (
+              <p className="mt-1.5 text-sm leading-relaxed text-stone-600 font-medium">
+                {current.subtitle}
+              </p>
+            )}
+          </div>
+          <div className="relative z-10 sm:max-h-[62vh] sm:overflow-y-auto sm:pr-2">
+            {current.content}
+          </div>
         </div>
       </div>
 

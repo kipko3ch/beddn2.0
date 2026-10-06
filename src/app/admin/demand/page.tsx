@@ -235,65 +235,67 @@ export default function AdminDemandPage() {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-stone-200/80 text-[11px] font-bold uppercase tracking-wider text-stone-400">
-                <th className="pb-3 pl-2">Destination / Area</th>
-                <th className="pb-3 text-center">Guest Searches</th>
-                <th className="pb-3 text-center">Unmatched (0 results)</th>
-                <th className="pb-3 text-center">Active Listings</th>
-                <th className="pb-3 text-center">Supply Gap Status</th>
-                <th className="pb-3 text-right pr-2">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100 font-medium">
-              {destinationGaps.slice(0, 15).map((gap, idx) => (
-                <tr key={idx} className="hover:bg-[#fcfafb] transition">
-                  <td className="py-3.5 pl-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#fdf2f4] text-[#800020]">
-                        <MapPin className="size-4" />
-                      </div>
-                      <span className="font-bold text-sm text-stone-900">{gap.destination}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {destinationGaps.slice(0, 15).map((gap, idx) => (
+            <div
+              key={idx}
+              className="rounded-2xl border border-stone-200/90 bg-white p-4.5 shadow-2xs hover:border-[#f3cfd9] hover:shadow-xs transition flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#fdf2f4] text-[#800020] border border-[#f3cfd9]">
+                      <MapPin className="size-4" />
                     </div>
-                  </td>
-                  <td className="py-3.5 text-center font-mono font-bold text-stone-800">
-                    {gap.totalSearches}
-                  </td>
-                  <td className="py-3.5 text-center font-mono font-bold text-rose-600">
-                    {gap.unmatchedSearches}
-                  </td>
-                  <td className="py-3.5 text-center font-mono font-semibold text-stone-700">
-                    {gap.matchingListings}
-                  </td>
-                  <td className="py-3.5 text-center">
+                    <div className="min-w-0">
+                      <span className="font-bold text-sm text-stone-900 truncate block">{gap.destination}</span>
+                      <span className="text-[11px] text-stone-500 font-medium">{gap.matchingListings} active listings</span>
+                    </div>
+                  </div>
+                  <div>
                     {gap.gapLevel === "critical" ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-bold text-rose-700 border border-rose-200">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
                         <AlertTriangle className="size-3" /> Critical Gap
                       </span>
                     ) : gap.gapLevel === "moderate" ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 border border-amber-200">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200">
                         Moderate Gap
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
                         <CheckCircle2 className="size-3" /> Well Supplied
                       </span>
                     )}
-                  </td>
-                  <td className="py-3.5 text-right pr-2">
-                    <Link
-                      href={`${ROUTES.adminHosts}?city=${encodeURIComponent(gap.destination)}`}
-                      className="inline-flex h-7 items-center rounded-full bg-stone-100 px-3 text-[11px] font-bold text-stone-700 hover:bg-[#800020] hover:text-white transition shadow-2xs"
-                    >
-                      Recruit Hosts
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 rounded-xl bg-stone-50/80 p-2.5 text-center text-xs">
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-stone-400">Searches</p>
+                    <p className="font-mono font-bold text-stone-800 text-sm mt-0.5">{gap.totalSearches}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-rose-500">Unmatched</p>
+                    <p className="font-mono font-bold text-rose-600 text-sm mt-0.5">{gap.unmatchedSearches}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-stone-400">Listings</p>
+                    <p className="font-mono font-bold text-stone-700 text-sm mt-0.5">{gap.matchingListings}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between">
+                <span className="text-[11px] text-stone-400 font-medium">Host outreach</span>
+                <Link
+                  href={`${ROUTES.adminHosts}?city=${encodeURIComponent(gap.destination)}`}
+                  className="inline-flex h-8 items-center rounded-full bg-[#fbf0f3] px-3.5 text-xs font-bold text-[#800020] border border-[#f3cfd9] hover:bg-[#800020] hover:text-white transition shadow-2xs"
+                >
+                  Recruit Hosts
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
