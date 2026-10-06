@@ -8,7 +8,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Star, X, MessageCircle, ArrowRight, ShieldCheck, TrendingUp, Zap } from "lucide-react";
+import Image from "next/image";
+import { Icon } from "@iconify/react";
 import FUIPricingSectionWithOnePlan, { PricingPlan, PricingFeature } from "@/components/ui/colorful-pricing";
 
 export function ProUpgradeModal({
@@ -55,22 +56,22 @@ export function ProUpgradeModal({
     {
       name: "Verified Trust & Credibility",
       desc: "Stand out to guests across East Africa with the official Verified Host badge on your profile and listings.",
-      icon: <ShieldCheck className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:shield-check-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
     {
       name: "Priority Search Placement",
       desc: "Appear at the top of search results in your city (Nairobi, Mombasa, Diani, Kampala) when travelers search for stays.",
-      icon: <TrendingUp className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:chart-2-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
     {
       name: "Instant WhatsApp Conversions",
       desc: "Connect directly with verified guests through 1-tap WhatsApp chat without unnecessary platform delays.",
-      icon: <Zap className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:bolt-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
     {
       name: "Dedicated Host Support",
       desc: "Get priority listing assistance, rapid M-Pesa activation, and personalized advice from the Beddn team.",
-      icon: <Sparkles className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:stars-minimalistic-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
   ];
 
@@ -99,7 +100,7 @@ export function ProUpgradeModal({
             </span>
             {activeTier && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#fdf2f4] px-2.5 py-0.5 text-[11px] font-bold text-[#800020] border border-[#f9c8d4]">
-                <Star className="size-3 fill-[#800020]" />
+                <Icon icon="solar:crown-star-bold-duotone" className="size-3.5 text-[#800020]" />
                 {activeTier} Active {expiresAt ? `· Exp ${expiresAt}` : ""}
               </span>
             )}
@@ -109,7 +110,7 @@ export function ProUpgradeModal({
             className="rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition"
             aria-label="Close modal"
           >
-            <X className="size-4" />
+            <Icon icon="solar:close-circle-linear" className="size-5" />
           </button>
         </div>
 
@@ -131,7 +132,7 @@ export function ProUpgradeModal({
           <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50/70 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-stone-200 text-stone-700 shadow-xs">
-                <Star className="size-5 text-[#800020]" />
+                <Icon icon="solar:crown-line-duotone" className="size-5 text-[#800020]" />
               </div>
               <div>
                 <h4 className="font-brand text-sm sm:text-base font-bold text-stone-900">
@@ -149,7 +150,7 @@ export function ProUpgradeModal({
               className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-xs font-bold text-stone-800 hover:border-[#800020] hover:text-[#800020] transition shadow-xs"
             >
               <span>Contact for Featured</span>
-              <ArrowRight className="size-3.5" />
+              <Icon icon="solar:arrow-right-linear" className="size-3.5" />
             </a>
           </div>
         </div>
@@ -157,7 +158,7 @@ export function ProUpgradeModal({
         {/* Clean Footer Note */}
         <div className="bg-stone-50 px-6 py-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
           <div className="flex flex-wrap items-center gap-2">
-            <MessageCircle className="size-4 text-[#800020]" />
+            <Icon icon="solar:chat-round-dots-bold-duotone" className="size-4 text-[#800020]" />
             <span>Fast activation via M-Pesa or Bank transfer.</span>
             <Link
               href="/host/pro"

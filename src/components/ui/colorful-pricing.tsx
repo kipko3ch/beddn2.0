@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Check, Sparkles, TrendingUp, ShieldCheck, Zap, ArrowRight } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 
 export interface PricingFeature {
@@ -68,22 +68,22 @@ export default function FUIPricingSectionWithOnePlan({
     {
       name: "Scalable Reach",
       desc: "Reach thousands of travelers and guests searching for stays across Nairobi, Mombasa, Kampala, and Kigali.",
-      icon: <TrendingUp className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:chart-2-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
     {
       name: "Flexible Monetization",
       desc: "Accept payments seamlessly via M-Pesa, card, or direct bank transfer with prompt activation and support.",
-      icon: <Zap className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:bolt-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
     {
       name: "Smooth Experience",
       desc: "Designed to keep your calendar full with actionable recommendations, real-time views, and instant alerts.",
-      icon: <Sparkles className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:stars-minimalistic-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
     {
       name: "Verified & Secure",
       desc: "Gain instant guest trust with verified badges and dedicated Beddn safety and onboarding assistance.",
-      icon: <ShieldCheck className="w-5 h-5 text-[#800020]" />,
+      icon: <Icon icon="solar:shield-check-bold-duotone" className="w-5 h-5 text-[#800020]" />,
     },
   ];
 
@@ -103,7 +103,7 @@ export default function FUIPricingSectionWithOnePlan({
         {/* Header */}
         <div className="relative max-w-xl space-y-2.5 px-2 md:px-0">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-[#fdf2f4] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#800020] border border-[#f9c8d4]/70">
-            <Sparkles className="size-3 text-[#800020]" />
+            <Icon icon="solar:stars-minimalistic-bold-duotone" className="size-3.5 text-[#800020]" />
             {badgeText}
           </div>
 
@@ -179,7 +179,7 @@ export default function FUIPricingSectionWithOnePlan({
                   className="mt-6 w-full font-brand font-bold text-center rounded-2xl text-sm sm:text-base bg-gradient-to-r from-[#800020] to-[#5a0016] hover:from-[#68001a] hover:to-[#400010] text-white px-5 py-3 shadow-md hover:shadow-lg transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 group"
                 >
                   <span>{ctaText}</span>
-                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                  <Icon icon="solar:arrow-right-linear" className="size-4 transition-transform group-hover:translate-x-1" />
                 </a>
               ) : (
                 <button
@@ -188,7 +188,7 @@ export default function FUIPricingSectionWithOnePlan({
                   className="mt-6 w-full font-brand font-bold text-center rounded-2xl text-sm sm:text-base bg-gradient-to-r from-[#800020] to-[#5a0016] hover:from-[#68001a] hover:to-[#400010] text-white px-5 py-3 shadow-md hover:shadow-lg transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 group"
                 >
                   <span>{ctaText}</span>
-                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                  <Icon icon="solar:arrow-right-linear" className="size-4 transition-transform group-hover:translate-x-1" />
                 </button>
               )}
             </div>
@@ -202,7 +202,7 @@ export default function FUIPricingSectionWithOnePlan({
                 {plan.features.map((featureItem, idx) => (
                   <li key={idx} className="flex items-center gap-2.5">
                     <div className="flex-none size-4 rounded-full bg-[#fdf2f4] text-[#800020] flex items-center justify-center">
-                      <Check className="size-3 text-[#800020] stroke-[3]" />
+                      <Icon icon="solar:check-read-linear" className="size-3 text-[#800020] stroke-[2]" />
                     </div>
                     <span className="leading-snug">{featureItem}</span>
                   </li>

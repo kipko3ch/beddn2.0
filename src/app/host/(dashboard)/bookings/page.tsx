@@ -119,7 +119,7 @@ export default function BookingsPage() {
       <h1 className="text-2xl font-bold mb-6">Bookings</h1>
       {loading ? <DashboardListSkeleton rows={4} /> : bookings.length === 0 ? (
         <EmptyState
-          image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029373/empty-bookings_dpa4kz.png"
+          image="/images/empty-bookings.png"
           title="No bookings yet"
           subtitle="Paid booking requests from guests will appear here."
           size="sm"

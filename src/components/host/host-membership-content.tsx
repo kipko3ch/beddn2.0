@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, ArrowRight, Star, Sparkles, MessageCircle, ArrowLeft } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
 
@@ -98,11 +98,11 @@ export function HostMembershipContent({
             className="flex size-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 hover:border-[#800020] hover:text-[#800020] transition shadow-2xs"
             title="Back to dashboard"
           >
-            <ArrowLeft className="size-4" />
+            <Icon icon="solar:arrow-left-linear" className="size-4" />
           </Link>
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#800020]">
-              <Sparkles className="size-3 text-[#800020]" />
+              <Icon icon="solar:stars-minimalistic-bold-duotone" className="size-3.5 text-[#800020]" />
               <span>Beddn Host Membership</span>
             </div>
             <h1 className="font-brand text-2xl sm:text-3xl font-extrabold text-[#2b000a] tracking-tight">
@@ -267,27 +267,27 @@ export function HostMembershipContent({
               </p>
               <ul className="space-y-3 text-xs sm:text-sm text-stone-600">
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0" />
                   <span>Verified Pro Badge on your listing card</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0" />
                   <span>Priority Search Ranking above standard spaces</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0" />
                   <span>Direct WhatsApp inquiries &amp; instant guest reach</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0" />
                   <span>Highlighted card border in search results</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0" />
                   <span>Detailed inquiry &amp; impression metrics</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0" />
                   <span>Zero commission on direct guest bookings</span>
                 </li>
               </ul>
@@ -303,7 +303,7 @@ export function HostMembershipContent({
             >
               <WhatsAppIcon className="size-4.5 text-[#25D366] shrink-0" />
               <span>Request Pro Tier via WhatsApp</span>
-              <ArrowRight className="size-4" />
+              <Icon icon="solar:arrow-right-linear" className="size-4" />
             </a>
           </div>
         </div>
@@ -351,27 +351,27 @@ export function HostMembershipContent({
               </p>
               <ul className="space-y-3 text-xs sm:text-sm text-stone-700">
                 <li className="flex items-center gap-2.5 font-medium">
-                  <Check className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
                   <span>Everything in Beddn Pro included</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
                   <span>Homepage Spotlight &amp; Featured Carousel placement</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
                   <span>Top of City &amp; Category search results</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
                   <span>Verified Host Plus badge with pink rosette seal</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
                   <span>Dedicated VIP host concierge support from Beddn team</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
+                  <Icon icon="solar:check-read-linear" className="size-4 text-[#800020] shrink-0 stroke-[2.5]" />
                   <span>Priority guest inquiry routing and high-intent matching</span>
                 </li>
               </ul>
@@ -387,7 +387,7 @@ export function HostMembershipContent({
             >
               <WhatsAppIcon className="size-4.5 text-[#25D366] shrink-0" />
               <span>Request Pro Plus via WhatsApp</span>
-              <ArrowRight className="size-4" />
+              <Icon icon="solar:arrow-right-linear" className="size-4" />
             </a>
           </div>
         </div>
@@ -397,7 +397,7 @@ export function HostMembershipContent({
       <div className="rounded-3xl border border-stone-200/90 bg-stone-50/70 p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
         <div className="flex items-start sm:items-center gap-3.5">
           <div className="flex size-11 items-center justify-center rounded-2xl bg-white border border-stone-200 text-stone-700 shadow-2xs shrink-0">
-            <Star className="size-5 text-[#800020] fill-[#800020]" />
+            <Icon icon="solar:crown-star-bold-duotone" className="size-5 text-[#800020]" />
           </div>
           <div>
             <h4 className="font-brand text-base font-bold text-stone-900">
@@ -415,14 +415,14 @@ export function HostMembershipContent({
           className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl border border-stone-300 bg-white px-5 py-2.5 text-xs font-bold text-stone-800 hover:border-[#800020] hover:text-[#800020] shadow-2xs transition shrink-0"
         >
           <span>Contact for Featured</span>
-          <ArrowRight className="size-3.5" />
+          <Icon icon="solar:arrow-right-linear" className="size-3.5" />
         </a>
       </div>
 
       {/* Activation & Payment Note */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 pt-3 border-t border-stone-100">
         <div className="flex items-center gap-2">
-          <MessageCircle className="size-4 text-[#800020]" />
+          <Icon icon="solar:chat-round-dots-bold-duotone" className="size-4 text-[#800020]" />
           <span>Fast activation via M-Pesa or Bank transfer. Tiers are activated quickly upon confirmation.</span>
         </div>
         <span>Dedicated host concierge: +254 727 993 661</span>

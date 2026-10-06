@@ -135,7 +135,7 @@ export default function NewListingPage() {
           {step === 0 && (
             <div>
               <Image
-                src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029370/empty-host-needed_vum5fe.png"
+                src="/images/empty-host-needed.png"
                 alt=""
                 width={140}
                 height={110}
@@ -182,7 +182,7 @@ export default function NewListingPage() {
           {step === 2 && (
             <div>
               <Image
-                src="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029380/spot-verified_anp2nf.png"
+                src="/images/spot-verified.png"
                 alt=""
                 width={130}
                 height={110}

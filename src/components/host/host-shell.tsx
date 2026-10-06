@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { ROUTES } from "@/lib/routes";
 import { DashboardShell, type NavSection } from "@/components/dashboard/dashboard-shell";
 
@@ -62,7 +62,7 @@ export function HostShell({
       href={ROUTES.newListing}
       className="flex w-full items-center justify-center gap-2 rounded-full bg-[#800020] px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] active:scale-95 transition"
     >
-      <Plus className="size-4" />
+      <Icon icon="solar:add-circle-linear" className="size-4" />
       <span>New Listing</span>
     </Link>
   );

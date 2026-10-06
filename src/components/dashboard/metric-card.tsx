@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type ReactNode } from "react";
-import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 export interface MetricCardProps {
   label: string;
@@ -89,7 +89,7 @@ export function MetricCard({
         </div>
         {href && (
           <div className="text-stone-300 transition group-hover:text-[#800020] group-hover:translate-x-0.5 shrink-0">
-            <ArrowUpRight className="size-3.5 sm:size-4" />
+            <Icon icon="solar:arrow-right-up-linear" className="size-3.5 sm:size-4" />
           </div>
         )}
       </div>

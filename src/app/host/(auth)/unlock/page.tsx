@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Delete, Lock, ShieldCheck } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { ROUTES } from "@/lib/routes";
 import { HOST_PIN_LENGTH } from "@/lib/host-pin";
 
@@ -47,7 +47,7 @@ function Keypad({ onDigit, onBackspace, disabled }: { onDigit: (d: string) => vo
             aria-label="Delete digit"
             className="flex h-14 sm:h-16 items-center justify-center rounded-2xl text-[#2b000a] hover:bg-[#f5f1f2] disabled:opacity-40"
           >
-            <Delete className="h-6 w-6" />
+            <Icon icon="solar:backspace-linear" className="size-6" />
           </button>
         ) : (
           <button
@@ -224,15 +224,15 @@ function UnlockInner() {
           <Link href={ROUTES.home} className="font-brand text-3xl leading-none text-[#2b000a]">
             Beddn
           </Link>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1 text-xs font-bold uppercase tracking-widest text-crimson">
-            <Lock className="h-3.5 w-3.5" /> Host mode
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8eef2] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#800020]">
+            <Icon icon="solar:lock-bold-duotone" className="size-3.5" /> Host mode
           </span>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center px-4 py-12 text-center">
-        <span className="mb-5 flex size-14 items-center justify-center rounded-full bg-[#f8eef2] text-crimson">
-          {stage === "locked" ? <Lock className="h-7 w-7" /> : <ShieldCheck className="h-7 w-7" />}
+        <span className="mb-5 flex size-14 items-center justify-center rounded-full bg-[#f8eef2] text-[#800020]">
+          <Icon icon={stage === "locked" ? "solar:lock-bold-duotone" : "solar:shield-check-bold-duotone"} className="size-7" />
         </span>
         <h1 className="font-brand text-3xl leading-tight text-[#2b000a]">{title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>

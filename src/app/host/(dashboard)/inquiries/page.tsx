@@ -7,8 +7,8 @@ import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Icon } from "@iconify/react";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
-import { AlertTriangle, CalendarCheck } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import type { Booking, Inquiry } from "@/lib/types";
 
@@ -147,7 +147,7 @@ export default function HostRequestsPage() {
             </h2>
             {pending.length === 0 ? (
               <EmptyState
-                image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029373/empty-bookings_dpa4kz.png"
+                image="/images/empty-bookings.png"
                 title="No requests waiting"
                 subtitle="New booking requests from guests will appear here for you to confirm."
                 size="sm"
@@ -194,7 +194,7 @@ export default function HostRequestsPage() {
 
                       {conflict && (
                         <p className="mt-3 flex items-center gap-2 rounded-xl border-l-[3px] border-amber-500 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
-                          <AlertTriangle className="h-4 w-4 shrink-0" />
+                          <Icon icon="solar:danger-triangle-bold-duotone" className="h-4 w-4 shrink-0" />
                           Heads up: these dates overlap another confirmed booking. Check your calendar
                           before confirming.
                         </p>
@@ -207,7 +207,7 @@ export default function HostRequestsPage() {
                           onClick={() => act(req.id, "accept")}
                           className="gap-1 rounded-full bg-[#128c4b] hover:bg-[#0f7a41]"
                         >
-                          <CalendarCheck className="h-4 w-4" /> Confirm &amp; lock dates
+                          <Icon icon="solar:calendar-date-bold-duotone" className="h-4 w-4" /> Confirm &amp; lock dates
                         </Button>
                         <Button
                           size="sm"

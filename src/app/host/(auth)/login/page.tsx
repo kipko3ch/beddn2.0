@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -198,7 +198,7 @@ export default function HostLoginPage() {
               onClick={() => setShowEmail(true)}
               className="h-14 w-full rounded-full border-[#2b000a] text-base font-bold"
             >
-              <Mail className="mr-4 h-5 w-5" />
+              <Icon icon="solar:letter-bold-duotone" className="mr-4 size-5 text-[#800020]" />
               Continue with magic link via email
             </Button>
           ) : sent ? (

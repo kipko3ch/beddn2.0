@@ -2,17 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  Bell,
-  Check,
-  Calendar,
-  MessageSquare,
-  Megaphone,
-  AlertCircle,
-  ArrowRight,
-  Star,
-} from "lucide-react";
+import { Icon } from "@iconify/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import type { HostNotification } from "@/lib/types";
@@ -84,16 +76,16 @@ export function NotificationPopover({
         return <VerifiedBadge variant="icon" size="xs" />;
       case "pro_activated":
       case "pro_expiring":
-        return <Star className="size-4 text-amber-500 fill-amber-500" />;
+        return <Icon icon="solar:crown-star-bold-duotone" className="size-4 text-[#800020]" />;
       case "booking_requested":
       case "booking_confirmed":
-        return <Calendar className="size-4 text-[#800020]" />;
+        return <Icon icon="solar:calendar-date-bold-duotone" className="size-4 text-[#800020]" />;
       case "inquiry_new":
-        return <MessageSquare className="size-4 text-blue-600" />;
+        return <Icon icon="solar:chat-round-dots-bold-duotone" className="size-4 text-[#800020]" />;
       case "announcement":
-        return <Megaphone className="size-4 text-[#800020]" />;
+        return <Icon icon="solar:megaphone-bold-duotone" className="size-4 text-[#800020]" />;
       default:
-        return <AlertCircle className="size-4 text-stone-500" />;
+        return <Icon icon="solar:info-circle-bold-duotone" className="size-4 text-stone-500" />;
     }
   }
 
@@ -105,7 +97,7 @@ export function NotificationPopover({
           aria-label="Notifications"
           className="relative flex size-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white outline-none"
         >
-          <Bell className="size-4.5" />
+          <Icon icon="solar:bell-bold-duotone" className="size-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-2 ring-[#2b000a] animate-pulse">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -156,8 +148,14 @@ export function NotificationPopover({
         <div className="max-h-80 overflow-y-auto divide-y divide-stone-100 p-1">
           {notifications.length === 0 ? (
             <div className="py-10 text-center px-4">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-stone-100 text-stone-400 mb-2">
-                <Bell className="size-6" />
+              <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#fdf2f4] text-[#800020] mb-2">
+                <Image
+                  src="/images/spot-sms.png"
+                  alt="No notifications"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
               <p className="text-sm font-semibold text-stone-700">No notifications yet</p>
               <p className="text-xs text-stone-500 mt-0.5">
@@ -192,7 +190,7 @@ export function NotificationPopover({
                       })}
                     </span>
                     <span className="font-bold text-[#800020] hover:underline inline-flex items-center gap-0.5">
-                      Open <ArrowRight className="size-2.5" />
+                      Open <Icon icon="solar:arrow-right-linear" className="size-2.5" />
                     </span>
                   </div>
                 </div>
@@ -209,7 +207,7 @@ export function NotificationPopover({
             className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-[#800020] hover:underline py-0.5"
           >
             <span>Open Notifications Center</span>
-            <ArrowRight className="size-3" />
+            <Icon icon="solar:arrow-right-linear" className="size-3" />
           </Link>
         </div>
       </PopoverContent>

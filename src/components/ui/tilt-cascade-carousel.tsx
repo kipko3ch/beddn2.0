@@ -1,6 +1,6 @@
 "use client"
-
 import * as React from "react"
+import { Icon } from "@iconify/react"
 
 /**
  * Tilt Cascade Carousel — square photos on a slanted line. The one in front
@@ -148,14 +148,15 @@ const CSS =
   ".tcc-root:focus-visible{box-shadow:inset 0 0 0 2px var(--color-primary,#171717)}" +
   ".tcc-root[data-dragging]{cursor:grabbing}" +
   ".tcc-root[data-dragging] .tcc-slide{cursor:grabbing}" +
-  ".tcc-stage{position:relative;aspect-ratio:1/1;margin-top:2rem}" +
+  ".tcc-stage{position:relative;aspect-ratio:1/1;margin-top:1.5rem}" +
   ".tcc-slide{position:absolute;inset:0;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;" +
-  "cursor:pointer;will-change:transform;transform-origin:50% 50%;-webkit-tap-highlight-color:transparent}" +
+  "cursor:pointer;will-change:transform;transform-origin:50% 50%;-webkit-tap-highlight-color:transparent;" +
+  "contain:layout paint;transform:translateZ(0)}" +
   ".tcc-slide:focus-visible{outline:none}" +
   ".tcc-slide:focus-visible .tcc-frame{box-shadow:0 0 0 3px var(--color-background,#fff),0 0 0 5px var(--color-primary,#171717)}" +
   ".tcc-frame{position:absolute;inset:0;overflow:hidden;border-radius:var(--tcc-r);" +
   "background:color-mix(in oklab,currentColor 10%,transparent);" +
-  "box-shadow:0 1px 2px rgba(0,0,0,.06)}" +
+  "box-shadow:0 8px 30px rgba(0,0,0,.25)}" +
   ".tcc-frame>img{position:absolute;inset:0;width:100%;height:100%;max-width:none;display:block;object-fit:cover}" +
   ".tcc-title,.tcc-cap{position:absolute;left:50%;white-space:nowrap;pointer-events:none;opacity:0;" +
   "transform:translateX(-50%) scale(.7);transition:opacity .3s,transform .3s}" +
@@ -164,23 +165,21 @@ const CSS =
   "color:color-mix(in oklab,currentColor 58%,transparent)}" +
   ".tcc-slide[data-active] .tcc-title,.tcc-slide[data-active] .tcc-cap{opacity:1;transform:translateX(-50%) scale(1)}" +
   "@media (min-width:768px){.tcc-title{font-size:14px;line-height:18px}.tcc-cap{font-size:12px}}" +
-  ".tcc-controls{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;" +
-  "gap:16px;padding:0 8px;border-radius:999px;" +
-  "background:color-mix(in oklab,currentColor 7%,transparent);" +
-  "border:1px solid color-mix(in oklab,currentColor 12%,transparent);" +
-  "-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);" +
-  "box-shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px -1px rgba(0,0,0,.08)}" +
-  ".tcc-btn{display:grid;place-items:center;margin:0;padding:8px;border:0;border-radius:999px;background:none;" +
-  "color:inherit;cursor:pointer;transition:opacity .2s,transform .2s}" +
-  ".tcc-btn:disabled{opacity:.3;cursor:default}" +
-  ".tcc-btn:not(:disabled):active{transform:scale(.88)}" +
+  ".tcc-controls{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;" +
+  "gap:18px;padding:0;background:none;border:none;box-shadow:none;z-index:30;pointer-events:auto}" +
+  ".tcc-btn{display:grid;place-items:center;margin:0;padding:6px;border:0;background:none;" +
+  "color:inherit;cursor:pointer;transition:opacity .2s,transform .2s;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7));" +
+  "-webkit-tap-highlight-color:transparent}" +
+  ".tcc-btn:disabled{opacity:.2;cursor:default}" +
+  ".tcc-btn:not(:disabled):hover{transform:scale(1.15);opacity:1}" +
+  ".tcc-btn:not(:disabled):active{transform:scale(.9)}" +
   ".tcc-btn:focus-visible,.tcc-dot:focus-visible{outline:2px solid currentColor;outline-offset:2px}" +
-  ".tcc-dots{min-width:180px;display:flex;justify-content:center;align-items:center;gap:8px}" +
-  ".tcc-dot{position:relative;width:8px;height:8px;margin:0;padding:0;border:0;border-radius:999px;" +
-  "background:currentColor;opacity:.3;cursor:pointer;transition:width .3s,opacity .3s}" +
+  ".tcc-dots{min-width:100px;display:flex;justify-content:center;align-items:center;gap:8px}" +
+  ".tcc-dot{position:relative;width:7px;height:7px;margin:0;padding:0;border:0;border-radius:999px;" +
+  "background:currentColor;opacity:.35;cursor:pointer;transition:width .25s,opacity .25s;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}" +
   ".tcc-dot::after{content:\"\";position:absolute;inset:-10px -4px}" +
-  ".tcc-dot[aria-current]{width:28px;opacity:1}" +
-  ".tcc-count{font-size:13px;font-variant-numeric:tabular-nums}" +
+  ".tcc-dot[aria-current]{width:22px;opacity:1;background:#fff}" +
+  ".tcc-count{font-size:13px;font-variant-numeric:tabular-nums;font-weight:700;color:#fff;letter-spacing:.05em;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7))}" +
   ".tcc-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}" +
   "@media (prefers-reduced-motion:reduce){" +
   ".tcc-title,.tcc-cap,.tcc-dot,.tcc-btn{transition:none}}"
@@ -188,9 +187,11 @@ const CSS =
 // ---- icons ---------------------------------------------------------------------------
 function Chevron({ dir }: { dir: -1 | 1 }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ maxWidth: "none" }}>
-      <path d={dir < 0 ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"} />
-    </svg>
+    <Icon
+      icon={dir < 0 ? "solar:alt-arrow-left-linear" : "solar:alt-arrow-right-linear"}
+      className="size-7 sm:size-8"
+      style={{ maxWidth: "none" }}
+    />
   )
 }
 
@@ -253,35 +254,58 @@ export default function TiltCascadeCarousel({
   const cb = React.useRef({ onIndexChange, active })
   cb.current = { onIndexChange, active }
 
-  const transformFor = (i: number, a: number, b: number) => {
+  const transformFor = (i: number, a: number, b: number, maxDist = 5.5, isMobile = false) => {
     const c = cfg.current
     const dx = offsetOf(i, a, c.n, c.loop)
+    if (Math.abs(dx) > maxDist) {
+      return {
+        transform: "none",
+        zIndex: 0,
+        hidden: true,
+      }
+    }
     const d = offsetOf(i, b, c.n, c.loop)
+    const effAngle = isMobile ? Math.min(c.angle, 10) : c.angle
+    const effDrop = isMobile ? Math.min(c.drop, 0.18) : c.drop
     return {
       transform:
-        "translate3d(calc(" + dx.toFixed(4) + " * var(--tcc-s)), " + (d * c.drop * 100).toFixed(3) + "%, 0) " +
-        "scale(" + scaleAt(d, c.inactiveScale).toFixed(4) + ") rotate(" + (d * c.angle).toFixed(3) + "deg)",
+        "translate3d(calc(" + dx.toFixed(4) + " * var(--tcc-s)), " + (d * effDrop * 100).toFixed(3) + "%, 0) " +
+        "scale(" + scaleAt(d, c.inactiveScale).toFixed(4) + ") rotate(" + (d * effAngle).toFixed(3) + "deg)",
       zIndex: 100 - Math.round(Math.abs(d) * 10),
-      hidden: Math.abs(dx) > 6.5,
+      hidden: false,
     }
   }
 
   const paint = () => {
+    const isMobile = E.size < 480 || (typeof window !== "undefined" && window.innerWidth < 768)
+    const maxDist = isMobile ? 2.2 : 5.5
     for (let i = 0; i < slideRefs.current.length; i++) {
       const el = slideRefs.current[i]
       if (!el) continue
-      const t = transformFor(i, E.a, E.b)
-      el.style.transform = t.transform
-      el.style.zIndex = "" + t.zIndex
-      el.style.visibility = t.hidden ? "hidden" : ""
+      const t = transformFor(i, E.a, E.b, maxDist, isMobile)
+      if (t.hidden) {
+        if (el.style.display !== "none") {
+          el.style.display = "none"
+          el.style.visibility = "hidden"
+          el.style.transform = "none"
+        }
+      } else {
+        if (el.style.display !== "") {
+          el.style.display = ""
+          el.style.visibility = ""
+        }
+        el.style.transform = t.transform
+        el.style.zIndex = "" + t.zIndex
+      }
     }
   }
 
   const frame = (now: number) => {
+    const isMobile = E.size < 480 || (typeof window !== "undefined" && window.innerWidth < 768)
     const dt = Math.min((now - (E.last || now)) / 1000, 1 / 20)
     E.last = now
     const c = cfg.current
-    const s = springOf(c.bounce, c.duration)
+    const s = springOf(isMobile ? 0 : c.bounce, isMobile ? Math.min(c.duration, 0.18) : c.duration)
     if (E.reduced && !E.drag) {
       E.a = E.b = E.target
       E.va = E.vb = 0
@@ -291,8 +315,9 @@ export default function TiltCascadeCarousel({
       ;[E.b, E.vb] = springStep(E.b, E.vb, E.a, s.omega * 1.05, s.tilt, dt)
     }
     paint()
+    const eps = isMobile ? 2e-3 : 1e-3
     const settled =
-      !E.drag && Math.abs(E.a - E.target) < 1e-3 && Math.abs(E.va) < 1e-2 && Math.abs(E.b - E.a) < 1e-3 && Math.abs(E.vb) < 1e-2
+      !E.drag && Math.abs(E.a - E.target) < eps && Math.abs(E.va) < 2e-2 && Math.abs(E.b - E.a) < eps && Math.abs(E.vb) < 2e-2
     if (settled) {
       E.a = E.b = E.target
       E.va = E.vb = 0

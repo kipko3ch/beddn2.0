@@ -3,15 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Building2,
-  CalendarCheck,
-  Eye,
-  MessageSquare,
-  ShieldCheck,
-  ArrowRight,
-  CheckCircle2,
-} from "lucide-react";
+import { Icon } from "@iconify/react";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import { MetricCard } from "@/components/dashboard/metric-card";
@@ -284,9 +276,13 @@ export default function HostDashboardPage() {
   if (!host) {
     return (
       <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white p-8 text-center sm:p-12 shadow-sm">
-        <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-[#fdf2f4] text-[#800020] mb-4">
-          <Building2 className="size-8" />
-        </div>
+        <Image
+          src="/images/empty-host-needed.png"
+          alt="Become a Host"
+          width={180}
+          height={180}
+          className="mx-auto mb-4 object-contain"
+        />
         <h2 className="font-brand text-3xl font-bold text-[#181113]">Become a Beddn Host</h2>
         <p className="mt-2 text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
           List your spare room, apartment, conference hall, or unique space across East Africa and start receiving verified guests.
@@ -296,7 +292,7 @@ export default function HostDashboardPage() {
           className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#800020] px-7 text-sm font-bold text-white shadow-md hover:bg-[#68001a] transition"
         >
           <span>Create Host Listing</span>
-          <ArrowRight className="size-4" />
+          <Icon icon="solar:arrow-right-linear" className="size-4" />
         </Link>
       </div>
     );
@@ -324,7 +320,7 @@ export default function HostDashboardPage() {
           </p>
         </div>
 
-        {/* Date Range Selector (matching screenshot) */}
+        {/* Date Range Selector */}
         <div className="flex items-center gap-1.5 rounded-full border border-stone-200/80 bg-white p-1 shadow-2xs self-start sm:self-auto">
           {(["7d", "30d", "90d", "all"] as DateRange[]).map((period) => (
             <button
@@ -350,7 +346,7 @@ export default function HostDashboardPage() {
         <MetricCard
           label="Total Views"
           value={viewsCount.toLocaleString()}
-          icon={<Eye className="size-4 sm:size-5" />}
+          icon={<Icon icon="solar:eye-bold-duotone" className="size-4 sm:size-5 text-[#800020]" />}
           tone="burgundy"
           trend={{ value: `${viewsCount} total`, isPositive: viewsCount > 0, label: "impressions" }}
           subtitle="Real guest views"
@@ -359,7 +355,7 @@ export default function HostDashboardPage() {
         <MetricCard
           label="Inquiries & WhatsApp"
           value={totalLeads.toLocaleString()}
-          icon={<MessageSquare className="size-4 sm:size-5" />}
+          icon={<Icon icon="solar:chat-round-dots-bold-duotone" className="size-4 sm:size-5 text-[#800020]" />}
           tone="rose"
           href={ROUTES.dashboardInquiries}
           trend={{ value: `${inquiriesCount} in-app · ${whatsappClicks} WA`, isPositive: totalLeads > 0 }}
@@ -369,7 +365,7 @@ export default function HostDashboardPage() {
         <MetricCard
           label="Booking Requests"
           value={bookings.length.toLocaleString()}
-          icon={<CalendarCheck className="size-4 sm:size-5" />}
+          icon={<Icon icon="solar:calendar-date-bold-duotone" className="size-4 sm:size-5 text-[#800020]" />}
           tone="emerald"
           href={ROUTES.dashboardBookings}
           trend={{
@@ -382,7 +378,7 @@ export default function HostDashboardPage() {
         <MetricCard
           label="Active Properties"
           value={`${activeListingsCount} / ${listings.length}`}
-          icon={<Building2 className="size-4 sm:size-5" />}
+          icon={<Icon icon="solar:buildings-bold-duotone" className="size-4 sm:size-5 text-[#800020]" />}
           tone="amber"
           href={ROUTES.dashboardListings}
           trend={{
@@ -395,7 +391,7 @@ export default function HostDashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. Performance Chart & Status Donut (Inspired by the Reference Image)      */}
+      {/* 3. Performance Chart & Status Donut                                       */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Bar Chart (2 columns) */}
@@ -449,12 +445,18 @@ export default function HostDashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 4. Actionable "What should I do next?" Banner -> Links to Checklist Page   */}
+      {/* 4. Actionable "What should I do next?" Banner with Visual Spot Artwork    */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl sm:rounded-3xl border border-stone-200/90 bg-gradient-to-br from-[#fdf2f4]/80 via-white to-[#fbf7f8] p-4 sm:p-6 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl sm:rounded-3xl border border-stone-200/90 bg-gradient-to-br from-[#fdf2f4]/80 via-white to-[#fbf7f8] p-4 sm:p-6 shadow-xs relative overflow-hidden">
         <div className="flex items-start sm:items-center gap-3.5">
-          <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-2xl bg-[#800020] text-white shadow-2xs">
-            <CheckCircle2 className="size-5 sm:size-6" />
+          <div className="relative size-12 sm:size-14 shrink-0 overflow-hidden rounded-2xl bg-[#fdf2f4] border border-[#f9c8d4]/70 flex items-center justify-center p-2">
+            <Image
+              src="/images/spot-verified.png"
+              alt="Host Next Steps"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -481,7 +483,7 @@ export default function HostDashboardPage() {
           className="inline-flex h-9 sm:h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-[#800020] px-4 sm:px-5 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] active:scale-98 transition self-start sm:self-auto"
         >
           <span>Open Checklist</span>
-          <ArrowRight className="size-3.5" />
+          <Icon icon="solar:arrow-right-linear" className="size-3.5" />
         </Link>
       </div>
 
@@ -514,16 +516,23 @@ export default function HostDashboardPage() {
 
         {listings.length === 0 ? (
           <div className="py-12 text-center">
-            <Building2 className="size-12 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-stone-700">No properties added yet</p>
+            <Image
+              src="/images/empty-listings.png"
+              alt="No properties added yet"
+              width={160}
+              height={160}
+              className="mx-auto mb-3 object-contain"
+            />
+            <p className="text-sm font-bold text-stone-800">No properties added yet</p>
             <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
               Create your first listing to start receiving views, guest inquiries, and bookings.
             </p>
             <Link
               href={ROUTES.newListing}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-5 py-2 text-xs font-bold text-white"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] transition"
             >
-              List your space
+              <span>List your space</span>
+              <Icon icon="solar:arrow-right-linear" className="size-3.5" />
             </Link>
           </div>
         ) : (
@@ -547,8 +556,8 @@ export default function HostDashboardPage() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="flex size-full items-center justify-center text-stone-400">
-                          <Building2 className="size-6" />
+                        <div className="flex size-full items-center justify-center text-stone-400 bg-stone-50">
+                          <Icon icon="solar:buildings-bold-duotone" className="size-6 text-stone-400" />
                         </div>
                       )}
                     </div>
@@ -559,7 +568,7 @@ export default function HostDashboardPage() {
                         </p>
                         {l.is_verified && (
                           <span title="Verified">
-                            <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
+                            <Icon icon="solar:verified-check-bold-duotone" className="size-3.5 text-[#800020] shrink-0" />
                           </span>
                         )}
                       </div>

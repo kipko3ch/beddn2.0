@@ -143,7 +143,7 @@ export default function ListingsPage() {
         <DashboardListSkeleton rows={4} />
       ) : rows.length === 0 ? (
         <EmptyState
-          image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029372/empty-listings_xklz7s.png"
+          image="/images/empty-listings.png"
           title="No listings yet"
           subtitle="Create your first listing to start receiving booking requests."
           size="sm"

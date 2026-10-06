@@ -34,7 +34,7 @@ export default function FeedbackPage() {
       <div className="border rounded-lg divide-y">
         {feedback.length === 0 ? (
           <EmptyState
-            image="https://res.cloudinary.com/dzjhuss7i/image/upload/v1781029367/empty-feedback_z8pn8q.png"
+            image="/images/empty-feedback.png"
             title="No feedback yet"
             subtitle="Guest feedback after stays will appear here."
             size="sm"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 export interface ChartDataPoint {
   label: string;
@@ -54,7 +54,7 @@ export function PerformanceChart({
           className="flex size-8 items-center justify-center rounded-xl border border-stone-200/80 text-stone-500 hover:bg-stone-50 transition shadow-2xs"
           title="Filter date"
         >
-          <Calendar className="size-4 text-stone-600" />
+          <Icon icon="solar:calendar-date-linear" className="size-4 text-stone-600" />
         </button>
       </div>
 

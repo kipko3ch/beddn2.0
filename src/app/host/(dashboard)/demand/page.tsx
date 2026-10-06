@@ -3,18 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
-import {
-  Compass,
-  Flame,
-  Info,
-  Lightbulb,
-  MapPin,
-  PlusCircle,
-  Search,
-  Sparkles,
-  TrendingUp,
-  Zap,
-} from "lucide-react";
+import Image from "next/image";
+import { Icon } from "@iconify/react";
 import { Badge } from "@/components/ui/badge";
 
 interface DemandEntry {
@@ -108,7 +98,7 @@ export default function DemandPage() {
                 key={area}
                 className="inline-flex items-center gap-1 rounded-full bg-[#fdf2f4] px-2.5 py-0.5 text-xs font-bold text-[#800020] border border-[#f9c8d4]/70"
               >
-                <MapPin className="size-3" />
+                <Icon icon="solar:map-point-bold-duotone" className="size-3" />
                 {area}
               </span>
             ))}
@@ -123,7 +113,7 @@ export default function DemandPage() {
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Demand Near You</span>
             <div className="flex size-7 items-center justify-center rounded-lg bg-[#fdf2f4] text-[#800020]">
-              <Compass className="size-4" />
+              <Icon icon="solar:compass-bold-duotone" className="size-4" />
             </div>
           </div>
           <div className="mt-2 text-2xl sm:text-3xl font-brand font-black text-[#2b000a]">
@@ -139,7 +129,7 @@ export default function DemandPage() {
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Unmatched Searches</span>
             <div className="flex size-7 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
-              <Flame className="size-4" />
+              <Icon icon="solar:flame-bold-duotone" className="size-4" />
             </div>
           </div>
           <div className="mt-2 text-2xl sm:text-3xl font-brand font-black text-rose-600">
@@ -155,7 +145,7 @@ export default function DemandPage() {
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Top Search Intent</span>
             <div className="flex size-7 items-center justify-center rounded-lg bg-[#fdf2f4] text-[#800020]">
-              <Zap className="size-4" />
+              <Icon icon="solar:bolt-bold-duotone" className="size-4" />
             </div>
           </div>
           <div className="mt-2 text-xl sm:text-2xl font-brand font-bold text-[#2b000a] capitalize truncate">
@@ -171,7 +161,7 @@ export default function DemandPage() {
           <div className="flex items-center justify-between text-stone-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Your Coverage</span>
             <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-              <MapPin className="size-4" />
+              <Icon icon="solar:map-point-bold-duotone" className="size-4" />
             </div>
           </div>
           <div className="mt-2 text-2xl sm:text-3xl font-brand font-black text-[#2b000a]">
@@ -191,7 +181,7 @@ export default function DemandPage() {
             <div className="flex items-center justify-between border-b border-stone-100 pb-4">
               <div>
                 <h3 className="font-brand font-bold text-base text-stone-900 flex items-center gap-2">
-                  <MapPin className="size-4 text-[#800020]" />
+                  <Icon icon="solar:map-point-bold-duotone" className="size-4 text-[#800020]" />
                   What People Search Near You
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">
@@ -205,8 +195,14 @@ export default function DemandPage() {
 
             {listings.length === 0 ? (
               <div className="py-10 text-center">
-                <MapPin className="mx-auto size-8 text-stone-300 mb-2" />
-                <p className="font-bold text-sm text-stone-700">No properties listed yet</p>
+                <Image
+                  src="/images/empty-demand.png"
+                  alt="No properties listed yet"
+                  width={140}
+                  height={140}
+                  className="mx-auto mb-3 object-contain"
+                />
+                <p className="font-bold text-sm text-stone-800">No properties listed yet</p>
                 <p className="text-xs text-stone-400 mt-1 max-w-sm mx-auto">
                   Add your BnB or short stay property to unlock localized search demand tailored to your area.
                 </p>
@@ -214,14 +210,20 @@ export default function DemandPage() {
                   href={ROUTES.newListing}
                   className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-xs font-bold text-white hover:bg-[#68001a] transition"
                 >
-                  <PlusCircle className="size-3.5" />
-                  Add your first property
+                  <Icon icon="solar:add-circle-linear" className="size-3.5" />
+                  <span>Add your first property</span>
                 </Link>
               </div>
             ) : localDemand.length === 0 ? (
               <div className="py-10 text-center">
-                <Search className="mx-auto size-8 text-stone-300 mb-2" />
-                <p className="font-bold text-sm text-stone-700">No direct searches in your exact zone yet</p>
+                <Image
+                  src="/images/empty-demand.png"
+                  alt="No searches yet"
+                  width={120}
+                  height={120}
+                  className="mx-auto mb-3 object-contain"
+                />
+                <p className="font-bold text-sm text-stone-800">No direct searches in your exact zone yet</p>
                 <p className="text-xs text-stone-400 mt-1 max-w-sm mx-auto">
                   As travelers search for stays in {hostAreas.join(", ") || "your area"}, queries will appear here in real-time.
                 </p>
@@ -252,7 +254,7 @@ export default function DemandPage() {
                     <div className="text-right shrink-0">
                       {item.results_count === 0 ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[11px] font-bold text-rose-700">
-                          <Flame className="size-3" />
+                          <Icon icon="solar:flame-bold-duotone" className="size-3" />
                           0 matches (Opportunity!)
                         </span>
                       ) : (
@@ -270,7 +272,7 @@ export default function DemandPage() {
           {/* Actionable Insights Banner */}
           <div className="rounded-3xl border border-[#f9c8d4]/90 bg-[#fdf2f4]/60 p-5 text-xs text-[#2b000a] space-y-3">
             <div className="flex items-center gap-2 font-brand font-bold text-sm text-[#800020]">
-              <Lightbulb className="size-4" />
+              <Icon icon="solar:lightbulb-bolt-bold-duotone" className="size-4" />
               <span>How to Use Search Demand to Grow Your Bookings</span>
             </div>
             <ul className="space-y-2 text-stone-700 leading-relaxed list-disc list-inside">
@@ -293,7 +295,7 @@ export default function DemandPage() {
             <div className="flex items-center justify-between border-b border-stone-100 pb-4">
               <div>
                 <h3 className="font-brand font-bold text-base text-stone-900 flex items-center gap-2">
-                  <TrendingUp className="size-4 text-[#800020]" />
+                  <Icon icon="solar:graph-up-bold-duotone" className="size-4 text-[#800020]" />
                   Top Search Destinations
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">
@@ -312,7 +314,7 @@ export default function DemandPage() {
                   <div key={area.query} className="py-3 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2.5">
                       <div className="flex size-7 items-center justify-center rounded-lg bg-stone-100 text-stone-600 font-bold">
-                        <MapPin className="size-3.5" />
+                        <Icon icon="solar:map-point-bold-duotone" className="size-3.5" />
                       </div>
                       <div>
                         <p className="font-bold text-stone-900">{area.query}</p>

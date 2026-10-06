@@ -3,21 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Bell,
-  Check,
-  CheckCheck,
-  Calendar,
-  MessageSquare,
-  Megaphone,
-  AlertCircle,
-  ExternalLink,
-  Trash2,
-  Filter,
-  ArrowRight,
-  Sparkles,
-  Star,
-} from "lucide-react";
+import Image from "next/image";
+import { Icon } from "@iconify/react";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { Button } from "@/components/ui/button";
 import type { HostNotification } from "@/lib/types";
@@ -148,16 +135,16 @@ export default function HostNotificationsPage() {
         return <VerifiedBadge variant="icon" size="sm" />;
       case "pro_activated":
       case "pro_expiring":
-        return <Star className="size-4 text-amber-500 fill-amber-500" />;
+        return <Icon icon="solar:crown-star-bold-duotone" className="size-5 text-[#800020]" />;
       case "booking_requested":
       case "booking_confirmed":
-        return <Calendar className="size-4 text-[#800020]" />;
+        return <Icon icon="solar:calendar-date-bold-duotone" className="size-5 text-[#800020]" />;
       case "inquiry_new":
-        return <MessageSquare className="size-4 text-blue-600" />;
+        return <Icon icon="solar:chat-round-dots-bold-duotone" className="size-5 text-[#800020]" />;
       case "announcement":
-        return <Megaphone className="size-4 text-[#800020]" />;
+        return <Icon icon="solar:megaphone-bold-duotone" className="size-5 text-[#800020]" />;
       default:
-        return <AlertCircle className="size-4 text-stone-500" />;
+        return <Icon icon="solar:info-circle-bold-duotone" className="size-5 text-stone-500" />;
     }
   }
 
@@ -198,7 +185,7 @@ export default function HostNotificationsPage() {
               onClick={handleMarkAllRead}
               className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-bold text-stone-700 hover:border-[#800020] hover:text-[#800020] shadow-2xs transition"
             >
-              <CheckCheck className="size-3.5 text-[#800020]" />
+              <Icon icon="solar:check-read-linear" className="size-3.5 text-[#800020]" />
               <span>Mark all read</span>
             </button>
           )}
@@ -209,7 +196,7 @@ export default function HostNotificationsPage() {
               onClick={handleClearAllRead}
               className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800 shadow-2xs transition"
             >
-              <Trash2 className="size-3" />
+              <Icon icon="solar:trash-bin-trash-linear" className="size-3" />
               <span>Clear read</span>
             </button>
           )}
@@ -261,8 +248,14 @@ export default function HostNotificationsPage() {
           </div>
         ) : filteredNotifications.length === 0 ? (
           <div className="rounded-3xl border border-stone-200/90 bg-white p-12 text-center max-w-lg mx-auto shadow-xs space-y-3">
-            <div className="size-14 rounded-2xl bg-[#fdf2f4] text-[#800020] flex items-center justify-center mx-auto">
-              <Bell className="size-7 text-[#800020]" />
+            <div className="size-16 rounded-2xl bg-[#fdf2f4] flex items-center justify-center mx-auto p-2">
+              <Image
+                src="/images/spot-sms.png"
+                alt="No notifications"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
             <h3 className="font-brand text-lg font-bold text-stone-900">
               {activeCategory === "unread" ? "No unread notifications" : "No notifications in this section"}
@@ -338,7 +331,7 @@ export default function HostNotificationsPage() {
                         className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#800020] px-4 text-xs font-bold text-white hover:bg-[#68001a] shadow-2xs transition active:scale-98"
                       >
                         <span>{getActionLabel(item.type, item.link)}</span>
-                        <ArrowRight className="size-3.5" />
+                        <Icon icon="solar:arrow-right-linear" className="size-3.5" />
                       </Link>
                     )}
 
@@ -350,7 +343,7 @@ export default function HostNotificationsPage() {
                       title={item.is_read ? "Mark as unread" : "Mark as read"}
                       aria-label={item.is_read ? "Mark as unread" : "Mark as read"}
                     >
-                      <Check className={`size-4 ${item.is_read ? "text-stone-400" : "text-[#800020]"}`} />
+                      <Icon icon="solar:check-circle-linear" className={`size-4 ${item.is_read ? "text-stone-400" : "text-[#800020]"}`} />
                     </button>
 
                     <button
@@ -360,7 +353,7 @@ export default function HostNotificationsPage() {
                       title="Delete notification"
                       aria-label="Delete notification"
                     >
-                      <Trash2 className="size-4" />
+                      <Icon icon="solar:trash-bin-trash-linear" className="size-4" />
                     </button>
                   </div>
                 </div>

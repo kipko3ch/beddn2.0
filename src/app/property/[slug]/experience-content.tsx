@@ -29,6 +29,7 @@ import { AuthDialog } from "@/components/auth-dialog";
 import { useSavedListings } from "@/lib/hooks";
 import { useCurrency } from "@/components/currency-provider";
 import { LOGO_SRC } from "@/lib/assets";
+import { Icon } from "@iconify/react";
 import TiltCascadeCarousel from "@/components/ui/tilt-cascade-carousel";
 import type { Listing, Review } from "@/lib/types";
 import {
@@ -312,9 +313,10 @@ export function ExperienceContent({
         {images.length > 1 && (
           <button
             onClick={() => setLightboxIndex(0)}
-            className="absolute bottom-6 right-6 rounded-full border border-cream bg-white/95 backdrop-blur-sm px-6 py-3 text-xs font-bold text-merlot shadow-md hover:bg-cream transition duration-200"
+            className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 inline-flex items-center gap-1.5 rounded-full border border-cream bg-white/95 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 text-xs font-bold text-merlot shadow-md hover:bg-cream transition duration-200"
           >
-            Show all {images.length} photos
+            <Icon icon="solar:gallery-wide-bold" className="size-3.5 sm:size-4 text-[#800020]" />
+            <span>Show all {images.length} photos</span>
           </button>
         )}
       </div>
@@ -602,7 +604,7 @@ export function ExperienceContent({
       {/* Tilt Cascade Photo Gallery Lightbox */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-black/65 backdrop-blur-2xl transition-all"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-stone-950/80 backdrop-blur-md transition-all"
           role="dialog"
           aria-label="Photo gallery"
         >
@@ -613,25 +615,28 @@ export function ExperienceContent({
                 src={images[lightboxIndex].url}
                 alt=""
                 fill
-                className="object-cover opacity-35 blur-3xl scale-125 transition-all duration-300"
+                className="object-cover opacity-25 blur-xl scale-110 transition-all duration-300"
                 priority
               />
             )}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-2xl" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#2b000a]/35 via-stone-950/65 to-stone-950/85" />
           </div>
 
-          {/* Header: Photo Counter & Close Button */}
-          <div className="relative z-20 flex w-full items-center justify-between px-5 sm:px-8 py-4 text-white">
-            <span className="font-mono text-xs sm:text-sm font-semibold tracking-wider text-white/85 bg-white/10 rounded-full px-3.5 py-1 backdrop-blur-md border border-white/10">
-              {String(lightboxIndex + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
-            </span>
+          {/* Header: Photo Counter & Close Button (Clean, no pill backgrounds) */}
+          <div className="relative z-20 flex w-full items-center justify-between px-5 sm:px-8 py-4 sm:py-5 text-white">
+            <div className="font-mono text-xs sm:text-sm font-bold tracking-widest text-white/90 drop-shadow-sm flex items-center gap-2">
+              <Icon icon="solar:gallery-wide-bold" className="size-4 text-white/75" />
+              <span>
+                {String(lightboxIndex + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setLightboxIndex(null)}
               aria-label="Close photos"
-              className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 transition cursor-pointer border border-white/10"
+              className="flex items-center justify-center p-2 text-white/85 hover:text-white transition-all transform active:scale-90 cursor-pointer drop-shadow-md"
             >
-              <X className="h-5 w-5" />
+              <Icon icon="solar:close-circle-bold" className="size-8 sm:size-9" />
             </button>
           </div>
 
@@ -647,11 +652,11 @@ export function ExperienceContent({
               onIndexChange={(idx) => setLightboxIndex(idx)}
               height="calc(100svh - 80px)"
               slideSize="clamp(220px, 66vmin, 500px)"
-              angle={18}
-              drop={0.35}
-              inactiveScale={0.7}
+              angle={12}
+              drop={0.22}
+              inactiveScale={0.78}
               radius={20}
-              bounce={0.02}
+              bounce={0.01}
               duration={0.16}
               loop={images.length > 2}
               background="transparent"

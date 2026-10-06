@@ -3,23 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Building2,
-  CalendarCheck,
-  CheckCircle2,
-  Clock,
-  Crown,
-  MessageSquare,
-  Phone,
-  ShieldCheck,
-  Sparkles,
-  ArrowRight,
-  ArrowLeft,
-  ChevronRight,
-  AlertCircle,
-  HelpCircle,
-  Eye,
-} from "lucide-react";
+import { Icon } from "@iconify/react";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
@@ -194,7 +178,7 @@ export default function HostChecklistPage() {
   if (!host) {
     return (
       <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white p-8 text-center sm:p-12 shadow-sm">
-        <Building2 className="size-12 text-stone-300 mx-auto mb-3" />
+        <Icon icon="solar:buildings-bold-duotone" className="size-12 text-stone-300 mx-auto mb-3" />
         <h2 className="font-brand text-2xl font-bold text-[#181113]">Host account required</h2>
         <p className="mt-1 text-sm text-stone-500">Please sign in as a host to view your checklist.</p>
         <Link
@@ -228,7 +212,7 @@ export default function HostChecklistPage() {
           href={ROUTES.dashboard}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-[#800020] transition w-fit"
         >
-          <ArrowLeft className="size-3.5" />
+          <Icon icon="solar:arrow-left-linear" className="size-3.5" />
           <span>Back to Host Overview</span>
         </Link>
 
@@ -287,29 +271,32 @@ export default function HostChecklistPage() {
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Card 1: Host Trust & Verification */}
-        <div className={`flex flex-col justify-between rounded-3xl border p-5 sm:p-6 transition shadow-xs ${
-          host.is_verified
-            ? "border-emerald-200/80 bg-gradient-to-b from-emerald-50/30 to-white"
-            : "border-stone-200/90 bg-white"
-        }`}>
+        <div className="group flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 sm:p-6 transition-all hover:border-[#800020]/30 hover:shadow-md">
           <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500">
-                <ShieldCheck className={`size-4 ${host.is_verified ? "text-emerald-600" : "text-[#800020]"}`} />
-                <span>Trust &amp; Verification</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Icon icon="solar:shield-check-bold-duotone" className="size-4.5 text-[#800020]" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  Trust &amp; Verification
+                </span>
               </div>
-              {host.is_verified ? (
-                <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5">
-                  Complete
-                </span>
-              ) : (
-                <span className="rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5">
-                  Action Required
-                </span>
-              )}
+              <span className="text-[11px] font-bold text-stone-700">
+                {host.is_verified ? "Complete" : host.verification_status === "under_review" ? "Under Review" : "Action Required"}
+              </span>
             </div>
 
-            <h3 className="font-brand text-base font-bold text-stone-900">
+            {/* Brand Artwork Spotlight */}
+            <div className="relative my-4 flex h-32 w-full items-center justify-center rounded-2xl bg-gradient-to-b from-[#fdf2f4]/60 to-[#fdf2f4]/20 border border-[#f9c8d4]/40 overflow-hidden">
+              <Image
+                src="/images/spot-verified.png"
+                alt="Host Verification Badge"
+                width={96}
+                height={96}
+                className="object-contain drop-shadow-xs transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+
+            <h3 className="font-brand text-base font-bold text-[#181113]">
               {host.is_verified
                 ? "Your Host Account is Verified"
                 : host.verification_status === "under_review"
@@ -317,7 +304,7 @@ export default function HostChecklistPage() {
                 : "Submit Host Verification"}
             </h3>
 
-            <p className="text-xs text-stone-600 mt-1.5 leading-relaxed">
+            <p className="text-xs text-stone-600 mt-1 leading-relaxed">
               {host.is_verified
                 ? "Your listings proudly feature the Beddn Verified Trust Badge, boosting guest confidence and booking conversions."
                 : host.verification_status === "under_review"
@@ -332,23 +319,24 @@ export default function HostChecklistPage() {
                 size="sm"
                 onClick={handleSubmitVerification}
                 disabled={submittingVerification}
-                className="w-full rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-xs"
+                className="w-full rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-xs gap-1.5"
               >
-                {submittingVerification ? "Submitting..." : "Submit for Verification"}
+                <Icon icon="solar:shield-check-bold-duotone" className="size-4" />
+                <span>{submittingVerification ? "Submitting..." : "Submit for Verification"}</span>
               </Button>
             ) : host.is_verified ? (
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
-                  <CheckCircle2 className="size-4 text-emerald-600" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+                  <Icon icon="solar:verified-check-bold-duotone" className="size-4.5 text-[#800020]" />
                   <span>Verified Badge Active</span>
                 </div>
                 <VerifiedBadge text="Badge Live" size="xs" />
               </div>
             ) : (
               <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-xs font-bold text-amber-700">
-                  <span className="flex items-center gap-1">
-                    <Clock className="size-3.5 text-amber-600" />
+                <div className="flex items-center justify-between text-xs font-bold text-[#800020]">
+                  <span className="flex items-center gap-1.5">
+                    <Icon icon="solar:clock-circle-bold-duotone" className="size-4 text-[#800020]" />
                     Review in Progress
                   </span>
                   <span className="text-[11px] text-stone-400 font-normal">Pending approval</span>
@@ -371,7 +359,7 @@ export default function HostChecklistPage() {
                     className="inline-flex items-center justify-center gap-1 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 px-3 py-2 text-xs font-bold shadow-2xs transition"
                     title="Call Admin Directly"
                   >
-                    <Phone className="size-3 text-[#800020]" />
+                    <Icon icon="solar:phone-calling-rounded-bold-duotone" className="size-3.5 text-[#800020]" />
                     <span>Call</span>
                   </a>
                 </div>
@@ -381,29 +369,32 @@ export default function HostChecklistPage() {
         </div>
 
         {/* Card 2: Pending Guest Leads & Inquiries */}
-        <div className={`flex flex-col justify-between rounded-3xl border p-5 sm:p-6 transition shadow-xs ${
-          pendingBookings.length > 0
-            ? "border-amber-300 bg-gradient-to-b from-amber-50/40 to-white"
-            : "border-stone-200/90 bg-white"
-        }`}>
+        <div className="group flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 sm:p-6 transition-all hover:border-[#800020]/30 hover:shadow-md">
           <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500">
-                <Clock className="size-4 text-amber-600" />
-                <span>Guest Leads &amp; Bookings</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Icon icon="solar:chat-round-dots-bold-duotone" className="size-4.5 text-[#800020]" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  Guest Leads &amp; Bookings
+                </span>
               </div>
-              {pendingBookings.length > 0 ? (
-                <span className="rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5">
-                  {pendingBookings.length} Pending
-                </span>
-              ) : (
-                <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5">
-                  Up to Date
-                </span>
-              )}
+              <span className="text-[11px] font-bold text-stone-700">
+                {pendingBookings.length > 0 ? `${pendingBookings.length} Pending` : "Up to Date"}
+              </span>
             </div>
 
-            <h3 className="font-brand text-base font-bold text-stone-900">
+            {/* Brand Artwork Spotlight */}
+            <div className="relative my-4 flex h-32 w-full items-center justify-center rounded-2xl bg-gradient-to-b from-stone-50 to-white border border-stone-200/60 overflow-hidden">
+              <Image
+                src="/images/spot-sms.png"
+                alt="Guest Leads & Inquiries"
+                width={96}
+                height={96}
+                className="object-contain drop-shadow-xs transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+
+            <h3 className="font-brand text-base font-bold text-[#181113]">
               {pendingBookings.length > 0
                 ? `${pendingBookings.length} Booking Request${pendingBookings.length > 1 ? "s" : ""} Awaiting Confirmation`
                 : inquiriesCount > 0
@@ -411,7 +402,7 @@ export default function HostChecklistPage() {
                 : "All Inquiries Up to Date"}
             </h3>
 
-            <p className="text-xs text-stone-600 mt-1.5 leading-relaxed">
+            <p className="text-xs text-stone-600 mt-1 leading-relaxed">
               {pendingBookings.length > 0
                 ? "Guests are waiting for your check-in confirmation. Confirming promptly locks the dates on your calendar and guarantees payout."
                 : inquiriesCount > 0
@@ -423,54 +414,57 @@ export default function HostChecklistPage() {
           <div className="mt-5 pt-4 border-t border-stone-100 space-y-2">
             <Link
               href={pendingBookings.length > 0 ? ROUTES.dashboardBookings : ROUTES.dashboardInquiries}
-              className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-full border border-stone-300 bg-white text-xs font-bold text-stone-800 hover:border-[#800020] hover:text-[#800020] transition shadow-2xs"
+              className="inline-flex h-9.5 w-full items-center justify-center gap-2 rounded-full border border-stone-200 bg-white text-xs font-bold text-stone-800 hover:border-[#800020] hover:text-[#800020] transition shadow-2xs"
             >
               <span>{pendingBookings.length > 0 ? "Review Booking Requests" : "Open Inquiries"}</span>
-              <ArrowRight className="size-3.5" />
+              <Icon icon="solar:arrow-right-linear" className="size-3.5" />
             </Link>
           </div>
         </div>
 
         {/* Card 3: Marketplace Promotion (Beddn Pro) */}
-        <div className={`flex flex-col justify-between rounded-3xl border p-5 sm:p-6 transition shadow-xs ${
-          activeTier
-            ? "border-amber-300 bg-gradient-to-b from-amber-50/30 to-white"
-            : "border-[#f9c8d4] bg-gradient-to-b from-[#fdf2f4]/60 to-white"
-        }`}>
+        <div className="group flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 sm:p-6 transition-all hover:border-[#800020]/30 hover:shadow-md">
           <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#a3193d]">
-                <Crown className="size-4 text-amber-500" />
-                <span>Marketplace Promotion</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Icon icon="solar:crown-bold-duotone" className="size-4.5 text-[#800020]" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  Marketplace Promotion
+                </span>
               </div>
-              {activeTier ? (
-                <span className="rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-0.5">
-                  Pro Active
-                </span>
-              ) : (
-                <span className="rounded-full bg-[#fdf2f4] text-[#800020] text-[10px] font-bold px-2.5 py-0.5 border border-[#f9c8d4]">
-                  Boost Available
-                </span>
-              )}
+              <span className="text-[11px] font-bold text-[#800020]">
+                {activeTier ? `${activeTier} Active` : "Boost Available"}
+              </span>
+            </div>
+
+            {/* Brand Artwork Spotlight with Luxury Living Interior */}
+            <div className="relative my-4 flex h-32 w-full items-center justify-center rounded-2xl bg-gradient-to-b from-[#fdf2f4]/50 to-[#fdf2f4]/10 border border-[#f9c8d4]/30 overflow-hidden">
+              <Image
+                src="/images/coach.png"
+                alt="Beddn Pro Marketplace Promotion"
+                width={140}
+                height={90}
+                className="object-contain drop-shadow-xs transition-transform duration-300 group-hover:scale-105"
+              />
             </div>
 
             <h3 className="font-brand text-base font-bold text-[#181113]">
               {activeTier ? `${activeTier} Tier is Active` : "Upgrade to Beddn Pro"}
             </h3>
 
-            <p className="text-xs text-stone-600 mt-1.5 leading-relaxed">
+            <p className="text-xs text-stone-600 mt-1 leading-relaxed">
               {activeTier
                 ? `Your listings enjoy priority ranking and verified Pro badges across search results (Expires ${tierExpiry || "soon"}).`
                 : "Boost your listings to the top of city searches and homepage carousels for higher guest discovery and maximum bookings."}
             </p>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-[#f9c8d4]/60">
+          <div className="mt-5 pt-4 border-t border-stone-100">
             <Link
               href={ROUTES.dashboardPro}
-              className="flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-xs transition"
+              className="flex h-9.5 w-full items-center justify-center gap-2 rounded-full bg-[#800020] text-xs font-bold text-white hover:bg-[#68001a] shadow-xs transition"
             >
-              <Sparkles className="size-3.5" />
+              <Icon icon="solar:stars-line-bold-duotone" className="size-4" />
               <span>{activeTier ? "Manage Pro Membership" : "Upgrade to Beddn Pro"}</span>
             </Link>
           </div>
@@ -495,22 +489,30 @@ export default function HostChecklistPage() {
             href={ROUTES.newListing}
             className="inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-4 py-2 text-xs font-bold text-white hover:bg-[#68001a] transition self-start sm:self-auto shadow-2xs"
           >
-            <span>+ Add New Listing</span>
+            <Icon icon="solar:add-circle-linear" className="size-3.5" />
+            <span>Add New Listing</span>
           </Link>
         </div>
 
         {listings.length === 0 ? (
           <div className="py-10 text-center">
-            <Building2 className="size-12 text-stone-300 mx-auto mb-3" />
+            <Image
+              src="/images/empty-listings.png"
+              alt="No properties added yet"
+              width={160}
+              height={160}
+              className="mx-auto mb-3 object-contain"
+            />
             <p className="text-sm font-bold text-stone-700">No properties added yet</p>
             <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
               Create your first listing to unlock visibility, guest traffic, and direct WhatsApp inquiries.
             </p>
             <Link
               href={ROUTES.newListing}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-5 py-2 text-xs font-bold text-white"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#800020] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] transition"
             >
-              List your space now
+              <span>List your space now</span>
+              <Icon icon="solar:arrow-right-linear" className="size-3.5" />
             </Link>
           </div>
         ) : (
@@ -530,8 +532,8 @@ export default function HostChecklistPage() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="flex size-full items-center justify-center text-stone-400">
-                          <Building2 className="size-6" />
+                        <div className="flex size-full items-center justify-center text-stone-400 bg-stone-50">
+                          <Icon icon="solar:buildings-bold-duotone" className="size-6 text-stone-400" />
                         </div>
                       )}
                     </div>
@@ -568,7 +570,7 @@ export default function HostChecklistPage() {
                     </div>
                     {tips.length > 0 && (
                       <p className="text-[11px] text-amber-700 mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="size-3 shrink-0" />
+                        <Icon icon="solar:danger-triangle-bold-duotone" className="size-3 shrink-0" />
                         <span className="truncate">{tips[0]}</span>
                       </p>
                     )}
@@ -618,7 +620,7 @@ export default function HostChecklistPage() {
               href="tel:+254727993661"
               className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 px-4 py-2 text-xs font-bold shadow-2xs transition"
             >
-              <Phone className="size-3.5 text-[#800020]" />
+              <Icon icon="solar:phone-calling-rounded-bold-duotone" className="size-3.5 text-[#800020]" />
               <span>Call +254 727 993 661</span>
             </a>
           </div>

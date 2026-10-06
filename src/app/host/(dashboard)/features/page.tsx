@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { DashboardListSkeleton } from "@/components/dashboard-skeletons";
-import { Lightbulb } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 type Req = {
   id: string;
@@ -100,8 +100,8 @@ export default function HostFeaturesPage() {
           </div>
         </div>
         <div className="mt-4 flex items-center gap-3">
-          <Button type="submit" disabled={saving} className="gap-1 rounded-full bg-[#800020] hover:bg-[#600018]">
-            <Lightbulb className="h-4 w-4" /> {saving ? "Sending…" : "Send idea"}
+          <Button type="submit" disabled={saving} className="gap-1.5 rounded-full bg-[#800020] hover:bg-[#600018]">
+            <Icon icon="solar:lightbulb-bolt-bold-duotone" className="h-4 w-4" /> {saving ? "Sending…" : "Send idea"}
           </Button>
           {done && <span className="text-sm font-medium text-[#128c4b]">Thanks — we got it!</span>}
         </div>

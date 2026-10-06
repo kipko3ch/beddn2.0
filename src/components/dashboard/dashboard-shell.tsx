@@ -6,21 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { format } from "date-fns";
-import {
-  Menu,
-  ShieldCheck,
-  Crown,
-  Sparkles,
-  ArrowRight,
-  LogOut,
-  Repeat,
-  Compass,
-  LayoutDashboard,
-  CheckCircle2,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Plus,
-} from "lucide-react";
+
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
@@ -167,7 +153,7 @@ export function DashboardShell({
             title={role === "admin" ? "New Announcement" : "New Listing"}
             className="flex size-11 items-center justify-center rounded-2xl bg-[#800020] text-white shadow-xs hover:bg-[#68001a] active:scale-95 transition"
           >
-            <Plus className="size-5" />
+            <Icon icon="solar:add-circle-linear" className="size-5" />
           </Link>
         </div>
       ) : (
@@ -283,7 +269,7 @@ export function DashboardShell({
             title="Beddn Pro Membership"
             className="group relative flex size-11 items-center justify-center rounded-2xl bg-[#fdf2f4] text-[#800020] border border-[#f9c8d4]/70 hover:bg-[#800020] hover:text-white transition shadow-2xs"
           >
-            <Crown className="size-5" />
+            <Icon icon="solar:crown-bold-duotone" className="size-5" />
           </Link>
         </div>
       );
@@ -294,7 +280,7 @@ export function DashboardShell({
         <div className="rounded-2xl border border-stone-200/80 bg-[#fdf2f4]/60 p-3.5 text-stone-900 shadow-2xs">
           <div className="flex items-center gap-2 mb-1.5">
             <div className="flex size-6 items-center justify-center rounded-lg bg-[#800020] text-white">
-              <Crown className="size-3.5" />
+              <Icon icon="solar:crown-bold-duotone" className="size-3.5 text-white" />
             </div>
             <span className="text-xs font-bold text-[#2b000a]">Beddn Pro</span>
           </div>
@@ -307,7 +293,7 @@ export function DashboardShell({
               className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#800020] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#68001a] transition active:scale-98"
             >
               <span>Upgrade to Pro</span>
-              <ArrowRight className="size-3" />
+              <Icon icon="solar:arrow-right-linear" className="size-3" />
             </Link>
           </div>
         </div>
@@ -327,7 +313,7 @@ export function DashboardShell({
               title="Switch to Admin"
               className="flex size-9 items-center justify-center rounded-xl bg-white border border-stone-200/80 text-[#800020] hover:bg-[#fdf2f4] transition"
             >
-              <ShieldCheck className="size-4 text-[#800020]" />
+              <Icon icon="solar:shield-check-bold-duotone" className="size-4 text-[#800020]" />
             </Link>
           )}
 
@@ -338,7 +324,7 @@ export function DashboardShell({
               title="Switch to Host"
               className="flex size-9 items-center justify-center rounded-xl bg-white border border-stone-200/80 text-stone-700 hover:text-[#800020] transition"
             >
-              <LayoutDashboard className="size-4" />
+              <Icon icon="solar:widget-2-bold-duotone" className="size-4" />
             </Link>
           )}
 
@@ -352,7 +338,7 @@ export function DashboardShell({
             title="Browse as Traveler"
             className="flex size-9 items-center justify-center rounded-xl text-stone-500 hover:bg-stone-200/60 transition"
           >
-            <Compass className="size-4" />
+            <Icon icon="solar:compass-bold-duotone" className="size-4" />
           </button>
 
           {/* Circular user avatar matching reference */}
@@ -369,8 +355,6 @@ export function DashboardShell({
             </Avatar>
           </Link>
 
-
-
           {/* Sign out */}
           <button
             type="button"
@@ -378,7 +362,7 @@ export function DashboardShell({
             title="Sign out"
             className="flex size-8 items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 hover:text-rose-600 transition"
           >
-            <LogOut className="size-3.5" />
+            <Icon icon="solar:logout-2-linear" className="size-3.5" />
           </button>
         </div>
       );
@@ -394,10 +378,10 @@ export function DashboardShell({
             className="mb-2 flex w-full items-center justify-between rounded-xl bg-white border border-stone-200/80 px-3 py-2 text-xs font-bold text-[#800020] hover:bg-[#fdf2f4] transition"
           >
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-[#800020]" />
+              <Icon icon="solar:shield-check-bold-duotone" className="size-3.5 text-[#800020]" />
               Switch to Admin
             </span>
-            <ArrowRight className="size-3 text-stone-400" />
+            <Icon icon="solar:arrow-right-linear" className="size-3 text-stone-400" />
           </Link>
         )}
 
@@ -408,10 +392,10 @@ export function DashboardShell({
             className="mb-2 flex w-full items-center justify-between rounded-xl bg-white border border-stone-200/80 px-3 py-2 text-xs font-bold text-stone-700 hover:bg-[#fdf2f4] hover:text-[#800020] transition"
           >
             <span className="flex items-center gap-1.5">
-              <LayoutDashboard className="size-3.5 text-stone-500" />
+              <Icon icon="solar:widget-2-bold-duotone" className="size-3.5 text-stone-500" />
               Switch to Host
             </span>
-            <ArrowRight className="size-3 text-stone-400" />
+            <Icon icon="solar:arrow-right-linear" className="size-3 text-stone-400" />
           </Link>
         )}
 
@@ -424,10 +408,10 @@ export function DashboardShell({
           className="flex w-full items-center justify-between rounded-xl px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-100 transition"
         >
           <span className="flex items-center gap-2">
-            <Compass className="size-3.5 text-stone-400" />
+            <Icon icon="solar:compass-bold-duotone" className="size-3.5 text-stone-400" />
             Browse as Traveler
           </span>
-          <ArrowRight className="size-3 text-stone-300" />
+          <Icon icon="solar:arrow-right-linear" className="size-3 text-stone-300" />
         </button>
 
         {/* User profile card */}
@@ -453,7 +437,7 @@ export function DashboardShell({
             title="Sign out"
             className="flex size-7 items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 hover:text-rose-600 transition"
           >
-            <LogOut className="size-3.5" />
+            <Icon icon="solar:logout-2-linear" className="size-3.5" />
           </button>
         </div>
 
@@ -494,7 +478,7 @@ export function DashboardShell({
               className="absolute right-1 top-1/2 -translate-y-1/2 flex size-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition active:scale-95 z-10"
               aria-label="Expand sidebar"
             >
-              <PanelLeftOpen className="size-3.5" />
+              <Icon icon="solar:sidebar-minimalistic-linear" className="size-3.5" />
             </button>
           </div>
         ) : (
@@ -516,7 +500,7 @@ export function DashboardShell({
               className="flex size-8 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition active:scale-95"
               aria-label="Shrink sidebar"
             >
-              <PanelLeftClose className="size-4" />
+              <Icon icon="solar:sidebar-minimalistic-linear" className="size-4" />
             </button>
           </div>
         )}
@@ -584,7 +568,7 @@ export function DashboardShell({
                 className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 md:hidden"
                 aria-label="Open navigation menu"
               >
-                <Menu className="size-5" />
+                <Icon icon="solar:hamburger-menu-linear" className="size-5" />
               </button>
             </div>
 
@@ -611,7 +595,7 @@ export function DashboardShell({
                   href={ROUTES.adminHome}
                   className="inline-flex h-8.5 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
                 >
-                  <ShieldCheck className="size-3.5 text-white/80" />
+                  <Icon icon="solar:shield-check-bold-duotone" className="size-3.5 text-white/80" />
                   <span>Admin</span>
                 </Link>
               )}
@@ -621,7 +605,7 @@ export function DashboardShell({
                   href={ROUTES.dashboard}
                   className="inline-flex h-8.5 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
                 >
-                  <LayoutDashboard className="size-3.5 text-white/80" />
+                  <Icon icon="solar:widget-2-bold-duotone" className="size-3.5 text-white/80" />
                   <span>Host</span>
                 </Link>
               )}
@@ -630,7 +614,7 @@ export function DashboardShell({
                 href={ROUTES.home}
                 className="inline-flex h-8.5 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
               >
-                <Compass className="size-3.5 text-white/80" />
+                <Icon icon="solar:compass-bold-duotone" className="size-3.5 text-white/80" />
                 <span>Traveler</span>
               </Link>
             </div>
