@@ -105,28 +105,16 @@ export function SearchContent() {
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [priceMode, setPriceMode] = useState<"hourly" | "overnight">(
-    category === "hourly" ? "hourly" : "overnight"
-  );
+  const priceMode: "hourly" | "overnight" = category === "hourly" ? "hourly" : "overnight";
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const [geocodedCenter, setGeocodedCenter] = useState<[number, number] | undefined>();
   const [isBroadLocation, setIsBroadLocation] = useState(true);
   const [mapLabel, setMapLabel] = useState("");
   const { savedIds, toggle } = useSavedListings();
   const asksForTime = category === "hourly";
-
-  // Only mount one MapLibre instance at a time (preview vs. side map).
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const update = () => setIsDesktop(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
 
   const fetchResults = useCallback(async () => {
     setLoading(true);
@@ -361,36 +349,16 @@ export function SearchContent() {
         <p className="text-sm text-muted-foreground">
           Tip: pick a place, then reserve with your phone number.
         </p>
-        {listings.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Show prices</span>
-            <div className="inline-flex rounded-full bg-[#f5eef1] p-0.5" role="group">
-              {(["overnight", "hourly"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setPriceMode(mode)}
-                  aria-pressed={priceMode === mode}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                    priceMode === mode ? "bg-crimson text-white" : "text-muted-foreground"
-                  }`}
-                >
-                  {mode === "overnight" ? "Nightly" : "Hourly (Events)"}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 sm:gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
             <ListingCardSkeleton key={i} />
           ))}
         </div>
       ) : listings.length > 0 ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 sm:gap-6">
           {listings.map((listing) => (
             <div
               key={listing.id}
@@ -486,15 +454,7 @@ export function SearchContent() {
             onChange={(value) => pushSearch({ type: value })}
             variant="compact"
           />
-          <MobileChipSelect
-            label="Price"
-            value={priceMode}
-            options={[
-              { value: "overnight", label: "Nightly prices" },
-              { value: "hourly", label: "Hourly (Events & Spaces)" },
-            ]}
-            onChange={(value) => setPriceMode(value as "hourly" | "overnight")}
-          />
+
         </div>
       </div>
 
@@ -601,20 +561,15 @@ export function SearchContent() {
         </SheetContent>
       </Sheet>
 
-      {/* Mobile / tablet: clean results list when not in map mode */}
-      {!isDesktop && !showMap && (
-        <section className="lg:hidden px-4 py-4 pb-36 sm:px-6">
-          {resultsContent}
-        </section>
-      )}
 
-      {/* Mobile: full-screen interactive map view when showMap is true */}
-      {!isDesktop && showMap && (
-        <div className="fixed inset-0 z-50 bg-white lg:hidden">
+
+      {/* Interactive map view when showMap is true (Mobile & Large screens) */}
+      {showMap && (
+        <div className="fixed inset-0 z-50 bg-white">
           <div className="absolute inset-0">{!loading && mapView}</div>
 
           {/* Top Floating Control Bar */}
-          <div className="absolute top-3 inset-x-3 z-30 flex items-center gap-2">
+          <div className="absolute top-3 inset-x-3 sm:top-5 sm:inset-x-6 z-30 flex items-center gap-2 max-w-4xl mx-auto">
             <button
               type="button"
               onClick={() => setShowMap(false)}
@@ -626,7 +581,7 @@ export function SearchContent() {
             <div className="flex min-w-0 flex-1 items-center justify-between rounded-2xl bg-white/95 px-3.5 py-2 shadow-md border border-neutral-200 backdrop-blur-sm">
               <div className="min-w-0 flex-1 pr-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-[#181113]">
+                  <span className="text-xs sm:text-sm font-bold text-[#181113]">
                     {listings.length} {listings.length === 1 ? "place" : "places"} found
                   </span>
                   {listings.length === 0 && (
@@ -654,7 +609,7 @@ export function SearchContent() {
 
           {/* Bottom Swipeable Listings Carousel */}
           {listings.length > 0 && (
-            <div className="absolute bottom-20 inset-x-0 z-30 px-3">
+            <div className="absolute bottom-20 sm:bottom-24 inset-x-0 z-30 px-3 sm:px-6 max-w-5xl mx-auto">
               <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {listings.map((item) => {
                   const isSelected = highlightedId === item.id;
@@ -672,7 +627,7 @@ export function SearchContent() {
                       key={item.id}
                       id={`carousel-card-${item.id}`}
                       onClick={() => handlePinSelect(item)}
-                      className={`flex w-[290px] shrink-0 snap-center cursor-pointer items-center gap-3 rounded-2xl bg-white p-2.5 shadow-xl transition-all border ${
+                      className={`flex w-[290px] sm:w-[320px] shrink-0 snap-center cursor-pointer items-center gap-3 rounded-2xl bg-white p-2.5 shadow-xl transition-all border ${
                         isSelected ? "border-[#800020] ring-2 ring-[#800020]/25" : "border-neutral-200/90"
                       }`}
                     >
@@ -706,13 +661,11 @@ export function SearchContent() {
             </div>
           )}
 
-          {/* Floating toggle button: View list */}
+          {/* Floating toggle button: Show list */}
           <button
             type="button"
             onClick={() => setShowMap(false)}
-            className={`fixed ${
-              listings.length > 0 ? "bottom-6" : "bottom-8"
-            } left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95`}
+            className="fixed bottom-6 sm:bottom-8 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95"
           >
             <Icon icon="solar:list-bold-duotone" className="h-4 w-4 text-[#800020] bg-white rounded-full p-0.5" />
             <span>Show list</span>
@@ -720,25 +673,24 @@ export function SearchContent() {
         </div>
       )}
 
-      {/* Floating View Toggle Button on Mobile when in list view: positioned at bottom-20 z-40 above bottom nav */}
+      {/* Results list when not in map mode (All screen sizes) */}
+      {!showMap && (
+        <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-32 sm:pb-36">
+          {resultsContent}
+        </section>
+      )}
+
+      {/* Floating View Toggle Button when in list view */}
       {!showMap && (
         <button
           type="button"
           onClick={() => setShowMap(true)}
-          className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95 lg:hidden"
+          className="fixed bottom-8 sm:bottom-10 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#181113] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-2xl hover:bg-black transition-all border border-white/20 active:scale-95"
         >
           <Icon icon="solar:map-bold-duotone" className="h-4 w-4 text-[#800020] bg-white rounded-full p-0.5" />
           <span>Show map</span>
         </button>
       )}
-
-      {/* Desktop: results + sticky side map */}
-      <section className="mx-auto hidden max-w-7xl grid-cols-[minmax(0,1fr)_minmax(380px,44%)] gap-8 px-4 py-6 sm:px-6 lg:grid lg:px-8">
-        <div>{resultsContent}</div>
-        <div className="relative overflow-hidden rounded-3xl border border-neutral-200/90 shadow-xs bg-muted lg:sticky lg:top-20 lg:h-[calc(100vh-6.5rem)]">
-          {isDesktop && !loading && mapView}
-        </div>
-      </section>
     </main>
   );
 }

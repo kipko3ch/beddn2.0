@@ -34,13 +34,126 @@ const NOMINATIM_HEADERS = {
   "User-Agent": "Beddn MVP",
 };
 
+/**
+ * Resolves location using Google Geocoding / Places API if an API key is configured.
+ * Keeps costs at $0 under Google's $200/mo credit by only running on host landmark search.
+ */
+async function geocodeWithGoogle(query: string, apiKey: string) {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?${new URLSearchParams({
+      address: query,
+      key: apiKey,
+    }).toString()}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== "OK" || !data.results?.[0]) return null;
+    const first = data.results[0];
+    const { lat, lng } = first.geometry.location;
+
+    let country = "";
+    let region = "";
+    let city = "";
+    let area = "";
+
+    for (const comp of first.address_components || []) {
+      const types: string[] = comp.types || [];
+      if (types.includes("country")) country = comp.long_name;
+      else if (types.includes("administrative_area_level_1")) region = comp.long_name;
+      else if (types.includes("locality")) city = comp.long_name;
+      else if (!city && (types.includes("administrative_area_level_2") || types.includes("postal_town"))) {
+        city = comp.long_name;
+      } else if (types.includes("sublocality") || types.includes("sublocality_level_1") || types.includes("neighborhood")) {
+        area = comp.long_name;
+      } else if (!area && (types.includes("route") || types.includes("point_of_interest"))) {
+        area = comp.long_name;
+      }
+    }
+
+    const isBroad = Boolean(
+      first.types?.some((t: string) => ["country", "administrative_area_level_1", "administrative_area_level_2"].includes(t))
+    );
+
+    return {
+      center: [Number(lng), Number(lat)] as [number, number],
+      label: first.formatted_address || query,
+      isBroad,
+      address: {
+        country,
+        city: city || region,
+        region,
+        area: area || city,
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function reverseGeocodeWithGoogle(lat: string, lon: string, apiKey: string) {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?${new URLSearchParams({
+      latlng: `${lat},${lon}`,
+      key: apiKey,
+    }).toString()}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== "OK" || !data.results?.[0]) return null;
+    const first = data.results[0];
+    const { lat: rLat, lng: rLng } = first.geometry.location;
+
+    let country = "";
+    let region = "";
+    let city = "";
+    let area = "";
+
+    for (const comp of first.address_components || []) {
+      const types: string[] = comp.types || [];
+      if (types.includes("country")) country = comp.long_name;
+      else if (types.includes("administrative_area_level_1")) region = comp.long_name;
+      else if (types.includes("locality")) city = comp.long_name;
+      else if (!city && (types.includes("administrative_area_level_2") || types.includes("postal_town"))) {
+        city = comp.long_name;
+      } else if (types.includes("sublocality") || types.includes("sublocality_level_1") || types.includes("neighborhood")) {
+        area = comp.long_name;
+      } else if (!area && (types.includes("route") || types.includes("point_of_interest"))) {
+        area = comp.long_name;
+      }
+    }
+
+    return {
+      center: [Number(rLng), Number(rLat)] as [number, number],
+      label: first.formatted_address || "",
+      isBroad: false,
+      address: {
+        country,
+        city: city || region,
+        region,
+        area: area || city,
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const lat = searchParams.get("lat");
   const lon = searchParams.get("lon");
+  const googleApiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
 
   // Reverse geocode: coordinates -> place names (used by "use my location").
   if (lat && lon) {
+    if (googleApiKey) {
+      const googleResult = await reverseGeocodeWithGoogle(lat, lon, googleApiKey);
+      if (googleResult) {
+        return NextResponse.json(googleResult);
+      }
+    }
+
+    // Fallback: OpenStreetMap / Nominatim
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?${new URLSearchParams({
         lat,
@@ -81,12 +194,21 @@ export async function GET(request: Request) {
     });
   }
 
-  // Forward geocode: query string -> coordinates.
+  // Forward geocode: query string -> coordinates (host landmark search).
   const query = searchParams.get("q")?.trim();
   if (!query) {
     return NextResponse.json({ error: "Missing query" }, { status: 400 });
   }
 
+  // If Google Maps API key is configured, query Google first for superior local accuracy
+  if (googleApiKey) {
+    const googleResult = await geocodeWithGoogle(query, googleApiKey);
+    if (googleResult) {
+      return NextResponse.json(googleResult);
+    }
+  }
+
+  // Fallback: OpenStreetMap / Nominatim
   const response = await fetch(
     `https://nominatim.openstreetmap.org/search?${new URLSearchParams({
       q: query,

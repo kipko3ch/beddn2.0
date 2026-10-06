@@ -9,10 +9,7 @@ import type { Listing } from "@/lib/types";
 // green parks, blue water, and POI labels (close to maps.google.com default).
 const MAP_STYLE = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 
-// Pins whose screen positions fall within this many pixels of each other are
-// merged into one marker — otherwise same-building listings (a common case:
-// several units in one apartment block) stack illegibly on top of each other.
-const CLUSTER_PIXEL_RADIUS = 34;
+
 
 interface MapProps {
   listings: Listing[];
@@ -331,62 +328,56 @@ export function Map({
       // Deterministically jitter identical/overlapping coordinates so markers don't stack directly on top
       const currentListings = jitterCoordinates(listingsRef.current);
 
-      // Greedy pixel-distance clustering: listings that currently render on
-      // top of (or right next to) each other on screen become one marker,
-      // recomputed on every pan/zoom since screen position depends on both.
-      const groups: { anchor: { x: number; y: number }; lngLat: [number, number]; items: Listing[] }[] = [];
+      // Render each listing with its own clean individual price marker — zero stacked pills with "· 2"
       currentListings.forEach((listing) => {
-        const point = map.project([listing.longitude, listing.latitude]);
-        const group = groups.find(
-          (g) => Math.hypot(g.anchor.x - point.x, g.anchor.y - point.y) < CLUSTER_PIXEL_RADIUS
-        );
-        if (group) {
-          group.items.push(listing);
-        } else {
-          groups.push({ anchor: point, lngLat: [listing.longitude, listing.latitude], items: [listing] });
-        }
-      });
-
-      groups.forEach((group) => {
-        const items = group.items;
-        const isCluster = items.length > 1;
-        const lowest = items.reduce((min, l) => {
-          const p = listingPrice(l, priceMode);
-          return p > 0 && (min === 0 || p < min) ? p : min;
-        }, 0);
-        const active = items.some((l) => l.id === highlightedId);
+        const price = listingPrice(listing, priceMode);
+        const active = listing.id === highlightedId;
+        const currency = listing.currency || "KES";
+        const formattedPrice =
+          price > 0
+            ? `${currency} ${Number(price).toLocaleString()}`
+            : `${currency} --`;
 
         const el = document.createElement("div");
         el.className = "map-price-pin";
-        el.textContent = isCluster
-          ? `${items[0].currency || "KES"} ${Number(lowest).toLocaleString()} · ${items.length}`
-          : `${items[0].currency || "KES"} ${Number(listingPrice(items[0], priceMode)).toLocaleString()}`;
+        el.textContent = formattedPrice;
         el.style.cssText = `
-          background: ${active ? "#800020" : "#fff"};
-          border: 1px solid ${active ? "#800020" : isCluster ? "#e8547b" : "rgba(24,17,19,0.16)"};
+          background: ${active ? "#800020" : "#ffffff"};
+          border: 1px solid ${active ? "#800020" : "rgba(24, 17, 19, 0.18)"};
           border-radius: 999px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-          color: ${active ? "#fff" : "#181113"};
+          box-shadow: 0 2px 7px rgba(0, 0, 0, 0.16);
+          color: ${active ? "#ffffff" : "#181113"};
           cursor: pointer;
-          font-size: 12px;
-          font-weight: 800;
+          font-size: 11.5px;
+          font-weight: 700;
           line-height: 1;
-          padding: 8px 11px;
+          padding: 6px 10px;
           white-space: nowrap;
           transform: ${active ? "scale(1.12)" : "scale(1)"};
           transition: transform 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
-          z-index: ${active ? 10 : 1};
+          z-index: ${active ? 20 : 1};
         `;
-        el.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openPopup(items, group.lngLat);
-          if (items.length > 0) {
-            onPinClick?.(items[0]);
+
+        el.addEventListener("mouseenter", () => {
+          el.style.zIndex = "30";
+          el.style.borderColor = "#800020";
+        });
+        el.addEventListener("mouseleave", () => {
+          if (!active) {
+            el.style.zIndex = "1";
+            el.style.borderColor = "rgba(24, 17, 19, 0.18)";
           }
         });
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openPopup([listing], [listing.longitude, listing.latitude]);
+          onPinClick?.(listing);
+        });
 
-        const marker = new maplibregl.Marker({ element: el }).setLngLat(group.lngLat).addTo(map);
-        items.forEach((listing) => markersRef.current.set(listing.id, marker));
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([listing.longitude, listing.latitude])
+          .addTo(map);
+        markersRef.current.set(listing.id, marker);
       });
 
       // Fit map bounds only if the actual listings have changed.
@@ -410,13 +401,6 @@ export function Map({
     };
 
     rebuildMarkers();
-    // Re-cluster on pan/zoom only for multi-listing search view
-    if (!approximate) {
-      map.on("moveend", rebuildMarkers);
-    }
-    return () => {
-      map.off("moveend", rebuildMarkers);
-    };
   }, [listings, highlightedId, approximate, onPinClick, onPinSelect, priceMode, isBroad]);
 
   return <div ref={containerRef} className={className || "h-full w-full min-h-[300px]"} />;

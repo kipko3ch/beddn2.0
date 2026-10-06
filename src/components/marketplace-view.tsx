@@ -10,8 +10,6 @@ import {
   Dumbbell,
   Star,
   MapPin,
-  Clock,
-  Moon,
 } from 'lucide-react';
 import { Icon } from '@/components/icon';
 import styles from '../app/landing.module.css';
@@ -541,32 +539,7 @@ export function MarketplaceView({ initialCategory = 'all' }: { initialCategory?:
             </button>
           </div>
         )}
-        {!loading && listings.length > 0 && !isExperienceTab && (
-          <div className={styles.priceToggleRow}>
-            <div className={styles.priceToggle} role="group" aria-label="Price view mode">
-              <button
-                type="button"
-                onClick={() => setPriceMode('overnight')}
-                className={priceMode === 'overnight' ? styles.priceToggleActive : ''}
-                aria-pressed={priceMode === 'overnight'}
-                title="Nightly rates"
-                aria-label="Nightly rates"
-              >
-                <Moon className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPriceMode('hourly')}
-                className={priceMode === 'hourly' ? styles.priceToggleActive : ''}
-                aria-pressed={priceMode === 'hourly'}
-                title="Hourly rates (Conferences & Events)"
-                aria-label="Hourly rates (Conferences & Events)"
-              >
-                <Clock className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
+
         {loading ? (
           <div className={styles.listingsGrid}>
             {Array.from({ length: 8 }).map((_, i) => (
