@@ -29,6 +29,7 @@ import { AuthDialog } from "@/components/auth-dialog";
 import { useSavedListings } from "@/lib/hooks";
 import { useCurrency } from "@/components/currency-provider";
 import { LOGO_SRC } from "@/lib/assets";
+import TiltCascadeCarousel from "@/components/ui/tilt-cascade-carousel";
 import type { Listing, Review } from "@/lib/types";
 import {
   Select,
@@ -102,6 +103,20 @@ export function ExperienceContent({
   useEffect(() => {
     track("LISTING_VIEW", { listingId: listing.id });
   }, [listing.id]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [lightboxIndex]);
 
   const images = listing.listing_images?.length
     ? listing.listing_images
@@ -584,26 +599,67 @@ export function ExperienceContent({
         </div>
       </div>
 
-      {/* Lightbox photo viewer overlay */}
+      {/* Tilt Cascade Photo Gallery Lightbox */}
       {lightboxIndex !== null && (
-        <div className="fixed inset-0 z-[90] flex flex-col bg-black/95 animate-fade-in" role="dialog">
-          <div className="flex items-center justify-between p-6 text-white">
-            <span className="text-sm font-bold">
-              {lightboxIndex + 1} / {images.length}
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-black/65 backdrop-blur-2xl transition-all"
+          role="dialog"
+          aria-label="Photo gallery"
+        >
+          {/* Ambient Blurred Background Image */}
+          <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none select-none">
+            {images[lightboxIndex]?.url && (
+              <Image
+                src={images[lightboxIndex].url}
+                alt=""
+                fill
+                className="object-cover opacity-35 blur-3xl scale-125 transition-all duration-300"
+                priority
+              />
+            )}
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-2xl" />
+          </div>
+
+          {/* Header: Photo Counter & Close Button */}
+          <div className="relative z-20 flex w-full items-center justify-between px-5 sm:px-8 py-4 text-white">
+            <span className="font-mono text-xs sm:text-sm font-semibold tracking-wider text-white/85 bg-white/10 rounded-full px-3.5 py-1 backdrop-blur-md border border-white/10">
+              {String(lightboxIndex + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
             </span>
             <button
+              type="button"
               onClick={() => setLightboxIndex(null)}
-              className="flex size-11 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition"
+              aria-label="Close photos"
+              className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 transition cursor-pointer border border-white/10"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="relative flex-1">
-            <Image
-              src={images[lightboxIndex]?.url}
-              alt=""
-              fill
-              className="object-contain"
+
+          {/* Tilt Cascade Carousel Gallery */}
+          <div className="relative z-10 w-full flex-1 flex items-center justify-center overflow-hidden">
+            <TiltCascadeCarousel
+              items={images.map((img) => ({
+                src: img.url,
+                title: "",
+                alt: listing.name,
+              }))}
+              defaultIndex={lightboxIndex}
+              onIndexChange={(idx) => setLightboxIndex(idx)}
+              height="calc(100svh - 80px)"
+              slideSize="clamp(220px, 66vmin, 500px)"
+              angle={18}
+              drop={0.35}
+              inactiveScale={0.7}
+              radius={20}
+              bounce={0.02}
+              duration={0.16}
+              loop={images.length > 2}
+              background="transparent"
+              color="#ffffff"
+              titles={false}
+              captions={false}
+              controls={true}
+              ariaLabel={`${listing.name} photos`}
             />
           </div>
         </div>
