@@ -28,8 +28,9 @@ import { ROUTES } from "@/lib/routes";
 import type { Listing } from "@/lib/types";
 
 const CATEGORY_OPTIONS = [
-  { value: "hourly", label: "Hourly" },
+  { value: "all", label: "All" },
   { value: "overnight", label: "Overnight" },
+  { value: "hourly", label: "Hourly" },
 ];
 
 /** Pill chip that opens a clean dropdown of options (mobile filter row). */
@@ -96,7 +97,7 @@ export function SearchContent() {
   const q = searchParams.get("q") ?? "";
   const lat = searchParams.get("lat");
   const lng = searchParams.get("lng");
-  const category = searchParams.get("category") ?? "hourly";
+  const category = searchParams.get("category") ?? "all";
   const propertyType = searchParams.get("type") ?? "all";
   const checkIn = searchParams.get("checkin");
   const checkOut = searchParams.get("checkout");
@@ -121,7 +122,9 @@ export function SearchContent() {
 
     // Server route uses the service role so results show for everyone,
     // signed in or not, regardless of database policy state.
-    const params = new URLSearchParams({ category, type: propertyType, limit: "50" });
+    const params = new URLSearchParams({ limit: "50" });
+    if (category && category !== "all") params.set("category", category);
+    if (propertyType && propertyType !== "all") params.set("type", propertyType);
     if (q) params.set("q", q);
     let results: Listing[] = [];
     try {
@@ -272,7 +275,7 @@ export function SearchContent() {
     lat && lng ? [parseFloat(lng), parseFloat(lat)] : lookupQueryCenter(q) || geocodedCenter;
 
   const activeFilterCount =
-    1 + (propertyType !== "all" ? 1 : 0);
+    (category !== "all" ? 1 : 0) + (propertyType !== "all" ? 1 : 0);
 
   const headerTitle = q
     ? `Stays in ${q}`
