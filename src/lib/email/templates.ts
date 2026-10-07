@@ -13,6 +13,19 @@ const LOGO_URL = `${SITE_URL}/images/logo.png`;
 // Light-on-dark variant shown in dark-mode clients.
 const LOGO_DARK_URL = `${SITE_URL}/images/logo-new.png`;
 
+// ============================================================================
+// FontAwesome & Iconify SVG Icons (Renderable inline across HTML email clients)
+// ============================================================================
+export const FA_WHATSAPP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 448 512" fill="currentColor" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>`;
+
+export const FA_PHONE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>`;
+
+export const FA_CLOCK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120V256c0 8 4 15.5 10.7 20l96 64c11.4 7.6 27 4.5 34.6-6.9s4.5-27-6.9-34.6L280 238V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>`;
+
+export const FA_STAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 576 512" fill="#eab308" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><path d="M316.9 18C311.6 7 300.4 0 288 0s-23.6 7-28.9 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 327 113.2 470c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3L288 439.8l128.1 63.8c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.2 327l104.2-101.1c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381 150.3 316.9 18z"/></svg>`;
+
+export const FA_SHIELD_CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 512 512" fill="#800020" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><path d="M256 0c4.8 0 9.3 1.6 12.9 4.5l192 128c8.2 5.5 13.1 14.8 13.1 24.8c0 148.6-89.8 290.7-211.7 351.4c-4.1 2-8.5 3.3-13.1 3.3s-9-1.3-13.1-3.3C113.8 448 24 305.9 24 157.3c0-10 4.9-19.3 13.1-24.8l192-128C232.7 1.6 237.2 0 256 0zm102.6 182.6l-128 128c-6.2 6.2-16.4 6.2-22.6 0l-64-64c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0L216 273.4l119.4-119.4c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"/></svg>`;
+
 function shell(opts: { title: string; bodyHtml: string; preheader?: string }): string {
   return `<!doctype html>
 <html lang="en">
@@ -63,6 +76,14 @@ function button(href: string, label: string): string {
   return `<a href="${href}" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-weight:bold;font-size:15px;padding:13px 26px;border-radius:999px;">${label}</a>`;
 }
 
+function whatsappButton(href: string, label = "WhatsApp Host"): string {
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#25D366;color:#ffffff;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;line-height:44px;text-align:center;text-decoration:none;padding:0 22px;border-radius:10px;box-shadow:0 2px 4px rgba(37,211,102,0.25);">${FA_WHATSAPP_SVG}${label}</a>`;
+}
+
+function phoneButton(href: string, label = "Call Host"): string {
+  return `<a href="${href}" style="display:inline-block;background:${BRAND};color:#ffffff;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;line-height:44px;text-align:center;text-decoration:none;padding:0 22px;border-radius:10px;">${FA_PHONE_SVG}${label}</a>`;
+}
+
 export interface InquiryEmailInput {
   guestName: string;
   listingName: string;
@@ -77,13 +98,13 @@ export function inquiryReceivedEmail(input: InquiryEmailInput): { subject: strin
     title: "Your Beddn inquiry is ready",
     preheader: `Continue with the host on WhatsApp, and remember to review ${input.listingName} after your stay.`,
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Hi ${first}, your inquiry is ready 🎉</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Hi ${first}, your inquiry is ready</h1>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
         You inquired about <strong style="color:${INK};">${input.listingName}</strong>. Continue the conversation with the host on WhatsApp to confirm your dates and details.
       </p>
-      ${input.whatsappUrl ? `<p style="margin:0 0 20px;">${button(input.whatsappUrl, "Continue on WhatsApp")}</p>` : ""}
+      ${input.whatsappUrl ? `<p style="margin:0 0 20px;">${whatsappButton(input.whatsappUrl, "Continue on WhatsApp")}</p>` : ""}
       <div style="background:#fbf7f8;border-left:3px solid ${BRAND};padding:16px 18px;margin:8px 0 4px;">
-        <p style="margin:0 0 6px;font-size:15px;font-weight:bold;color:${INK};">Did you book? Don't forget to review ⭐</p>
+        <p style="margin:0 0 6px;font-size:15px;font-weight:bold;color:${INK};">${FA_STAR_SVG}Did you book? Don't forget to review</p>
         <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:${MUTED};">
           After your stay, a quick review helps other guests and keeps Beddn trustworthy.
         </p>
@@ -110,7 +131,7 @@ export function magicLinkEmail(input: MagicLinkInput): { subject: string; html: 
     bodyHtml: `
       <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Sign in to Beddn</h1>
       <div style="display:inline-block;background:#fef2f2;border:1px solid #fee2e2;border-radius:8px;padding:6px 12px;margin:0 0 16px;font-size:13px;color:#991b1b;font-weight:700;">
-        ⏱️ Code &amp; link expire in 10 minutes
+        ${FA_CLOCK_SVG}Code &amp; link expire in 10 minutes
       </div>
       <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${MUTED};">
         Tap the button below to finish signing in automatically on this device:
@@ -152,7 +173,7 @@ export function hostApprovedEmail(input: HostApprovedInput): { subject: string; 
     title: "You're approved to host on Beddn",
     preheader: "Your host account is approved — you can publish listings now.",
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">You're approved, ${first} 🎉</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">You're approved, ${first}</h1>
       <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:${MUTED};">
         Your Beddn host account has been reviewed and approved. You can now publish listings and start receiving booking requests.
       </p>
@@ -201,7 +222,7 @@ export function bookingConfirmedEmail(input: BookingStatusInput): { subject: str
     title: "Your Beddn booking is confirmed",
     preheader: `${input.listingName} is confirmed — ref ${input.bookingCode}.`,
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Hi ${first}, you're confirmed 🎉</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Hi ${first}, your booking is confirmed</h1>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
         Your booking for <strong style="color:${INK};">${input.listingName}</strong> is confirmed. Ref: <strong style="color:${INK};">${input.bookingCode}</strong>.
       </p>
@@ -280,7 +301,7 @@ export function bookingRequestedGuestEmail(input: BookingRequestedGuestInput): {
     title: "Booking Request Sent — Beddn",
     preheader: `Your booking request for ${input.listingName} has been submitted (Ref: ${input.bookingCode}). Call or WhatsApp the host directly.`,
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Request sent to host, ${first} ✨</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Request sent to host, ${first}</h1>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
         Your booking request for <strong style="color:${INK};">${input.listingName}</strong> has been submitted. The host has been notified to confirm availability.
       </p>
@@ -293,7 +314,7 @@ export function bookingRequestedGuestEmail(input: BookingRequestedGuestInput): {
         </table>
       </div>
 
-      <!-- Call & WhatsApp Action Buttons replacing status button -->
+      <!-- Call & WhatsApp Action Buttons with FontAwesome Icons -->
       <div style="margin:24px 0 20px;">
         <p style="margin:0 0 12px;font-size:15px;font-weight:bold;color:${INK};">
           Contact ${hostLabel} directly:
@@ -303,18 +324,14 @@ export function bookingRequestedGuestEmail(input: BookingRequestedGuestInput): {
             ${
               input.whatsappUrl
                 ? `<td style="padding-right:12px;padding-bottom:10px;">
-                    <a href="${input.whatsappUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#25D366;color:#ffffff;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;line-height:44px;text-align:center;text-decoration:none;padding:0 22px;border-radius:10px;box-shadow:0 2px 4px rgba(37,211,102,0.25);">
-                      💬 WhatsApp Host
-                    </a>
+                    ${whatsappButton(input.whatsappUrl, "WhatsApp Host")}
                   </td>`
                 : ""
             }
             ${
               input.callUrl
                 ? `<td style="padding-bottom:10px;">
-                    <a href="${input.callUrl}" style="display:inline-block;background:${BRAND};color:#ffffff;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;line-height:44px;text-align:center;text-decoration:none;padding:0 22px;border-radius:10px;">
-                      📞 Call Host
-                    </a>
+                    ${phoneButton(input.callUrl, "Call Host")}
                   </td>`
                 : ""
             }
@@ -361,7 +378,7 @@ export function bookingRequestedHostEmail(input: BookingRequestedHostInput): { s
     title: "New Booking Request on Beddn",
     preheader: `New request from ${input.guestName} for ${input.listingName} (Ref: ${input.bookingCode}).`,
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">New booking request, ${first} 🛎️</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">New booking request, ${first}</h1>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
         <strong style="color:${INK};">${input.guestName}</strong> submitted a booking request for your property <strong style="color:${INK};">${input.listingName}</strong>.
       </p>
@@ -377,7 +394,7 @@ export function bookingRequestedHostEmail(input: BookingRequestedHostInput): { s
       </p>
     `,
   });
-  return { subject: `🛎️ New Booking Request: ${input.listingName} (${input.guestName})`, html };
+  return { subject: `New Booking Request: ${input.listingName} (${input.guestName})`, html };
 }
 
 export interface ListingVerifiedInput {
@@ -393,19 +410,19 @@ export function listingVerifiedEmail(input: ListingVerifiedInput): { subject: st
     title: "Your Listing is Verified on Beddn",
     preheader: `${input.listingName} now has the official Beddn verified trust badge.`,
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Your property is verified, ${first}! 🛡️</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Your property is verified, ${first}</h1>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
         Congratulations! <strong style="color:${INK};">${input.listingName}</strong> has been verified by the Beddn team and now proudly displays the official <strong>Verified Badge</strong>.
       </p>
       <div style="background:#fdf2f4;border:1px solid #f9c8d4;border-radius:12px;padding:16px 20px;margin:16px 0 20px;">
         <p style="margin:0;font-size:14px;color:${BRAND};font-weight:bold;">
-          ✓ Verified badge active · Priority in search results · Higher guest booking conversion
+          ${FA_SHIELD_CHECK_SVG} Verified badge active · Priority in search results · Higher guest booking conversion
         </p>
       </div>
       <p style="margin:0 0 16px;">${button(input.listingUrl, "View your verified listing")}</p>
     `,
   });
-  return { subject: `🛡️ Verified Badge Approved: ${input.listingName}`, html };
+  return { subject: `Verified Badge Approved: ${input.listingName}`, html };
 }
 
 export interface ProTierActivatedInput {
@@ -423,7 +440,7 @@ export function proTierActivatedEmail(input: ProTierActivatedInput): { subject: 
     title: `${input.tierName} Tier Activated — Beddn`,
     preheader: `${input.listingName} is now promoted as ${input.tierName}. Active until ${input.expiresAt}.`,
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">${input.tierName} is active, ${first}! ⭐</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">${input.tierName} is active, ${first}!</h1>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${MUTED};">
         Your promotion tier <strong>${input.tierName}</strong> for <strong style="color:${INK};">${input.listingName}</strong> has been activated.
       </p>
@@ -438,7 +455,7 @@ export function proTierActivatedEmail(input: ProTierActivatedInput): { subject: 
       </p>
     `,
   });
-  return { subject: `⭐ ${input.tierName} Promotion Activated: ${input.listingName}`, html };
+  return { subject: `${input.tierName} Promotion Activated: ${input.listingName}`, html };
 }
 
 export interface HostAnnouncementEmailInput {
@@ -466,7 +483,7 @@ export function hostAnnouncementEmail(input: HostAnnouncementEmailInput): { subj
       </p>
     `,
   });
-  return { subject: `📢 Beddn Host Update: ${input.title}`, html };
+  return { subject: `Beddn Host Update: ${input.title}`, html };
 }
 
 // ============================================================================
@@ -552,12 +569,12 @@ export function claimSubmittedAdminEmail(input: ClaimSubmittedAdminEmailInput): 
         <tr><td style="padding:6px 0;color:${MUTED};width:120px;">Listing:</td><td style="padding:6px 0;font-weight:bold;color:${INK};">${input.listingTitle}</td></tr>
         <tr><td style="padding:6px 0;color:${MUTED};">Claimant:</td><td style="padding:6px 0;font-weight:bold;color:${INK};">${input.claimantName} (${input.claimantEmail})</td></tr>
         <tr><td style="padding:6px 0;color:${MUTED};">Relationship:</td><td style="padding:6px 0;font-weight:bold;color:${INK};text-transform:capitalize;">${input.relationship}</td></tr>
-        ${input.emailMatchesOwner ? `<tr><td style="padding:6px 0;color:${MUTED};">Match status:</td><td style="padding:6px 0;font-weight:bold;color:#128c4b;">🎯 Strong match (email matches private owner email)</td></tr>` : ""}
+        ${input.emailMatchesOwner ? `<tr><td style="padding:6px 0;color:${MUTED};">Match status:</td><td style="padding:6px 0;font-weight:bold;color:#128c4b;">${FA_SHIELD_CHECK_SVG} Strong match (email matches private owner email)</td></tr>` : ""}
       </table>
       <p style="margin:20px 0;">${button(claimsUrl, "Review Claims in Admin")}</p>
     `,
   });
-  return { subject: `🔔 New Claim: ${input.claimantName} for ${input.listingTitle}`, html };
+  return { subject: `New Claim: ${input.claimantName} for ${input.listingTitle}`, html };
 }
 
 export interface ClaimApprovedEmailInput {
@@ -572,7 +589,7 @@ export function claimApprovedEmail(input: ClaimApprovedEmailInput): { subject: s
     title: "Your listing claim has been approved!",
     preheader: `You can now manage ${input.listingTitle}`,
     bodyHtml: `
-      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Congratulations! Claim Approved</h1>
+      <h1 style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:22px;color:${INK};">Claim Approved</h1>
       <p style="margin:0 0 14px;font-size:14px;color:${MUTED};">Hello ${first},</p>
       <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:${INK};">
         Your ownership claim for <strong style="color:${INK};">${input.listingTitle}</strong> has been verified and approved by the Beddn team.
@@ -586,7 +603,7 @@ export function claimApprovedEmail(input: ClaimApprovedEmailInput): { subject: s
       </p>
     `,
   });
-  return { subject: `🎉 Claim Approved: You now own ${input.listingTitle}`, html };
+  return { subject: `Claim Approved: You now own ${input.listingTitle}`, html };
 }
 
 export interface ClaimRejectedEmailInput {
@@ -617,4 +634,3 @@ export function claimRejectedEmail(input: ClaimRejectedEmailInput): { subject: s
   });
   return { subject: `Update regarding your claim for ${input.listingTitle}`, html };
 }
-

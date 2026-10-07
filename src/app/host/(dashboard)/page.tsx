@@ -354,7 +354,7 @@ export default function HostDashboardPage() {
         />
 
         <MetricCard
-          label="Inquiries & WhatsApp"
+          label="Inquiries & WA"
           value={totalLeads.toLocaleString()}
           icon={<Icon icon="solar:chat-round-dots-bold-duotone" className="size-4 sm:size-5 text-[#800020]" />}
           tone="rose"
@@ -364,7 +364,7 @@ export default function HostDashboardPage() {
         />
 
         <MetricCard
-          label="Booking Requests"
+          label="Bookings"
           value={bookings.length.toLocaleString()}
           icon={<Icon icon="solar:calendar-date-bold-duotone" className="size-4 sm:size-5 text-[#800020]" />}
           tone="emerald"

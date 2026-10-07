@@ -9,6 +9,7 @@ import { format } from "date-fns";
 
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
+import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { Icon } from "@/components/icon";
 import { RoleSwitchTransition } from "@/components/role-switch-transition";
 import { NotificationPopover } from "@/components/dashboard/notification-popover";
@@ -538,71 +539,119 @@ export function DashboardShell({
           isCollapsed ? "md:pl-20" : "md:pl-64"
         )}
       >
-        {/* Top Greeting Banner with Sleek CSS Gradient (High Performance) */}
+        {/* Top Greeting Banner with Mesh Gradient Animation & Refined Layout */}
         <header className="relative overflow-hidden bg-gradient-to-r from-[#1f0007] via-[#480014] to-[#780022] px-4 py-5 sm:px-8 sm:py-6 text-white shadow-md">
+          {/* Animated Mesh Gradient Background in Beddn Burgundy Theme */}
+          <div className="absolute inset-0 pointer-events-none opacity-80">
+            <MeshGradient
+              color1="#800020"
+              color2="#4a0014"
+              color3="#1f0007"
+              color4="#2b000a"
+              speed={0.6}
+              distortion={0.7}
+              swirl={0.35}
+              softness={0.9}
+              shape="wave"
+            />
+          </div>
+
           {/* Curved radial ambient lighting & soft vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_25%,rgba(244,114,182,0.18)_0%,transparent_60%)] pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(128,0,32,0.3)_0%,transparent_70%)] pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
-          <div className="relative mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            {/* Left: Mobile trigger */}
-            <div className="flex items-center gap-2">
+          <div className="relative mx-auto max-w-7xl">
+            {/* Mobile Top Controls: Menu Trigger on Left, Notifications & Switchers on Right */}
+            <div className="flex items-center justify-between pb-3 md:hidden">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 md:hidden"
+                className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-xs hover:bg-white/20 transition active:scale-95"
                 aria-label="Open navigation menu"
               >
                 <Icon icon="solar:hamburger-menu-linear" className="size-5" />
               </button>
+
+              <div className="flex items-center gap-2">
+                <NotificationPopover hostId={hostId} userEmail={userEmail} />
+
+                {isAdmin && role === "host" && (
+                  <Link
+                    href={ROUTES.adminHome}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 text-xs font-semibold text-white backdrop-blur-xs transition hover:bg-white/20"
+                  >
+                    <Icon icon="solar:shield-check-bold-duotone" className="size-3.5 text-white/90" />
+                    <span>Admin</span>
+                  </Link>
+                )}
+
+                {isAdmin && role === "admin" && (
+                  <Link
+                    href={ROUTES.dashboard}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 text-xs font-semibold text-white backdrop-blur-xs transition hover:bg-white/20"
+                  >
+                    <Icon icon="solar:widget-2-bold-duotone" className="size-3.5 text-white/90" />
+                    <span>Host</span>
+                  </Link>
+                )}
+
+                <Link
+                  href={ROUTES.home}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-xs transition hover:bg-white/20"
+                >
+                  <Icon icon="solar:compass-bold-duotone" className="size-3.5 text-white/90" />
+                  <span>Traveler</span>
+                </Link>
+              </div>
             </div>
 
-            {/* Center: Greeting with User's Name */}
-            <div className="text-left lg:text-center">
-              <p className="text-[11px] uppercase tracking-widest text-[#f9c8d4]/80 font-medium">
-                {greeting}
-              </p>
-              <h1 className="font-serif italic text-2xl sm:text-3xl lg:text-4xl text-white font-normal tracking-tight leading-tight mt-0.5">
-                {userName?.trim() ? userName : displayName}
-              </h1>
-              <p className="text-[11px] text-[#f9c8d4]/70 mt-1 font-sans">
-                {role === "admin" ? "Admin Console" : "Host Dashboard"} · {formattedDate}
-              </p>
-            </div>
+            {/* Main Header Content: Greeting on Left, Controls on Right for Desktop */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-[11px] uppercase tracking-widest text-[#f9c8d4]/90 font-semibold">
+                  {greeting}
+                </p>
+                <h1 className="font-serif italic text-2xl sm:text-3xl lg:text-4xl text-white font-normal tracking-tight leading-tight mt-0.5">
+                  {userName?.trim() ? userName : displayName}
+                </h1>
+                <p className="text-[11px] sm:text-xs text-[#f9c8d4]/80 mt-1 font-sans">
+                  {role === "admin" ? "Admin Console" : "Host Dashboard"} · {formattedDate}
+                </p>
+              </div>
 
-            {/* Right: Notifications & Clean Role Switchers (No weird icon clutter) */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 lg:justify-end">
-              <NotificationPopover hostId={hostId} userEmail={userEmail} />
+              {/* Desktop Actions (Hidden on Mobile) */}
+              <div className="hidden md:flex items-center gap-2.5">
+                <NotificationPopover hostId={hostId} userEmail={userEmail} />
 
-              {/* Role Switcher */}
-              {isAdmin && role === "host" && (
+                {isAdmin && role === "host" && (
+                  <Link
+                    href={ROUTES.adminHome}
+                    className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                  >
+                    <Icon icon="solar:shield-check-bold-duotone" className="size-3.5 text-white/80" />
+                    <span>Admin</span>
+                  </Link>
+                )}
+
+                {isAdmin && role === "admin" && (
+                  <Link
+                    href={ROUTES.dashboard}
+                    className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                  >
+                    <Icon icon="solar:widget-2-bold-duotone" className="size-3.5 text-white/80" />
+                    <span>Host</span>
+                  </Link>
+                )}
+
                 <Link
-                  href={ROUTES.adminHome}
+                  href={ROUTES.home}
                   className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
                 >
-                  <Icon icon="solar:shield-check-bold-duotone" className="size-3.5 text-white/80" />
-                  <span>Admin</span>
+                  <Icon icon="solar:compass-bold-duotone" className="size-3.5 text-white/80" />
+                  <span>Traveler</span>
                 </Link>
-              )}
-
-              {isAdmin && role === "admin" && (
-                <Link
-                  href={ROUTES.dashboard}
-                  className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-                >
-                  <Icon icon="solar:widget-2-bold-duotone" className="size-3.5 text-white/80" />
-                  <span>Host</span>
-                </Link>
-              )}
-
-              <Link
-                href={ROUTES.home}
-                className="inline-flex h-8.5 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-              >
-                <Icon icon="solar:compass-bold-duotone" className="size-3.5 text-white/80" />
-                <span>Traveler</span>
-              </Link>
+              </div>
             </div>
           </div>
         </header>
