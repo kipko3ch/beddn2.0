@@ -469,7 +469,6 @@ export function PropertyContent({
 
   const isHostedByBeddn =
     listing.ownership_state === "unclaimed" ||
-    listing.ownership_state === "managed_by_admin" ||
     !listing.host ||
     !listing.host?.name ||
     listing.host?.name?.toLowerCase().includes("beddn");
@@ -757,23 +756,24 @@ export function PropertyContent({
               <div className="flex flex-col gap-4 rounded-2xl border bg-white p-5 shadow-xs">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fbf0f3] border border-[#f3cfd9]">
+                    <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#800020] border border-[#800020]/20 shadow-2xs">
                       <Image
-                        src={LOGO_SRC}
+                        src="/images/beddn-avatar.png"
                         alt="Beddn"
-                        width={38}
-                        height={38}
-                        className="object-contain"
+                        width={56}
+                        height={56}
+                        className="h-full w-full object-cover rounded-full"
+                        unoptimized
                       />
                     </span>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-bold text-[#181113]">Hosted by Beddn</p>
-                        <VerifiedBadge text="Managed by Beddn" size="sm" variant="minimal" />
+                        <VerifiedBadge text="Verified Stay" size="sm" variant="minimal" />
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {listing.host?.bio ||
-                          "This property is managed directly by Beddn. Contact our support or property team directly for reservations and inquiries."}
+                          "This property is verified by Beddn. Contact our support or property team directly for reservations and inquiries."}
                       </p>
                     </div>
                   </div>

@@ -298,8 +298,8 @@ export async function POST(request: Request) {
         row.contact_phone = phoneVal.normalized;
       }
       row.contact_name = (body.payload.contact_name as string)?.trim() || "Beddn";
-    } else if (requestedState === "managed_by_admin") {
-      targetOwnershipState = "managed_by_admin";
+    } else if (requestedState === "managed_by_admin" || requestedState === "owned") {
+      targetOwnershipState = requestedState as "managed_by_admin" | "owned";
       const assignedUserId = (body.payload.owner_id as string) || auth.user.id;
       targetOwnerId = assignedUserId;
       const assignedHost = await resolveHostByUserId(admin, assignedUserId);

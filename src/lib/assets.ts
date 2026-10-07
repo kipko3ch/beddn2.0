@@ -1,1 +1,2 @@
-export const LOGO_SRC = "/logo.png?v=20260507";
+export const LOGO_SRC = "/images/logo.png";
+export const BEDDN_AVATAR_SRC = "/images/beddn-avatar.png";

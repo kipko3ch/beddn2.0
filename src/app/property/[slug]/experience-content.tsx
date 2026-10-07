@@ -429,13 +429,14 @@ export function ExperienceContent({
                   fill
                   className="object-cover"
                 />
-              ) : (!listing.host?.name || listing.host.name.toLowerCase().includes("beddn") || listing.ownership_state === "unclaimed" || listing.ownership_state === "managed_by_admin") ? (
+              ) : (!listing.host?.name || listing.host.name.toLowerCase().includes("beddn") || listing.ownership_state === "unclaimed") ? (
                 <Image
-                  src="/images/logo.png"
+                  src="/images/beddn-avatar.png"
                   alt="Beddn"
-                  width={52}
-                  height={52}
-                  className="object-contain"
+                  width={56}
+                  height={56}
+                  className="h-full w-full object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-cream text-2xl font-bold text-crimson">

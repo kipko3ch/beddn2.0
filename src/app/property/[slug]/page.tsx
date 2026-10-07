@@ -21,6 +21,35 @@ export const getListingBySlug = cache(async (slug: string) => {
     .order("created_at", { ascending: false, referencedTable: "reviews" })
     .maybeSingle();
 
+  if (data && !data.host && data.owner_id) {
+    const { data: hostByOwner } = await admin
+      .from("hosts")
+      .select("user_id, name, bio, avatar_url, is_verified")
+      .eq("user_id", data.owner_id)
+      .limit(1)
+      .maybeSingle();
+
+    if (hostByOwner) {
+      data.host = hostByOwner;
+    } else {
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("id, full_name, avatar_url")
+        .eq("id", data.owner_id)
+        .maybeSingle();
+
+      if (profile) {
+        data.host = {
+          user_id: profile.id,
+          name: profile.full_name || "Beddn Host",
+          bio: null,
+          avatar_url: profile.avatar_url,
+          is_verified: false,
+        };
+      }
+    }
+  }
+
   return data;
 });
 
